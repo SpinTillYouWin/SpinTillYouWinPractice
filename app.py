@@ -2141,12 +2141,16 @@ with gr.Blocks() as demo:
   """)
     print("CSS Updated")
     
+    print("CSS Updated")
+
+    # Paste this right here
     spin_analysis_output = gr.Textbox(
         label="Spin Analysis",
         value="",
         interactive=False,
         lines=5
-        
+    )
+    
     spins_textbox.change(
         fn=lambda x: x,
         inputs=spins_textbox,
@@ -2211,7 +2215,7 @@ with gr.Blocks() as demo:
     # Spin Analysis (moved to bottom, collapsible)
     with gr.Accordion("Spin Analysis", open=True):
         spin_analysis_output
-        )
+    )
 
     # Event Handlers
     generate_spins_button.click(
