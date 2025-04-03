@@ -1842,23 +1842,25 @@ STRATEGIES = {
 
 def show_strategy_recommendations(strategy_name, *args):
     if not any(scores.values()) and not any(even_money_scores.values()):
-        return gr.update(value="Please analyze some spins first to generate scores.", visible=True), gr.update(visible=False)
+        return gr.update(value="Please analyze some spins first to generate scores.", visible=True), gr.update(visible=False), gr.update(visible=False), gr.update(visible=False)
 
     strategy_info = STRATEGIES[strategy_name]
     strategy_func = strategy_info["function"]
 
     if strategy_name == "Kitchen Martingale":
         recommendations = strategy_func(*args[:34])
-        return gr.update(value=recommendations, visible=True), gr.update(visible=False)
+        return gr.update(value=recommendations, visible=True), gr.update(visible=False), gr.update(visible=True), gr.update(visible=False)
     elif strategy_name == "S.T.Y.W: Victory Vortex":
         recommendations = strategy_func(*args[34:50])
-        return gr.update(value=recommendations, visible=True), gr.update(visible=False)
+        return gr.update(value=recommendations, visible=True), gr.update(visible=False), gr.update(visible=False), gr.update(visible=True)
     elif strategy_name == "Top Numbers with Neighbours (Tiered)":
         html_output = strategy_func()
-        return gr.update(value="", visible=False), gr.update(value=html_output, visible=True)
+        return gr.update(value="", visible=False), gr.update(value=html_output, visible=True), gr.update(visible=False), gr.update(visible=False)
     else:
         recommendations = strategy_func()
-        return gr.update(value=recommendations, visible=True), gr.update(visible=False)
+        return gr.update(value=recommendations, visible=True), gr.update(visible=False), gr.update(visible=False), gr.update(visible=False)
+
+    return gr.update(value="Unknown strategy selected.", visible=True), gr.update(visible=False), gr.update(visible=False), gr.update(visible=False)
 
 def clear_outputs():
     return "", "", "", "", "", "", "", "", "", "", "", False, False, False, False, False, False, False, False
@@ -1991,7 +1993,7 @@ with gr.Row():
         gr.Markdown("### Strategy Recommendations")
         strategy_text_output = gr.Textbox(label="Strategy Recommendations", lines=10, max_lines=50)
         strategy_html_output = gr.HTML(label="Strategy Table", visible=False)
-        with gr.Column(visible=False) as kitchen_martingale_checkboxes:
+        with gr.Column() as kitchen_martingale_checkboxes:
             gr.Markdown("### Kitchen Martingale Checkboxes")
             kitchen_martingale_checkboxes_list = []
             betting_progression_km = [
@@ -2025,7 +2027,7 @@ with gr.Row():
                 checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
                 kitchen_martingale_checkboxes_list.append(checkbox)
 
-        with gr.Column(visible=False) as victory_vortex_checkboxes:
+        with gr.Column() as victory_vortex_checkboxes:
             gr.Markdown("### Victory Vortex Checkboxes")
             victory_vortex_checkboxes_list = []
             for i, (bankroll, bet_label, bet_amount) in enumerate(betting_progression_vv, 1):
@@ -2126,7 +2128,8 @@ with gr.Row():
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_table, top_18_table, strongest_numbers_output,
-            dynamic_table_output, strategy_text_output, strategy_html_output, color_code_output
+            dynamic_table_output, strategy_text_output, strategy_html_output, color_code_output,
+            kitchen_martingale_checkboxes, victory_vortex_checkboxes
         ]
     )
 
@@ -2167,7 +2170,8 @@ with gr.Row():
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_table, top_18_table, strongest_numbers_output,
             spins_textbox, spins_display, dynamic_table_output, strategy_text_output,
-            strategy_html_output, color_code_output
+            strategy_html_output, color_code_output, kitchen_martingale_checkboxes,
+            victory_vortex_checkboxes
         ]
     )
 
@@ -2175,6 +2179,10 @@ with gr.Row():
         fn=toggle_checkboxes,
         inputs=[strategy_dropdown],
         outputs=[kitchen_martingale_checkboxes, victory_vortex_checkboxes]
+    ).then(
+        fn=show_strategy_recommendations,
+        inputs=[strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
+        outputs=[strategy_text_output, strategy_html_output, kitchen_martingale_checkboxes, victory_vortex_checkboxes]
     ).then(
         fn=lambda strategy: (print(f"Updating Dynamic Table with Strategy: {strategy}"), create_dynamic_table(strategy if strategy != "None" else None))[-1],
         inputs=[strategy_dropdown],
