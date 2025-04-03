@@ -1934,7 +1934,13 @@ with gr.Blocks() as demo:
         interactive=False,
         lines=1
     )
-
+    spin_analysis_output = gr.Textbox(
+        label="Spin Analysis",
+        value="",
+        interactive=False,
+        lines=5
+    )
+    
     with gr.Group():
         gr.Markdown("### European Roulette Table")
         table_layout = [
