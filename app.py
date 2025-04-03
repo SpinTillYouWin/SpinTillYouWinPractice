@@ -1923,7 +1923,40 @@ with gr.Blocks() as demo:
         analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
         undo_button = gr.Button("Undo Last Spin", elem_classes="action-button")
 
-    # ... (rest of your code remains the same, including strategy_categories, dropdown, etc.) ...
+    strategy_categories = {
+        "Trends": ["Cold Bet Strategy", "Hot Bet Strategy"],
+        "Even Money Strategies": ["Best Even Money Bets", "Fibonacci To Fortune"],
+        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],
+        "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Best Streets"],
+        "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
+        "Double Street Strategies": ["Best Double Streets", "Non-Overlapping Double Street Strategy"],
+        "Corner Strategies": ["Best Corners", "Non-Overlapping Corner Strategy"],
+        "Split Strategies": ["Best Splits"],
+        "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"]
+    }
+
+    dropdown_choices = ["None"]
+    for category in sorted(strategy_categories.keys()):
+        dropdown_choices.append(f"=== {category.upper()} ===")
+        for strategy in sorted(strategy_categories[category]):
+            dropdown_choices.append(strategy)
+
+    with gr.Row():
+        strategy_dropdown = gr.Dropdown(
+            label="Select Strategy",
+            choices=dropdown_choices,
+            value="Best Even Money Bets",
+            allow_custom_value=False
+        )
+
+    with gr.Row(elem_classes="white-row"):
+        reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
+        reset_button = gr.Button("Reset Scores", elem_classes="action-button")
+        clear_button = gr.Button("Clear Outputs", elem_classes="action-button")
+
+    with gr.Row():
+        clear_spins_button = gr.Button("Clear Spins", elem_classes="clear-spins-btn small-btn")
+        print("Button Class Set")
 
     with gr.Row():
         with gr.Column():
@@ -2048,17 +2081,6 @@ with gr.Blocks() as demo:
             with gr.Column():
                 with gr.Accordion("Sides of Zero", open=True):
                     sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
-
-    with gr.Accordion("Strongest Numbers Table", open=True):
-        straight_up_table = gr.HTML(label="Strongest Numbers")
-        top_18_table = gr.HTML(label="Top 18 Strongest Numbers (Sorted Lowest to Highest)")
-        with gr.Row():
-            strongest_numbers_dropdown = gr.Dropdown(
-                label="Select Number of Strongest Numbers",
-                choices=["3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33"],
-                value="3"
-            )
-            strongest_numbers_output = gr.Textbox(label="Strongest Numbers (Sorted Lowest to Highest)", value="")
 
     with gr.Row():
         save_button = gr.Button("Save Session")
