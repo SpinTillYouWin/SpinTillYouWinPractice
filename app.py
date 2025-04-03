@@ -1855,24 +1855,24 @@ with gr.Blocks() as demo:
     gr.Markdown("# Roulette Spin Analyzer with Strategies (European Table)")
 
     spins_display = gr.State(value="")
-spins_textbox = gr.Textbox(
-    label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
-    value="",
-    interactive=True
-)
-last_spin_display = gr.Textbox(
-    label="Last Spin",
-    value="",
-    interactive=False,
-    lines=1
-)
-with gr.Accordion("Spin Analysis", open=False):
-    spin_analysis_output = gr.Textbox(
-        label="",
+    spins_textbox = gr.Textbox(
+        label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
+        value="",
+        interactive=True
+    )
+    last_spin_display = gr.Textbox(
+        label="Last Spin",
         value="",
         interactive=False,
-        lines=5
+        lines=1
     )
+    with gr.Accordion("Spin Analysis", open=False):
+        spin_analysis_output = gr.Textbox(
+            label="",
+            value="",
+            interactive=False,
+            lines=5
+        )
 
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -1881,6 +1881,8 @@ with gr.Accordion("Spin Analysis", open=False):
             ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
+
+    # Create the table and bind events in one go
     with gr.Column(elem_classes="roulette-table"):
         for row in table_layout:
             with gr.Row(elem_classes="table-row"):
@@ -1898,6 +1900,7 @@ with gr.Accordion("Spin Analysis", open=False):
                             min_width=40,
                             elem_classes=btn_classes
                         )
+                        # Bind the click event directly within the loop
                         btn.click(
                             fn=add_spin,
                             inputs=[gr.State(value=num), spins_display],
@@ -1999,7 +2002,7 @@ with gr.Accordion("Spin Analysis", open=False):
                     checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
                     victory_vortex_checkboxes_list.append(checkbox)
 
-        gr.HTML("""
+    gr.HTML("""
     <style>
       .roulette-button.green { background-color: green; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
       .roulette-button.red { background-color: red; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
@@ -2089,7 +2092,6 @@ with gr.Accordion("Spin Analysis", open=False):
         save_button = gr.Button("Save Session")
         load_input = gr.File(label="Upload Session")
     save_output = gr.File(label="Download Session")
-
 
     # Event Handlers
     generate_spins_button.click(
