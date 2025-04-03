@@ -1,4 +1,3 @@
-# Import libraries
 import gradio as gr
 import pandas as pd
 import json
@@ -446,10 +445,8 @@ def create_dynamic_table(strategy_name=None):
                     number_highlights[str(num)] = color
 
         elif strategy_name == "Best Dozens + Best Streets":
-            # Best Dozens logic (from Best Dozens)
             trending_dozen = sorted_dozens[0][0] if sorted_dozens else None
             second_dozen = sorted_dozens[1][0] if len(sorted_dozens) > 1 else None
-            # Best Streets logic (from Best Streets)
             top_streets = sorted_streets[:9]
             for i, (street_name, _) in enumerate(top_streets):
                 numbers = STREETS[street_name]
@@ -458,10 +455,8 @@ def create_dynamic_table(strategy_name=None):
                     number_highlights[str(num)] = color
 
         elif strategy_name == "Best Columns + Best Streets":
-            # Best Columns logic (from Best Columns)
             trending_column = sorted_columns[0][0] if sorted_columns else None
             second_column = sorted_columns[1][0] if len(sorted_columns) > 1 else None
-            # Best Streets logic (from Best Streets)
             top_streets = sorted_streets[:9]
             for i, (street_name, _) in enumerate(top_streets):
                 numbers = STREETS[street_name]
@@ -593,7 +588,6 @@ def create_dynamic_table(strategy_name=None):
                     num_to_take = min(8, len(straight_up_df))
                     top_numbers = set(straight_up_df["Number"].head(num_to_take).tolist())
                     neighbor_numbers = set()
-                    # Track which numbers are neighbors to others
                     neighbor_to = {}
                     for n in top_numbers:
                         left, right = current_neighbors.get(n, (None, None))
@@ -603,10 +597,8 @@ def create_dynamic_table(strategy_name=None):
                         if right is not None:
                             neighbor_numbers.add(right)
                             neighbor_to[right] = neighbor_to.get(right, set()) | {n}
-                    # If the number is a neighbor, apply a green border
                     if num_int in neighbor_numbers:
                         border_style = "4px solid green"
-                        # If it's not a top number, use its base color; otherwise, keep the tier color
                         if num_int not in top_numbers:
                             highlight_color = colors.get(num, "black")
                 html += f'<td style="height: 40px; background-color: {highlight_color}; color: white; border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;">{num}</td>'
@@ -652,7 +644,7 @@ def create_dynamic_table(strategy_name=None):
     html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">BLACK</td>'
     bg_color = "yellow" if trending_even_money == "Even" else ("#00FFFF" if second_even_money == "Even" else "white")
     html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">EVEN</td>'
-    html += '<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
+    html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
 
@@ -688,14 +680,13 @@ def get_strongest_numbers_with_neighbors(num_count):
     return f"Strongest {len(sorted_numbers)} Numbers (Sorted Lowest to Highest): {', '.join(map(str, sorted_numbers))}"
 
 # Function to analyze spins
-# Function to analyze spins
+# Continuing from analyze_spins function
 def analyze_spins(spins_input, reset_scores, strategy_name, *checkbox_args):
     global scores, even_money_scores, dozen_scores, column_scores, street_scores, corner_scores, six_line_scores, split_scores, side_scores, last_spins
 
     if not spins_input or not spins_input.strip():
         return "Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", ""
 
-    # Split and clean the input
     raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
     spins = []
 
@@ -817,7 +808,6 @@ def analyze_spins(spins_input, reset_scores, strategy_name, *checkbox_args):
     strongest_numbers_output = get_strongest_numbers_with_neighbors(3)
     dynamic_table_html = create_dynamic_table(strategy_name)
 
-    # Call show_strategy_recommendations to get the strategy output
     strategy_output = show_strategy_recommendations(strategy_name, *checkbox_args)
 
     return (spin_analysis_output, even_money_output, dozens_output, columns_output,
@@ -919,8 +909,7 @@ def undo_last_spin(current_spins_display, strategy_name, *checkbox_args):
     strongest_numbers_output = get_strongest_numbers_with_neighbors(3)
     dynamic_table_html = create_dynamic_table(strategy_name)
 
-    # Call show_strategy_recommendations to get the strategy output
-    print(f"undo_last_spin: Generating strategy recommendations for {strategy_name}")  # Debug print
+    print(f"undo_last_spin: Generating strategy recommendations for {strategy_name}")
     strategy_output = show_strategy_recommendations(strategy_name, *checkbox_args)
 
     return (spin_analysis_output, even_money_output, dozens_output, columns_output,
@@ -1258,7 +1247,6 @@ def best_splits():
 
 def best_dozens_and_streets():
     recommendations = []
-    # Best Dozens logic (from best_dozens)
     sorted_dozens = sorted(dozen_scores.items(), key=lambda x: x[1], reverse=True)
     dozens_hits = [item for item in sorted_dozens if item[1] > 0]
     if dozens_hits:
@@ -1268,7 +1256,6 @@ def best_dozens_and_streets():
     else:
         recommendations.append("Best Dozens: No hits yet.")
 
-    # Best Streets logic (from best_streets)
     sorted_streets = sorted(street_scores.items(), key=lambda x: x[1], reverse=True)
     streets_hits = [item for item in sorted_streets if item[1] > 0]
     if streets_hits:
@@ -1288,7 +1275,6 @@ def best_dozens_and_streets():
 
 def best_columns_and_streets():
     recommendations = []
-    # Best Columns logic (from best_columns)
     sorted_columns = sorted(column_scores.items(), key=lambda x: x[1], reverse=True)
     columns_hits = [item for item in sorted_columns if item[1] > 0]
     if columns_hits:
@@ -1298,7 +1284,6 @@ def best_columns_and_streets():
     else:
         recommendations.append("Best Columns: No hits yet.")
 
-    # Best Streets logic (from best_streets)
     sorted_streets = sorted(street_scores.items(), key=lambda x: x[1], reverse=True)
     streets_hits = [item for item in sorted_streets if item[1] > 0]
     if streets_hits:
@@ -1315,7 +1300,6 @@ def best_columns_and_streets():
         recommendations.append("\nBest Streets: No hits yet.")
 
     return "\n".join(recommendations)
-
 
 def non_overlapping_double_street_strategy():
     non_overlapping_sets = [
@@ -1562,13 +1546,8 @@ def one_dozen_one_column_strategy():
 
     return "\n".join(recommendations)
 
-# New Strategy: Top Pick 18 Numbers without Neighbours
-# New Strategy: Top Pick 18 Numbers without Neighbours
-# New Strategy: Top Pick 18 Numbers without Neighbours
 def top_pick_18_numbers_without_neighbours():
     recommendations = []
-
-    # Get the top 18 strongest numbers from scores (same logic as in Top 18 Strongest Numbers table)
     straight_up_df = pd.DataFrame(list(scores.items()), columns=["Number", "Score"])
     straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
 
@@ -1576,19 +1555,14 @@ def top_pick_18_numbers_without_neighbours():
         recommendations.append("Top Pick 18 Numbers without Neighbours: Not enough numbers have hit yet (need at least 18).")
         return "\n".join(recommendations)
 
-    # Take the top 18 numbers, sorted by score (descending)
     top_18_df = straight_up_df.head(18)
     top_18_numbers = top_18_df["Number"].tolist()
 
-    # Group into tiers: Top 6 (Yellow), Next 6 (Blue), Last 6 (Green)
-    # Since top_18_df is already sorted by score (descending), we can split into groups
-    top_6 = top_18_numbers[:6]  # First 6 numbers (highest scores)
-    next_6 = top_18_numbers[6:12]  # Next 6 numbers
-    last_6 = top_18_numbers[12:18]  # Last 6 numbers (lowest scores among the 18)
+    top_6 = top_18_numbers[:6]
+    next_6 = top_18_numbers[6:12]
+    last_6 = top_18_numbers[12:18]
 
-    # Add recommendations for each tier
     recommendations.append("Top Pick 18 Numbers without Neighbours:")
-
     recommendations.append("\nTop 6 Numbers (Yellow):")
     for i, num in enumerate(top_6, 1):
         score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
@@ -1601,12 +1575,11 @@ def top_pick_18_numbers_without_neighbours():
 
     recommendations.append("\nLast 6 Numbers (Green):")
     for i, num in enumerate(last_6, 1):
-        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]  # Fixed: Match "Number" column, not "Score"
+        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
         recommendations.append(f"{i}. Number {num} (Score: {score})")
 
     return "\n".join(recommendations)
 
-# Kitchen Martingale Strategy with 34 checkboxes
 def kitchen_martingale_output(*checkboxes):
     sorted_even_money = sorted(even_money_scores.items(), key=lambda x: x[1], reverse=True)
     even_money_hits = [item for item in sorted_even_money if item[1] > 0]
@@ -1658,10 +1631,8 @@ def kitchen_martingale_output(*checkboxes):
 
     return "\n".join(recommendations)
 
-# Victory Vortex Strategy with 16 checkboxes
 def victory_vortex_strategy(*checkboxes):
     recommendations = []
-
     fib_recommendations = fibonacci_strategy()
     recommendations.append("Fibonacci Strategy:")
     recommendations.append(fib_recommendations)
@@ -1692,6 +1663,7 @@ def victory_vortex_strategy(*checkboxes):
         recommendations.append(line)
 
     return "\n".join(recommendations)
+
 def create_color_code_table():
     html = '''
     <div style="margin-top: 20px;">
@@ -1748,8 +1720,6 @@ def create_color_code_table():
 
 def top_numbers_with_neighbours_tiered():
     recommendations = []
-
-    # Get the top numbers from scores (same logic as Strongest Numbers Table)
     straight_up_df = pd.DataFrame(list(scores.items()), columns=["Number", "Score"])
     straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
 
@@ -1757,16 +1727,8 @@ def top_numbers_with_neighbours_tiered():
         recommendations.append("Top Numbers with Neighbours (Tiered): No numbers have hit yet.")
         return "\n".join(recommendations)
 
-    # Add the Strongest Numbers table to the recommendations with fixed-width columns
     recommendations.append("Strongest Numbers:")
-    # Define column widths
-    col_widths = {
-        "Number": 10,
-        "Left Neighbor": 15,
-        "Right Neighbor": 15,
-        "Score": 10
-    }
-    # Create header
+    col_widths = {"Number": 10, "Left Neighbor": 15, "Right Neighbor": 15, "Score": 10}
     header = (
         f"{'Number'.ljust(col_widths['Number'])}"
         f"{'Left Neighbor'.ljust(col_widths['Left Neighbor'])}"
@@ -1774,8 +1736,7 @@ def top_numbers_with_neighbours_tiered():
         f"{'Score'.ljust(col_widths['Score'])}"
     )
     recommendations.append(header)
-    recommendations.append("-" * (sum(col_widths.values()) + 10))  # Adjust separator length
-    # Add rows
+    recommendations.append("-" * (sum(col_widths.values()) + 10))
     for _, row in straight_up_df.iterrows():
         num = str(row["Number"])
         score = str(row["Score"])
@@ -1790,12 +1751,9 @@ def top_numbers_with_neighbours_tiered():
         )
         recommendations.append(row_line)
 
-    # We want up to 24 numbers in total (including neighbors)
-    # Each number has 2 neighbors, so 8 numbers (8 * 3 = 24) is the max to fit 24
-    num_to_take = min(8, len(straight_up_df))  # Take up to 8 numbers
+    num_to_take = min(8, len(straight_up_df))
     top_numbers = straight_up_df["Number"].head(num_to_take).tolist()
 
-    # Collect numbers and their neighbors
     all_numbers = set()
     number_scores = {}
     for num in top_numbers:
@@ -1808,7 +1766,6 @@ def top_numbers_with_neighbours_tiered():
         if right is not None:
             all_numbers.add(right)
 
-    # Sort all numbers by the score of their "parent" number
     number_groups = []
     for num in top_numbers:
         left, right = current_neighbors.get(num, (None, None))
@@ -1819,25 +1776,17 @@ def top_numbers_with_neighbours_tiered():
             group.append(right)
         number_groups.append((scores[num], group))
 
-    # Sort groups by the score of the main number (descending)
     number_groups.sort(key=lambda x: x[0], reverse=True)
-
-    # Flatten into a list of numbers, preserving order
     ordered_numbers = []
     for _, group in number_groups:
         ordered_numbers.extend(group)
 
-    # Take up to 24 numbers
     ordered_numbers = ordered_numbers[:24]
+    top_8 = ordered_numbers[:8]
+    next_8 = ordered_numbers[8:16]
+    last_8 = ordered_numbers[16:24]
 
-    # Divide into tiers: Top 8 (Yellow), Next 8 (Blue), Last 8 (Green)
-    top_8 = ordered_numbers[:8]  # First 8 numbers (highest scores)
-    next_8 = ordered_numbers[8:16]  # Next 8 numbers
-    last_8 = ordered_numbers[16:24]  # Last 8 numbers
-
-    # Add recommendations for each tier
     recommendations.append("\nTop Numbers with Neighbours (Tiered):")
-
     recommendations.append("\nTop Tier (Yellow):")
     for i, num in enumerate(top_8, 1):
         score = number_scores.get(num, "Neighbor")
@@ -1875,11 +1824,9 @@ STRATEGIES = {
     "3-8-6 Rising Martingale": {"function": three_eight_six_rising_martingale, "categories": ["streets"]},
     "1 Dozen +1 Column Strategy": {"function": one_dozen_one_column_strategy, "categories": ["dozens", "columns"]},
     "Top Pick 18 Numbers without Neighbours": {"function": top_pick_18_numbers_without_neighbours, "categories": ["numbers"]},
-    "Top Numbers with Neighbours (Tiered)": {"function": top_numbers_with_neighbours_tiered, "categories": ["numbers"]}  # Add this line
+    "Top Numbers with Neighbours (Tiered)": {"function": top_numbers_with_neighbours_tiered, "categories": ["numbers"]}
 }
 
-# Function to show strategy recommendations
-# Function to show strategy recommendations
 def show_strategy_recommendations(strategy_name, *args):
     if not any(scores.values()) and not any(even_money_scores.values()):
         return "Please analyze some spins first to generate scores."
@@ -1896,24 +1843,9 @@ def show_strategy_recommendations(strategy_name, *args):
 
     return recommendations
 
-    show_even_money = "even_money" in categories
-    show_dozens = "dozens" in categories
-    show_columns = "columns" in categories
-    show_streets = "streets" in categories
-    show_corners = "corners" in categories
-    show_six_lines = "six_lines" in categories
-    show_splits = "splits" in categories
-    show_sides = "sides" in categories
-    show_numbers = "numbers" in categories
-
-    return (recommendations, show_even_money, show_dozens, show_columns,
-            show_streets, show_corners, show_six_lines, show_splits, show_sides, show_numbers, *args)
-
-# Function to clear outputs
 def clear_outputs():
     return "", "", "", "", "", "", "", "", "", "", "", False, False, False, False, False, False, False, False
 
-# Function to toggle visibility of checkbox columns
 def toggle_checkboxes(strategy_name):
     return (gr.update(visible=strategy_name == "Kitchen Martingale"),
             gr.update(visible=strategy_name == "S.T.Y.W: Victory Vortex"))
@@ -1922,7 +1854,6 @@ def toggle_checkboxes(strategy_name):
 with gr.Blocks() as demo:
     gr.Markdown("# Roulette Spin Analyzer with Strategies (European Table)")
 
-    # Define state and textboxes at the top
     spins_display = gr.State(value="")
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
@@ -1935,6 +1866,12 @@ with gr.Blocks() as demo:
         interactive=False,
         lines=1
     )
+    spin_analysis_output = gr.Textbox(
+        label="Spin Analysis",
+        value="",
+        interactive=False,
+        lines=5
+    )
 
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -1945,29 +1882,28 @@ with gr.Blocks() as demo:
         ]
 
     with gr.Column(elem_classes="roulette-table"):
-      for row in table_layout:
-          with gr.Row(elem_classes="table-row"):
-              for num in row:
-                  if num == "":
-                      gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
-                  else:
-                      color = colors.get(str(num), "black")
-                      is_selected = int(num) in selected_numbers
-                      btn_classes = f"roulette-button {color}"
-                      if is_selected:
-                          btn_classes += " selected"
-                      btn = gr.Button(
-                          value=num,
-                          min_width=40,
-                          elem_classes=btn_classes
-                      )
-                      btn.click(
-                          fn=add_spin,
-                          inputs=[gr.State(value=num), spins_display],
-                          outputs=[spins_display, spins_textbox, last_spin_display]
-                      )
+        for row in table_layout:
+            with gr.Row(elem_classes="table-row"):
+                for num in row:
+                    if num == "":
+                        gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
+                    else:
+                        color = colors.get(str(num), "black")
+                        is_selected = int(num) in selected_numbers
+                        btn_classes = f"roulette-button {color}"
+                        if is_selected:
+                            btn_classes += " selected"
+                        btn = gr.Button(
+                            value=num,
+                            min_width=40,
+                            elem_classes=btn_classes
+                        )
+                        btn.click(
+                            fn=add_spin,
+                            inputs=[gr.State(value=num), spins_display],
+                            outputs=[spins_display, spins_textbox, last_spin_display]
+                        )
 
-      # New Button Row (closer to table)
     with gr.Row(elem_classes="white-row"):
         num_spins_input = gr.Dropdown(
             label="Number of Random Spins",
@@ -1977,83 +1913,43 @@ with gr.Blocks() as demo:
         )
         generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["generate-spins-btn", "action-button"])
         analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
-        undo_button = gr.Button("Undo Last Spin", elem_classes="action-button")  # Moved original here
+        undo_button = gr.Button("Undo Last Spin", elem_classes="action-button")
 
-    # Define categories and their strategies
     strategy_categories = {
-        "Trends": [
-            "Cold Bet Strategy",
-            "Hot Bet Strategy"
-        ],
-        "Even Money Strategies": [
-            "Best Even Money Bets",
-            "Fibonacci To Fortune"
-        ],
-        "Dozen Strategies": [
-            "1 Dozen +1 Column Strategy",
-            "Best Dozens",
-            "Best Dozens + Best Streets",
-            "Fibonacci Strategy",
-            "Romanowksy Missing Dozen"
-        ],
-        "Column Strategies": [
-            "1 Dozen +1 Column Strategy",
-            "Best Columns",
-            "Best Columns + Best Streets"
-        ],
-        "Street Strategies": [
-            "3-8-6 Rising Martingale",
-            "Best Streets",
-            "Best Columns + Best Streets",
-            "Best Dozens + Best Streets"
-        ],
-        "Double Street Strategies": [
-            "Best Double Streets",
-            "Non-Overlapping Double Street Strategy"
-        ],
-        "Corner Strategies": [
-            "Best Corners",
-            "Non-Overlapping Corner Strategy"
-        ],
-        "Split Strategies": [
-            "Best Splits"
-        ],
-        "Number Strategies": [
-            "Top Numbers with Neighbours (Tiered)",
-            "Top Pick 18 Numbers without Neighbours"
-        ]
+        "Trends": ["Cold Bet Strategy", "Hot Bet Strategy"],
+        "Even Money Strategies": ["Best Even Money Bets", "Fibonacci To Fortune"],
+        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],
+        "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Best Streets"],
+        "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
+        "Double Street Strategies": ["Best Double Streets", "Non-Overlapping Double Street Strategy"],
+        "Corner Strategies": ["Best Corners", "Non-Overlapping Corner Strategy"],
+        "Split Strategies": ["Best Splits"],
+        "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"]
     }
 
-    # Create the dropdown choices with categories and separators
-    dropdown_choices = ["None"]  # Add a "None" option at the top
-    for category in sorted(strategy_categories.keys()):  # Sort categories A to Z
-        # Use uppercase for category names and === for emphasis
-        dropdown_choices.append(f"=== {category.upper()} ===")  # Add category header
-        # Sort strategies within the category A to Z
+    dropdown_choices = ["None"]
+    for category in sorted(strategy_categories.keys()):
+        dropdown_choices.append(f"=== {category.upper()} ===")
         for strategy in sorted(strategy_categories[category]):
             dropdown_choices.append(strategy)
 
-    # Define the dropdown
     with gr.Row():
         strategy_dropdown = gr.Dropdown(
             label="Select Strategy",
             choices=dropdown_choices,
             value="Best Even Money Bets",
-            allow_custom_value=False  # Prevent users from entering custom values
+            allow_custom_value=False
         )
 
-  # Reset Scores and Clear Outputs
     with gr.Row(elem_classes="white-row"):
         reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
         reset_button = gr.Button("Reset Scores", elem_classes="action-button")
         clear_button = gr.Button("Clear Outputs", elem_classes="action-button")
 
-    # Clear Spins Button (red and smaller)
     with gr.Row():
         clear_spins_button = gr.Button("Clear Spins", elem_classes="clear-spins-btn small-btn")
         print("Button Class Set")
 
-    # Dynamic Roulette Table and Strategy Recommendations Side by Side
     with gr.Row():
         with gr.Column():
             gr.Markdown("### Dynamic Roulette Table")
@@ -2103,7 +1999,7 @@ with gr.Blocks() as demo:
                     checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
                     victory_vortex_checkboxes_list.append(checkbox)
 
-    gr.HTML("""
+        gr.HTML("""
     <style>
       .roulette-button.green { background-color: green; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
       .roulette-button.red { background-color: red; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
@@ -2132,8 +2028,8 @@ with gr.Blocks() as demo:
           td, th { padding: 5px; font-size: 12px; }
           .gr-textbox { font-size: 12px; }
       }
-  </style>
-  """)
+    </style>
+    """)
     print("CSS Updated")
 
     spins_textbox.change(
@@ -2148,7 +2044,6 @@ with gr.Blocks() as demo:
         outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display]
     )
 
-    # Aggregated Scores
     with gr.Accordion("Aggregated Scores", open=False):
         with gr.Row():
             with gr.Column():
@@ -2179,7 +2074,6 @@ with gr.Blocks() as demo:
                 with gr.Accordion("Sides of Zero", open=True):
                     sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
-    # Strongest Numbers Table (moved out of Aggregated Scores)
     with gr.Accordion("Strongest Numbers Table", open=True):
         straight_up_table = gr.HTML(label="Strongest Numbers")
         top_18_table = gr.HTML(label="Top 18 Strongest Numbers (Sorted Lowest to Highest)")
@@ -2191,20 +2085,14 @@ with gr.Blocks() as demo:
             )
             strongest_numbers_output = gr.Textbox(label="Strongest Numbers (Sorted Lowest to Highest)", value="")
 
-    # Save/Load Session Section
     with gr.Row():
         save_button = gr.Button("Save Session")
         load_input = gr.File(label="Upload Session")
     save_output = gr.File(label="Download Session")
 
-    # Spin Analysis (moved to bottom, collapsible)
     with gr.Accordion("Spin Analysis", open=True):
-        spin_analysis_output = gr.Textbox(
-            label="Spin Analysis",
-            value="",
-            interactive=False,
-            lines=5
-        )
+        # Note: spin_analysis_output is already defined above, so we just place it here
+        spin_analysis_output
 
     # Event Handlers
     generate_spins_button.click(
