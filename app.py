@@ -2089,7 +2089,7 @@ with gr.Blocks() as demo:
         load_input = gr.File(label="Upload Session")
     save_output = gr.File(label="Download Session")
 
-    with gr.Accordion("Spin Analysis", open=True):
+    with gr.Accordion("Spin Analysis", open=False):
         # Note: spin_analysis_output is already defined above, so we just place it here
         spin_analysis_output
 
