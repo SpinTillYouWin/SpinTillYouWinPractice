@@ -1842,19 +1842,23 @@ STRATEGIES = {
 
 def show_strategy_recommendations(strategy_name, *args):
     if not any(scores.values()) and not any(even_money_scores.values()):
-        return "Please analyze some spins first to generate scores."
+        return gr.update(value="Please analyze some spins first to generate scores.", visible=True), gr.update(visible=False)
 
     strategy_info = STRATEGIES[strategy_name]
     strategy_func = strategy_info["function"]
 
     if strategy_name == "Kitchen Martingale":
         recommendations = strategy_func(*args[:34])
+        return gr.update(value=recommendations, visible=True), gr.update(visible=False)
     elif strategy_name == "S.T.Y.W: Victory Vortex":
         recommendations = strategy_func(*args[34:50])
+        return gr.update(value=recommendations, visible=True), gr.update(visible=False)
+    elif strategy_name == "Top Numbers with Neighbours (Tiered)":
+        html_output = strategy_func()
+        return gr.update(value="", visible=False), gr.update(value=html_output, visible=True)
     else:
         recommendations = strategy_func()
-
-    return recommendations
+        return gr.update(value=recommendations, visible=True), gr.update(visible=False)
 
 def clear_outputs():
     return "", "", "", "", "", "", "", "", "", "", "", False, False, False, False, False, False, False, False
@@ -1978,54 +1982,55 @@ with gr.Blocks() as demo:
         clear_spins_button = gr.Button("Clear Spins", elem_classes="clear-spins-btn small-btn")
         print("Button Class Set")
 
-    with gr.Row():
-        with gr.Column():
-            gr.Markdown("### Dynamic Roulette Table")
-            dynamic_table_output = gr.HTML(label="Dynamic Table")
-            color_code_output = gr.HTML(label="Color Code Key")
-        with gr.Column():
-            gr.Markdown("### Strategy Recommendations")
-            strategy_output = gr.Textbox(label="Strategy Recommendations", lines=10, max_lines=50)
-            with gr.Column(visible=False) as kitchen_martingale_checkboxes:
-                gr.Markdown("### Kitchen Martingale Checkboxes")
-                kitchen_martingale_checkboxes_list = []
-                betting_progression_km = [
-                    ("(Bankroll: $1.00)", "1ST BET", "$1.00"),
-                    ("(Bankroll: $3.00)", "2ND BET", "$2.00"),
-                    ("(Bankroll: $6.00)", "3RD BET", "$3.00"),
-                    ("(Bankroll: $9.00)", "4TH BET", "$3.00"),
-                    ("(Bankroll: $12.00)", "5TH BET", "$3.00"),
-                    ("(Bankroll: $16.00)", "6TH BET", "$4.00"),
-                    ("(Bankroll: $20.00)", "7TH BET", "$4.00"),
-                    ("(Bankroll: $25.00)", "8TH BET", "$5.00"),
-                    ("(Bankroll: $30.00)", "9TH BET", "$5.00"),
-                    ("(Bankroll: $36.00)", "10TH BET", "$6.00"),
-                    ("(Bankroll: $42.00)", "11TH BET", "$6.00"),
-                    ("(Bankroll: $49.00)", "12TH BET", "$7.00"),
-                    ("(Bankroll: $56.00)", "13TH BET", "$7.00"),
-                    ("(Bankroll: $64.00)", "14TH BET", "$8.00"),
-                    ("(Bankroll: $72.00)", "15TH BET", "$8.00"),
-                    ("(Bankroll: $81.00)", "16TH BET", "$9.00"),
-                    ("(Bankroll: $90.00)", "17TH BET", "$9.00"),
-                    ("(Bankroll: $100.00)", "18TH BET", "$10.00"),
-                    ("(Bankroll: $110.00)", "19TH BET", "$10.00")
-                ]
-                checkbox_counts = [0, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
-                flat_progression_km = []
-                for (bankroll, bet_label, bet_amount), count in zip(betting_progression_km, checkbox_counts):
-                    for _ in range(count):
-                        flat_progression_km.append((bankroll, bet_label, bet_amount))
+with gr.Row():
+    with gr.Column():
+        gr.Markdown("### Dynamic Roulette Table")
+        dynamic_table_output = gr.HTML(label="Dynamic Table")
+        color_code_output = gr.HTML(label="Color Code Key")
+    with gr.Column():
+        gr.Markdown("### Strategy Recommendations")
+        strategy_text_output = gr.Textbox(label="Strategy Recommendations", lines=10, max_lines=50)
+        strategy_html_output = gr.HTML(label="Strategy Table", visible=False)
+        with gr.Column(visible=False) as kitchen_martingale_checkboxes:
+            gr.Markdown("### Kitchen Martingale Checkboxes")
+            kitchen_martingale_checkboxes_list = []
+            betting_progression_km = [
+                ("(Bankroll: $1.00)", "1ST BET", "$1.00"),
+                ("(Bankroll: $3.00)", "2ND BET", "$2.00"),
+                ("(Bankroll: $6.00)", "3RD BET", "$3.00"),
+                ("(Bankroll: $9.00)", "4TH BET", "$3.00"),
+                ("(Bankroll: $12.00)", "5TH BET", "$3.00"),
+                ("(Bankroll: $16.00)", "6TH BET", "$4.00"),
+                ("(Bankroll: $20.00)", "7TH BET", "$4.00"),
+                ("(Bankroll: $25.00)", "8TH BET", "$5.00"),
+                ("(Bankroll: $30.00)", "9TH BET", "$5.00"),
+                ("(Bankroll: $36.00)", "10TH BET", "$6.00"),
+                ("(Bankroll: $42.00)", "11TH BET", "$6.00"),
+                ("(Bankroll: $49.00)", "12TH BET", "$7.00"),
+                ("(Bankroll: $56.00)", "13TH BET", "$7.00"),
+                ("(Bankroll: $64.00)", "14TH BET", "$8.00"),
+                ("(Bankroll: $72.00)", "15TH BET", "$8.00"),
+                ("(Bankroll: $81.00)", "16TH BET", "$9.00"),
+                ("(Bankroll: $90.00)", "17TH BET", "$9.00"),
+                ("(Bankroll: $100.00)", "18TH BET", "$10.00"),
+                ("(Bankroll: $110.00)", "19TH BET", "$10.00")
+            ]
+            checkbox_counts = [0, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+            flat_progression_km = []
+            for (bankroll, bet_label, bet_amount), count in zip(betting_progression_km, checkbox_counts):
+                for _ in range(count):
+                    flat_progression_km.append((bankroll, bet_label, bet_amount))
 
-                for i, (bankroll, bet_label, bet_amount) in enumerate(flat_progression_km, 1):
-                    checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
-                    kitchen_martingale_checkboxes_list.append(checkbox)
+            for i, (bankroll, bet_label, bet_amount) in enumerate(flat_progression_km, 1):
+                checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
+                kitchen_martingale_checkboxes_list.append(checkbox)
 
-            with gr.Column(visible=False) as victory_vortex_checkboxes:
-                gr.Markdown("### Victory Vortex Checkboxes")
-                victory_vortex_checkboxes_list = []
-                for i, (bankroll, bet_label, bet_amount) in enumerate(betting_progression_vv, 1):
-                    checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
-                    victory_vortex_checkboxes_list.append(checkbox)
+        with gr.Column(visible=False) as victory_vortex_checkboxes:
+            gr.Markdown("### Victory Vortex Checkboxes")
+            victory_vortex_checkboxes_list = []
+            for i, (bankroll, bet_label, bet_amount) in enumerate(betting_progression_vv, 1):
+                checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
+                victory_vortex_checkboxes_list.append(checkbox)
 
     gr.HTML("""
     <style>
@@ -2121,7 +2126,7 @@ with gr.Blocks() as demo:
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_table, top_18_table, strongest_numbers_output,
-            dynamic_table_output, strategy_output, color_code_output
+            dynamic_table_output, strategy_text_output, strategy_html_output, color_code_output
         ]
     )
 
@@ -2161,8 +2166,8 @@ with gr.Blocks() as demo:
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_table, top_18_table, strongest_numbers_output,
-            spins_textbox, spins_display, dynamic_table_output, strategy_output,
-            color_code_output
+            spins_textbox, spins_display, dynamic_table_output, strategy_text_output,
+            strategy_html_output, color_code_output
         ]
     )
 
