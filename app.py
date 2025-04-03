@@ -1855,19 +1855,20 @@ with gr.Blocks() as demo:
     gr.Markdown("# Roulette Spin Analyzer with Strategies (European Table)")
 
     spins_display = gr.State(value="")
-    spins_textbox = gr.Textbox(
-        label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
-        value="",
-        interactive=True
-    )
-    last_spin_display = gr.Textbox(
-        label="Last Spin",
-        value="",
-        interactive=False,
-        lines=1
-    )
+spins_textbox = gr.Textbox(
+    label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
+    value="",
+    interactive=True
+)
+last_spin_display = gr.Textbox(
+    label="Last Spin",
+    value="",
+    interactive=False,
+    lines=1
+)
+with gr.Accordion("Spin Analysis", open=False):
     spin_analysis_output = gr.Textbox(
-        label="Spin Analysis",
+        label="",
         value="",
         interactive=False,
         lines=5
@@ -2089,9 +2090,6 @@ with gr.Blocks() as demo:
         load_input = gr.File(label="Upload Session")
     save_output = gr.File(label="Download Session")
 
-    with gr.Accordion("Spin Analysis", open=False):
-        # Note: spin_analysis_output is already defined above, so we just place it here
-        spin_analysis_output
 
     # Event Handlers
     generate_spins_button.click(
