@@ -1855,6 +1855,12 @@ with gr.Blocks() as demo:
     gr.Markdown("# Roulette Spin Analyzer with Strategies (European Table)")
 
     spins_display = gr.State(value="")
+    spin_analysis_output = gr.Textbox(
+        label="Spin Analysis",
+        value="",
+        interactive=False,
+        lines=5
+    )
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
         value="",
@@ -1866,12 +1872,6 @@ with gr.Blocks() as demo:
         interactive=False,
         lines=1
     )
-    spin_analysis_output = gr.Textbox(
-        label="Spin Analysis",
-        value="",
-        interactive=False,
-        lines=5
-    )
 
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -1880,7 +1880,6 @@ with gr.Blocks() as demo:
             ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
-
     with gr.Column(elem_classes="roulette-table"):
         for row in table_layout:
             with gr.Row(elem_classes="table-row"):
