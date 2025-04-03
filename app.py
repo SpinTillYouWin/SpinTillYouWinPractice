@@ -1,3 +1,4 @@
+# Import libraries
 import gradio as gr
 import pandas as pd
 import json
@@ -1934,13 +1935,7 @@ with gr.Blocks() as demo:
         interactive=False,
         lines=1
     )
-    spin_analysis_output = gr.Textbox(
-        label="Spin Analysis",
-        value="",
-        interactive=False,
-        lines=5
-    )
-    
+
     with gr.Group():
         gr.Markdown("### European Roulette Table")
         table_layout = [
@@ -2140,13 +2135,7 @@ with gr.Blocks() as demo:
   </style>
   """)
     print("CSS Updated")
-    spin_analysis_output = gr.Textbox(
-        label="Spin Analysis",
-        value="",
-        interactive=False,
-        lines=5
-    )
-    
+
     spins_textbox.change(
         fn=lambda x: x,
         inputs=spins_textbox,
@@ -2210,7 +2199,12 @@ with gr.Blocks() as demo:
 
     # Spin Analysis (moved to bottom, collapsible)
     with gr.Accordion("Spin Analysis", open=True):
-        spin_analysis_output = gr.Textbox
+        spin_analysis_output = gr.Textbox(
+            label="Spin Analysis",
+            value="",
+            interactive=False,
+            lines=5
+        )
 
     # Event Handlers
     generate_spins_button.click(
