@@ -1724,33 +1724,45 @@ def top_numbers_with_neighbours_tiered():
     straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
 
     if straight_up_df.empty:
-        recommendations.append("Top Numbers with Neighbours (Tiered): No numbers have hit yet.")
-        return "\n".join(recommendations)
+        return "Top Numbers with Neighbours (Tiered): No numbers have hit yet."
 
-    recommendations.append("Strongest Numbers:")
-    col_widths = {"Number": 10, "Left Neighbor": 15, "Right Neighbor": 15, "Score": 10}
-    header = (
-        f"{'Number'.ljust(col_widths['Number'])}"
-        f"{'Left Neighbor'.ljust(col_widths['Left Neighbor'])}"
-        f"{'Right Neighbor'.ljust(col_widths['Right Neighbor'])}"
-        f"{'Score'.ljust(col_widths['Score'])}"
-    )
-    recommendations.append(header)
-    recommendations.append("-" * (sum(col_widths.values()) + 10))
-    for _, row in straight_up_df.iterrows():
-        num = str(row["Number"])
-        score = str(row["Score"])
-        left, right = current_neighbors.get(row["Number"], ("", ""))
-        left = str(left) if left is not None else ""
-        right = str(right) if right is not None else ""
-        row_line = (
-            f"{num.ljust(col_widths['Number'])}"
-            f"{left.ljust(col_widths['Left Neighbor'])}"
-            f"{right.ljust(col_widths['Right Neighbor'])}"
-            f"{score.ljust(col_widths['Score'])}"
-        )
-        recommendations.append(row_line)
+    # Take the top 8 numbers based on score
+    num_to_take = min(8, len(straight_up_df))
+    top_numbers = straight_up_df["Number"].head(num_to_take).tolist()
 
+    all_numbers = set()
+    number_scores = {}
+    for num in top_numbers:
+        neighbors = current_neighbors.get(num, (None, None))
+        left, right = neighbors
+        all_numbers.add(num)
+        number_scores[num] = scores[num]
+        if left is not None:
+            all_numbers.add(left)
+        if right is not None:
+            all_numbers.add(right)
+
+    # Create a DataFrame for all numbers and their neighbors
+    data = []
+    for num in all_numbers:
+        left, right = current_neighbors.get(num, ("", ""))
+        score = number_scores.get(num, 0)  # Use 0 if not a top number
+        data.append([num, left, right, score])
+
+    df = pd.DataFrame(data, columns=["Number", "Left Neighbor", "Right Neighbor", "Score"])
+
+    # Generate HTML table
+    html = "<h3>Strongest Numbers</h3>"
+    html += '<table border="1" style="border-collapse: collapse; text-align: center; font-family: Arial, sans-serif; width: 100%; max-width: 600px;">'
+    html += "<tr><th>Number</th><th>Left Neighbor</th><th>Right Neighbor</th><th>Score</th></tr>"
+    for _, row in df.iterrows():
+        html += "<tr>"
+        for val in row:
+            html += f"<td>{val if val != '' else '-'}</td>"
+        html += "</tr>"
+    html += "</table>"
+
+    # Add tiered recommendations (unchanged)
     num_to_take = min(8, len(straight_up_df))
     top_numbers = straight_up_df["Number"].head(num_to_take).tolist()
 
@@ -1802,7 +1814,8 @@ def top_numbers_with_neighbours_tiered():
         score = number_scores.get(num, "Neighbor")
         recommendations.append(f"{i}. Number {num} (Score: {score})")
 
-    return "\n".join(recommendations)
+    # Return only the HTML table for the textbox
+    return html
 
 STRATEGIES = {
     "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
