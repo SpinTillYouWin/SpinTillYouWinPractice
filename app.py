@@ -1,12 +1,3 @@
-# Install dependencies
-
-# Import libraries
-import gradio as gr
-import pandas as pd
-import json
-from itertools import combinations
-import random
-
 # European Roulette wheel order
 WHEEL_EUROPEAN = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23,
                   10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26]
@@ -170,9 +161,6 @@ betting_progression_vv = [
     ("(Bankroll: $3,938.00)", "15TH BET", "$1,313.00"),
     ("(Bankroll: $5,907.00)", "16TH BET", "$1,969.00")
 ]
-
-def greet(name):
-    return "Hello " + name + "!!"
 
 # Function to add a spin to the list
 def add_spin(number, current_spins):
@@ -2140,17 +2128,7 @@ with gr.Blocks() as demo:
   </style>
   """)
     print("CSS Updated")
-    
-    print("CSS Updated")
 
-    # Paste this right here
-    spin_analysis_output = gr.Textbox(
-        label="Spin Analysis",
-        value="",
-        interactive=False,
-        lines=5
-    )
-    
     spins_textbox.change(
         fn=lambda x: x,
         inputs=spins_textbox,
@@ -2214,8 +2192,12 @@ with gr.Blocks() as demo:
 
     # Spin Analysis (moved to bottom, collapsible)
     with gr.Accordion("Spin Analysis", open=True):
-        spin_analysis_output
-    )
+        spin_analysis_output = gr.Textbox(
+            label="Spin Analysis",
+            value="",
+            interactive=False,
+            lines=5
+        )
 
     # Event Handlers
     generate_spins_button.click(
