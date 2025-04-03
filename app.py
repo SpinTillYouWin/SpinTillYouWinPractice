@@ -1724,45 +1724,33 @@ def top_numbers_with_neighbours_tiered():
     straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
 
     if straight_up_df.empty:
-        return "Top Numbers with Neighbours (Tiered): No numbers have hit yet."
+        recommendations.append("Top Numbers with Neighbours (Tiered): No numbers have hit yet.")
+        return "\n".join(recommendations)
 
-    # Take the top 8 numbers based on score
-    num_to_take = min(8, len(straight_up_df))
-    top_numbers = straight_up_df["Number"].head(num_to_take).tolist()
+    recommendations.append("Strongest Numbers:")
+    col_widths = {"Number": 10, "Left Neighbor": 15, "Right Neighbor": 15, "Score": 10}
+    header = (
+        f"{'Number'.ljust(col_widths['Number'])}"
+        f"{'Left Neighbor'.ljust(col_widths['Left Neighbor'])}"
+        f"{'Right Neighbor'.ljust(col_widths['Right Neighbor'])}"
+        f"{'Score'.ljust(col_widths['Score'])}"
+    )
+    recommendations.append(header)
+    recommendations.append("-" * (sum(col_widths.values()) + 10))
+    for _, row in straight_up_df.iterrows():
+        num = str(row["Number"])
+        score = str(row["Score"])
+        left, right = current_neighbors.get(row["Number"], ("", ""))
+        left = str(left) if left is not None else ""
+        right = str(right) if right is not None else ""
+        row_line = (
+            f"{num.ljust(col_widths['Number'])}"
+            f"{left.ljust(col_widths['Left Neighbor'])}"
+            f"{right.ljust(col_widths['Right Neighbor'])}"
+            f"{score.ljust(col_widths['Score'])}"
+        )
+        recommendations.append(row_line)
 
-    all_numbers = set()
-    number_scores = {}
-    for num in top_numbers:
-        neighbors = current_neighbors.get(num, (None, None))
-        left, right = neighbors
-        all_numbers.add(num)
-        number_scores[num] = scores[num]
-        if left is not None:
-            all_numbers.add(left)
-        if right is not None:
-            all_numbers.add(right)
-
-    # Create a DataFrame for all numbers and their neighbors
-    data = []
-    for num in all_numbers:
-        left, right = current_neighbors.get(num, ("", ""))
-        score = number_scores.get(num, 0)  # Use 0 if not a top number
-        data.append([num, left, right, score])
-
-    df = pd.DataFrame(data, columns=["Number", "Left Neighbor", "Right Neighbor", "Score"])
-
-    # Generate HTML table
-    html = "<h3>Strongest Numbers</h3>"
-    html += '<table border="1" style="border-collapse: collapse; text-align: center; font-family: Arial, sans-serif; width: 100%; max-width: 600px;">'
-    html += "<tr><th>Number</th><th>Left Neighbor</th><th>Right Neighbor</th><th>Score</th></tr>"
-    for _, row in df.iterrows():
-        html += "<tr>"
-        for val in row:
-            html += f"<td>{val if val != '' else '-'}</td>"
-        html += "</tr>"
-    html += "</table>"
-
-    # Add tiered recommendations (unchanged)
     num_to_take = min(8, len(straight_up_df))
     top_numbers = straight_up_df["Number"].head(num_to_take).tolist()
 
@@ -1814,8 +1802,7 @@ def top_numbers_with_neighbours_tiered():
         score = number_scores.get(num, "Neighbor")
         recommendations.append(f"{i}. Number {num} (Score: {score})")
 
-    # Return only the HTML table for the textbox
-    return html
+    return "\n".join(recommendations)
 
 STRATEGIES = {
     "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
@@ -1842,25 +1829,19 @@ STRATEGIES = {
 
 def show_strategy_recommendations(strategy_name, *args):
     if not any(scores.values()) and not any(even_money_scores.values()):
-        return gr.update(value="Please analyze some spins first to generate scores.", visible=True), gr.update(visible=False), gr.update(visible=False), gr.update(visible=False)
+        return "Please analyze some spins first to generate scores."
 
     strategy_info = STRATEGIES[strategy_name]
     strategy_func = strategy_info["function"]
 
     if strategy_name == "Kitchen Martingale":
         recommendations = strategy_func(*args[:34])
-        return gr.update(value=recommendations, visible=True), gr.update(visible=False), gr.update(visible=True), gr.update(visible=False)
     elif strategy_name == "S.T.Y.W: Victory Vortex":
         recommendations = strategy_func(*args[34:50])
-        return gr.update(value=recommendations, visible=True), gr.update(visible=False), gr.update(visible=False), gr.update(visible=True)
-    elif strategy_name == "Top Numbers with Neighbours (Tiered)":
-        html_output = strategy_func()
-        return gr.update(value="", visible=False), gr.update(value=html_output, visible=True), gr.update(visible=False), gr.update(visible=False)
     else:
         recommendations = strategy_func()
-        return gr.update(value=recommendations, visible=True), gr.update(visible=False), gr.update(visible=False), gr.update(visible=False)
 
-    return gr.update(value="Unknown strategy selected.", visible=True), gr.update(visible=False), gr.update(visible=False), gr.update(visible=False)
+    return recommendations
 
 def clear_outputs():
     return "", "", "", "", "", "", "", "", "", "", "", False, False, False, False, False, False, False, False
@@ -1984,55 +1965,54 @@ with gr.Blocks() as demo:
         clear_spins_button = gr.Button("Clear Spins", elem_classes="clear-spins-btn small-btn")
         print("Button Class Set")
 
-with gr.Row():
-    with gr.Column():
-        gr.Markdown("### Dynamic Roulette Table")
-        dynamic_table_output = gr.HTML(label="Dynamic Table")
-        color_code_output = gr.HTML(label="Color Code Key")
-    with gr.Column():
-        gr.Markdown("### Strategy Recommendations")
-        strategy_text_output = gr.Textbox(label="Strategy Recommendations", lines=10, max_lines=50)
-        strategy_html_output = gr.HTML(label="Strategy Table", visible=False)
-        with gr.Column() as kitchen_martingale_checkboxes:
-            gr.Markdown("### Kitchen Martingale Checkboxes")
-            kitchen_martingale_checkboxes_list = []
-            betting_progression_km = [
-                ("(Bankroll: $1.00)", "1ST BET", "$1.00"),
-                ("(Bankroll: $3.00)", "2ND BET", "$2.00"),
-                ("(Bankroll: $6.00)", "3RD BET", "$3.00"),
-                ("(Bankroll: $9.00)", "4TH BET", "$3.00"),
-                ("(Bankroll: $12.00)", "5TH BET", "$3.00"),
-                ("(Bankroll: $16.00)", "6TH BET", "$4.00"),
-                ("(Bankroll: $20.00)", "7TH BET", "$4.00"),
-                ("(Bankroll: $25.00)", "8TH BET", "$5.00"),
-                ("(Bankroll: $30.00)", "9TH BET", "$5.00"),
-                ("(Bankroll: $36.00)", "10TH BET", "$6.00"),
-                ("(Bankroll: $42.00)", "11TH BET", "$6.00"),
-                ("(Bankroll: $49.00)", "12TH BET", "$7.00"),
-                ("(Bankroll: $56.00)", "13TH BET", "$7.00"),
-                ("(Bankroll: $64.00)", "14TH BET", "$8.00"),
-                ("(Bankroll: $72.00)", "15TH BET", "$8.00"),
-                ("(Bankroll: $81.00)", "16TH BET", "$9.00"),
-                ("(Bankroll: $90.00)", "17TH BET", "$9.00"),
-                ("(Bankroll: $100.00)", "18TH BET", "$10.00"),
-                ("(Bankroll: $110.00)", "19TH BET", "$10.00")
-            ]
-            checkbox_counts = [0, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
-            flat_progression_km = []
-            for (bankroll, bet_label, bet_amount), count in zip(betting_progression_km, checkbox_counts):
-                for _ in range(count):
-                    flat_progression_km.append((bankroll, bet_label, bet_amount))
+    with gr.Row():
+        with gr.Column():
+            gr.Markdown("### Dynamic Roulette Table")
+            dynamic_table_output = gr.HTML(label="Dynamic Table")
+            color_code_output = gr.HTML(label="Color Code Key")
+        with gr.Column():
+            gr.Markdown("### Strategy Recommendations")
+            strategy_output = gr.Textbox(label="Strategy Recommendations", lines=10, max_lines=50)
+            with gr.Column(visible=False) as kitchen_martingale_checkboxes:
+                gr.Markdown("### Kitchen Martingale Checkboxes")
+                kitchen_martingale_checkboxes_list = []
+                betting_progression_km = [
+                    ("(Bankroll: $1.00)", "1ST BET", "$1.00"),
+                    ("(Bankroll: $3.00)", "2ND BET", "$2.00"),
+                    ("(Bankroll: $6.00)", "3RD BET", "$3.00"),
+                    ("(Bankroll: $9.00)", "4TH BET", "$3.00"),
+                    ("(Bankroll: $12.00)", "5TH BET", "$3.00"),
+                    ("(Bankroll: $16.00)", "6TH BET", "$4.00"),
+                    ("(Bankroll: $20.00)", "7TH BET", "$4.00"),
+                    ("(Bankroll: $25.00)", "8TH BET", "$5.00"),
+                    ("(Bankroll: $30.00)", "9TH BET", "$5.00"),
+                    ("(Bankroll: $36.00)", "10TH BET", "$6.00"),
+                    ("(Bankroll: $42.00)", "11TH BET", "$6.00"),
+                    ("(Bankroll: $49.00)", "12TH BET", "$7.00"),
+                    ("(Bankroll: $56.00)", "13TH BET", "$7.00"),
+                    ("(Bankroll: $64.00)", "14TH BET", "$8.00"),
+                    ("(Bankroll: $72.00)", "15TH BET", "$8.00"),
+                    ("(Bankroll: $81.00)", "16TH BET", "$9.00"),
+                    ("(Bankroll: $90.00)", "17TH BET", "$9.00"),
+                    ("(Bankroll: $100.00)", "18TH BET", "$10.00"),
+                    ("(Bankroll: $110.00)", "19TH BET", "$10.00")
+                ]
+                checkbox_counts = [0, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+                flat_progression_km = []
+                for (bankroll, bet_label, bet_amount), count in zip(betting_progression_km, checkbox_counts):
+                    for _ in range(count):
+                        flat_progression_km.append((bankroll, bet_label, bet_amount))
 
-            for i, (bankroll, bet_label, bet_amount) in enumerate(flat_progression_km, 1):
-                checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
-                kitchen_martingale_checkboxes_list.append(checkbox)
+                for i, (bankroll, bet_label, bet_amount) in enumerate(flat_progression_km, 1):
+                    checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
+                    kitchen_martingale_checkboxes_list.append(checkbox)
 
-        with gr.Column() as victory_vortex_checkboxes:
-            gr.Markdown("### Victory Vortex Checkboxes")
-            victory_vortex_checkboxes_list = []
-            for i, (bankroll, bet_label, bet_amount) in enumerate(betting_progression_vv, 1):
-                checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
-                victory_vortex_checkboxes_list.append(checkbox)
+            with gr.Column(visible=False) as victory_vortex_checkboxes:
+                gr.Markdown("### Victory Vortex Checkboxes")
+                victory_vortex_checkboxes_list = []
+                for i, (bankroll, bet_label, bet_amount) in enumerate(betting_progression_vv, 1):
+                    checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
+                    victory_vortex_checkboxes_list.append(checkbox)
 
     gr.HTML("""
     <style>
@@ -2128,8 +2108,7 @@ with gr.Row():
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_table, top_18_table, strongest_numbers_output,
-            dynamic_table_output, strategy_text_output, strategy_html_output, color_code_output,
-            kitchen_martingale_checkboxes, victory_vortex_checkboxes
+            dynamic_table_output, strategy_output, color_code_output
         ]
     )
 
@@ -2169,9 +2148,8 @@ with gr.Row():
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_table, top_18_table, strongest_numbers_output,
-            spins_textbox, spins_display, dynamic_table_output, strategy_text_output,
-            strategy_html_output, color_code_output, kitchen_martingale_checkboxes,
-            victory_vortex_checkboxes
+            spins_textbox, spins_display, dynamic_table_output, strategy_output,
+            color_code_output
         ]
     )
 
@@ -2179,10 +2157,6 @@ with gr.Row():
         fn=toggle_checkboxes,
         inputs=[strategy_dropdown],
         outputs=[kitchen_martingale_checkboxes, victory_vortex_checkboxes]
-    ).then(
-        fn=show_strategy_recommendations,
-        inputs=[strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
-        outputs=[strategy_text_output, strategy_html_output, kitchen_martingale_checkboxes, victory_vortex_checkboxes]
     ).then(
         fn=lambda strategy: (print(f"Updating Dynamic Table with Strategy: {strategy}"), create_dynamic_table(strategy if strategy != "None" else None))[-1],
         inputs=[strategy_dropdown],
