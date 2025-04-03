@@ -1907,11 +1907,6 @@ with gr.Blocks() as demo:
                             outputs=[spins_display, spins_textbox, last_spin_display]
                         )
 
-    # New accordion for Strongest Numbers tables, placed here
-    with gr.Accordion("Strongest Numbers Tables", open=False):
-        straight_up_table = gr.HTML(label="Strongest Numbers")
-        top_18_table = gr.HTML(label="Top 18 Strongest Numbers (Sorted Lowest to Highest)")
-
     with gr.Row(elem_classes="white-row"):
         num_spins_input = gr.Dropdown(
             label="Number of Random Spins",
@@ -2081,6 +2076,17 @@ with gr.Blocks() as demo:
             with gr.Column():
                 with gr.Accordion("Sides of Zero", open=True):
                     sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
+
+    with gr.Accordion("Strongest Numbers Table", open=True):
+        straight_up_table = gr.HTML(label="Strongest Numbers")
+        top_18_table = gr.HTML(label="Top 18 Strongest Numbers (Sorted Lowest to Highest)")
+        with gr.Row():
+            strongest_numbers_dropdown = gr.Dropdown(
+                label="Select Number of Strongest Numbers",
+                choices=["3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33"],
+                value="3"
+            )
+            strongest_numbers_output = gr.Textbox(label="Strongest Numbers (Sorted Lowest to Highest)", value="")
 
     with gr.Row():
         save_button = gr.Button("Save Session")
