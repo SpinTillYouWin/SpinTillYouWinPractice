@@ -1911,6 +1911,13 @@ with gr.Blocks() as demo:
     with gr.Accordion("Strongest Numbers Tables", open=False):
         straight_up_table = gr.HTML(label="Strongest Numbers")
         top_18_table = gr.HTML(label="Top 18 Strongest Numbers (Sorted Lowest to Highest)")
+        with gr.Row():
+            strongest_numbers_dropdown = gr.Dropdown(
+                label="Select Number of Strongest Numbers",
+                choices=["3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33"],
+                value="3"
+            )
+            strongest_numbers_output = gr.Textbox(label="Strongest Numbers (Sorted Lowest to Highest)", value="")
 
     with gr.Row(elem_classes="white-row"):
         num_spins_input = gr.Dropdown(
@@ -2117,8 +2124,8 @@ with gr.Blocks() as demo:
         outputs=[
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
-            sides_output, straight_up_table, top_18_table,
-            strategy_output
+            sides_output, straight_up_table, top_18_table, strongest_numbers_output,
+            dynamic_table_output, strategy_output, color_code_output
         ]
     )
 
