@@ -1819,7 +1819,7 @@ STRATEGIES = {
 
 def show_strategy_recommendations(strategy_name, *args):
     if not any(scores.values()) and not any(even_money_scores.values()):
-        return "Please analyze some spins first to generate scores."
+        return "<p>Please analyze some spins first to generate scores.</p>"
 
     strategy_info = STRATEGIES[strategy_name]
     strategy_func = strategy_info["function"]
@@ -1831,7 +1831,15 @@ def show_strategy_recommendations(strategy_name, *args):
     else:
         recommendations = strategy_func()
 
-    return recommendations
+    # If the output is already HTML (e.g., from top_numbers_with_neighbours_tiered), return it as is
+    if strategy_name == "Top Numbers with Neighbours (Tiered)":
+        return recommendations
+    # Otherwise, convert plain text to HTML by replacing newlines with <br> tags
+    else:
+        # Split the plain text by newlines and wrap each line in a <p> tag
+        lines = recommendations.split("\n")
+        html_lines = [f"<p>{line}</p>" for line in lines if line.strip()]
+        return "".join(html_lines)
 
 def clear_outputs():
     return "", "", "", "", "", "", "", "", "", "", "", False, False, False, False, False, False, False, False
