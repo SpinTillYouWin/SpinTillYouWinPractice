@@ -1891,9 +1891,9 @@ def toggle_checkboxes(strategy_name):
 with gr.Blocks() as demo:
     gr.Markdown("# Roulette Spin Analyzer with Strategies (European Table)")
     
-    # Add a link to the PDF (same indentation as other components)
+    # Add a link to the PDF using the corrected absolute URL
     gr.HTML(
-        '<a href="https://huggingface.co/spaces/ysforce1/SpinTillYouWinV3.0_MakeChangesHere/raw/main/Instructions.pdf" target="_blank" style="font-size: 16px; color: #007bff; text-decoration: underline;">📄 View Instructions PDF</a>'
+        '<a href="https://huggingface.co/spaces/ysforce1/SpinTillYouWinV3.0_MakeChangesHere1/raw/main/Instructions.pdf" target="_blank" style="font-size: 16px; color: #007bff; text-decoration: underline;">📄 View Instructions PDF</a>'
     )
 
     spins_display = gr.State(value="")
