@@ -1947,16 +1947,22 @@ with gr.Blocks() as demo:
         "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"]
     }
 
-    dropdown_choices = ["None"]
-    for category in sorted(strategy_categories.keys()):
-        dropdown_choices.append(f"=== {category.upper()} ===")
-        for strategy in sorted(strategy_categories[category]):
-            dropdown_choices.append(strategy)
+    # Category dropdown choices
+    category_choices = ["None"] + sorted(strategy_categories.keys())
+
+    # State to store the current strategy
+    selected_strategy = gr.State(value="Best Even Money Bets")
 
     with gr.Row():
+        category_dropdown = gr.Dropdown(
+            label="Select Category",
+            choices=category_choices,
+            value="Even Money Strategies",
+            allow_custom_value=False
+        )
         strategy_dropdown = gr.Dropdown(
             label="Select Strategy",
-            choices=dropdown_choices,
+            choices=strategy_categories["Even Money Strategies"],
             value="Best Even Money Bets",
             allow_custom_value=False
         )
@@ -1977,7 +1983,7 @@ with gr.Blocks() as demo:
             color_code_output = gr.HTML(label="Color Code Key")
         with gr.Column():
             gr.Markdown("### Strategy Recommendations")
-            strategy_output = gr.HTML(label="Strategy Recommendations")  # Changed to gr.HTML
+            strategy_output = gr.HTML(label="Strategy Recommendations")
             with gr.Column(visible=False) as kitchen_martingale_checkboxes:
                 gr.Markdown("### Kitchen Martingale Checkboxes")
                 kitchen_martingale_checkboxes_list = []
@@ -2040,9 +2046,7 @@ with gr.Blocks() as demo:
       .num-spins-input { margin-right: 5px !important; }
       .white-row { background-color: white !important; }
       .num-spins-dropdown { width: 100px !important; margin-right: 5px !important; }
-      .action
-
--button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; }
+      .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; }
       button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
       button.green-btn:hover { background-color: #218838 !important; }
       .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
@@ -2110,6 +2114,18 @@ with gr.Blocks() as demo:
         outputs=[spins_display, spins_textbox, spin_analysis_output]
     )
 
+    # Update the second dropdown based on the selected category
+    def update_strategy_dropdown(category):
+        if category == "None":
+            return gr.update(choices=["None"], value="None")
+        return gr.update(choices=strategy_categories[category], value=strategy_categories[category][0])
+
+    category_dropdown.change(
+        fn=update_strategy_dropdown,
+        inputs=category_dropdown,
+        outputs=strategy_dropdown
+    )
+
     analyze_button.click(
         fn=lambda spins_input, reset_scores, strategy_name, *checkbox_args: analyze_spins(spins_input, reset_scores, strategy_name, *checkbox_args) + (create_color_code_table(),),
         inputs=[spins_display, reset_scores_checkbox, strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
@@ -2162,6 +2178,7 @@ with gr.Blocks() as demo:
         ]
     )
 
+    # Update both the dynamic table and strategy recommendations when the strategy changes
     strategy_dropdown.change(
         fn=toggle_checkboxes,
         inputs=[strategy_dropdown],
