@@ -195,8 +195,7 @@ def format_spins_as_html(spins, num_to_show):
         html_spins.append(f'<span style="background-color: {color}; color: white; padding: 2px 5px; margin-right: 5px; border-radius: 3px;">{spin}</span>')
     
     return "".join(html_spins)
-    
-# Function to add a spin to the list
+
 def add_spin(number, current_spins, num_to_show):
     global selected_numbers
     spins = current_spins.split(", ") if current_spins else []
@@ -2102,11 +2101,11 @@ with gr.Blocks() as demo:
       .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
       /* Style for section labels */
       #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
-      #spin-analysis > div > label { background-color: #90EE90; color: black; padding: 5px; border-radius: 3px; }
-      #strongest-numbers-table > div > label { background-color: #E6E6FA; color: black; padding: 5px; border-radius: 3px; }
-      #number-of-random-spins > div > label { background-color: #FFDAB9; color: black; padding: 5px; border-radius: 3px; }
-      #aggregated-scores > div > label { background-color: #FFB6C1; color: black; padding: 5px; border-radius: 3px; }
-      #select-category > div > label { background-color: #FFFFE0; color: black; padding: 5px; border-radius: 3px; }
+      #spin-analysis label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #strongest-numbers-table label { background-color: #E6E6FA !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
       @media (max-width: 600px) {
           .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
           td, th { padding: 5px; font-size: 12px; }
