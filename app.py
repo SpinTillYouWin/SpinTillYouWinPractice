@@ -1896,7 +1896,8 @@ with gr.Blocks() as demo:
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
         value="",
-        interactive=True
+        interactive=True,
+        elem_id="selected-spins"
     )
     with gr.Row():
         last_spin_display = gr.HTML(
@@ -1911,7 +1912,7 @@ with gr.Blocks() as demo:
             value=5,
             interactive=True
         )
-    with gr.Accordion("Spin Analysis", open=False):
+    with gr.Accordion("Spin Analysis", open=False, elem_id="spin-analysis"):
         spin_analysis_output = gr.Textbox(
             label="",
             value="",
@@ -1953,7 +1954,7 @@ with gr.Blocks() as demo:
                         )
 
     # New accordion for Strongest Numbers tables, placed here
-    with gr.Accordion("Strongest Numbers Tables", open=False):
+    with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-table"):
         with gr.Row():
             with gr.Column():
                 straight_up_table = gr.HTML(label="Strongest Numbers", elem_classes="scrollable-table")
@@ -1976,7 +1977,8 @@ with gr.Blocks() as demo:
             label="Number of Random Spins",
             choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
             value="5",
-            elem_classes="num-spins-dropdown"
+            elem_classes="num-spins-dropdown",
+            elem_id="number-of-random-spins"
         )
         generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["generate-spins-btn", "action-button"])
         analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
@@ -2097,6 +2099,12 @@ with gr.Blocks() as demo:
       button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
       button.green-btn:hover { background-color: #218838 !important; }
       .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
+      /* Style for section labels */
+      #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
+      #spin-analysis .gr-accordion-label { background-color: #90EE90; color: black; padding: 5px; border-radius: 3px; }
+      #strongest-numbers-table .gr-accordion-label { background-color: #E6E6FA; color: black; padding: 5px; border-radius: 3px; }
+      #number-of-random-spins label { background-color: #FFDAB9; color: black; padding: 5px; border-radius: 3px; }
+      #aggregated-scores .gr-accordion-label { background-color: #FFB6C1; color: black; padding: 5px; border-radius: 3px; }
       @media (max-width: 600px) {
           .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
           td, th { padding: 5px; font-size: 12px; }
@@ -2119,7 +2127,7 @@ with gr.Blocks() as demo:
         outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display]
     )
 
-    with gr.Accordion("Aggregated Scores", open=False):
+    with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
         with gr.Row():
             with gr.Column():
                 with gr.Accordion("Even Money Bets", open=True):
