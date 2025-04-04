@@ -2154,7 +2154,7 @@ with gr.Blocks() as demo:
         ]
     )
 
-        strategy_dropdown.change(
+    strategy_dropdown.change(
         fn=toggle_checkboxes,
         inputs=[strategy_dropdown],
         outputs=[kitchen_martingale_checkboxes, victory_vortex_checkboxes]
