@@ -1890,11 +1890,12 @@ def toggle_checkboxes(strategy_name):
 # Build the Gradio interface
 with gr.Blocks() as demo:
     gr.Markdown("# Roulette Spin Analyzer with Strategies (European Table)")
+    
+    # Add a link to the PDF (same indentation as other components)
+    gr.HTML(
+        '<a href="Instructions.pdf" target="_blank" style="font-size: 16px; color: #007bff; text-decoration: underline;">📄 View Instructions PDF</a>'
+    )
 
-    # Add a link to the PDF
-        gr.HTML(
-            '<a href="Instructions.pdf" target="_blank" style="font-size: 16px; color: #007bff; text-decoration: underline;">📄 View Instructions PDF</a>'
-        )
     spins_display = gr.State(value="")
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
