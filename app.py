@@ -1724,29 +1724,22 @@ def top_numbers_with_neighbours_tiered():
     straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
 
     if straight_up_df.empty:
-        recommendations.append("Top Numbers with Neighbours (Tiered): No numbers have hit yet.")
-        return "\n".join(recommendations)
+        return "<p>Top Numbers with Neighbours (Tiered): No numbers have hit yet.</p>"
 
-    recommendations.append("Strongest Numbers:")
-    col_widths = {"Hit": 8, "Left N.": 12, "Right N.": 12}  # Adjusted widths for new spacing
-    header = (
-        f"{'Hit'.ljust(col_widths['Hit'])}"
-        f"{'Left N.'.ljust(col_widths['Left N.'])}"
-        f"{'Right N.'.ljust(col_widths['Right N.'])}"
-    )
-    recommendations.append(header)
-    recommendations.append("-" * (sum(col_widths.values()) + 10))
+    # Start with the HTML table for Strongest Numbers
+    table_html = '<table border="1" style="border-collapse: collapse; text-align: center; font-family: Arial, sans-serif;">'
+    table_html += "<tr><th>Hit</th><th>Left N.</th><th>Right N.</th></tr>"  # Table header
     for _, row in straight_up_df.iterrows():
         num = str(row["Number"])
         left, right = current_neighbors.get(row["Number"], ("", ""))
         left = str(left) if left is not None else ""
         right = str(right) if right is not None else ""
-        row_line = (
-            f"{num.ljust(col_widths['Hit'])}"
-            f"{left.ljust(col_widths['Left N.'])}"
-            f"{right.ljust(col_widths['Right N.'])}"
-        )
-        recommendations.append(row_line)
+        table_html += f"<tr><td>{num}</td><td>{left}</td><td>{right}</td></tr>"
+    table_html += "</table>"
+
+    # Wrap the table in a div with a heading
+    recommendations.append("<h3>Strongest Numbers:</h3>")
+    recommendations.append(table_html)
 
     num_to_take = min(8, len(straight_up_df))
     top_numbers = straight_up_df["Number"].head(num_to_take).tolist()
@@ -1783,21 +1776,21 @@ def top_numbers_with_neighbours_tiered():
     next_8 = ordered_numbers[8:16]
     last_8 = ordered_numbers[16:24]
 
-    recommendations.append("\nTop Numbers with Neighbours (Tiered):")
-    recommendations.append("\nTop Tier (Yellow):")
+    recommendations.append("<h3>Top Numbers with Neighbours (Tiered):</h3>")
+    recommendations.append("<p><strong>Top Tier (Yellow):</strong></p>")
     for i, num in enumerate(top_8, 1):
         score = number_scores.get(num, "Neighbor")
-        recommendations.append(f"{i}. Number {num} (Score: {score})")
+        recommendations.append(f"<p>{i}. Number {num} (Score: {score})</p>")
 
-    recommendations.append("\nSecond Tier (Blue):")
+    recommendations.append("<p><strong>Second Tier (Blue):</strong></p>")
     for i, num in enumerate(next_8, 1):
         score = number_scores.get(num, "Neighbor")
-        recommendations.append(f"{i}. Number {num} (Score: {score})")
+        recommendations.append(f"<p>{i}. Number {num} (Score: {score})</p>")
 
-    recommendations.append("\nThird Tier (Green):")
+    recommendations.append("<p><strong>Third Tier (Green):</strong></p>")
     for i, num in enumerate(last_8, 1):
         score = number_scores.get(num, "Neighbor")
-        recommendations.append(f"{i}. Number {num} (Score: {score})")
+        recommendations.append(f"<p>{i}. Number {num} (Score: {score})</p>")
 
     return "\n".join(recommendations)
 
@@ -1976,7 +1969,7 @@ with gr.Blocks() as demo:
             color_code_output = gr.HTML(label="Color Code Key")
         with gr.Column():
             gr.Markdown("### Strategy Recommendations")
-            strategy_output = gr.Textbox(label="Strategy Recommendations", lines=10, max_lines=50)
+            strategy_output = gr.HTML(label="Strategy Recommendations")  # Changed to gr.HTML
             with gr.Column(visible=False) as kitchen_martingale_checkboxes:
                 gr.Markdown("### Kitchen Martingale Checkboxes")
                 kitchen_martingale_checkboxes_list = []
@@ -2039,7 +2032,9 @@ with gr.Blocks() as demo:
       .num-spins-input { margin-right: 5px !important; }
       .white-row { background-color: white !important; }
       .num-spins-dropdown { width: 100px !important; margin-right: 5px !important; }
-      .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; }
+      .action
+
+-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; }
       button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
       button.green-btn:hover { background-color: #218838 !important; }
       .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
@@ -2163,10 +2158,6 @@ with gr.Blocks() as demo:
         fn=toggle_checkboxes,
         inputs=[strategy_dropdown],
         outputs=[kitchen_martingale_checkboxes, victory_vortex_checkboxes]
-    ).then(
-        fn=show_strategy_recommendations,
-        inputs=[strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
-        outputs=[strategy_output]
     ).then(
         fn=lambda strategy: (print(f"Updating Dynamic Table with Strategy: {strategy}"), create_dynamic_table(strategy if strategy != "None" else None))[-1],
         inputs=[strategy_dropdown],
