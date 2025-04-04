@@ -1728,18 +1728,16 @@ def top_numbers_with_neighbours_tiered():
         return "\n".join(recommendations)
 
     recommendations.append("Strongest Numbers:")
-    col_widths = {"Hit": 8, "Left N.": 12, "Right N.": 12, "Score": 8}  # Adjusted widths for 4 spaces between titles
+    col_widths = {"Hit": 8, "Left N.": 12, "Right N.": 12}  # Adjusted widths for new spacing
     header = (
         f"{'Hit'.ljust(col_widths['Hit'])}"
         f"{'Left N.'.ljust(col_widths['Left N.'])}"
         f"{'Right N.'.ljust(col_widths['Right N.'])}"
-        f"{'Score'.ljust(col_widths['Score'])}"
     )
     recommendations.append(header)
     recommendations.append("-" * (sum(col_widths.values()) + 10))
     for _, row in straight_up_df.iterrows():
         num = str(row["Number"])
-        score = str(row["Score"])
         left, right = current_neighbors.get(row["Number"], ("", ""))
         left = str(left) if left is not None else ""
         right = str(right) if right is not None else ""
@@ -1747,7 +1745,6 @@ def top_numbers_with_neighbours_tiered():
             f"{num.ljust(col_widths['Hit'])}"
             f"{left.ljust(col_widths['Left N.'])}"
             f"{right.ljust(col_widths['Right N.'])}"
-            f"{score.ljust(col_widths['Score'])}"
         )
         recommendations.append(row_line)
 
