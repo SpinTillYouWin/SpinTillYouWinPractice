@@ -1869,9 +1869,7 @@ with gr.Blocks() as demo:
         interactive=False,
         lines=1
     )
-    with gr.Row():
-        gr.Markdown("### Spin Analysis")
-        gr.Markdown("Click to see spin details", elem_classes="small-text")
+    gr.Markdown("### Spin Analysis <span class='small-text'>Click to see spin details</span>")
     with gr.Accordion("", open=False):
         spin_analysis_output = gr.Textbox(
             label="",
@@ -1914,10 +1912,7 @@ with gr.Blocks() as demo:
                         )
 
     # New accordion for Strongest Numbers tables, placed here
-    with gr.Row():
-        gr.Markdown("### Strongest Numbers Table")
-        gr.Markdown("View top numbers", elem_classes="small-text")
-    with gr.Accordion("", open=True):
+    with gr.Accordion("Strongest Numbers Tables", open=False):
         straight_up_table = gr.HTML(label="Strongest Numbers")
         top_18_table = gr.HTML(label="Top 18 Strongest Numbers (Sorted Lowest to Highest)")
         with gr.Row():
@@ -2023,6 +2018,54 @@ with gr.Blocks() as demo:
                     checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
                     victory_vortex_checkboxes_list.append(checkbox)
 
+    gr.Markdown("### Aggregated Scores <span class='small-text'>Explore detailed scores</span>")
+    with gr.Accordion("", open=False):
+        with gr.Row():
+            with gr.Column():
+                with gr.Accordion("Even Money Bets", open=True):
+                    even_money_output = gr.Textbox(label="Even Money Bets", lines=10, max_lines=50)
+            with gr.Column():
+                with gr.Accordion("Dozens", open=True):
+                    dozens_output = gr.Textbox(label="Dozens", lines=10, max_lines=50)
+        with gr.Row():
+            with gr.Column():
+                with gr.Accordion("Columns", open=True):
+                    columns_output = gr.Textbox(label="Columns", lines=10, max_lines=50)
+            with gr.Column():
+                with gr.Accordion("Streets", open=True):
+                    streets_output = gr.Textbox(label="Streets", lines=10, max_lines=50)
+        with gr.Row():
+            with gr.Column():
+                with gr.Accordion("Corners", open=True):
+                    corners_output = gr.Textbox(label="Corners", lines=10, max_lines=50)
+            with gr.Column():
+                with gr.Accordion("Double Streets", open=True):
+                    six_lines_output = gr.Textbox(label="Double Streets", lines=10, max_lines=50)
+        with gr.Row():
+            with gr.Column():
+                with gr.Accordion("Splits", open=True):
+                    splits_output = gr.Textbox(label="Splits", lines=10, max_lines=50)
+            with gr.Column():
+                with gr.Accordion("Sides of Zero", open=True):
+                    sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
+
+    gr.Markdown("### Strongest Numbers Table <span class='small-text'>View top numbers</span>")
+    with gr.Accordion("", open=True):
+        straight_up_table = gr.HTML(label="Strongest Numbers")
+        top_18_table = gr.HTML(label="Top 18 Strongest Numbers (Sorted Lowest to Highest)")
+        with gr.Row():
+            strongest_numbers_dropdown = gr.Dropdown(
+                label="Select Number of Strongest Numbers",
+                choices=["3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33"],
+                value="3"
+            )
+            strongest_numbers_output = gr.Textbox(label="Strongest Numbers (Sorted Lowest to Highest)", value="")
+
+    with gr.Row():
+        save_button = gr.Button("Save Session")
+        load_input = gr.File(label="Upload Session")
+    save_output = gr.File(label="Download Session")
+
     gr.HTML("""
     <style>
       .roulette-button.green { background-color: green; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
@@ -2069,44 +2112,6 @@ with gr.Blocks() as demo:
         outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display]
     )
 
-    with gr.Row():
-        gr.Markdown("### Aggregated Scores")
-        gr.Markdown("Explore detailed scores", elem_classes="small-text")
-    with gr.Accordion("", open=False):
-        with gr.Row():
-            with gr.Column():
-                with gr.Accordion("Even Money Bets", open=True):
-                    even_money_output = gr.Textbox(label="Even Money Bets", lines=10, max_lines=50)
-            with gr.Column():
-                with gr.Accordion("Dozens", open=True):
-                    dozens_output = gr.Textbox(label="Dozens", lines=10, max_lines=50)
-        with gr.Row():
-            with gr.Column():
-                with gr.Accordion("Columns", open=True):
-                    columns_output = gr.Textbox(label="Columns", lines=10, max_lines=50)
-            with gr.Column():
-                with gr.Accordion("Streets", open=True):
-                    streets_output = gr.Textbox(label="Streets", lines=10, max_lines=50)
-        with gr.Row():
-            with gr.Column():
-                with gr.Accordion("Corners", open=True):
-                    corners_output = gr.Textbox(label="Corners", lines=10, max_lines=50)
-            with gr.Column():
-                with gr.Accordion("Double Streets", open=True):
-                    six_lines_output = gr.Textbox(label="Double Streets", lines=10, max_lines=50)
-        with gr.Row():
-            with gr.Column():
-                with gr.Accordion("Splits", open=True):
-                    splits_output = gr.Textbox(label="Splits", lines=10, max_lines=50)
-            with gr.Column():
-                with gr.Accordion("Sides of Zero", open=True):
-                    sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
-
-    with gr.Row():
-        save_button = gr.Button("Save Session")
-        load_input = gr.File(label="Upload Session")
-    save_output = gr.File(label="Download Session")
-
     # Event Handlers
     generate_spins_button.click(
         fn=generate_random_spins,
@@ -2137,8 +2142,8 @@ with gr.Blocks() as demo:
         outputs=[
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
-            sides_output, straight_up_table, top_18_table, strongest_numbers_output,
-            dynamic_table_output, strategy_output, color_code_output
+            sides_output, straight_up_table, top_18_table,
+            strategy_output
         ]
     )
 
