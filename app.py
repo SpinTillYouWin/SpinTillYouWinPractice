@@ -1831,6 +1831,9 @@ def show_strategy_recommendations(strategy_name, *args):
     if not any(scores.values()) and not any(even_money_scores.values()):
         return "Please analyze some spins first to generate scores."
 
+    if strategy_name == "None":
+        return ""
+
     strategy_info = STRATEGIES[strategy_name]
     strategy_func = strategy_info["function"]
 
@@ -1952,7 +1955,7 @@ with gr.Blocks() as demo:
         strategy_dropdown = gr.Dropdown(
             label="Select Strategy",
             choices=dropdown_choices,
-            value="Best Even Money Bets",
+            value="None",
             allow_custom_value=False
         )
 
