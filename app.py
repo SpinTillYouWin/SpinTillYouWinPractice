@@ -168,8 +168,36 @@ betting_progression_vv = [
     ("(Bankroll: $5,907.00)", "16TH BET", "$1,969.00")
 ]
 
+def format_spins_as_html(spins, num_to_show):
+    if not spins:
+        return ""
+    
+    # Split the spins string into a list and reverse to get the most recent first
+    spin_list = spins.split(", ") if spins else []
+    spin_list = spin_list[-int(num_to_show):] if spin_list else []  # Take the last N spins
+    
+    if not spin_list:
+        return ""
+    
+    # Define colors for each number (matching the European Roulette Table)
+    colors = {
+        "0": "green",
+        "1": "red", "3": "red", "5": "red", "7": "red", "9": "red", "12": "red", "14": "red", "16": "red", "18": "red",
+        "19": "red", "21": "red", "23": "red", "25": "red", "27": "red", "30": "red", "32": "red", "34": "red", "36": "red",
+        "2": "black", "4": "black", "6": "black", "8": "black", "10": "black", "11": "black", "13": "black", "15": "black", "17": "black",
+        "20": "black", "22": "black", "24": "black", "26": "black", "28": "black", "29": "black", "31": "black", "33": "black", "35": "black"
+    }
+    
+    # Format each spin as a colored span
+    html_spins = []
+    for spin in spin_list:
+        color = colors.get(spin.strip(), "black")  # Default to black if not found
+        html_spins.append(f'<span style="background-color: {color}; color: white; padding: 2px 5px; margin-right: 5px; border-radius: 3px;">{spin}</span>')
+    
+    return "".join(html_spins)
+    
 # Function to add a spin to the list
-def add_spin(number, current_spins):
+def add_spin(number, current_spins, num_to_show):
     global selected_numbers
     spins = current_spins.split(", ") if current_spins else []
     if spins == [""]:
@@ -181,7 +209,7 @@ def add_spin(number, current_spins):
         spins.append(str(num))
         selected_numbers.add(num)
         new_spins = ", ".join(spins)
-        return new_spins, new_spins, str(num)  # Added last spin as third output
+        return new_spins, new_spins, format_spins_as_html(new_spins, num_to_show)
     except ValueError:
         return current_spins, f"Error: '{number}' is not a valid number (use 0-36 only).", ""
 
@@ -929,7 +957,7 @@ def undo_last_spin(current_spins_display, strategy_name, *checkbox_args):
             straight_up_html, top_18_html, strongest_numbers_output, spins_input, spins_input,
             dynamic_table_html, strategy_output, create_color_code_table())
 
-def generate_random_spins(num_spins, current_spins_display):
+def generate_random_spins(num_spins, current_spins_display, num_to_show):
     num_spins = int(num_spins)
     if num_spins <= 0:
         return current_spins_display, current_spins_display, "Please enter a positive number of spins to generate."
@@ -1861,21 +1889,25 @@ def toggle_checkboxes(strategy_name):
             gr.update(visible=strategy_name == "S.T.Y.W: Victory Vortex"))
 
 # Build the Gradio interface
-with gr.Blocks() as demo:
-    gr.Markdown("# Roulette Spin Analyzer with Strategies (European Table)")
-
     spins_display = gr.State(value="")
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
         value="",
         interactive=True
     )
-    last_spin_display = gr.Textbox(
-        label="Last Spin",
-        value="",
-        interactive=False,
-        lines=1
-    )
+    with gr.Row():
+        last_spin_display = gr.HTML(
+            label="Last Spin",
+            value=""
+        )
+        last_spin_count = gr.Slider(
+            label="Show Last Spins",
+            minimum=1,
+            maximum=36,
+            step=1,
+            value=5,
+            interactive=True
+        )
     with gr.Accordion("Spin Analysis", open=False):
         spin_analysis_output = gr.Textbox(
             label="",
@@ -1883,7 +1915,6 @@ with gr.Blocks() as demo:
             interactive=False,
             lines=5
         )
-
     with gr.Group():
         gr.Markdown("### European Roulette Table")
         table_layout = [
@@ -1913,7 +1944,7 @@ with gr.Blocks() as demo:
                         # Bind the click event directly within the loop
                         btn.click(
                             fn=add_spin,
-                            inputs=[gr.State(value=num), spins_display],
+                            inputs=[gr.State(value=num), spins_display, last_spin_count],
                             outputs=[spins_display, spins_textbox, last_spin_display]
                         )
 
@@ -2122,8 +2153,12 @@ with gr.Blocks() as demo:
     # Event Handlers
     generate_spins_button.click(
         fn=generate_random_spins,
-        inputs=[num_spins_input, spins_display],
+        inputs=[num_spins_input, spins_display, last_spin_count],
         outputs=[spins_display, spins_textbox, spin_analysis_output]
+    ).then(
+        fn=format_spins_as_html,
+        inputs=[spins_display, last_spin_count],
+        outputs=[last_spin_display]
     )
 
     # Update the second dropdown based on the selected category
@@ -2136,6 +2171,12 @@ with gr.Blocks() as demo:
         fn=update_strategy_dropdown,
         inputs=category_dropdown,
         outputs=strategy_dropdown
+    )
+
+    last_spin_count.change(
+        fn=format_spins_as_html,
+        inputs=[spins_display, last_spin_count],
+        outputs=[last_spin_display]
     )
 
     analyze_button.click(
