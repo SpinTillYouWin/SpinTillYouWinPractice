@@ -2007,7 +2007,8 @@ with gr.Blocks() as demo:
             label="Select Category",
             choices=category_choices,
             value="Even Money Strategies",
-            allow_custom_value=False
+            allow_custom_value=False,
+            elem_id="select-category"
         )
         strategy_dropdown = gr.Dropdown(
             label="Select Strategy",
@@ -2101,10 +2102,11 @@ with gr.Blocks() as demo:
       .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
       /* Style for section labels */
       #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
-      #spin-analysis .gr-accordion-label { background-color: #90EE90; color: black; padding: 5px; border-radius: 3px; }
-      #strongest-numbers-table .gr-accordion-label { background-color: #E6E6FA; color: black; padding: 5px; border-radius: 3px; }
-      #number-of-random-spins label { background-color: #FFDAB9; color: black; padding: 5px; border-radius: 3px; }
-      #aggregated-scores .gr-accordion-label { background-color: #FFB6C1; color: black; padding: 5px; border-radius: 3px; }
+      #spin-analysis > div > label { background-color: #90EE90; color: black; padding: 5px; border-radius: 3px; }
+      #strongest-numbers-table > div > label { background-color: #E6E6FA; color: black; padding: 5px; border-radius: 3px; }
+      #number-of-random-spins > div > label { background-color: #FFDAB9; color: black; padding: 5px; border-radius: 3px; }
+      #aggregated-scores > div > label { background-color: #FFB6C1; color: black; padding: 5px; border-radius: 3px; }
+      #select-category > div > label { background-color: #FFFFE0; color: black; padding: 5px; border-radius: 3px; }
       @media (max-width: 600px) {
           .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
           td, th { padding: 5px; font-size: 12px; }
