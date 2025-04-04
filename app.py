@@ -1728,7 +1728,7 @@ def top_numbers_with_neighbours_tiered():
         return "\n".join(recommendations)
 
     recommendations.append("Strongest Numbers:")
-    col_widths = {"Hit": 10, "Left N.": 15, "Right N.": 15, "Score": 10}  # Adjusted widths for shorter titles
+    col_widths = {"Hit": 8, "Left N.": 12, "Right N.": 12, "Score": 8}  # Adjusted widths for 4 spaces between titles
     header = (
         f"{'Hit'.ljust(col_widths['Hit'])}"
         f"{'Left N.'.ljust(col_widths['Left N.'])}"
