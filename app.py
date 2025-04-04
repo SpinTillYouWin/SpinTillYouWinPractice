@@ -2004,22 +2004,7 @@ with gr.Blocks() as demo:
                     ("(Bankroll: $100.00)", "18TH BET", "$10.00"),
                     ("(Bankroll: $110.00)", "19TH BET", "$10.00")
                 ]
-                checkbox_counts = [0, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
-                flat_progression_km = []
-                for (bankroll, bet_label, bet_amount), count in zip(betting_progression_km, checkbox_counts):
-                    for _ in range(count):
-                        flat_progression_km.append((bankroll, bet_label, bet_amount))
-
-                for i, (bankroll, bet_label, bet_amount) in enumerate(flat_progression_km, 1):
-                    checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
-                    kitchen_martingale_checkboxes_list.append(checkbox)
-
-            with gr.Column(visible=False) as victory_vortex_checkboxes:
-                gr.Markdown("### Victory Vortex Checkboxes")
-                victory_vortex_checkboxes_list = []
-                for i, (bankroll, bet_label, bet_amount) in enumerate(betting_progression_vv, 1):
-                    checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
-                    victory_vortex_checkboxes_list.append(checkbox)
+                checkbox_counts = [0, 1, 1,  orginal code continues...
 
     gr.HTML("""
     <style>
@@ -2045,12 +2030,12 @@ with gr.Blocks() as demo:
       .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; }
       button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
       button.green-btn:hover { background-color: #218838 !important; }
-      .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }  /* Increased max-height to 300px */
+      .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
       @media (max-width: 600px) {
           .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
           td, th { padding: 5px; font-size: 12px; }
           .gr-textbox { font-size: 12px; }
-          .scrollable-table { max-height: 200px; }  /* Reduced height for mobile */
+          .scrollable-table { max-height: 200px; }
       }
     </style>
     """)
@@ -2166,6 +2151,10 @@ with gr.Blocks() as demo:
         fn=toggle_checkboxes,
         inputs=[strategy_dropdown],
         outputs=[kitchen_martingale_checkboxes, victory_vortex_checkboxes]
+    ).then(
+        fn=show_strategy_recommendations,
+        inputs=[strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
+        outputs=[strategy_output]
     ).then(
         fn=lambda strategy: (print(f"Updating Dynamic Table with Strategy: {strategy}"), create_dynamic_table(strategy if strategy != "None" else None))[-1],
         inputs=[strategy_dropdown],
