@@ -968,23 +968,6 @@ def generate_random_spins(num_spins, current_spins_display, num_to_show):
         updated_spins = ", ".join(new_spins)
     return updated_spins, updated_spins, f"Generated {num_spins} random spins: {', '.join(new_spins)}"
 
-def preprocess_spins_input(user_input):
-    if not user_input or not user_input.strip():
-        return ""
-    
-    # Remove extra spaces and handle multiple commas
-    cleaned_input = user_input.strip()
-    # Replace multiple commas with a single comma
-    while ",," in cleaned_input:
-        cleaned_input = cleaned_input.replace(",,", ",")
-    # Remove leading/trailing commas
-    cleaned_input = cleaned_input.strip(",")
-    # Split by comma, strip each number, and filter out empty entries
-    numbers = [num.strip() for num in cleaned_input.split(",") if num.strip()]
-    # Join the numbers with ", " (comma followed by a space)
-    corrected_input = ", ".join(numbers)
-    return corrected_input
-
 # Strategy functions
 def best_even_money_bets():
     recommendations = []
@@ -1908,20 +1891,13 @@ def toggle_checkboxes(strategy_name):
 with gr.Blocks() as demo:
     gr.Markdown("# Roulette Spin Analyzer with Strategies (European Table)")
 
-    # Selected Spins
-    with gr.Accordion("Instructions +", open=False, elem_classes="instruction-accordion"):
-        gr.Markdown("Click numbers on the European Roulette Table below to add spins, or enter them manually here in the format 'number, number, number' (e.g., 5, 12, 0).")
     spins_display = gr.State(value="")
     spins_textbox = gr.Textbox(
-        label="Selected Spins",
+        label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
         value="",
-        interactive=True,  # Allow manual editing
+        interactive=True,
         elem_id="selected-spins"
     )
-
-    # Last Spin (with Slider)
-    with gr.Accordion("Instructions +", open=False, elem_classes="instruction-accordion"):
-        gr.Markdown("View your most recent spins here, and use the slider to adjust how many spins to display (1 to 36).")
     with gr.Row():
         last_spin_display = gr.HTML(
             label="Last Spin",
@@ -1935,10 +1911,6 @@ with gr.Blocks() as demo:
             value=5,
             interactive=True
         )
-
-    # Spin Analysis
-    with gr.Accordion("Instructions +", open=False, elem_classes="instruction-accordion"):
-        gr.Markdown("Open this section to see a detailed breakdown of your spins, including which sections they hit.")
     with gr.Accordion("Spin Analysis", open=False, elem_id="spin-analysis"):
         spin_analysis_output = gr.Textbox(
             label="",
@@ -1947,9 +1919,6 @@ with gr.Blocks() as demo:
             lines=5
         )
 
-    # European Roulette Table
-    with gr.Accordion("Instructions +", open=False, elem_classes="instruction-accordion"):
-        gr.Markdown("Click any number on the table to add it as a spin, or use the buttons below to generate random spins.")
     with gr.Group():
         gr.Markdown("### European Roulette Table")
         table_layout = [
@@ -1983,9 +1952,7 @@ with gr.Blocks() as demo:
                             outputs=[spins_display, spins_textbox, last_spin_display]
                         )
 
-    # Strongest Numbers Tables
-    with gr.Accordion("Instructions +", open=False, elem_classes="instruction-accordion"):
-        gr.Markdown("Check this section to see the strongest numbers and their neighbors, sorted by hits.")
+    # New accordion for Strongest Numbers tables, placed here
     with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-table"):
         with gr.Row():
             with gr.Column():
@@ -2004,9 +1971,6 @@ with gr.Blocks() as demo:
                 lines=2
             )
 
-    # Number of Random Spins (with Buttons)
-    with gr.Accordion("Instructions +", open=False, elem_classes="instruction-accordion"):
-        gr.Markdown("Select a number of spins to generate randomly, then click 'Analyze Spins' to see the results, or 'Undo Last Spin' to remove the latest spin.")
     with gr.Row(elem_classes="white-row"):
         num_spins_input = gr.Dropdown(
             label="Number of Random Spins",
@@ -2019,9 +1983,6 @@ with gr.Blocks() as demo:
         analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
         undo_button = gr.Button("Undo Last Spin", elem_classes="action-button")
 
-    # Select Category and Select Strategy
-    with gr.Accordion("Instructions +", open=False, elem_classes="instruction-accordion"):
-        gr.Markdown("Choose a category and strategy to highlight trends on the Dynamic Roulette Table and get betting recommendations.")
     strategy_categories = {
         "Trends": ["Cold Bet Strategy", "Hot Bet Strategy"],
         "Even Money Strategies": ["Best Even Money Bets", "Fibonacci To Fortune"],
@@ -2055,32 +2016,21 @@ with gr.Blocks() as demo:
             allow_custom_value=False
         )
 
-    # Reset Scores on Analysis (Checkbox and Buttons)
-    with gr.Accordion("Instructions +", open=False, elem_classes="instruction-accordion"):
-        gr.Markdown("Check this box to reset scores each time you analyze spins, or use the buttons to reset scores or clear all outputs.")
     with gr.Row(elem_classes="white-row"):
         reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
         reset_button = gr.Button("Reset Scores", elem_classes="action-button")
         clear_button = gr.Button("Clear Outputs", elem_classes="action-button")
 
-    # Clear Spins
-    with gr.Accordion("Instructions +", open=False, elem_classes="instruction-accordion"):
-        gr.Markdown("Click here to clear all spins and start fresh.")
     with gr.Row():
         clear_spins_button = gr.Button("Clear Spins", elem_classes="clear-spins-btn small-btn")
         print("Button Class Set")
 
-    # Dynamic Roulette Table and Strategy Recommendations
-    with gr.Accordion("Instructions +", open=False, elem_classes="instruction-accordion"):
-        gr.Markdown("This table highlights trending sections based on your selected strategy—use the colors to guide your bets.")
     with gr.Row():
         with gr.Column():
             gr.Markdown("### Dynamic Roulette Table")
             dynamic_table_output = gr.HTML(label="Dynamic Table")
             color_code_output = gr.HTML(label="Color Code Key")
         with gr.Column():
-            with gr.Accordion("Instructions +", open=False, elem_classes="instruction-accordion"):
-                gr.Markdown("View betting recommendations here based on your selected strategy and spin history.")
             gr.Markdown("### Strategy Recommendations")
             strategy_output = gr.HTML(label="Strategy Recommendations")
             with gr.Column(visible=False) as kitchen_martingale_checkboxes:
@@ -2124,9 +2074,60 @@ with gr.Blocks() as demo:
                     checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
                     victory_vortex_checkboxes_list.append(checkbox)
 
-    # Aggregated Scores
-    with gr.Accordion("Instructions +", open=False, elem_classes="instruction-accordion"):
-        gr.Markdown("Open this section to see the scores for even money bets, dozens, columns, and more.")
+    gr.HTML("""
+    <style>
+      .roulette-button.green { background-color: green; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
+      .roulette-button.red { background-color: red; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
+      .roulette-button.black { background-color: black; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
+      .roulette-button:hover { opacity: 0.8; }
+      table { border-collapse: collapse; text-align: center; }
+      td, th { border: 1px solid #333; padding: 8px; font-family: Arial, sans-serif; }
+      .roulette-button.selected { border: 3px solid yellow; opacity: 0.9; }
+      .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex; align-items: center; justify-content: center; border: 1px solid white !important; box-sizing: border-box; }
+      .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box; }
+      .roulette-table { display: flex; flex-direction: column; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
+      .table-row { display: flex; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap; line-height: 0 !important; }
+      button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
+      button.clear-spins-btn:hover { background-color: #cc0000 !important; }
+      button.small-btn { padding: 5px 10px !important; font-size: 12px !important; min-width: 80px !important; }
+      button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
+      button.generate-spins-btn:hover { background-color: #0056b3 !important; }
+      .num-spins-input { margin-right: 5px !important; }
+      .white-row { background-color: white !important; }
+      .num-spins-dropdown { width: 100px !important; margin-right: 5px !important; }
+      .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; }
+      button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
+      button.green-btn:hover { background-color: #218838 !important; }
+      .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
+      /* Style for section labels */
+      #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
+      #spin-analysis label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #strongest-numbers-table label { background-color: #E6E6FA !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      @media (max-width: 600px) {
+          .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
+          td, th { padding: 5px; font-size: 12px; }
+          .gr-textbox { font-size: 12px; }
+          .scrollable-table { max-height: 200px; }
+      }
+    </style>
+    """)
+    print("CSS Updated")
+
+    spins_textbox.change(
+        fn=lambda x: x,
+        inputs=spins_textbox,
+        outputs=spins_display
+    )
+
+    clear_spins_button.click(
+        fn=clear_spins,
+        inputs=[],
+        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display]
+    )
+
     with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
         with gr.Row():
             with gr.Column():
@@ -2157,16 +2158,10 @@ with gr.Blocks() as demo:
                 with gr.Accordion("Sides of Zero", open=True):
                     sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
-    # Save Session and Upload Session
-    with gr.Accordion("Instructions +", open=False, elem_classes="instruction-accordion"):
-        gr.Markdown("Save your current session to download it, or upload a previous session to continue where you left off.")
     with gr.Row():
         save_button = gr.Button("Save Session")
         load_input = gr.File(label="Upload Session")
     save_output = gr.File(label="Download Session")
-
-    # Placeholder for future Instruction Page
-    # TODO: Add an "Instruction Page" that opens in a new tab to explain how the whole app works.
 
     # Event Handlers
     generate_spins_button.click(
@@ -2183,13 +2178,6 @@ with gr.Blocks() as demo:
         fn=format_spins_as_html,
         inputs=[spins_display, last_spin_count],
         outputs=[last_spin_display]
-    )
-
-    # Update the spins_display with preprocessed input when the textbox changes
-    spins_textbox.change(
-        fn=preprocess_spins_input,
-        inputs=spins_textbox,
-        outputs=[spins_textbox, spins_display]
     )
 
     # Update the second dropdown based on the selected category
