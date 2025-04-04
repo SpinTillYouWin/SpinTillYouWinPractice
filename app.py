@@ -1889,6 +1889,9 @@ def toggle_checkboxes(strategy_name):
             gr.update(visible=strategy_name == "S.T.Y.W: Victory Vortex"))
 
 # Build the Gradio interface
+with gr.Blocks() as demo:
+    gr.Markdown("# Roulette Spin Analyzer with Strategies (European Table)")
+
     spins_display = gr.State(value="")
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
@@ -1915,6 +1918,7 @@ def toggle_checkboxes(strategy_name):
             interactive=False,
             lines=5
         )
+
     with gr.Group():
         gr.Markdown("### European Roulette Table")
         table_layout = [
@@ -2161,6 +2165,12 @@ def toggle_checkboxes(strategy_name):
         outputs=[last_spin_display]
     )
 
+    last_spin_count.change(
+        fn=format_spins_as_html,
+        inputs=[spins_display, last_spin_count],
+        outputs=[last_spin_display]
+    )
+
     # Update the second dropdown based on the selected category
     def update_strategy_dropdown(category):
         if category == "None":
@@ -2171,12 +2181,6 @@ def toggle_checkboxes(strategy_name):
         fn=update_strategy_dropdown,
         inputs=category_dropdown,
         outputs=strategy_dropdown
-    )
-
-    last_spin_count.change(
-        fn=format_spins_as_html,
-        inputs=[spins_display, last_spin_count],
-        outputs=[last_spin_display]
     )
 
     analyze_button.click(
