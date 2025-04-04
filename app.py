@@ -2017,7 +2017,7 @@ with gr.Blocks() as demo:
         )
         generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["generate-spins-btn", "action-button"])
         analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
-        undo AscendingIconButton("Undo Last Spin", elem_classes="action-button")
+        undo_button = gr.Button("Undo Last Spin", elem_classes="action-button")
 
     # Select Category and Select Strategy
     with gr.Accordion("Instructions +", open=False, elem_classes="instruction-accordion"):
