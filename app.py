@@ -1831,9 +1831,6 @@ def show_strategy_recommendations(strategy_name, *args):
     if not any(scores.values()) and not any(even_money_scores.values()):
         return "Please analyze some spins first to generate scores."
 
-    if strategy_name == "None":
-        return ""
-
     strategy_info = STRATEGIES[strategy_name]
     strategy_func = strategy_info["function"]
 
@@ -1869,8 +1866,7 @@ with gr.Blocks() as demo:
         interactive=False,
         lines=1
     )
-    gr.Markdown("### Spin Analysis <span class='small-text'>Click to see spin details</span>")
-    with gr.Accordion("", open=False):
+    with gr.Accordion("Spin Analysis", open=False):
         spin_analysis_output = gr.Textbox(
             label="",
             value="",
@@ -1956,7 +1952,7 @@ with gr.Blocks() as demo:
         strategy_dropdown = gr.Dropdown(
             label="Select Strategy",
             choices=dropdown_choices,
-            value="None",
+            value="Best Even Money Bets",
             allow_custom_value=False
         )
 
@@ -2018,8 +2014,52 @@ with gr.Blocks() as demo:
                     checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
                     victory_vortex_checkboxes_list.append(checkbox)
 
-    gr.Markdown("### Aggregated Scores <span class='small-text'>Explore detailed scores</span>")
-    with gr.Accordion("", open=False):
+    gr.HTML("""
+    <style>
+      .roulette-button.green { background-color: green; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
+      .roulette-button.red { background-color: red; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
+      .roulette-button.black { background-color: black; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
+      .roulette-button:hover { opacity: 0.8; }
+      table { border-collapse: collapse; text-align: center; }
+      td, th { border: 1px solid #333; padding: 8px; font-family: Arial, sans-serif; }
+      .roulette-button.selected { border: 3px solid yellow; opacity: 0.9; }
+      .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex; align-items: center; justify-content: center; border: 1px solid white !important; box-sizing: border-box; }
+      .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box; }
+      .roulette-table { display: flex; flex-direction: column; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
+      .table-row { display: flex; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap; line-height: 0 !important; }
+      button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
+      button.clear-spins-btn:hover { background-color: #cc0000 !important; }
+      button.small-btn { padding: 5px 10px !important; font-size: 12px !important; min-width: 80px !important; }
+      button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
+      button.generate-spins-btn:hover { background-color: #0056b3 !important; }
+      .num-spins-input { margin-right: 5px !important; }
+      .white-row { background-color: white !important; }
+      .num-spins-dropdown { width: 100px !important; margin-right: 5px !important; }
+      .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; }
+      button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
+      button.green-btn:hover { background-color: #218838 !important; }
+      @media (max-width: 600px) {
+          .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
+          td, th { padding: 5px; font-size: 12px; }
+          .gr-textbox { font-size: 12px; }
+      }
+    </style>
+    """)
+    print("CSS Updated")
+
+    spins_textbox.change(
+        fn=lambda x: x,
+        inputs=spins_textbox,
+        outputs=spins_display
+    )
+
+    clear_spins_button.click(
+        fn=clear_spins,
+        inputs=[],
+        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display]
+    )
+
+    with gr.Accordion("Aggregated Scores", open=False):
         with gr.Row():
             with gr.Column():
                 with gr.Accordion("Even Money Bets", open=True):
@@ -2049,68 +2089,10 @@ with gr.Blocks() as demo:
                 with gr.Accordion("Sides of Zero", open=True):
                     sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
-    gr.Markdown("### Strongest Numbers Table <span class='small-text'>View top numbers</span>")
-    with gr.Accordion("", open=True):
-        straight_up_table = gr.HTML(label="Strongest Numbers")
-        top_18_table = gr.HTML(label="Top 18 Strongest Numbers (Sorted Lowest to Highest)")
-        with gr.Row():
-            strongest_numbers_dropdown = gr.Dropdown(
-                label="Select Number of Strongest Numbers",
-                choices=["3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33"],
-                value="3"
-            )
-            strongest_numbers_output = gr.Textbox(label="Strongest Numbers (Sorted Lowest to Highest)", value="")
-
     with gr.Row():
         save_button = gr.Button("Save Session")
         load_input = gr.File(label="Upload Session")
     save_output = gr.File(label="Download Session")
-
-    gr.HTML("""
-    <style>
-      .roulette-button.green { background-color: green; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
-      .roulette-button.red { background-color: red; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
-      .roulette-button.black { background-color: black; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
-      .roulette-button:hover { opacity: 0.8; }
-      table { border-collapse: collapse; text-align: center; }
-      td, th { border: 1px solid #333; padding: 8px; font-family: Arial, sans-serif; }
-      .roulette-button.selected { border: 3px solid yellow; opacity: 0.9; }
-      .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex; align-items: center; justify-content: center; border: 1px solid white !important; box-sizing: border-box; }
-      .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box; }
-      .roulette-table { display: flex; flex-direction: column; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
-      .table-row { display: flex; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap; line-height: 0 !important; }
-      button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
-      button.clear-spins-btn:hover { background-color: #cc0000 !important; }
-      button.small-btn { padding: 5px 10px !important; font-size: 12px !important; min-width: 80px !important; }
-      button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
-      button.generate-spins-btn:hover { background-color: #0056b3 !important; }
-      .num-spins-input { margin-right: 5px !important; }
-      .white-row { background-color: white !important; }
-      .num-spins-dropdown { width: 100px !important; margin-right: 5px !important; }
-      .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; }
-      button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
-      button.green-btn:hover { background-color: #218838 !important; }
-      .small-text { font-size: 12px; color: #666; margin-left: 10px; }
-      @media (max-width: 600px) {
-          .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
-          td, th { padding: 5px; font-size: 12px; }
-          .gr-textbox { font-size: 12px; }
-      }
-    </style>
-    """)
-    print("CSS Updated")
-
-    spins_textbox.change(
-        fn=lambda x: x,
-        inputs=spins_textbox,
-        outputs=spins_display
-    )
-
-    clear_spins_button.click(
-        fn=clear_spins,
-        inputs=[],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display]
-    )
 
     # Event Handlers
     generate_spins_button.click(
@@ -2142,8 +2124,8 @@ with gr.Blocks() as demo:
         outputs=[
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
-            sides_output, straight_up_table, top_18_table,
-            strategy_output
+            sides_output, straight_up_table, top_18_table, strongest_numbers_output,
+            dynamic_table_output, strategy_output, color_code_output
         ]
     )
 
