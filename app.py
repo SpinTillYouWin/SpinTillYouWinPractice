@@ -1893,7 +1893,7 @@ with gr.Blocks() as demo:
     
     # Add a link to the PDF (same indentation as other components)
     gr.HTML(
-        '<a href="Instructions.pdf" target="_blank" style="font-size: 16px; color: #007bff; text-decoration: underline;">📄 View Instructions PDF</a>'
+        '<a href="https://huggingface.co/spaces/ysforce1/SpinTillYouWinV3.0_MakeChangesHere/raw/main/Instructions.pdf" target="_blank" style="font-size: 16px; color: #007bff; text-decoration: underline;">📄 View Instructions PDF</a>'
     )
 
     spins_display = gr.State(value="")
