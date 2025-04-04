@@ -2167,6 +2167,10 @@ with gr.Blocks() as demo:
         inputs=[strategy_dropdown],
         outputs=[kitchen_martingale_checkboxes, victory_vortex_checkboxes]
     ).then(
+        fn=show_strategy_recommendations,
+        inputs=[strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
+        outputs=[strategy_output]
+    ).then(
         fn=lambda strategy: (print(f"Updating Dynamic Table with Strategy: {strategy}"), create_dynamic_table(strategy if strategy != "None" else None))[-1],
         inputs=[strategy_dropdown],
         outputs=[dynamic_table_output]
