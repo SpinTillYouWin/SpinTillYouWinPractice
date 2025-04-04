@@ -536,11 +536,11 @@ def create_dynamic_table(strategy_name=None):
             weakest_dozen = min(dozen_scores.items(), key=lambda x: x[1], default=("1st Dozen", 0))[0]
             double_streets_in_weakest = [(name, six_line_scores.get(name, 0)) for name, numbers in SIX_LINES.items() if set(numbers).issubset(DOZENS[weakest_dozen])]
             if double_streets_in_weakest:
-                top_double_street = max(double_streets_in_weakest, key=lambda x: x[1   # Use the cold colors for even money bets, dozens, and columns
-            trending_even_money = sorted_even_money[0][0] if sorted_even_money else None
-            second_dozen = sorted_dozens[1][0] if len(sorted_dozens) > 1 else None
-            trending_column = sorted_columns[0][0] if sorted_columns else None
-            second_column = sorted_columns[1][0] if len(sorted_columns) > 1 else None
+                top_double_street = max(double_streets_in_weakest, key=lambda x: x[1])[0]
+                for num in SIX_LINES[top_double_street]:
+                    number_highlights[str(num)] = "rgba(255, 255, 0, 0.5)"
+
+        elif strategy_name == "3-8-6 Rising Martingale":
             top_streets = sorted_streets[:8]
             for i, (street_name, _) in enumerate(top_streets):
                 numbers = STREETS[street_name]
