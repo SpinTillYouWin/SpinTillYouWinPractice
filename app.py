@@ -1869,7 +1869,10 @@ with gr.Blocks() as demo:
         interactive=False,
         lines=1
     )
-    with gr.Accordion("Spin Analysis", open=False):
+    with gr.Row():
+        gr.Markdown("### Spin Analysis")
+        gr.Markdown("Click to see spin details", elem_classes="small-text")
+    with gr.Accordion("", open=False):
         spin_analysis_output = gr.Textbox(
             label="",
             value="",
@@ -1911,7 +1914,10 @@ with gr.Blocks() as demo:
                         )
 
     # New accordion for Strongest Numbers tables, placed here
-    with gr.Accordion("Strongest Numbers Tables", open=False):
+    with gr.Row():
+        gr.Markdown("### Strongest Numbers Table")
+        gr.Markdown("View top numbers", elem_classes="small-text")
+    with gr.Accordion("", open=True):
         straight_up_table = gr.HTML(label="Strongest Numbers")
         top_18_table = gr.HTML(label="Top 18 Strongest Numbers (Sorted Lowest to Highest)")
         with gr.Row():
@@ -2041,6 +2047,7 @@ with gr.Blocks() as demo:
       .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; }
       button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
       button.green-btn:hover { background-color: #218838 !important; }
+      .small-text { font-size: 12px; color: #666; margin-left: 10px; }
       @media (max-width: 600px) {
           .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
           td, th { padding: 5px; font-size: 12px; }
@@ -2062,7 +2069,10 @@ with gr.Blocks() as demo:
         outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display]
     )
 
-    with gr.Accordion("Aggregated Scores", open=False):
+    with gr.Row():
+        gr.Markdown("### Aggregated Scores")
+        gr.Markdown("Explore detailed scores", elem_classes="small-text")
+    with gr.Accordion("", open=False):
         with gr.Row():
             with gr.Column():
                 with gr.Accordion("Even Money Bets", open=True):
