@@ -1908,16 +1908,20 @@ with gr.Blocks() as demo:
                         )
 
     # New accordion for Strongest Numbers tables, placed here
-    with gr.Accordion("Strongest Numbers Tables", open=False):
-        straight_up_table = gr.HTML(label="Strongest Numbers")
-        top_18_table = gr.HTML(label="Top 18 Strongest Numbers (Sorted Lowest to Highest)")
+    with gr.Accordion("Strongest Numbers Tables", open=True):  # Changed to open=True
+        straight_up_table = gr.HTML(label="Strongest Numbers", elem_classes="scrollable-table")
+        top_18_table = gr.HTML(label="Top 18 Strongest Numbers (Sorted Lowest to Highest)", elem_classes="scrollable-table")
         with gr.Row():
             strongest_numbers_dropdown = gr.Dropdown(
                 label="Select Number of Strongest Numbers",
                 choices=["3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33"],
                 value="3"
             )
-            strongest_numbers_output = gr.Textbox(label="Strongest Numbers (Sorted Lowest to Highest)", value="")
+            strongest_numbers_output = gr.Textbox(
+                label="Strongest Numbers (Sorted Lowest to Highest)",
+                value="",
+                lines=2  # Reduced from default to minimize height
+            )
 
     with gr.Row(elem_classes="white-row"):
         num_spins_input = gr.Dropdown(
@@ -2038,6 +2042,7 @@ with gr.Blocks() as demo:
       .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; }
       button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
       button.green-btn:hover { background-color: #218838 !important; }
+      .scrollable-table { max-height: 150px; overflow-y: auto; display: block; }
       @media (max-width: 600px) {
           .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
           td, th { padding: 5px; font-size: 12px; }
