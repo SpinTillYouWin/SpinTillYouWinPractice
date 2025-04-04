@@ -1908,7 +1908,7 @@ with gr.Blocks() as demo:
                         )
 
     # New accordion for Strongest Numbers tables, placed here
-    with gr.Accordion("Strongest Numbers Tables", open=True):
+    with gr.Accordion("Strongest Numbers Tables", open=False):
         with gr.Row():
             with gr.Column():
                 straight_up_table = gr.HTML(label="Strongest Numbers", elem_classes="scrollable-table")
