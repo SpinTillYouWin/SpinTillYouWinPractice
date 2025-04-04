@@ -1728,11 +1728,11 @@ def top_numbers_with_neighbours_tiered():
         return "\n".join(recommendations)
 
     recommendations.append("Strongest Numbers:")
-    col_widths = {"Number": 15, "Left Neighbor": 20, "Right Neighbor": 20, "Score": 15}  # Increased widths
+    col_widths = {"Hit": 10, "Left N.": 15, "Right N.": 15, "Score": 10}  # Adjusted widths for shorter titles
     header = (
-        f"{'Number'.ljust(col_widths['Number'])}"
-        f"{'Left Neighbor'.ljust(col_widths['Left Neighbor'])}"
-        f"{'Right Neighbor'.ljust(col_widths['Right Neighbor'])}"
+        f"{'Hit'.ljust(col_widths['Hit'])}"
+        f"{'Left N.'.ljust(col_widths['Left N.'])}"
+        f"{'Right N.'.ljust(col_widths['Right N.'])}"
         f"{'Score'.ljust(col_widths['Score'])}"
     )
     recommendations.append(header)
@@ -1744,9 +1744,9 @@ def top_numbers_with_neighbours_tiered():
         left = str(left) if left is not None else ""
         right = str(right) if right is not None else ""
         row_line = (
-            f"{num.ljust(col_widths['Number'])}"
-            f"{left.ljust(col_widths['Left Neighbor'])}"
-            f"{right.ljust(col_widths['Right Neighbor'])}"
+            f"{num.ljust(col_widths['Hit'])}"
+            f"{left.ljust(col_widths['Left N.'])}"
+            f"{right.ljust(col_widths['Right N.'])}"
             f"{score.ljust(col_widths['Score'])}"
         )
         recommendations.append(row_line)
