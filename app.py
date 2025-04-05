@@ -607,7 +607,7 @@ def create_dynamic_table(strategy_name=None):
 # Function to get strongest numbers with neighbors
 def get_strongest_numbers_with_neighbors(num_count):
     num_count = int(num_count)
-    straight_up_df = pd.DataFrame(list(scores.items()), columns=["Number", "Score"])
+    straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
     straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
 
     if straight_up_df.empty:
@@ -751,6 +751,7 @@ def analyze_spins(spins_input, reset_scores, strategy_name, *checkbox_args):
     dynamic_table_html = create_dynamic_table(strategy_name)
 
     strategy_output = show_strategy_recommendations(strategy_name, *checkbox_args)
+    print(f"analyze_spins: Strategy output = {strategy_output}")  # Debug print
 
     return (spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output, sides_output,
@@ -2089,14 +2090,18 @@ with gr.Blocks() as demo:
     )
 
     analyze_button.click(
-        fn=lambda spins_input, reset_scores, strategy_name, *checkbox_args: analyze_spins(spins_input, reset_scores, strategy_name, *checkbox_args) + (create_color_code_table(),),
+        fn=analyze_spins,
         inputs=[spins_display, reset_scores_checkbox, strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
         outputs=[
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_table, top_18_table, strongest_numbers_output,
-            dynamic_table_output, strategy_output, color_code_output
+            dynamic_table_output, strategy_output
         ]
+    ).then(
+        fn=create_color_code_table,
+        inputs=[],
+        outputs=[color_code_output]
     )
 
     reset_button.click(
