@@ -2059,14 +2059,14 @@ with gr.Blocks() as demo:
                 lines=2
             )
 
-        with gr.Row(elem_classes="white-row"):
-            num_spins_input = gr.Dropdown(
-                label="Number of Random Spins",
-                choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
-                value="5",
-                elem_classes="num-spins-dropdown",
-                elem_id="number-of-random-spins"
-            )
+    with gr.Row(elem_classes="white-row"):
+        num_spins_input = gr.Dropdown(
+            label="Number of Random Spins",
+            choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+            value="5",
+            elem_classes="num-spins-dropdown",
+            elem_id="number-of-random-spins"
+        )
         generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["generate-spins-btn", "action-button"])
         analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
         undo_button = gr.Button("Undo Last Spin", elem_classes="action-button")
@@ -2095,15 +2095,13 @@ with gr.Blocks() as demo:
             choices=category_choices,
             value="Even Money Strategies",
             allow_custom_value=False,
-            interactive=True,  # From the last change
             elem_id="select-category"
         )
         strategy_dropdown = gr.Dropdown(
             label="Select Strategy",
             choices=strategy_categories["Even Money Strategies"],
             value="Best Even Money Bets",
-            allow_custom_value=False,
-            interactive=True  # From the last change
+            allow_custom_value=False
         )
         reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes="action-button")
 
@@ -2292,10 +2290,10 @@ with gr.Blocks() as demo:
         outputs=[last_spin_display]
     )
 
-def update_strategy_dropdown(category):
-    if category == "None":
-        return gr.update(choices=["None"], value="None")
-    return gr.update(choices=strategy_categories[category], value=strategy_categories[category][0])
+    def update_strategy_dropdown(category):
+        if category == "None":
+            return gr.update(choices=["None"], value="None")
+        return gr.update(choices=strategy_categories[category], value=strategy_categories[category][0])
 
     category_dropdown.change(
         fn=update_strategy_dropdown,
