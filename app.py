@@ -865,6 +865,15 @@ def undo_last_spin(current_spins_display, strategy_name, *checkbox_args):
             straight_up_html, top_18_html, strongest_numbers_output, spins_input, spins_input,
             dynamic_table_html, strategy_output, create_color_code_table())
 
+def clear_all():
+    # Clear spins
+    state.selected_numbers.clear()
+    state.last_spins = []
+    # Reset scores
+    state.reset()
+    # Clear all outputs
+    return "", "", "All spins and scores cleared successfully!", "", "", "", "", "", "", "", "", "", "", "", ""
+
 def generate_random_spins(num_spins, current_spins_display, num_to_show):
     num_spins = int(num_spins)
     if num_spins <= 0:
@@ -1856,7 +1865,7 @@ with gr.Blocks() as demo:
                     else:
                         color = colors.get(str(num), "black")
                         is_selected = int(num) in state.selected_numbers
-                        btn_classes = [f"roulette-button", color]  # Use a list to ensure proper class application
+                        btn_classes = [f"roulette-button", color]
                         if is_selected:
                             btn_classes.append("selected")
                         btn = gr.Button(
@@ -1941,6 +1950,7 @@ with gr.Blocks() as demo:
 
     with gr.Row():
         clear_spins_button = gr.Button("Clear Spins", elem_classes="clear-spins-btn small-btn")
+        clear_all_button = gr.Button("Clear All", elem_classes="clear-spins-btn small-btn")
         print("Button Class Set")
 
     with gr.Row():
@@ -2080,6 +2090,17 @@ with gr.Blocks() as demo:
         fn=clear_spins,
         inputs=[],
         outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display]
+    )
+
+    clear_all_button.click(
+        fn=clear_all,
+        inputs=[],
+        outputs=[
+            spins_display, spins_textbox, spin_analysis_output, last_spin_display,
+            even_money_output, dozens_output, columns_output, streets_output,
+            corners_output, six_lines_output, splits_output, sides_output,
+            straight_up_table, top_18_table, strongest_numbers_output
+        ]
     )
 
     generate_spins_button.click(
