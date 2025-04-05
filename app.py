@@ -1876,7 +1876,8 @@ with gr.Blocks(title="Roulette Spin Analyzer with Strategies (European Table)", 
             label="",
             value="",
             interactive=False,
-            lines=5
+            lines=5,
+            elem_id="spin-analysis-output"  # Added explicit elem_id
         )
 
     # Tooltip descriptions for strategies
@@ -1922,7 +1923,7 @@ with gr.Blocks(title="Roulette Spin Analyzer with Strategies (European Table)", 
                             gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
                         else:
                             color = colors.get(str(num), "black")
-                            is_selected = int(num) in state.selected_numbers  # Updated to use state
+                            is_selected = int(num) in state.selected_numbers
                             btn_classes = f"roulette-button {color}"
                             if is_selected:
                                 btn_classes += " selected"
@@ -2158,7 +2159,7 @@ with gr.Blocks(title="Roulette Spin Analyzer with Strategies (European Table)", 
             sides_output, straight_up_table, top_18_table, strongest_numbers_output,
             dynamic_table_output, strategy_output
         ],
-        _js="() => { document.querySelector('#" + spin_analysis_output.elem_id + " textarea').value = 'Loading...'; }"
+        _js="() => { document.querySelector('#spin-analysis-output textarea').value = 'Loading...'; }"
     ).then(
         fn=create_color_code_table,
         inputs=[],
