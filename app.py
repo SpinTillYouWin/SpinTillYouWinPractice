@@ -1893,7 +1893,7 @@ with gr.Blocks() as demo:
     
     # Add a link to the PDF using the corrected absolute URL
     gr.HTML(
-        '<a href="https://drive.google.com/uc?export=download&id=1o9H8Lakx1i4_OnDrvHRj_6-KHsOWufjF" target="_blank" style="font-size: 16px; color: #007bff; text-decoration: underline;">📄 View Instructions (PDF+Video) </a>'
+        '<a href="https://drive.google.com/file/d/1o9H8Lakx1i4_OnDrvHRj_6-KHsOWufjF/view?usp=sharing" target="_blank" style="font-size: 16px; color: #007bff; text-decoration: underline;">📄 View Instructions1 PDF (Opens in Google Drive)</a>'
     )
 
     spins_display = gr.State(value="")
