@@ -1897,6 +1897,7 @@ with gr.Blocks() as demo:
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
 
+    # Create the table with inline styles as a fallback
     with gr.Column(elem_classes="roulette-table"):
         for row in table_layout:
             with gr.Row(elem_classes="table-row"):
@@ -1909,10 +1910,13 @@ with gr.Blocks() as demo:
                         btn_classes = [f"roulette-button", color]
                         if is_selected:
                             btn_classes.append("selected")
+                        # Inline style as a fallback
+                        inline_style = f"background-color: {color}; color: white; border: 1px solid white; text-align: center; font-weight: bold;"
                         btn = gr.Button(
                             value=num,
                             min_width=40,
-                            elem_classes=btn_classes
+                            elem_classes=btn_classes,
+                            elem_style=inline_style  # Fallback inline style
                         )
                         btn.click(
                             fn=add_spin,
