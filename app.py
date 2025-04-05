@@ -1846,41 +1846,23 @@ with gr.Blocks() as demo:
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
 
-    # Create the table with inline styles
+    # Create the table with elem_classes
     with gr.Column(elem_classes="roulette-table"):
         for row in table_layout:
             with gr.Row(elem_classes="table-row"):
                 for num in row:
                     if num == "":
-                        gr.Button(
-                            value=" ",
-                            interactive=False,
-                            min_width=40,
-                            style={"background-color": "transparent", "border": "1px solid white", "width": "40px", "height": "40px"}
-                        )
+                        gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
                     else:
                         color = colors.get(str(num), "black")
                         is_selected = int(num) in state.selected_numbers
-                        btn_style = {
-                            "background-color": color,
-                            "color": "white",
-                            "border": "1px solid white" if not is_selected else "3px solid yellow",
-                            "text-align": "center",
-                            "font-weight": "bold",
-                            "width": "40px",
-                            "height": "40px",
-                            "margin": "0",
-                            "padding": "0",
-                            "font-size": "14px",
-                            "display": "flex",
-                            "align-items": "center",
-                            "justify-content": "center",
-                            "box-sizing": "border-box"
-                        }
+                        btn_classes = [f"roulette-button", color]  # Use a list to ensure proper class application
+                        if is_selected:
+                            btn_classes.append("selected")
                         btn = gr.Button(
                             value=num,
                             min_width=40,
-                            style=btn_style
+                            elem_classes=btn_classes
                         )
                         btn.click(
                             fn=add_spin,
@@ -2010,6 +1992,48 @@ with gr.Blocks() as demo:
                     checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
                     victory_vortex_checkboxes_list.append(checkbox)
 
+    gr.HTML("""
+    <style>
+      .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+      .roulette-button.red { background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+      .roulette-button.black { background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+      .roulette-button:hover { opacity: 0.8; }
+      table { border-collapse: collapse; text-align: center; }
+      td, th { border: 1px solid #333; padding: 8px; font-family: Arial, sans-serif; }
+      .roulette-button.selected { border: 3px solid yellow !important; opacity: 0.9; }
+      .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid white !important; box-sizing: border-box !important; }
+      .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
+      .roulette-table { display: flex !important; flex-direction: column !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
+      .table-row { display: flex !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap !important; line-height: 0 !important; }
+      button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
+      button.clear-spins-btn:hover { background-color: #cc0000 !important; }
+      button.small-btn { padding: 5px 10px !important; font-size: 12px !important; min-width: 80px !important; }
+      button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
+      button.generate-spins-btn:hover { background-color: #0056b3 !important; }
+      .num-spins-input { margin-right: 5px !important; }
+      .white-row { background-color: white !important; }
+      .num-spins-dropdown { width: 100px !important; margin-right: 5px !important; }
+      .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; }
+      button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
+      button.green-btn:hover { background-color: #218838 !important; }
+      .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
+      /* Style for section labels */
+      #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
+      #spin-analysis label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #strongest-numbers-table label { background-color: #E6E6FA !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      @media (max-width: 600px) {
+          .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
+          td, th { padding: 5px; font-size: 12px; }
+          .gr-textbox { font-size: 12px; }
+          .scrollable-table { max-height: 200px; }
+      }
+    </style>
+    """)
+    print("CSS Updated")
+
     with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
         with gr.Row():
             with gr.Column():
@@ -2044,40 +2068,6 @@ with gr.Blocks() as demo:
         save_button = gr.Button("Save Session")
         load_input = gr.File(label="Upload Session")
     save_output = gr.File(label="Download Session")
-
-    gr.HTML("""
-    <style>
-      table { border-collapse: collapse; text-align: center; }
-      td, th { border: 1px solid #333; padding: 8px; font-family: Arial, sans-serif; }
-      .roulette-table { display: flex; flex-direction: column; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
-      .table-row { display: flex; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap; line-height: 0 !important; }
-      button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
-      button.clear-spins-btn:hover { background-color: #cc0000 !important; }
-      button.small-btn { padding: 5px 10px !important; font-size: 12px !important; min-width: 80px !important; }
-      button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
-      button.generate-spins-btn:hover { background-color: #0056b3 !important; }
-      .num-spins-input { margin-right: 5px !important; }
-      .white-row { background-color: white !important; }
-      .num-spins-dropdown { width: 100px !important; margin-right: 5px !important; }
-      .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; }
-      button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
-      button.green-btn:hover { background-color: #218838 !important; }
-      .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
-      /* Style for section labels */
-      #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
-      #spin-analysis label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
-      #strongest-numbers-table label { background-color: #E6E6FA !important; color: black !important; padding: 5px; border-radius: 3px; }
-      #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
-      #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
-      #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
-      @media (max-width: 600px) {
-          td, th { padding: 5px; font-size: 12px; }
-          .gr-textbox { font-size: 12px; }
-          .scrollable-table { max-height: 200px; }
-      }
-    </style>
-    """)
-    print("CSS Updated")
 
     # Event Handlers
     spins_textbox.change(
