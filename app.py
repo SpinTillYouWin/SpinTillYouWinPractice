@@ -1542,6 +1542,86 @@ def top_pick_18_numbers_without_neighbours():
 
     return "\n".join(recommendations)
 
+def best_even_money_and_top_18():
+    recommendations = []
+
+    # Best Even Money Bets (Top 3 with tie handling)
+    sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
+    even_money_hits = [item for item in sorted_even_money if item[1] > 0]
+    
+    if even_money_hits:
+        # Collect the top 3 bets, including ties
+        top_bets = []
+        scores_seen = set()
+        for name, score in sorted_even_money:
+            if len(top_bets) < 3 or score in scores_seen:
+                top_bets.append((name, score))
+                scores_seen.add(score)
+            else:
+                break
+
+        recommendations.append("Best Even Money Bets (Top 3):")
+        for i, (name, score) in enumerate(top_bets[:3], 1):
+            recommendations.append(f"{i}. {name}: {score}")
+
+        # Check for ties among the top 3 positions
+        if len(top_bets) > 1:
+            # Check for ties at the 1st position
+            first_score = top_bets[0][1]
+            tied_first = [name for name, score in top_bets if score == first_score]
+            if len(tied_first) > 1:
+                recommendations.append(f"Note: Tie for 1st place among {', '.join(tied_first)} with score {first_score}")
+
+            # Check for ties at the 2nd position
+            if len(top_bets) > 1:
+                second_score = top_bets[1][1]
+                tied_second = [name for name, score in top_bets if score == second_score]
+                if len(tied_second) > 1:
+                    recommendations.append(f"Note: Tie for 2nd place among {', '.join(tied_second)} with score {second_score}")
+
+            # Check for ties at the 3rd position
+            if len(top_bets) > 2:
+                third_score = top_bets[2][1]
+                tied_third = [name for name, score in top_bets if score == third_score]
+                if len(tied_third) > 1:
+                    recommendations.append(f"Note: Tie for 3rd place among {', '.join(tied_third)} with score {third_score}")
+    else:
+        recommendations.append("Best Even Money Bets: No hits yet.")
+
+    # Top 18 Numbers without Neighbours (same as original)
+    recommendations.append("")  # Add a blank line for separation
+    straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+    straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
+
+    if straight_up_df.empty or len(straight_up_df) < 18:
+        recommendations.append("Top 18 Numbers without Neighbours: Not enough numbers have hit yet (need at least 18).")
+        return "\n".join(recommendations)
+
+    top_18_df = straight_up_df.head(18)
+    top_18_numbers = top_18_df["Number"].tolist()
+
+    top_6 = top_18_numbers[:6]
+    next_6 = top_18_numbers[6:12]
+    last_6 = top_18_numbers[12:18]
+
+    recommendations.append("Top 18 Numbers without Neighbours:")
+    recommendations.append("\nTop 6 Numbers (Yellow):")
+    for i, num in enumerate(top_6, 1):
+        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
+        recommendations.append(f"{i}. Number {num} (Score: {score})")
+
+    recommendations.append("\nNext 6 Numbers (Blue):")
+    for i, num in enumerate(next_6, 1):
+        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
+        recommendations.append(f"{i}. Number {num} (Score: {score})")
+
+    recommendations.append("\nLast 6 Numbers (Green):")
+    for i, num in enumerate(last_6, 1):
+        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
+        recommendations.append(f"{i}. Number {num} (Score: {score})")
+
+    return "\n".join(recommendations)
+
 def kitchen_martingale_output(*checkboxes):
     sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
     even_money_hits = [item for item in sorted_even_money if item[1] > 0]
@@ -1760,6 +1840,7 @@ STRATEGIES = {
     "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
     "Cold Bet Strategy": {"function": cold_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
     "Best Even Money Bets": {"function": best_even_money_bets, "categories": ["even_money"]},
+    "Best Even Money Bets + Top 18 Numbers": {"function": best_even_money_and_top_18, "categories": ["even_money", "numbers"]},  # New strategy
     "Best Dozens": {"function": best_dozens, "categories": ["dozens"]},
     "Best Columns": {"function": best_columns, "categories": ["columns"]},
     "Fibonacci Strategy": {"function": fibonacci_strategy, "categories": ["dozens", "columns"]},
