@@ -2084,7 +2084,7 @@ with gr.Blocks() as demo:
     }
 
     # Category dropdown choices
-    category_choices = ["None"] + sorted(strategy_categories.keys())
+    category_choices = sorted(strategy_categories.keys())
 
     # State to store the current strategy
     selected_strategy = gr.State(value="Best Even Money Bets")
@@ -2291,9 +2291,7 @@ with gr.Blocks() as demo:
     )
 
     def update_strategy_dropdown(category):
-        if category == "None":
-            return gr.update(choices=["None"], value="None")
-        return gr.update(choices=strategy_categories[category], value=strategy_categories[category][0])
+    return gr.update(choices=strategy_categories[category], value=strategy_categories[category][0])
 
     category_dropdown.change(
         fn=update_strategy_dropdown,
@@ -2377,7 +2375,7 @@ with gr.Blocks() as demo:
         inputs=[strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
         outputs=[strategy_output]
     ).then(
-        fn=lambda strategy: (print(f"Updating Dynamic Table with Strategy: {strategy}"), create_dynamic_table(strategy if strategy != "None" else None))[-1],
+        fn=lambda strategy: (print(f"Updating Dynamic Table with Strategy: {strategy}"), create_dynamic_table(strategy))[-1],
         inputs=[strategy_dropdown],
         outputs=[dynamic_table_output]
     )
