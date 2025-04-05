@@ -2159,8 +2159,7 @@ with gr.Blocks(title="Roulette Spin Analyzer with Strategies (European Table)", 
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_table, top_18_table, strongest_numbers_output,
             dynamic_table_output, strategy_output
-        ],
-        _js="() => { document.querySelector('#spin-analysis-output textarea').value = 'Loading...'; }"
+        ]
     ).then(
         fn=create_color_code_table,
         inputs=[],
