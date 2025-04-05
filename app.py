@@ -129,18 +129,6 @@ def add_spin(number, current_spins, num_to_show):
     except Exception as e:
         return current_spins, current_spins, f"Unexpected error: {str(e)}. Please try again or contact support."
 
-def spin_wheel(current_spins, num_to_show):
-    new_spin = str(random.randint(0, 36))
-    spins = current_spins.split(", ") if current_spins else []
-    if spins == [""]:
-        spins = []
-    spins.append(new_spin)
-    state.selected_numbers.add(int(new_spin))
-    new_spins = ", ".join(spins)
-    color = colors.get(new_spin, "black")
-    html_output = f'<div style="background-color: {color}; color: white; padding: 10px; border-radius: 5px; text-align: center; font-size: 18px;">Wheel Landed on: {new_spin}</div>'
-    return new_spins, new_spins, html_output
-    
 # Function to clear spins
 def clear_spins():
     state.selected_numbers.clear()
@@ -876,57 +864,18 @@ def undo_last_spin(current_spins_display, strategy_name, *checkbox_args):
             streets_output, corners_output, six_lines_output, splits_output, sides_output,
             straight_up_html, top_18_html, strongest_numbers_output, spins_input, spins_input,
             dynamic_table_html, strategy_output, create_color_code_table())
-def get_statistics():
-    if not state.last_spins:
-        return "No spins yet—add some to see statistics!"
-    
-    total_spins = len(state.last_spins)
-    # Hottest number
-    sorted_scores = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
-    hottest = sorted_scores[0] if sorted_scores and sorted_scores[0][1] > 0 else ("None", 0)
-    # Coldest number (excluding ones with 0 hits)
-    sorted_scores_nonzero = [item for item in sorted_scores if item[1] > 0]
-    coldest = sorted_scores_nonzero[-1] if sorted_scores_nonzero else ("None", 0)
-    # Color percentages
-    red_count = sum(1 for spin in state.last_spins if spin in colors and colors[spin] == "red")
-    black_count = sum(1 for spin in state.last_spins if spin in colors and colors[spin] == "black")
-    green_count = sum(1 for spin in state.last_spins if spin in colors and colors[spin] == "green")
-    red_percent = (red_count / total_spins * 100) if total_spins > 0 else 0
-    black_percent = (black_count / total_spins * 100) if total_spins > 0 else 0
-    green_percent = (green_count / total_spins * 100) if total_spins > 0 else 0
 
-    stats = [
-        f"Total Spins: {total_spins}",
-        f"Hottest Number: {hottest[0]} (Hits: {hottest[1]})",
-        f"Coldest Number: {coldest[0]} (Hits: {coldest[1]})",
-        f"Red Spins: {red_count} ({red_percent:.1f}%)",
-        f"Black Spins: {black_count} ({black_percent:.1f}%)",
-        f"Green Spins: {green_count} ({green_percent:.1f}%)"
-    ]
-    return "\n".join(stats)
-
-def generate_random_spins(num_spins, current_spins, num_to_show, bias):
+def generate_random_spins(num_spins, current_spins_display, num_to_show):
     num_spins = int(num_spins)
     if num_spins <= 0:
-        return current_spins, current_spins, "Please enter a positive number of spins to generate."
-    
-    # Get current scores for bias
-    all_numbers = list(range(37))
-    weights = None
-    if bias == "Hot" and any(state.scores.values()):
-        weights = [state.scores.get(n, 0) + 1 for n in all_numbers]  # +1 to avoid zero weights
-    elif bias == "Cold" and any(state.scores.values()):
-        max_score = max(state.scores.values()) + 1
-        weights = [max_score - state.scores.get(n, 0) for n in all_numbers]
-    
-    new_spins = [str(random.choices(all_numbers, weights=weights)[0]) if weights else str(random.randint(0, 36)) for _ in range(num_spins)]
-    if current_spins:
-        updated_spins = current_spins + ", " + ", ".join(new_spins)
+        return current_spins_display, current_spins_display, "Please enter a positive number of spins to generate."
+
+    new_spins = [str(random.randint(0, 36)) for _ in range(num_spins)]
+    if current_spins_display:
+        updated_spins = current_spins_display + ", " + ", ".join(new_spins)
     else:
         updated_spins = ", ".join(new_spins)
-    for spin in new_spins:
-        state.selected_numbers.add(int(spin))
-    return updated_spins, updated_spins, f"Generated {num_spins} random spins ({bias} bias): {', '.join(new_spins)}"
+    return updated_spins, updated_spins, f"Generated {num_spins} random spins: {', '.join(new_spins)}"
 
 # Strategy functions
 def best_even_money_bets():
@@ -1897,48 +1846,32 @@ with gr.Blocks() as demo:
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
 
-    # Create the table with direct styling
+    # Create the table and bind events in one go
     with gr.Column(elem_classes="roulette-table"):
         for row in table_layout:
             with gr.Row(elem_classes="table-row"):
                 for num in row:
                     if num == "":
-                        gr.Button(
-                            value=" ",
-                            interactive=False,
-                            min_width=40,
-                            style={"background-color": "transparent", "border": "1px solid white", "width": "40px", "height": "40px"}
-                        )
+                        gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
                     else:
                         color = colors.get(str(num), "black")
-                        is_selected = int(num) in state.selected_numbers
-                        btn_style = {
-                            "background-color": color,
-                            "color": "white",
-                            "border": "1px solid white" if not is_selected else "3px solid yellow",
-                            "text-align": "center",
-                            "font-weight": "bold",
-                            "width": "40px",
-                            "height": "40px",
-                            "margin": "0",
-                            "padding": "0",
-                            "font-size": "14px",
-                            "display": "flex",
-                            "align-items": "center",
-                            "justify-content": "center",
-                            "box-sizing": "border-box"
-                        }
+                        is_selected = int(num) in selected_numbers
+                        btn_classes = f"roulette-button {color}"
+                        if is_selected:
+                            btn_classes += " selected"
                         btn = gr.Button(
                             value=num,
                             min_width=40,
-                            style=btn_style
+                            elem_classes=btn_classes
                         )
+                        # Bind the click event directly within the loop
                         btn.click(
                             fn=add_spin,
                             inputs=[gr.State(value=num), spins_display, last_spin_count],
                             outputs=[spins_display, spins_textbox, last_spin_display]
                         )
 
+    # New accordion for Strongest Numbers tables, placed here
     with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-table"):
         with gr.Row():
             with gr.Column():
@@ -1981,7 +1914,10 @@ with gr.Blocks() as demo:
         "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"]
     }
 
+    # Category dropdown choices
     category_choices = ["None"] + sorted(strategy_categories.keys())
+
+    # State to store the current strategy
     selected_strategy = gr.State(value="Best Even Money Bets")
 
     with gr.Row():
@@ -2057,13 +1993,59 @@ with gr.Blocks() as demo:
                     checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
                     victory_vortex_checkboxes_list.append(checkbox)
 
-    with gr.Accordion("Statistics Dashboard", open=False):
-        stats_output = gr.Textbox(
-            label="Spin Statistics",
-            value=get_statistics(),
-            interactive=False,
-            lines=6
-        )
+    gr.HTML("""
+    <style>
+      .roulette-button.green { background-color: green; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
+      .roulette-button.red { background-color: red; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
+      .roulette-button.black { background-color: black; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
+      .roulette-button:hover { opacity: 0.8; }
+      table { border-collapse: collapse; text-align: center; }
+      td, th { border: 1px solid #333; padding: 8px; font-family: Arial, sans-serif; }
+      .roulette-button.selected { border: 3px solid yellow; opacity: 0.9; }
+      .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex; align-items: center; justify-content: center; border: 1px solid white !important; box-sizing: border-box; }
+      .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box; }
+      .roulette-table { display: flex; flex-direction: column; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
+      .table-row { display: flex; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap; line-height: 0 !important; }
+      button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
+      button.clear-spins-btn:hover { background-color: #cc0000 !important; }
+      button.small-btn { padding: 5px 10px !important; font-size: 12px !important; min-width: 80px !important; }
+      button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
+      button.generate-spins-btn:hover { background-color: #0056b3 !important; }
+      .num-spins-input { margin-right: 5px !important; }
+      .white-row { background-color: white !important; }
+      .num-spins-dropdown { width: 100px !important; margin-right: 5px !important; }
+      .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; }
+      button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
+      button.green-btn:hover { background-color: #218838 !important; }
+      .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
+      /* Style for section labels */
+      #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
+      #spin-analysis label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #strongest-numbers-table label { background-color: #E6E6FA !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      @media (max-width: 600px) {
+          .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
+          td, th { padding: 5px; font-size: 12px; }
+          .gr-textbox { font-size: 12px; }
+          .scrollable-table { max-height: 200px; }
+      }
+    </style>
+    """)
+    print("CSS Updated")
+
+    spins_textbox.change(
+        fn=lambda x: x,
+        inputs=spins_textbox,
+        outputs=spins_display
+    )
+
+    clear_spins_button.click(
+        fn=clear_spins,
+        inputs=[],
+        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display]
+    )
 
     with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
         with gr.Row():
@@ -2101,22 +2083,6 @@ with gr.Blocks() as demo:
     save_output = gr.File(label="Download Session")
 
     # Event Handlers
-    spins_textbox.change(
-        fn=lambda x: x,
-        inputs=spins_textbox,
-        outputs=spins_display
-    )
-
-    clear_spins_button.click(
-        fn=clear_spins,
-        inputs=[],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display]
-    ).then(
-        fn=get_statistics,
-        inputs=[],
-        outputs=[stats_output]
-    )
-
     generate_spins_button.click(
         fn=generate_random_spins,
         inputs=[num_spins_input, spins_display, last_spin_count],
@@ -2125,10 +2091,6 @@ with gr.Blocks() as demo:
         fn=format_spins_as_html,
         inputs=[spins_display, last_spin_count],
         outputs=[last_spin_display]
-    ).then(
-        fn=get_statistics,
-        inputs=[],
-        outputs=[stats_output]
     )
 
     last_spin_count.change(
@@ -2137,6 +2099,7 @@ with gr.Blocks() as demo:
         outputs=[last_spin_display]
     )
 
+    # Update the second dropdown based on the selected category
     def update_strategy_dropdown(category):
         if category == "None":
             return gr.update(choices=["None"], value="None")
@@ -2161,20 +2124,12 @@ with gr.Blocks() as demo:
         fn=create_color_code_table,
         inputs=[],
         outputs=[color_code_output]
-    ).then(
-        fn=get_statistics,
-        inputs=[],
-        outputs=[stats_output]
     )
 
     reset_button.click(
         fn=reset_scores,
         inputs=[],
         outputs=[spin_analysis_output]
-    ).then(
-        fn=get_statistics,
-        inputs=[],
-        outputs=[stats_output]
     )
 
     clear_button.click(
@@ -2186,10 +2141,6 @@ with gr.Blocks() as demo:
             sides_output, straight_up_table, top_18_table, strongest_numbers_output,
             dynamic_table_output, strategy_output, color_code_output
         ]
-    ).then(
-        fn=get_statistics,
-        inputs=[],
-        outputs=[stats_output]
     )
 
     save_button.click(
@@ -2202,10 +2153,6 @@ with gr.Blocks() as demo:
         fn=load_session,
         inputs=[load_input],
         outputs=[spins_display, spins_textbox]
-    ).then(
-        fn=get_statistics,
-        inputs=[],
-        outputs=[stats_output]
     )
 
     undo_button.click(
@@ -2218,12 +2165,9 @@ with gr.Blocks() as demo:
             spins_textbox, spins_display, dynamic_table_output, strategy_output,
             color_code_output
         ]
-    ).then(
-        fn=get_statistics,
-        inputs=[],
-        outputs=[stats_output]
     )
 
+    # Update both the dynamic table and strategy recommendations when the strategy changes
     strategy_dropdown.change(
         fn=toggle_checkboxes,
         inputs=[strategy_dropdown],
