@@ -1857,15 +1857,9 @@ STRATEGIES = {
 }
 
 def show_strategy_recommendations(strategy_name, *args):
-    # Check if no spins have been analyzed yet
     if not any(scores.values()) and not any(even_money_scores.values()):
         return "<p>Please analyze some spins first to generate scores.</p>"
 
-    # Handle the "None" strategy case
-    if strategy_name == "None":
-        return "<p>No strategy selected. Please choose a strategy from the dropdown to view recommendations.</p>"
-
-    # Proceed with strategy recommendations if a valid strategy is selected
     strategy_info = STRATEGIES[strategy_name]
     strategy_func = strategy_info["function"]
 
