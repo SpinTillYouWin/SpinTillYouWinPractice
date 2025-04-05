@@ -874,6 +874,9 @@ def clear_all():
     # Clear all outputs
     return "", "", "All spins and scores cleared successfully!", "", "", "", "", "", "", "", "", "", "", "", ""
 
+def reset_strategy_dropdowns():
+    return "Even Money Strategies", "Best Even Money Bets"
+
 def generate_random_spins(num_spins, current_spins_display, num_to_show):
     num_spins = int(num_spins)
     if num_spins <= 0:
@@ -1942,6 +1945,7 @@ with gr.Blocks() as demo:
             value="Best Even Money Bets",
             allow_custom_value=False
         )
+        reset_strategy_button = gr.Button("Reset to Default", elem_classes="action-button")
 
     with gr.Row(elem_classes="white-row"):
         reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
@@ -2130,6 +2134,12 @@ with gr.Blocks() as demo:
         outputs=strategy_dropdown
     )
 
+    reset_strategy_button.click(
+        fn=reset_strategy_dropdowns,
+        inputs=[],
+        outputs=[category_dropdown, strategy_dropdown]
+    )
+    
     analyze_button.click(
         fn=analyze_spins,
         inputs=[spins_display, reset_scores_checkbox, strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
