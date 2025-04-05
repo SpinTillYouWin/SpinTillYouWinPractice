@@ -529,38 +529,6 @@ def create_dynamic_table(strategy_name=None):
                     number_highlights[str(num)] = "rgba(0, 255, 255, 0.5)"
                 for num in last_6:
                     number_highlights[str(num)] = "rgba(0, 255, 0, 0.5)"
-                    
-        elif strategy_name == "Best Even Money Bets + Top 18 Numbers":
-            # Even Money Bets
-            trending_even_money = None
-            second_even_money = None
-            third_even_money = None
-            if sorted_even_money:
-                # Only consider bets with non-zero scores
-                even_money_hits = [item for item in sorted_even_money if item[1] > 0]
-                if even_money_hits:
-                    trending_even_money = even_money_hits[0][0]
-                    if len(even_money_hits) > 1:
-                        second_even_money = even_money_hits[1][0]
-                    if len(even_money_hits) > 2:
-                        third_even_money = even_money_hits[2][0]
-
-            # Top 18 Numbers without Neighbours
-            straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
-            straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
-            if len(straight_up_df) >= 18:
-                top_18_df = straight_up_df.head(18)
-                top_18_numbers = top_18_df["Number"].tolist()
-                top_6 = top_18_numbers[:6]
-                next_6 = top_18_numbers[6:12]
-                last_6 = top_18_numbers[12:18]
-                for num in top_6:
-                    number_highlights[str(num)] = "rgba(255, 255, 0, 0.5)"  # Yellow
-                for num in next_6:
-                    number_highlights[str(num)] = "rgba(0, 255, 255, 0.5)"  # Cyan
-                for num in last_6:
-                    number_highlights[str(num)] = "rgba(0, 255, 0, 0.5)"  # Green
-    
 
     html = '<table border="1" style="border-collapse: collapse; text-align: center; font-size: 14px; font-family: Arial, sans-serif; border-color: black; table-layout: fixed; width: 100%; max-width: 600px;">'
     html += '<colgroup>'
@@ -613,23 +581,34 @@ def create_dynamic_table(strategy_name=None):
 
     html += "<tr>"
     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
-    bg_color = top_color if trending_even_money == "Low" else (middle_color if second_even_money == "Low" else (lower_color if third_even_money == "Low" else "white"))
+    bg_color = top_color if trending_even_money == "Low" else (middle_color if second_even_money == "Low" else "white")
     html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">Low (1 to 18)</td>'
-    bg_color = top_color if trending_even_money == "High" else (middle_color if second_even_money == "High" else (lower_color if third_even_money == "High" else "white"))
+    bg_color = top_color if trending_even_money == "High" else (middle_color if second_even_money == "High" else "white")
     html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">High (19 to 36)</td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
 
     html += "<tr>"
     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
-    bg_color = top_color if trending_even_money == "Odd" else (middle_color if second_even_money == "Odd" else (lower_color if third_even_money == "Odd" else "white"))
+    bg_color = top_color if trending_dozen == "1st Dozen" else (middle_color if second_dozen == "1st Dozen" else "white")
+    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">1st Dozen</td>'
+    bg_color = top_color if trending_dozen == "2nd Dozen" else (middle_color if second_dozen == "2nd Dozen" else "white")
+    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">2nd Dozen</td>'
+    bg_color = top_color if trending_dozen == "3rd Dozen" else (middle_color if second_dozen == "3rd Dozen" else "white")
+    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">3rd Dozen</td>'
+    html += '<td style="border-color: black; box-sizing: border-box;"></td>'
+    html += "</tr>"
+
+    html += "<tr>"
+    html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
+    bg_color = top_color if trending_even_money == "Odd" else (middle_color if second_even_money == "Odd" else "white")
     html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
     html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">ODD</td>'
-    bg_color = top_color if trending_even_money == "Red" else (middle_color if second_even_money == "Red" else (lower_color if third_even_money == "Red" else "white"))
+    bg_color = top_color if trending_even_money == "Red" else (middle_color if second_even_money == "Red" else "white")
     html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">RED</td>'
-    bg_color = top_color if trending_even_money == "Black" else (middle_color if second_even_money == "Black" else (lower_color if third_even_money == "Black" else "white"))
+    bg_color = top_color if trending_even_money == "Black" else (middle_color if second_even_money == "Black" else "white")
     html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">BLACK</td>'
-    bg_color = top_color if trending_even_money == "Even" else (middle_color if second_even_money == "Even" else (lower_color if third_even_money == "Even" else "white"))
+    bg_color = top_color if trending_even_money == "Even" else (middle_color if second_even_money == "Even" else "white")
     html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">EVEN</td>'
     html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
@@ -793,8 +772,7 @@ def analyze_spins(spins_input, reset_scores, strategy_name, *checkbox_args):
                 streets_output, corners_output, six_lines_output, splits_output, sides_output,
                 straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html, strategy_output)
     except Exception as e:
-        print(f"Error in analyze_spins: {str(e)}")
-        return (f"Error: {str(e)}", "", "", "", "", "", "", "", "", "", "", "", "", "")
+        return f"Unexpected error while analyzing spins: {str(e)}. Please try again.", "", "", "", "", "", "", "", "", "", "", "", "", ""
 
 # Function to reset scores
 def reset_scores():
@@ -802,94 +780,91 @@ def reset_scores():
     return "Scores reset!"
 
 def undo_last_spin(current_spins_display, strategy_name, *checkbox_args):
-    try:
-        if not state.last_spins:
-            return ("No spins to undo.", "", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", "", create_color_code_table())
+    if not state.last_spins:
+        return ("No spins to undo.", "", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", "", create_color_code_table())
 
-        last_spin = state.last_spins.pop()
-        spin_value = int(last_spin)
+    last_spin = state.last_spins.pop()
+    spin_value = int(last_spin)
 
-        if spin_value in state.scores:
-            state.scores[spin_value] -= 1
+    if spin_value in state.scores:
+        state.scores[spin_value] -= 1
 
-        for name, numbers in EVEN_MONEY.items():
-            if spin_value in numbers:
-                state.even_money_scores[name] -= 1
+    for name, numbers in EVEN_MONEY.items():
+        if spin_value in numbers:
+            state.even_money_scores[name] -= 1
 
-        for name, numbers in DOZENS.items():
-            if spin_value in numbers:
-                state.dozen_scores[name] -= 1
+    for name, numbers in DOZENS.items():
+        if spin_value in numbers:
+            state.dozen_scores[name] -= 1
 
-        for name, numbers in COLUMNS.items():
-            if spin_value in numbers:
-                state.column_scores[name] -= 1
+    for name, numbers in COLUMNS.items():
+        if spin_value in numbers:
+            state.column_scores[name] -= 1
 
-        for name, numbers in STREETS.items():
-            if spin_value in numbers:
-                state.street_scores[name] -= 1
+    for name, numbers in STREETS.items():
+        if spin_value in numbers:
+            state.street_scores[name] -= 1
 
-        for name, numbers in CORNERS.items():
-            if spin_value in numbers:
-                state.corner_scores[name] -= 1
+    for name, numbers in CORNERS.items():
+        if spin_value in numbers:
+            state.corner_scores[name] -= 1
 
-        for name, numbers in SIX_LINES.items():
-            if spin_value in numbers:
-                state.six_line_scores[name] -= 1
+    for name, numbers in SIX_LINES.items():
+        if spin_value in numbers:
+            state.six_line_scores[name] -= 1
 
-        for name, numbers in SPLITS.items():
-            if spin_value in numbers:
-                state.split_scores[name] -= 1
+    for name, numbers in SPLITS.items():
+        if spin_value in numbers:
+            state.split_scores[name] -= 1
 
-        if str(spin_value) in [str(x) for x in current_left_of_zero]:
-            state.side_scores["Left Side of Zero"] -= 1
-        if str(spin_value) in [str(x) for x in current_right_of_zero]:
-            state.side_scores["Right Side of Zero"] -= 1
+    if str(spin_value) in [str(x) for x in current_left_of_zero]:
+        state.side_scores["Left Side of Zero"] -= 1
+    if str(spin_value) in [str(x) for x in current_right_of_zero]:
+        state.side_scores["Right Side of Zero"] -= 1
 
-        spins_input = ", ".join(state.last_spins) if state.last_spins else ""
+    spins_input = ", ".join(state.last_spins) if state.last_spins else ""
 
-        spin_analysis_output = f"Undo successful: Removed spin {last_spin}"
-        even_money_output = "Even Money Bets:\n" + "\n".join(f"{name}: {score}" for name, score in state.even_money_scores.items())
-        dozens_output = "Dozens:\n" + "\n".join(f"{name}: {score}" for name, score in state.dozen_scores.items())
-        columns_output = "Columns:\n" + "\n".join(f"{name}: {score}" for name, score in state.column_scores.items())
-        streets_output = "Streets:\n" + "\n".join(f"{name}: {score}" for name, score in state.street_scores.items() if score > 0)
-        corners_output = "Corners:\n" + "\n".join(f"{name}: {score}" for name, score in state.corner_scores.items() if score > 0)
-        six_lines_output = "Double Streets:\n" + "\n".join(f"{name}: {score}" for name, score in state.six_line_scores.items() if score > 0)
-        splits_output = "Splits:\n" + "\n".join(f"{name}: {score}" for name, score in state.split_scores.items() if score > 0)
-        sides_output = "Sides of Zero:\n" + "\n".join(f"{name}: {score}" for name, score in state.side_scores.items())
+    spin_analysis_output = f"Undo successful: Removed spin {last_spin}"
+    even_money_output = "Even Money Bets:\n" + "\n".join(f"{name}: {score}" for name, score in state.even_money_scores.items())
+    dozens_output = "Dozens:\n" + "\n".join(f"{name}: {score}" for name, score in state.dozen_scores.items())
+    columns_output = "Columns:\n" + "\n".join(f"{name}: {score}" for name, score in state.column_scores.items())
+    streets_output = "Streets:\n" + "\n".join(f"{name}: {score}" for name, score in state.street_scores.items() if score > 0)
+    corners_output = "Corners:\n" + "\n".join(f"{name}: {score}" for name, score in state.corner_scores.items() if score > 0)
+    six_lines_output = "Double Streets:\n" + "\n".join(f"{name}: {score}" for name, score in state.six_line_scores.items() if score > 0)
+    splits_output = "Splits:\n" + "\n".join(f"{name}: {score}" for name, score in state.split_scores.items() if score > 0)
+    sides_output = "Sides of Zero:\n" + "\n".join(f"{name}: {score}" for name, score in state.side_scores.items())
 
-        straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
-        straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
-        straight_up_df["Left Neighbor"] = straight_up_df["Number"].apply(lambda x: current_neighbors[x][0] if x in current_neighbors else "")
-        straight_up_df["Right Neighbor"] = straight_up_df["Number"].apply(lambda x: current_neighbors[x][1] if x in current_neighbors else "")
-        straight_up_html = create_html_table(straight_up_df[["Number", "Left Neighbor", "Right Neighbor", "Score"]], "Strongest Numbers")
+    straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+    straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
+    straight_up_df["Left Neighbor"] = straight_up_df["Number"].apply(lambda x: current_neighbors[x][0] if x in current_neighbors else "")
+    straight_up_df["Right Neighbor"] = straight_up_df["Number"].apply(lambda x: current_neighbors[x][1] if x in current_neighbors else "")
+    straight_up_html = create_html_table(straight_up_df[["Number", "Left Neighbor", "Right Neighbor", "Score"]], "Strongest Numbers")
 
-        top_18_df = straight_up_df.head(18).sort_values(by="Number", ascending=True)
-        numbers = top_18_df["Number"].tolist()
-        if len(numbers) < 18:
-            numbers.extend([""] * (18 - len(numbers)))
-        grid_data = [numbers[i::3] for i in range(3)]
-        top_18_html = "<h3>Top 18 Strongest Numbers (Sorted Lowest to Highest)</h3>"
-        top_18_html += '<table border="1" style="border-collapse: collapse; text-align: center;">'
-        for row in grid_data:
-            top_18_html += "<tr>"
-            for num in row:
-                top_18_html += f'<td style="padding: 5px; width: 40px;">{num}</td>'
-            top_18_html += "</tr>"
-        top_18_html += "</table>"
+    top_18_df = straight_up_df.head(18).sort_values(by="Number", ascending=True)
+    numbers = top_18_df["Number"].tolist()
+    if len(numbers) < 18:
+        numbers.extend([""] * (18 - len(numbers)))
+    grid_data = [numbers[i::3] for i in range(3)]
+    top_18_html = "<h3>Top 18 Strongest Numbers (Sorted Lowest to Highest)</h3>"
+    top_18_html += '<table border="1" style="border-collapse: collapse; text-align: center;">'
+    for row in grid_data:
+        top_18_html += "<tr>"
+        for num in row:
+            top_18_html += f'<td style="padding: 5px; width: 40px;">{num}</td>'
+        top_18_html += "</tr>"
+    top_18_html += "</table>"
 
-        strongest_numbers_output = get_strongest_numbers_with_neighbors(3)
-        dynamic_table_html = create_dynamic_table(strategy_name)
+    strongest_numbers_output = get_strongest_numbers_with_neighbors(3)
+    dynamic_table_html = create_dynamic_table(strategy_name)
 
-        print(f"undo_last_spin: Generating strategy recommendations for {strategy_name}")
-        strategy_output = show_strategy_recommendations(strategy_name, *checkbox_args)
+    print(f"undo_last_spin: Generating strategy recommendations for {strategy_name}")
+    strategy_output = show_strategy_recommendations(strategy_name, *checkbox_args)
 
-        return (spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output, sides_output,
-                straight_up_html, top_18_html, strongest_numbers_output, spins_input, spins_input,
-                dynamic_table_html, strategy_output, create_color_code_table())
-    except Exception as e:
-        print(f"Error in undo_last_spin: {str(e)}")
-        return (f"Error: {str(e)}", "", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", "", create_color_code_table())
+    return (spin_analysis_output, even_money_output, dozens_output, columns_output,
+            streets_output, corners_output, six_lines_output, splits_output, sides_output,
+            straight_up_html, top_18_html, strongest_numbers_output, spins_input, spins_input,
+            dynamic_table_html, strategy_output, create_color_code_table())
+
 def clear_all():
     # Clear spins
     state.selected_numbers.clear()
@@ -1567,86 +1542,6 @@ def top_pick_18_numbers_without_neighbours():
 
     return "\n".join(recommendations)
 
-def best_even_money_and_top_18():
-    recommendations = []
-
-    # Best Even Money Bets (Top 3 with tie handling)
-    sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
-    even_money_hits = [item for item in sorted_even_money if item[1] > 0]
-    
-    if even_money_hits:
-        # Collect the top 3 bets, including ties
-        top_bets = []
-        scores_seen = set()
-        for name, score in sorted_even_money:
-            if len(top_bets) < 3 or score in scores_seen:
-                top_bets.append((name, score))
-                scores_seen.add(score)
-            else:
-                break
-
-        recommendations.append("Best Even Money Bets (Top 3):")
-        for i, (name, score) in enumerate(top_bets[:3], 1):
-            recommendations.append(f"{i}. {name}: {score}")
-
-        # Check for ties among the top 3 positions
-        if len(top_bets) > 1:
-            # Check for ties at the 1st position
-            first_score = top_bets[0][1]
-            tied_first = [name for name, score in top_bets if score == first_score]
-            if len(tied_first) > 1:
-                recommendations.append(f"Note: Tie for 1st place among {', '.join(tied_first)} with score {first_score}")
-
-            # Check for ties at the 2nd position
-            if len(top_bets) > 1:
-                second_score = top_bets[1][1]
-                tied_second = [name for name, score in top_bets if score == second_score]
-                if len(tied_second) > 1:
-                    recommendations.append(f"Note: Tie for 2nd place among {', '.join(tied_second)} with score {second_score}")
-
-            # Check for ties at the 3rd position
-            if len(top_bets) > 2:
-                third_score = top_bets[2][1]
-                tied_third = [name for name, score in top_bets if score == third_score]
-                if len(tied_third) > 1:
-                    recommendations.append(f"Note: Tie for 3rd place among {', '.join(tied_third)} with score {third_score}")
-    else:
-        recommendations.append("Best Even Money Bets: No hits yet.")
-
-    # Top 18 Numbers without Neighbours (same as original)
-    recommendations.append("")  # Add a blank line for separation
-    straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
-    straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
-
-    if straight_up_df.empty or len(straight_up_df) < 18:
-        recommendations.append("Top 18 Numbers without Neighbours: Not enough numbers have hit yet (need at least 18).")
-        return "\n".join(recommendations)
-
-    top_18_df = straight_up_df.head(18)
-    top_18_numbers = top_18_df["Number"].tolist()
-
-    top_6 = top_18_numbers[:6]
-    next_6 = top_18_numbers[6:12]
-    last_6 = top_18_numbers[12:18]
-
-    recommendations.append("Top 18 Numbers without Neighbours:")
-    recommendations.append("\nTop 6 Numbers (Yellow):")
-    for i, num in enumerate(top_6, 1):
-        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
-        recommendations.append(f"{i}. Number {num} (Score: {score})")
-
-    recommendations.append("\nNext 6 Numbers (Blue):")
-    for i, num in enumerate(next_6, 1):
-        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
-        recommendations.append(f"{i}. Number {num} (Score: {score})")
-
-    recommendations.append("\nLast 6 Numbers (Green):")
-    for i, num in enumerate(last_6, 1):
-        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
-        recommendations.append(f"{i}. Number {num} (Score: {score})")
-
-    return "\n".join(recommendations)
-
 def kitchen_martingale_output(*checkboxes):
     sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
     even_money_hits = [item for item in sorted_even_money if item[1] > 0]
@@ -1865,7 +1760,6 @@ STRATEGIES = {
     "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
     "Cold Bet Strategy": {"function": cold_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
     "Best Even Money Bets": {"function": best_even_money_bets, "categories": ["even_money"]},
-    "Best Even Money Bets + Top 18 Numbers": {"function": best_even_money_and_top_18, "categories": ["even_money", "numbers"]},  # New strategy
     "Best Dozens": {"function": best_dozens, "categories": ["dozens"]},
     "Best Columns": {"function": best_columns, "categories": ["columns"]},
     "Fibonacci Strategy": {"function": fibonacci_strategy, "categories": ["dozens", "columns"]},
@@ -2024,7 +1918,7 @@ with gr.Blocks() as demo:
 
     strategy_categories = {
         "Trends": ["Cold Bet Strategy", "Hot Bet Strategy"],
-        "Even Money Strategies": ["Best Even Money Bets", "Best Even Money Bets + Top 18 Numbers", "Fibonacci To Fortune"],  # Added new strategy
+        "Even Money Strategies": ["Best Even Money Bets", "Fibonacci To Fortune"],
         "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],
         "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Best Streets"],
         "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
