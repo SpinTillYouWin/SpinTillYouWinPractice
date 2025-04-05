@@ -875,7 +875,10 @@ def clear_all():
     return "", "", "All spins and scores cleared successfully!", "", "", "", "", "", "", "", "", "", "", "", ""
 
 def reset_strategy_dropdowns():
-    return "Even Money Strategies", "Best Even Money Bets"
+    default_category = "Even Money Strategies"
+    default_strategy = "Best Even Money Bets"
+    strategy_choices = strategy_categories[default_category]
+    return default_category, default_strategy, strategy_choices
 
 def generate_random_spins(num_spins, current_spins_display, num_to_show):
     num_spins = int(num_spins)
@@ -2137,7 +2140,11 @@ with gr.Blocks() as demo:
     reset_strategy_button.click(
         fn=reset_strategy_dropdowns,
         inputs=[],
-        outputs=[category_dropdown, strategy_dropdown]
+        outputs=[category_dropdown, strategy_dropdown, strategy_dropdown]
+    ).then(
+        fn=lambda category: gr.update(choices=strategy_categories[category], value=strategy_categories[category][0]),
+        inputs=[category_dropdown],
+        outputs=[strategy_dropdown]
     )
     
     analyze_button.click(
