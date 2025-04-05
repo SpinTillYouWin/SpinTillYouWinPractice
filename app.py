@@ -1897,23 +1897,41 @@ with gr.Blocks() as demo:
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
 
-    # Create the table with proper CSS classes
+    # Create the table with direct styling
     with gr.Column(elem_classes="roulette-table"):
         for row in table_layout:
             with gr.Row(elem_classes="table-row"):
                 for num in row:
                     if num == "":
-                        gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
+                        gr.Button(
+                            value=" ",
+                            interactive=False,
+                            min_width=40,
+                            style={"background-color": "transparent", "border": "1px solid white", "width": "40px", "height": "40px"}
+                        )
                     else:
                         color = colors.get(str(num), "black")
                         is_selected = int(num) in state.selected_numbers
-                        btn_classes = [f"roulette-button", color]
-                        if is_selected:
-                            btn_classes.append("selected")
+                        btn_style = {
+                            "background-color": color,
+                            "color": "white",
+                            "border": "1px solid white" if not is_selected else "3px solid yellow",
+                            "text-align": "center",
+                            "font-weight": "bold",
+                            "width": "40px",
+                            "height": "40px",
+                            "margin": "0",
+                            "padding": "0",
+                            "font-size": "14px",
+                            "display": "flex",
+                            "align-items": "center",
+                            "justify-content": "center",
+                            "box-sizing": "border-box"
+                        }
                         btn = gr.Button(
                             value=num,
                             min_width=40,
-                            elem_classes=btn_classes
+                            style=btn_style
                         )
                         btn.click(
                             fn=add_spin,
