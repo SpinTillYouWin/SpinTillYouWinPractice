@@ -1810,7 +1810,7 @@ def show_strategy_recommendations(strategy_name, *args):
         return "".join(html_lines)
 
 def clear_outputs():
-    return "", "", "", "", "", "", "", "", "", "", "", False, False, False, False, False, False, False, False
+    return "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
 
 def toggle_checkboxes(strategy_name):
     return (gr.update(visible=strategy_name == "Kitchen Martingale"),
