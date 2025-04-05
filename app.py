@@ -862,7 +862,7 @@ def generate_random_spins(num_spins, current_spins_display, num_to_show):
 # Strategy functions
 def best_even_money_bets():
     recommendations = []
-    sorted_even_money = sorted(even_money_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
     even_money_hits = [item for item in sorted_even_money if item[1] > 0]
     if even_money_hits:
         recommendations.append("Best Even Money Bets (Top 2):")
@@ -874,7 +874,7 @@ def best_even_money_bets():
 
 def hot_bet_strategy():
     recommendations = []
-    sorted_even_money = sorted(even_money_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
     even_money_hits = [item for item in sorted_even_money if item[1] > 0]
     if even_money_hits:
         recommendations.append("Even Money (Top 2):")
@@ -883,7 +883,7 @@ def hot_bet_strategy():
     else:
         recommendations.append("Even Money: No hits yet.")
 
-    sorted_dozens = sorted(dozen_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
     dozens_hits = [item for item in sorted_dozens if item[1] > 0]
     if dozens_hits:
         recommendations.append("\nDozens (Top 2):")
@@ -892,7 +892,7 @@ def hot_bet_strategy():
     else:
         recommendations.append("\nDozens: No hits yet.")
 
-    sorted_columns = sorted(column_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_columns = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
     columns_hits = [item for item in sorted_columns if item[1] > 0]
     if columns_hits:
         recommendations.append("\nColumns (Top 2):")
@@ -901,7 +901,7 @@ def hot_bet_strategy():
     else:
         recommendations.append("\nColumns: No hits yet.")
 
-    sorted_streets = sorted(street_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_streets = sorted(state.street_scores.items(), key=lambda x: x[1], reverse=True)
     streets_hits = [item for item in sorted_streets if item[1] > 0]
     if streets_hits:
         recommendations.append("\nStreets (Ranked):")
@@ -910,7 +910,7 @@ def hot_bet_strategy():
     else:
         recommendations.append("\nStreets: No hits yet.")
 
-    sorted_corners = sorted(corner_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_corners = sorted(state.corner_scores.items(), key=lambda x: x[1], reverse=True)
     corners_hits = [item for item in sorted_corners if item[1] > 0]
     if corners_hits:
         recommendations.append("\nCorners (Ranked):")
@@ -919,7 +919,7 @@ def hot_bet_strategy():
     else:
         recommendations.append("\nCorners: No hits yet.")
 
-    sorted_six_lines = sorted(six_line_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_six_lines = sorted(state.six_line_scores.items(), key=lambda x: x[1], reverse=True)
     six_lines_hits = [item for item in sorted_six_lines if item[1] > 0]
     if six_lines_hits:
         recommendations.append("\nDouble Streets (Ranked):")
@@ -928,7 +928,7 @@ def hot_bet_strategy():
     else:
         recommendations.append("\nDouble Streets: No hits yet.")
 
-    sorted_splits = sorted(split_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_splits = sorted(state.split_scores.items(), key=lambda x: x[1], reverse=True)
     splits_hits = [item for item in sorted_splits if item[1] > 0]
     if splits_hits:
         recommendations.append("\nSplits (Ranked):")
@@ -937,7 +937,7 @@ def hot_bet_strategy():
     else:
         recommendations.append("\nSplits: No hits yet.")
 
-    sorted_sides = sorted(side_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_sides = sorted(state.side_scores.items(), key=lambda x: x[1], reverse=True)
     sides_hits = [item for item in sorted_sides if item[1] > 0]
     if sides_hits:
         recommendations.append("\nSides of Zero:")
@@ -945,7 +945,7 @@ def hot_bet_strategy():
     else:
         recommendations.append("\nSides of Zero: No hits yet.")
 
-    sorted_numbers = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
     numbers_hits = [item for item in sorted_numbers if item[1] > 0]
     if numbers_hits:
         number_best = numbers_hits[0]
