@@ -135,18 +135,17 @@ def clear_spins():
 
 # Function to save the session
 def save_session():
-    global last_spins, scores, even_money_scores, dozen_scores, column_scores, street_scores, corner_scores, six_line_scores, split_scores, side_scores
     session_data = {
-        "spins": last_spins,
-        "scores": scores,
-        "even_money_scores": even_money_scores,
-        "dozen_scores": dozen_scores,
-        "column_scores": column_scores,
-        "street_scores": street_scores,
-        "corner_scores": corner_scores,
-        "six_line_scores": six_line_scores,
-        "split_scores": split_scores,
-        "side_scores": side_scores
+        "spins": state.last_spins,
+        "scores": state.scores,
+        "even_money_scores": state.even_money_scores,
+        "dozen_scores": state.dozen_scores,
+        "column_scores": state.column_scores,
+        "street_scores": state.street_scores,
+        "corner_scores": state.corner_scores,
+        "six_line_scores": state.six_line_scores,
+        "split_scores": state.split_scores,
+        "side_scores": state.side_scores
     }
     with open("session.json", "w") as f:
         json.dump(session_data, f)
@@ -636,8 +635,6 @@ def get_strongest_numbers_with_neighbors(num_count):
 # Function to analyze spins
 # Continuing from analyze_spins function
 def analyze_spins(spins_input, reset_scores, strategy_name, *checkbox_args):
-    global scores, even_money_scores, dozen_scores, column_scores, street_scores, corner_scores, six_line_scores, split_scores, side_scores, last_spins
-
     if not spins_input or not spins_input.strip():
         return "Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", ""
 
@@ -656,18 +653,9 @@ def analyze_spins(spins_input, reset_scores, strategy_name, *checkbox_args):
         return "No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", ""
 
     if reset_scores:
-        scores = {n: 0 for n in range(37)}
-        even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
-        dozen_scores = {name: 0 for name in DOZENS.keys()}
-        column_scores = {name: 0 for name in COLUMNS.keys()}
-        street_scores = {name: 0 for name in STREETS.keys()}
-        corner_scores = {name: 0 for name in CORNERS.keys()}
-        six_line_scores = {name: 0 for name in SIX_LINES.keys()}
-        split_scores = {name: 0 for name in SPLITS.keys()}
-        side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
-        last_spins = []
+        state.reset()
 
-    last_spins.extend(spins)
+    state.last_spins.extend(spins)
     spin_results = []
     for spin in spins:
         hit_sections = []
@@ -676,51 +664,51 @@ def analyze_spins(spins_input, reset_scores, strategy_name, *checkbox_args):
         for name, numbers in EVEN_MONEY.items():
             if int(spin) in numbers:
                 hit_sections.append(name)
-                even_money_scores[name] += 1
+                state.even_money_scores[name] += 1
 
         for name, numbers in DOZENS.items():
             if int(spin) in numbers:
                 hit_sections.append(name)
-                dozen_scores[name] += 1
+                state.dozen_scores[name] += 1
 
         for name, numbers in COLUMNS.items():
             if int(spin) in numbers:
                 hit_sections.append(name)
-                column_scores[name] += 1
+                state.column_scores[name] += 1
 
         for name, numbers in STREETS.items():
             if int(spin) in numbers:
                 hit_sections.append(name)
-                street_scores[name] += 1
+                state.street_scores[name] += 1
 
         for name, numbers in CORNERS.items():
             if int(spin) in numbers:
                 hit_sections.append(name)
-                corner_scores[name] += 1
+                state.corner_scores[name] += 1
 
         for name, numbers in SIX_LINES.items():
             if int(spin) in numbers:
                 hit_sections.append(name)
-                six_line_scores[name] += 1
+                state.six_line_scores[name] += 1
 
         for name, numbers in SPLITS.items():
             if int(spin) in numbers:
                 hit_sections.append(name)
-                split_scores[name] += 1
+                state.split_scores[name] += 1
 
         if spin != "0":
-            scores[int(spin)] += 1
+            state.scores[int(spin)] += 1
             hit_sections.append(f"Straight Up {spin}")
         elif spin == "0":
-            scores[0] += 1
+            state.scores[0] += 1
             hit_sections.append(f"Straight Up {spin}")
 
         if str(spin) in [str(x) for x in current_left_of_zero]:
             hit_sections.append("Left Side of Zero")
-            side_scores["Left Side of Zero"] += 1
+            state.side_scores["Left Side of Zero"] += 1
         if str(spin) in [str(x) for x in current_right_of_zero]:
             hit_sections.append("Right Side of Zero")
-            side_scores["Right Side of Zero"] += 1
+            state.side_scores["Right Side of Zero"] += 1
 
         if int(spin) in current_neighbors:
             left, right = current_neighbors[int(spin)]
@@ -730,16 +718,16 @@ def analyze_spins(spins_input, reset_scores, strategy_name, *checkbox_args):
         spin_results.append(f"Spin {spin} hits: {', '.join(hit_sections)}\nTotal sections hit: {len(hit_sections)}")
 
     spin_analysis_output = "\n".join(spin_results)
-    even_money_output = "Even Money Bets:\n" + "\n".join(f"{name}: {score}" for name, score in even_money_scores.items())
-    dozens_output = "Dozens:\n" + "\n".join(f"{name}: {score}" for name, score in dozen_scores.items())
-    columns_output = "Columns:\n" + "\n".join(f"{name}: {score}" for name, score in column_scores.items())
-    streets_output = "Streets:\n" + "\n".join(f"{name}: {score}" for name, score in street_scores.items() if score > 0)
-    corners_output = "Corners:\n" + "\n".join(f"{name}: {score}" for name, score in corner_scores.items() if score > 0)
-    six_lines_output = "Double Streets:\n" + "\n".join(f"{name}: {score}" for name, score in six_line_scores.items() if score > 0)
-    splits_output = "Splits:\n" + "\n".join(f"{name}: {score}" for name, score in split_scores.items() if score > 0)
-    sides_output = "Sides of Zero:\n" + "\n".join(f"{name}: {score}" for name, score in side_scores.items())
+    even_money_output = "Even Money Bets:\n" + "\n".join(f"{name}: {score}" for name, score in state.even_money_scores.items())
+    dozens_output = "Dozens:\n" + "\n".join(f"{name}: {score}" for name, score in state.dozen_scores.items())
+    columns_output = "Columns:\n" + "\n".join(f"{name}: {score}" for name, score in state.column_scores.items())
+    streets_output = "Streets:\n" + "\n".join(f"{name}: {score}" for name, score in state.street_scores.items() if score > 0)
+    corners_output = "Corners:\n" + "\n".join(f"{name}: {score}" for name, score in state.corner_scores.items() if score > 0)
+    six_lines_output = "Double Streets:\n" + "\n".join(f"{name}: {score}" for name, score in state.six_line_scores.items() if score > 0)
+    splits_output = "Splits:\n" + "\n".join(f"{name}: {score}" for name, score in state.split_scores.items() if score > 0)
+    sides_output = "Sides of Zero:\n" + "\n".join(f"{name}: {score}" for name, score in state.side_scores.items())
 
-    straight_up_df = pd.DataFrame(list(scores.items()), columns=["Number", "Score"])
+    straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
     straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
     straight_up_df["Left Neighbor"] = straight_up_df["Number"].apply(lambda x: current_neighbors[x][0] if x in current_neighbors else "")
     straight_up_df["Right Neighbor"] = straight_up_df["Number"].apply(lambda x: current_neighbors[x][1] if x in current_neighbors else "")
@@ -774,63 +762,61 @@ def reset_scores():
     return "Scores reset!"
 
 def undo_last_spin(current_spins_display, strategy_name, *checkbox_args):
-    global scores, even_money_scores, dozen_scores, column_scores, street_scores, corner_scores, six_line_scores, split_scores, side_scores, last_spins
-
-    if not last_spins:
+    if not state.last_spins:
         return ("No spins to undo.", "", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", "", create_color_code_table())
 
-    last_spin = last_spins.pop()
+    last_spin = state.last_spins.pop()
     spin_value = int(last_spin)
 
-    if spin_value in scores:
-        scores[spin_value] -= 1
+    if spin_value in state.scores:
+        state.scores[spin_value] -= 1
 
     for name, numbers in EVEN_MONEY.items():
         if spin_value in numbers:
-            even_money_scores[name] -= 1
+            state.even_money_scores[name] -= 1
 
     for name, numbers in DOZENS.items():
         if spin_value in numbers:
-            dozen_scores[name] -= 1
+            state.dozen_scores[name] -= 1
 
     for name, numbers in COLUMNS.items():
         if spin_value in numbers:
-            column_scores[name] -= 1
+            state.column_scores[name] -= 1
 
     for name, numbers in STREETS.items():
         if spin_value in numbers:
-            street_scores[name] -= 1
+            state.street_scores[name] -= 1
 
     for name, numbers in CORNERS.items():
         if spin_value in numbers:
-            corner_scores[name] -= 1
+            state.corner_scores[name] -= 1
 
     for name, numbers in SIX_LINES.items():
         if spin_value in numbers:
-            six_line_scores[name] -= 1
+            state.six_line_scores[name] -= 1
 
     for name, numbers in SPLITS.items():
         if spin_value in numbers:
-            split_scores[name] -= 1
+            state.split_scores[name] -= 1
 
     if str(spin_value) in [str(x) for x in current_left_of_zero]:
-        side_scores["Left Side of Zero"] -= 1
+        state.side_scores["Left Side of Zero"] -= 1
     if str(spin_value) in [str(x) for x in current_right_of_zero]:
-        side_scores["Right Side of Zero"] -= 1
+        state.side_scores["Right Side of Zero"] -= 1
 
-    spins_input = ", ".join(last_spins) if last_spins else ""
+    spins_input = ", ".join(state.last_spins) if state.last_spins else ""
 
     spin_analysis_output = f"Undo successful: Removed spin {last_spin}"
-    even_money_output = "Even Money Bets:\n" + "\n".join(f"{name}: {score}" for name, score in even_money_scores.items())
-    dozens_output = "Dozens:\n" + "\n".join(f"{name}: {score}" for name, score in dozen_scores.items())
-    columns_output = "Columns:\n" + "\n".join(f"{name}: {score}" for name, score in column_scores.items())
-    streets_output = "Streets:\n" + "\n".join(f"{name}: {score}" for name, score in street_scores.items() if score > 0)
-    corners_output = "Corners:\n" + "\n".join(f"{name}: {score}" for name, score in corner_scores.items() if score > 0)
-    six_lines_output = "Double Streets:\n" + "\n".join(f"{name}: {score}" for name, score in six_line_scores.items() if score > 0)
-    splits_output = "Splits:\n" + "\n".join(f"{name}: {score}" for name, score in split_scores.items() if score > 0)
-    sides_output = "Sides of Zero:\n" + "\n".join(f"{name}: {score}" for name, score in side_scores.items())
+    even_money_output = "Even Money Bets:\n" + "\n".join(f"{name}: {score}" for name, score in state.even_money_scores.items())
+    dozens_output = "Dozens:\n" + "\n".join(f"{name}: {score}" for name, score in state.dozen_scores.items())
+    columns_output = "Columns:\n" + "\n".join(f"{name}: {score}" for name, score in state.column_scores.items())
+    streets_output = "Streets:\n" + "\n".join(f"{name}: {score}" for name, score in state.street_scores.items() if score > 0)
+    corners_output = "Corners:\n" + "\n".join(f"{name}: {score}" for name, score in state.corner_scores.items() if score > 0)
+    six_lines_output = "Double Streets:\n" + "\n".join(f"{name}: {score}" for name, score in state.six_line_scores.items() if score > 0)
+    splits_output = "Splits:\n" + "\n".join(f"{name}: {score}" for name, score in state.split_scores.items() if score > 0)
+    sides_output = "Sides of Zero:\n" + "\n".join(f"{name}: {score}" for name, score in state.side_scores.items())
 
-    straight_up_df = pd.DataFrame(list(scores.items()), columns=["Number", "Score"])
+    straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
     straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
     straight_up_df["Left Neighbor"] = straight_up_df["Number"].apply(lambda x: current_neighbors[x][0] if x in current_neighbors else "")
     straight_up_df["Right Neighbor"] = straight_up_df["Number"].apply(lambda x: current_neighbors[x][1] if x in current_neighbors else "")
