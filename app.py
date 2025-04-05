@@ -18,13 +18,6 @@ class RouletteState:
         self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
         self.selected_numbers = set()
         self.last_spins = []
-        # New attributes for betting and bankroll
-        self.bankroll = 0.0  # User's current bankroll
-        self.progression_type = "Kitchen Martingale"  # Default progression
-        self.progression_step = 0  # Current step in the progression
-        self.custom_progression = []  # For custom progression amounts
-        self.bet_history = []  # List to store bet history
-        self.current_bet = None  # Store the current bet (type, amount)
 
     def reset(self):
         self.scores = {n: 0 for n in range(37)}
@@ -38,10 +31,6 @@ class RouletteState:
         self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
         self.selected_numbers = set()
         self.last_spins = []
-        # Reset betting-related attributes but preserve bankroll
-        self.progression_step = 0
-        self.bet_history = []
-        self.current_bet = None
 
 # Create an instance of RouletteState
 state = RouletteState()
@@ -75,7 +64,7 @@ colors = {
     "26": "black", "28": "black", "29": "black", "31": "black", "33": "black", "35": "black"
 }
 
-# Define betting progressions
+# Define betting progression for Victory Vortex (16 steps)
 betting_progression_vv = [
     ("(Bankroll: $1.00)", "1ST BET", "$1.00"),
     ("(Bankroll: $9.00)", "2ND BET", "$8.00"),
@@ -95,65 +84,18 @@ betting_progression_vv = [
     ("(Bankroll: $5,907.00)", "16TH BET", "$1,969.00")
 ]
 
-betting_progression_km = [
-    ("(Bankroll: $1.00)", "1ST BET", "$1.00"),
-    ("(Bankroll: $3.00)", "2ND BET", "$2.00"),
-    ("(Bankroll: $6.00)", "3RD BET", "$3.00"),
-    ("(Bankroll: $9.00)", "4TH BET", "$3.00"),
-    ("(Bankroll: $12.00)", "5TH BET", "$3.00"),
-    ("(Bankroll: $16.00)", "6TH BET", "$4.00"),
-    ("(Bankroll: $20.00)", "7TH BET", "$4.00"),
-    ("(Bankroll: $25.00)", "8TH BET", "$5.00"),
-    ("(Bankroll: $30.00)", "9TH BET", "$5.00"),
-    ("(Bankroll: $36.00)", "10TH BET", "$6.00"),
-    ("(Bankroll: $42.00)", "11TH BET", "$6.00"),
-    ("(Bankroll: $49.00)", "12TH BET", "$7.00"),
-    ("(Bankroll: $56.00)", "13TH BET", "$7.00"),
-    ("(Bankroll: $64.00)", "14TH BET", "$8.00"),
-    ("(Bankroll: $72.00)", "15TH BET", "$8.00"),
-    ("(Bankroll: $81.00)", "16TH BET", "$9.00"),
-    ("(Bankroll: $90.00)", "17TH BET", "$9.00"),
-    ("(Bankroll: $100.00)", "18TH BET", "$10.00"),
-    ("(Bankroll: $110.00)", "19TH BET", "$10.00")
-]
-
-# Define other betting progressions
-betting_progression_martingale = [
-    ("(Bankroll: $1.00)", "1ST BET", "$1.00"),
-    ("(Bankroll: $3.00)", "2ND BET", "$2.00"),
-    ("(Bankroll: $7.00)", "3RD BET", "$4.00"),
-    ("(Bankroll: $15.00)", "4TH BET", "$8.00"),
-    ("(Bankroll: $31.00)", "5TH BET", "$16.00"),
-    ("(Bankroll: $63.00)", "6TH BET", "$32.00"),
-    ("(Bankroll: $127.00)", "7TH BET", "$64.00"),
-    ("(Bankroll: $255.00)", "8TH BET", "$128.00"),
-    ("(Bankroll: $511.00)", "9TH BET", "$256.00"),
-    ("(Bankroll: $1023.00)", "10TH BET", "$512.00")
-]
-
-betting_progression_fibonacci = [
-    ("(Bankroll: $1.00)", "1ST BET", "$1.00"),
-    ("(Bankroll: $2.00)", "2ND BET", "$1.00"),
-    ("(Bankroll: $3.00)", "3RD BET", "$2.00"),
-    ("(Bankroll: $5.00)", "4TH BET", "$3.00"),
-    ("(Bankroll: $8.00)", "5TH BET", "$5.00"),
-    ("(Bankroll: $13.00)", "6TH BET", "$8.00"),
-    ("(Bankroll: $21.00)", "7TH BET", "$13.00"),
-    ("(Bankroll: $34.00)", "8TH BET", "$21.00"),
-    ("(Bankroll: $55.00)", "9TH BET", "$34.00"),
-    ("(Bankroll: $89.00)", "10TH BET", "$55.00")
-]
-
 def format_spins_as_html(spins, num_to_show):
     if not spins:
         return ""
     
+    # Split the spins string into a list and reverse to get the most recent first
     spin_list = spins.split(", ") if spins else []
-    spin_list = spin_list[-int(num_to_show):] if spin_list else []
+    spin_list = spin_list[-int(num_to_show):] if spin_list else []  # Take the last N spins
     
     if not spin_list:
         return ""
     
+    # Define colors for each number (matching the European Roulette Table)
     colors = {
         "0": "green",
         "1": "red", "3": "red", "5": "red", "7": "red", "9": "red", "12": "red", "14": "red", "16": "red", "18": "red",
@@ -162,9 +104,10 @@ def format_spins_as_html(spins, num_to_show):
         "20": "black", "22": "black", "24": "black", "26": "black", "28": "black", "29": "black", "31": "black", "33": "black", "35": "black"
     }
     
+    # Format each spin as a colored span
     html_spins = []
     for spin in spin_list:
-        color = colors.get(spin.strip(), "black")
+        color = colors.get(spin.strip(), "black")  # Default to black if not found
         html_spins.append(f'<span style="background-color: {color}; color: white; padding: 2px 5px; margin-right: 5px; border-radius: 3px;">{spin}</span>')
     
     return "".join(html_spins)
@@ -174,7 +117,7 @@ def add_spin(number, current_spins, num_to_show):
     if spins == [""]:
         spins = []
     try:
-        num = int(number.strip())
+        num = int(number.strip())  # Remove any whitespace
         if not (0 <= num <= 36):
             return current_spins, current_spins, f"Error: '{number}' is out of range. Please use numbers between 0 and 36."
         spins.append(str(num))
@@ -186,11 +129,13 @@ def add_spin(number, current_spins, num_to_show):
     except Exception as e:
         return current_spins, current_spins, f"Unexpected error: {str(e)}. Please try again or contact support."
 
+# Function to clear spins
 def clear_spins():
     state.selected_numbers.clear()
     state.last_spins = []
     return "", "", "Spins cleared successfully!", ""
 
+# Function to save the session
 def save_session():
     session_data = {
         "spins": state.last_spins,
@@ -202,17 +147,13 @@ def save_session():
         "corner_scores": state.corner_scores,
         "six_line_scores": state.six_line_scores,
         "split_scores": state.split_scores,
-        "side_scores": state.side_scores,
-        "bankroll": state.bankroll,
-        "progression_type": state.progression_type,
-        "progression_step": state.progression_step,
-        "custom_progression": state.custom_progression,
-        "bet_history": state.bet_history
+        "side_scores": state.side_scores
     }
     with open("session.json", "w") as f:
         json.dump(session_data, f)
     return "session.json"
 
+# Function to load the session
 def load_session(file):
     try:
         if file is None:
@@ -229,13 +170,8 @@ def load_session(file):
         state.six_line_scores = session_data.get("six_line_scores", {name: 0 for name in SIX_LINES.keys()})
         state.split_scores = session_data.get("split_scores", {name: 0 for name in SPLITS.keys()})
         state.side_scores = session_data.get("side_scores", {"Left Side of Zero": 0, "Right Side of Zero": 0})
-        state.bankroll = session_data.get("bankroll", 0.0)
-        state.progression_type = session_data.get("progression_type", "Kitchen Martingale")
-        state.progression_step = session_data.get("progression_step", 0)
-        state.custom_progression = session_data.get("custom_progression", [])
-        state.bet_history = session_data.get("bet_history", [])
         new_spins = ", ".join(state.last_spins)
-        return new_spins, f"Session loaded successfully with {len(state.last_spins)} spins. Bankroll: ${state.bankroll:.2f}"
+        return new_spins, f"Session loaded successfully with {len(state.last_spins)} spins."
     except FileNotFoundError:
         return "", f"Error: The file '{file.name if file else 'unknown'}' was not found."
     except json.JSONDecodeError:
@@ -243,67 +179,13 @@ def load_session(file):
     except Exception as e:
         return "", f"Unexpected error loading session: {str(e)}. Please try again or check the file."
 
-def set_bankroll(bankroll_input):
-    try:
-        bankroll = float(bankroll_input)
-        if bankroll < 0:
-            return state.bankroll, "Bankroll cannot be negative."
-        state.bankroll = bankroll
-        return state.bankroll, f"Bankroll set to ${state.bankroll:.2f}"
-    except ValueError:
-        return state.bankroll, "Please enter a valid number for the bankroll."
-
-def set_progression_type(progression_type, custom_progression_input):
-    state.progression_type = progression_type
-    state.progression_step = 0  # Reset progression step
-    if progression_type == "Custom":
-        try:
-            amounts = [float(x.strip()) for x in custom_progression_input.split(",") if x.strip()]
-            if not amounts:
-                return "Please enter at least one amount for the custom progression (e.g., 1, 2, 3)."
-            state.custom_progression = amounts
-            return f"Custom progression set: {', '.join(map(str, amounts))}"
-        except ValueError:
-            return "Invalid custom progression. Please enter numbers separated by commas (e.g., 1, 2, 3)."
-    else:
-        state.custom_progression = []
-        return f"Progression type set to {progression_type}"
-
-def get_current_bet_amount():
-    if state.progression_type == "Kitchen Martingale":
-        progression = [(bankroll, label, float(amount.replace("$", ""))) for bankroll, label, amount in betting_progression_km]
-    elif state.progression_type == "Victory Vortex":
-        progression = [(bankroll, label, float(amount.replace("$", ""))) for bankroll, label, amount in betting_progression_vv]
-    elif state.progression_type == "Martingale":
-        progression = [(bankroll, label, float(amount.replace("$", ""))) for bankroll, label, amount in betting_progression_martingale]
-    elif state.progression_type == "Fibonacci":
-        progression = [(bankroll, label, float(amount.replace("$", ""))) for bankroll, label, amount in betting_progression_fibonacci]
-    else:  # Custom
-        progression = [(f"(Bankroll: ${sum(state.custom_progression[:i+1]):.2f})", f"{i+1}TH BET", amount) for i, amount in enumerate(state.custom_progression)]
-    
-    if state.progression_step >= len(progression):
-        return None, "Progression limit reached. Please reset or adjust your strategy."
-    
-    _, label, amount = progression[state.progression_step]
-    return amount, f"Current Bet: {label} - ${amount:.2f}"
-
-def place_bet(bet_type, bet_amount_input):
-    try:
-        bet_amount = float(bet_amount_input)
-        if bet_amount <= 0:
-            return "Bet amount must be positive."
-        if state.bankroll < bet_amount:
-            return f"Insufficient bankroll. You have ${state.bankroll:.2f}, but need ${bet_amount:.2f}."
-        state.current_bet = (bet_type, bet_amount)
-        return f"Bet placed: ${bet_amount:.2f} on {bet_type}"
-    except ValueError:
-        return "Please enter a valid number for the bet amount."
-
+# Function to calculate statistical insights
 def statistical_insights():
-    if not state.last_spins:
+    global last_spins, scores
+    if not last_spins:
         return "No spins to analyze yet—click some numbers first!"
-    total_spins = len(state.last_spins)
-    number_freq = {num: state.scores[num] for num in state.scores if state.scores[num] > 0}
+    total_spins = len(last_spins)
+    number_freq = {num: scores[num] for num in scores if scores[num] > 0}
     top_numbers = sorted(number_freq.items(), key=lambda x: x[1], reverse=True)[:5]
     output = [f"Total Spins: {total_spins}"]
     output.append("Top 5 Numbers by Hits:")
@@ -311,6 +193,7 @@ def statistical_insights():
         output.append(f"Number {num}: {hits} hits")
     return "\n".join(output)
 
+# Function to create HTML table (used in analyze_spins)
 def create_html_table(df, title):
     if df.empty:
         return f"<h3>{title}</h3><p>No data to display.</p>"
@@ -322,6 +205,7 @@ def create_html_table(df, title):
     html += "</table>"
     return html
 
+# Function to create the dynamic roulette table with highlighted trending sections
 def create_dynamic_table(strategy_name=None):
     print(f"create_dynamic_table called with strategy: {strategy_name}")
     table_layout = [
@@ -349,14 +233,17 @@ def create_dynamic_table(strategy_name=None):
     sorted_corners = sorted(state.corner_scores.items(), key=lambda x: x[1], reverse=True)
     sorted_splits = sorted(state.split_scores.items(), key=lambda x: x[1], reverse=True)
 
+    # Define colors based on strategy
     if strategy_name == "Cold Bet Strategy":
-        top_color = "#D3D3D3"
-        middle_color = "#DDA0DD"
-        lower_color = "#E0FFFF"
+        # Cold colors for Cold Bet Strategy
+        top_color = "#D3D3D3"  # Light Gray (Cold Top)
+        middle_color = "#DDA0DD"  # Plum (Cold Middle)
+        lower_color = "#E0FFFF"  # Light Cyan (Cold Lower)
     else:
-        top_color = "rgba(255, 255, 0, 0.5)"
-        middle_color = "rgba(0, 255, 255, 0.5)"
-        lower_color = "rgba(0, 255, 0, 0.5)"
+        # Hot colors for all other strategies
+        top_color = "rgba(255, 255, 0, 0.5)"  # Yellow
+        middle_color = "rgba(0, 255, 255, 0.5)"  # Cyan
+        lower_color = "rgba(0, 255, 0, 0.5)"  # Green
 
     if strategy_name and strategy_name in STRATEGIES:
         strategy_info = STRATEGIES[strategy_name]
@@ -371,6 +258,7 @@ def create_dynamic_table(strategy_name=None):
                 num_to_take = min(8, len(straight_up_df))
                 top_numbers = set(straight_up_df["Number"].head(num_to_take).tolist())
                 neighbor_numbers = set()
+                # Track which numbers are neighbors to others
                 neighbor_to = {}
                 for num in top_numbers:
                     left, right = current_neighbors.get(num, (None, None))
@@ -381,6 +269,7 @@ def create_dynamic_table(strategy_name=None):
                         neighbor_numbers.add(right)
                         neighbor_to[right] = neighbor_to.get(right, set()) | {num}
 
+                # Sort numbers by score of their "parent" number
                 number_groups = []
                 for num in top_numbers:
                     left, right = current_neighbors.get(num, (None, None))
@@ -402,11 +291,11 @@ def create_dynamic_table(strategy_name=None):
                 last_8 = ordered_numbers[16:24]
 
                 for num in top_8:
-                    number_highlights[str(num)] = "rgba(255, 255, 0, 0.5)"
+                    number_highlights[str(num)] = "rgba(255, 255, 0, 0.5)"  # Yellow
                 for num in next_8:
-                    number_highlights[str(num)] = "rgba(0, 255, 255, 0.5)"
+                    number_highlights[str(num)] = "rgba(0, 255, 255, 0.5)"  # Blue
                 for num in last_8:
-                    number_highlights[str(num)] = "rgba(0, 255, 0, 0.5)"
+                    number_highlights[str(num)] = "rgba(0, 255, 0, 0.5)"  # Green
 
         elif strategy_name == "Hot Bet Strategy":
             trending_even_money = sorted_even_money[0][0] if sorted_even_money else None
@@ -609,12 +498,12 @@ def create_dynamic_table(strategy_name=None):
             top_streets = sorted_streets[:8]
             for i, (street_name, _) in enumerate(top_streets):
                 numbers = STREETS[street_name]
-                if i < 3:
-                    color = "rgba(255, 255, 0, 0.5)"
-                elif i < 6:
-                    color = "rgba(0, 255, 255, 0.5)"
-                else:
-                    color = "rgba(0, 255, 0, 0.5)"
+                if i < 3:  # Top 3 streets (1st to 3rd)
+                    color = "rgba(255, 255, 0, 0.5)"  # Yellow
+                elif i < 6:  # Middle 3 streets (4th to 6th)
+                    color = "rgba(0, 255, 255, 0.5)"  # Cyan
+                else:  # Bottom 2 streets (7th to 8th)
+                    color = "rgba(0, 255, 0, 0.5)"  # Green
                 for num in numbers:
                     number_highlights[str(num)] = color
             trending_even_money = sorted_even_money[0][0] if sorted_even_money else None
@@ -728,6 +617,7 @@ def create_dynamic_table(strategy_name=None):
     html += "</table>"
     return html
 
+# Function to get strongest numbers with neighbors
 def get_strongest_numbers_with_neighbors(num_count):
     num_count = int(num_count)
     straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
@@ -755,10 +645,12 @@ def get_strongest_numbers_with_neighbors(num_count):
     sorted_numbers = sorted(list(all_numbers))
     return f"Strongest {len(sorted_numbers)} Numbers (Sorted Lowest to Highest): {', '.join(map(str, sorted_numbers))}"
 
-def analyze_spins(spins_input, reset_scores, strategy_name):
+# Function to analyze spins
+# Continuing from analyze_spins function
+def analyze_spins(spins_input, reset_scores, strategy_name, *checkbox_args):
     try:
         if not spins_input or not spins_input.strip():
-            return "Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", "", "", state.bankroll
+            return "Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", ""
 
         raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
         spins = []
@@ -767,13 +659,13 @@ def analyze_spins(spins_input, reset_scores, strategy_name):
             try:
                 num = int(spin)
                 if not (0 <= num <= 36):
-                    return f"Error: '{spin}' is out of range. Use numbers between 0 and 36.", "", "", "", "", "", "", "", "", "", "", "", "", "", "", state.bankroll
+                    return f"Error: '{spin}' is out of range. Use numbers between 0 and 36.", "", "", "", "", "", "", "", "", "", "", "", "", ""
                 spins.append(str(num))
             except ValueError:
-                return f"Error: '{spin}' is not a valid number. Use whole numbers (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", "", "", state.bankroll
+                return f"Error: '{spin}' is not a valid number. Use whole numbers (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", ""
 
         if not spins:
-            return "No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", "", state.bankroll
+            return "No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", ""
 
         if reset_scores:
             state.reset()
@@ -840,91 +732,6 @@ def analyze_spins(spins_input, reset_scores, strategy_name):
 
             spin_results.append(f"Spin {spin} hits: {', '.join(hit_sections)}\nTotal sections hit: {len(hit_sections)}")
 
-            # Process the current bet if one was placed
-            if state.current_bet:
-                bet_type, bet_amount = state.current_bet
-                payout_ratio = {
-                    "Even Money": 1,  # 1:1
-                    "Dozen": 2,       # 2:1
-                    "Column": 2,      # 2:1
-                    "Street": 11,     # 11:1
-                    "Double Street": 5,  # 5:1
-                    "Corner": 8,      # 8:1
-                    "Split": 17,      # 17:1
-                    "Straight Up": 35,  # 35:1
-                    "Side of Zero": 2   # Custom payout, assuming 2:1
-                }.get(bet_type.split(":")[0], 0)
-
-                # Determine if the bet won
-                won = False
-                if bet_type.startswith("Even Money"):
-                    bet_name = bet_type.split(": ")[1]
-                    numbers = EVEN_MONEY.get(bet_name, [])
-                    won = int(spin) in numbers
-                elif bet_type.startswith("Dozen"):
-                    bet_name = bet_type.split(": ")[1]
-                    numbers = DOZENS.get(bet_name, [])
-                    won = int(spin) in numbers
-                elif bet_type.startswith("Column"):
-                    bet_name = bet_type.split(": ")[1]
-                    numbers = COLUMNS.get(bet_name, [])
-                    won = int(spin) in numbers
-                elif bet_type.startswith("Street"):
-                    bet_name = bet_type.split(": ")[1]
-                    numbers = STREETS.get(bet_name, [])
-                    won = int(spin) in numbers
-                elif bet_type.startswith("Double Street"):
-                    bet_name = bet_type.split(": ")[1]
-                    numbers = SIX_LINES.get(bet_name, [])
-                    won = int(spin) in numbers
-                elif bet_type.startswith("Corner"):
-                    bet_name = bet_type.split(": ")[1]
-                    numbers = CORNERS.get(bet_name, [])
-                    won = int(spin) in numbers
-                elif bet_type.startswith("Split"):
-                    bet_name = bet_type.split(": ")[1]
-                    numbers = SPLITS.get(bet_name, [])
-                    won = int(spin) in numbers
-                elif bet_type.startswith("Straight Up"):
-                    bet_number = int(bet_type.split(": ")[1])
-                    won = int(spin) == bet_number
-                elif bet_type.startswith("Side of Zero"):
-                    bet_name = bet_type.split(": ")[1]
-                    numbers = current_left_of_zero if bet_name == "Left Side of Zero" else current_right_of_zero
-                    numbers = [int(n) for n in numbers]
-                    won = int(spin) in numbers
-
-                # Update bankroll and progression
-                if won:
-                    payout = bet_amount * payout_ratio
-                    state.bankroll += payout
-                    spin_results.append(f"Bet Won: ${bet_amount:.2f} on {bet_type} - Payout: ${payout:.2f}")
-                    # Reset progression on win
-                    if state.progression_type in ["Kitchen Martingale", "Victory Vortex", "Martingale"]:
-                        state.progression_step = 0
-                    elif state.progression_type == "Fibonacci":
-                        state.progression_step = max(0, state.progression_step - 2)
-                    elif state.progression_type == "Custom":
-                        state.progression_step = 0
-                else:
-                    state.bankroll -= bet_amount
-                    spin_results.append(f"Bet Lost: ${bet_amount:.2f} on {bet_type}")
-                    # Advance progression on loss
-                    state.progression_step += 1
-
-                # Log the bet in history
-                state.bet_history.append({
-                    "spin_number": len(state.last_spins),
-                    "bet_type": bet_type,
-                    "amount": bet_amount,
-                    "result": "Win" if won else "Loss",
-                    "payout": payout if won else 0,
-                    "bankroll": state.bankroll
-                })
-
-                # Clear the current bet
-                state.current_bet = None
-
         spin_analysis_output = "\n".join(spin_results)
         even_money_output = "Even Money Bets:\n" + "\n".join(f"{name}: {score}" for name, score in state.even_money_scores.items())
         dozens_output = "Dozens:\n" + "\n".join(f"{name}: {score}" for name, score in state.dozen_scores.items())
@@ -958,48 +765,23 @@ def analyze_spins(spins_input, reset_scores, strategy_name):
         strongest_numbers_output = get_strongest_numbers_with_neighbors(3)
         dynamic_table_html = create_dynamic_table(strategy_name)
 
-        strategy_output = show_strategy_recommendations(strategy_name)
+        strategy_output = show_strategy_recommendations(strategy_name, *checkbox_args)
         print(f"analyze_spins: Strategy output = {strategy_output}")
-
-        # Update bet history and statistics
-        bet_history_html = "<h3>Bet History</h3>"
-        if state.bet_history:
-            bet_history_df = pd.DataFrame(state.bet_history)
-            bet_history_html += '<table border="1" style="border-collapse: collapse; text-align: center;">'
-            bet_history_html += "<tr><th>Spin #</th><th>Bet Type</th><th>Amount</th><th>Result</th><th>Payout</th><th>Bankroll</th></tr>"
-            for _, row in bet_history_df.iterrows():
-                bet_history_html += f"<tr><td>{row['spin_number']}</td><td>{row['bet_type']}</td><td>${row['amount']:.2f}</td><td>{row['result']}</td><td>${row['payout']:.2f}</td><td>${row['bankroll']:.2f}</td></tr>"
-            bet_history_html += "</table>"
-
-            # Calculate statistics
-            total_bets = len(state.bet_history)
-            wins = sum(1 for bet in state.bet_history if bet["result"] == "Win")
-            losses = total_bets - wins
-            net_profit = state.bankroll - state.bet_history[0]["bankroll"] if state.bet_history else 0
-            win_rate = (wins / total_bets * 100) if total_bets > 0 else 0
-            bet_history_html += "<h3>Betting Statistics</h3>"
-            bet_history_html += f"<p>Total Bets: {total_bets}</p>"
-            bet_history_html += f"<p>Wins: {wins}</p>"
-            bet_history_html += f"<p>Losses: {losses}</p>"
-            bet_history_html += f"<p>Net Profit: ${net_profit:.2f}</p>"
-            bet_history_html += f"<p>Win Rate: {win_rate:.2f}%</p>"
-        else:
-            bet_history_html += "<p>No bets placed yet.</p>"
 
         return (spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output, sides_output,
-                straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html, strategy_output,
-                bet_history_html, state.bankroll)
+                straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html, strategy_output)
     except Exception as e:
-        return f"Unexpected error while analyzing spins: {str(e)}. Please try again.", "", "", "", "", "", "", "", "", "", "", "", "", "", "", state.bankroll
+        return f"Unexpected error while analyzing spins: {str(e)}. Please try again.", "", "", "", "", "", "", "", "", "", "", "", "", ""
 
+# Function to reset scores
 def reset_scores():
     state.reset()
     return "Scores reset!"
 
-def undo_last_spin(current_spins_display, strategy_name):
+def undo_last_spin(current_spins_display, strategy_name, *checkbox_args):
     if not state.last_spins:
-        return ("No spins to undo.", "", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", "", create_color_code_table(), state.bankroll)
+        return ("No spins to undo.", "", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", "", create_color_code_table())
 
     last_spin = state.last_spins.pop()
     spin_value = int(last_spin)
@@ -1040,23 +822,6 @@ def undo_last_spin(current_spins_display, strategy_name):
     if str(spin_value) in [str(x) for x in current_right_of_zero]:
         state.side_scores["Right Side of Zero"] -= 1
 
-    # Remove the last bet from history if it exists
-    if state.bet_history and state.bet_history[-1]["spin_number"] == len(state.last_spins) + 1:
-        last_bet = state.bet_history.pop()
-        # Revert bankroll
-        if last_bet["result"] == "Win":
-            state.bankroll -= last_bet["payout"]
-        else:
-            state.bankroll += last_bet["amount"]
-        # Revert progression step
-        if last_bet["result"] == "Win":
-            if state.progression_type in ["Kitchen Martingale", "Victory Vortex", "Martingale", "Custom"]:
-                state.progression_step = min(state.progression_step + 1, len(betting_progression_km) - 1 if state.progression_type == "Kitchen Martingale" else len(betting_progression_vv) - 1 if state.progression_type == "Victory Vortex" else len(betting_progression_martingale) - 1 if state.progression_type == "Martingale" else len(state.custom_progression) - 1)
-            elif state.progression_type == "Fibonacci":
-                state.progression_step = min(state.progression_step + 2, len(betting_progression_fibonacci) - 1)
-        else:
-            state.progression_step = max(0, state.progression_step - 1)
-
     spins_input = ", ".join(state.last_spins) if state.last_spins else ""
 
     spin_analysis_output = f"Undo successful: Removed spin {last_spin}"
@@ -1093,42 +858,21 @@ def undo_last_spin(current_spins_display, strategy_name):
     dynamic_table_html = create_dynamic_table(strategy_name)
 
     print(f"undo_last_spin: Generating strategy recommendations for {strategy_name}")
-    strategy_output = show_strategy_recommendations(strategy_name)
-
-    bet_history_html = "<h3>Bet History</h3>"
-    if state.bet_history:
-        bet_history_df = pd.DataFrame(state.bet_history)
-        bet_history_html += '<table border="1" style="border-collapse: collapse; text-align: center;">'
-        bet_history_html += "<tr><th>Spin #</th><th>Bet Type</th><th>Amount</th><th>Result</th><th>Payout</th><th>Bankroll</th></tr>"
-        for _, row in bet_history_df.iterrows():
-            bet_history_html += f"<tr><td>{row['spin_number']}</td><td>{row['bet_type']}</td><td>${row['amount']:.2f}</td><td>{row['result']}</td><td>${row['payout']:.2f}</td><td>${row['bankroll']:.2f}</td></tr>"
-        bet_history_html += "</table>"
-
-        total_bets = len(state.bet_history)
-        wins = sum(1 for bet in state.bet_history if bet["result"] == "Win")
-        losses = total_bets - wins
-        net_profit = state.bankroll - state.bet_history[0]["bankroll"] if state.bet_history else 0
-        win_rate = (wins / total_bets * 100) if total_bets > 0 else 0
-        bet_history_html += "<h3>Betting Statistics</h3>"
-        bet_history_html += f"<p>Total Bets: {total_bets}</p>"
-        bet_history_html += f"<p>Wins: {wins}</p>"
-        bet_history_html += f"<p>Losses: {losses}</p>"
-        bet_history_html += f"<p>Net Profit: ${net_profit:.2f}</p>"
-        bet_history_html += f"<p>Win Rate: {win_rate:.2f}%</p>"
-    else:
-        bet_history_html += "<p>No bets placed yet.</p>"
+    strategy_output = show_strategy_recommendations(strategy_name, *checkbox_args)
 
     return (spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output, sides_output,
             straight_up_html, top_18_html, strongest_numbers_output, spins_input, spins_input,
-            dynamic_table_html, strategy_output, create_color_code_table(), bet_history_html, state.bankroll)
+            dynamic_table_html, strategy_output, create_color_code_table())
 
 def clear_all():
+    # Clear spins
     state.selected_numbers.clear()
     state.last_spins = []
+    # Reset scores
     state.reset()
-    state.bankroll = 0.0
-    return "", "", "All spins, scores, and bankroll cleared successfully!", "", "", "", "", "", "", "", "", "", "", "", "", "", state.bankroll
+    # Clear all outputs
+    return "", "", "All spins and scores cleared successfully!", "", "", "", "", "", "", "", "", "", "", "", ""
 
 def reset_strategy_dropdowns():
     default_category = "Even Money Strategies"
@@ -1247,7 +991,7 @@ def hot_bet_strategy():
 
 def cold_bet_strategy():
     recommendations = []
-    sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1])
+    sorted_even_money = sorted(even_money_scores.items(), key=lambda x: x[1])
     even_money_non_hits = [item for item in sorted_even_money if item[1] == 0]
     even_money_hits = [item for item in sorted_even_money if item[1] > 0]
     if even_money_non_hits:
@@ -1258,7 +1002,7 @@ def cold_bet_strategy():
         for i, (name, score) in enumerate(even_money_hits[:2], 1):
             recommendations.append(f"{i}. {name}: {score}")
 
-    sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1])
+    sorted_dozens = sorted(dozen_scores.items(), key=lambda x: x[1])
     dozens_non_hits = [item for item in sorted_dozens if item[1] == 0]
     dozens_hits = [item for item in sorted_dozens if item[1] > 0]
     if dozens_non_hits:
@@ -1269,7 +1013,7 @@ def cold_bet_strategy():
         for i, (name, score) in enumerate(dozens_hits[:2], 1):
             recommendations.append(f"{i}. {name}: {score}")
 
-    sorted_columns = sorted(state.column_scores.items(), key=lambda x: x[1])
+    sorted_columns = sorted(column_scores.items(), key=lambda x: x[1])
     columns_non_hits = [item for item in sorted_columns if item[1] == 0]
     columns_hits = [item for item in sorted_columns if item[1] > 0]
     if columns_non_hits:
@@ -1280,7 +1024,7 @@ def cold_bet_strategy():
         for i, (name, score) in enumerate(columns_hits[:2], 1):
             recommendations.append(f"{i}. {name}: {score}")
 
-    sorted_streets = sorted(state.street_scores.items(), key=lambda x: x[1])
+    sorted_streets = sorted(street_scores.items(), key=lambda x: x[1])
     streets_non_hits = [item for item in sorted_streets if item[1] == 0]
     streets_hits = [item for item in sorted_streets if item[1] > 0]
     if streets_non_hits:
@@ -1291,7 +1035,7 @@ def cold_bet_strategy():
         for i, (name, score) in enumerate(streets_hits[:3], 1):
             recommendations.append(f"{i}. {name}: {score}")
 
-    sorted_corners = sorted(state.corner_scores.items(), key=lambda x: x[1])
+    sorted_corners = sorted(corner_scores.items(), key=lambda x: x[1])
     corners_non_hits = [item for item in sorted_corners if item[1] == 0]
     corners_hits = [item for item in sorted_corners if item[1] > 0]
     if corners_non_hits:
@@ -1302,7 +1046,7 @@ def cold_bet_strategy():
         for i, (name, score) in enumerate(corners_hits[:3], 1):
             recommendations.append(f"{i}. {name}: {score}")
 
-    sorted_six_lines = sorted(state.six_line_scores.items(), key=lambda x: x[1])
+    sorted_six_lines = sorted(six_line_scores.items(), key=lambda x: x[1])
     six_lines_non_hits = [item for item in sorted_six_lines if item[1] == 0]
     six_lines_hits = [item for item in sorted_six_lines if item[1] > 0]
     if six_lines_non_hits:
@@ -1313,7 +1057,7 @@ def cold_bet_strategy():
         for i, (name, score) in enumerate(six_lines_hits[:3], 1):
             recommendations.append(f"{i}. {name}: {score}")
 
-    sorted_splits = sorted(state.split_scores.items(), key=lambda x: x[1])
+    sorted_splits = sorted(split_scores.items(), key=lambda x: x[1])
     splits_non_hits = [item for item in sorted_splits if item[1] == 0]
     splits_hits = [item for item in sorted_splits if item[1] > 0]
     if splits_non_hits:
@@ -1324,7 +1068,7 @@ def cold_bet_strategy():
         for i, (name, score) in enumerate(splits_hits[:3], 1):
             recommendations.append(f"{i}. {name}: {score}")
 
-    sorted_sides = sorted(state.side_scores.items(), key=lambda x: x[1])
+    sorted_sides = sorted(side_scores.items(), key=lambda x: x[1])
     sides_non_hits = [item for item in sorted_sides if item[1] == 0]
     sides_hits = [item for item in sorted_sides if item[1] > 0]
     if sides_non_hits:
@@ -1334,7 +1078,7 @@ def cold_bet_strategy():
         recommendations.append("\nSides of Zero (Lowest Score):")
         recommendations.append(f"1. {sides_hits[0][0]}: {sides_hits[0][1]}")
 
-    sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1])
+    sorted_numbers = sorted(scores.items(), key=lambda x: x[1])
     numbers_non_hits = [item for item in sorted_numbers if item[1] == 0]
     numbers_hits = [item for item in sorted_numbers if item[1] > 0]
     if numbers_non_hits:
@@ -1798,7 +1542,7 @@ def top_pick_18_numbers_without_neighbours():
 
     return "\n".join(recommendations)
 
-def kitchen_martingale_output():
+def kitchen_martingale_output(*checkboxes):
     sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
     even_money_hits = [item for item in sorted_even_money if item[1] > 0]
 
@@ -1809,17 +1553,47 @@ def kitchen_martingale_output():
     else:
         recommendations.append("Best Even Money Bet: No hits yet.")
 
-    progression = [(bankroll, label, float(amount.replace("$", ""))) for bankroll, label, amount in betting_progression_km]
-    recommendations.append("\nBetting Progression:")
-    for i, (bankroll, bet_label, bet_amount) in enumerate(progression, 1):
-        line = f"{i}. {bankroll}\t{bet_label}\t${bet_amount:.2f}"
-        if i - 1 == state.progression_step:
-            line = f"<strong>{line} (Current)</strong>"
+    betting_progression_km = [
+        ("(Bankroll: $1.00)", "1ST BET", "$1.00"),
+        ("(Bankroll: $3.00)", "2ND BET", "$2.00"),
+        ("(Bankroll: $6.00)", "3RD BET", "$3.00"),
+        ("(Bankroll: $9.00)", "4TH BET", "$3.00"),
+        ("(Bankroll: $12.00)", "5TH BET", "$3.00"),
+        ("(Bankroll: $16.00)", "6TH BET", "$4.00"),
+        ("(Bankroll: $20.00)", "7TH BET", "$4.00"),
+        ("(Bankroll: $25.00)", "8TH BET", "$5.00"),
+        ("(Bankroll: $30.00)", "9TH BET", "$5.00"),
+        ("(Bankroll: $36.00)", "10TH BET", "$6.00"),
+        ("(Bankroll: $42.00)", "11TH BET", "$6.00"),
+        ("(Bankroll: $49.00)", "12TH BET", "$7.00"),
+        ("(Bankroll: $56.00)", "13TH BET", "$7.00"),
+        ("(Bankroll: $64.00)", "14TH BET", "$8.00"),
+        ("(Bankroll: $72.00)", "15TH BET", "$8.00"),
+        ("(Bankroll: $81.00)", "16TH BET", "$9.00"),
+        ("(Bankroll: $90.00)", "17TH BET", "$9.00"),
+        ("(Bankroll: $100.00)", "18TH BET", "$10.00"),
+        ("(Bankroll: $110.00)", "19TH BET", "$10.00")
+    ]
+
+    checkbox_counts = [0, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+    total_checkboxes = sum(checkbox_counts)
+    assert total_checkboxes == 34, f"Expected 34 checkboxes, got {total_checkboxes}"
+
+    flat_progression = []
+    for (bankroll, bet_label, bet_amount), count in zip(betting_progression_km, checkbox_counts):
+        for _ in range(count):
+            flat_progression.append((bankroll, bet_label, bet_amount))
+
+    recommendations.append("\nBetting Progression (Check to track losses):")
+    for i, (bankroll, bet_label, bet_amount) in enumerate(flat_progression, 1):
+        checked = checkboxes[i-1]
+        checkmark = "☑" if checked else "☐"
+        line = f"{i}. {bankroll}\t{bet_label}\t{bet_amount}\t{checkmark}"
         recommendations.append(line)
 
     return "\n".join(recommendations)
 
-def victory_vortex_strategy():
+def victory_vortex_strategy(*checkboxes):
     recommendations = []
     fib_recommendations = fibonacci_strategy()
     recommendations.append("Fibonacci Strategy:")
@@ -1843,12 +1617,11 @@ def victory_vortex_strategy():
     else:
         recommendations.append("\nBest Two Columns: No hits yet.")
 
-    progression = [(bankroll, label, float(amount.replace("$", ""))) for bankroll, label, amount in betting_progression_vv]
-    recommendations.append("\nBetting Progression:")
-    for i, (bankroll, bet_label, bet_amount) in enumerate(progression, 1):
-        line = f"{i}. {bankroll}\t{bet_label}\t${bet_amount:.2f}"
-        if i - 1 == state.progression_step:
-            line = f"<strong>{line} (Current)</strong>"
+    recommendations.append("\nBetting Progression (Check to track losses):")
+    for i, (bankroll, bet_label, bet_amount) in enumerate(betting_progression_vv, 1):
+        checked = checkboxes[i-1]
+        checkmark = "☑" if checked else "☐"
+        line = f"{i}. {bankroll}\t{bet_label}\t{bet_amount}\t{checkmark}"
         recommendations.append(line)
 
     return "\n".join(recommendations)
@@ -1915,8 +1688,9 @@ def top_numbers_with_neighbours_tiered():
     if straight_up_df.empty:
         return "<p>Top Numbers with Neighbours (Tiered): No numbers have hit yet.</p>"
 
+    # Start with the HTML table for Strongest Numbers
     table_html = '<table border="1" style="border-collapse: collapse; text-align: center; font-family: Arial, sans-serif;">'
-    table_html += "<tr><th>Hit</th><th>Left N.</th><th>Right N.</th></tr>"
+    table_html += "<tr><th>Hit</th><th>Left N.</th><th>Right N.</th></tr>"  # Table header
     for _, row in straight_up_df.iterrows():
         num = str(row["Number"])
         left, right = current_neighbors.get(row["Number"], ("", ""))
@@ -1925,6 +1699,7 @@ def top_numbers_with_neighbours_tiered():
         table_html += f"<tr><td>{num}</td><td>{left}</td><td>{right}</td></tr>"
     table_html += "</table>"
 
+    # Wrap the table in a div with a heading
     recommendations.append("<h3>Strongest Numbers:</h3>")
     recommendations.append(table_html)
 
@@ -2001,12 +1776,10 @@ STRATEGIES = {
     "3-8-6 Rising Martingale": {"function": three_eight_six_rising_martingale, "categories": ["streets"]},
     "1 Dozen +1 Column Strategy": {"function": one_dozen_one_column_strategy, "categories": ["dozens", "columns"]},
     "Top Pick 18 Numbers without Neighbours": {"function": top_pick_18_numbers_without_neighbours, "categories": ["numbers"]},
-    "Top Numbers with Neighbours (Tiered)": {"function": top_numbers_with_neighbours_tiered, "categories": ["numbers"]},
-    "Kitchen Martingale": {"function": kitchen_martingale_output, "categories": ["even_money"]},
-    "Victory Vortex": {"function": victory_vortex_strategy, "categories": ["dozens", "columns"]}
+    "Top Numbers with Neighbours (Tiered)": {"function": top_numbers_with_neighbours_tiered, "categories": ["numbers"]}
 }
 
-def show_strategy_recommendations(strategy_name):
+def show_strategy_recommendations(strategy_name, *args):
     print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
     print(f"show_strategy_recommendations: even_money_scores = {dict(state.even_money_scores)}")
     print(f"show_strategy_recommendations: any_scores = {any(state.scores.values())}, any_even_money = {any(state.even_money_scores.values())}")
@@ -2016,50 +1789,41 @@ def show_strategy_recommendations(strategy_name):
 
     strategy_info = STRATEGIES[strategy_name]
     strategy_func = strategy_info["function"]
-    recommendations = strategy_func()
 
-    # Convert plain text to HTML by replacing newlines with <p> tags, unless already HTML
+    if strategy_name == "Kitchen Martingale":
+        recommendations = strategy_func(*args[:34])
+    elif strategy_name == "S.T.Y.W: Victory Vortex":
+        recommendations = strategy_func(*args[34:50])
+    else:
+        recommendations = strategy_func()
+
+    print(f"show_strategy_recommendations: Strategy {strategy_name} output = {recommendations}")
+
+    # If the output is already HTML (e.g., from top_numbers_with_neighbours_tiered), return it as is
     if strategy_name == "Top Numbers with Neighbours (Tiered)":
         return recommendations
+    # Otherwise, convert plain text to HTML by replacing newlines with <br> tags
     else:
+        # Split the plain text by newlines and wrap each line in a <p> tag
         lines = recommendations.split("\n")
         html_lines = [f"<p>{line}</p>" for line in lines if line.strip()]
         return "".join(html_lines)
 
 def clear_outputs():
-    return "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", state.bankroll
+    return "", "", "", "", "", "", "", "", "", "", "", False, False, False, False, False, False, False, False
+
+def toggle_checkboxes(strategy_name):
+    return (gr.update(visible=strategy_name == "Kitchen Martingale"),
+            gr.update(visible=strategy_name == "S.T.Y.W: Victory Vortex"))
 
 # Build the Gradio interface
 with gr.Blocks() as demo:
     gr.Markdown("# Roulette Spin Analyzer with Strategies (European Table)")
     
+    # Add a link to the PDF using the corrected absolute URL
     gr.HTML(
         '<a href="https://drive.google.com/file/d/1o9H8Lakx1i4_OnDrvHRj_6-KHsOWufjF/view?usp=sharing" target="_blank" style="font-size: 16px; color: #007bff; text-decoration: underline;">📄 View Instructions1 PDF (Opens in Google Drive)</a>'
     )
-
-    # Bankroll Management Section
-    with gr.Row():
-        bankroll_input = gr.Textbox(label="Set Starting Bankroll ($)", value="0", interactive=True)
-        bankroll_set_button = gr.Button("Set Bankroll", elem_classes="action-button")
-        bankroll_display = gr.Textbox(label="Current Bankroll ($)", value="0.00", interactive=False)
-    bankroll_message = gr.Textbox(label="Bankroll Status", value="", interactive=False)
-
-    # Betting Progression Selection
-    with gr.Row():
-        progression_dropdown = gr.Dropdown(
-            label="Select Betting Progression",
-            choices=["Kitchen Martingale", "Victory Vortex", "Martingale", "Fibonacci", "Custom"],
-            value="Kitchen Martingale",
-            allow_custom_value=False
-        )
-        custom_progression_input = gr.Textbox(
-            label="Custom Progression (comma-separated amounts, e.g., 1, 2, 3)",
-            value="",
-            interactive=True,
-            visible=False
-        )
-        set_progression_button = gr.Button("Set Progression", elem_classes="action-button")
-    progression_message = gr.Textbox(label="Progression Status", value="", interactive=False)
 
     spins_display = gr.State(value="")
     spins_textbox = gr.Textbox(
@@ -2089,22 +1853,6 @@ with gr.Blocks() as demo:
             lines=5
         )
 
-    # Place Bet Section
-    with gr.Row():
-        bet_type_dropdown = gr.Dropdown(
-            label="Select Bet Type",
-            choices=[],
-            value=None,
-            allow_custom_value=False
-        )
-        bet_amount_input = gr.Textbox(
-            label="Bet Amount ($)",
-            value="",
-            interactive=True
-        )
-        place_bet_button = gr.Button("Place Bet", elem_classes="action-button")
-    bet_message = gr.Textbox(label="Bet Status", value="", interactive=False)
-
     with gr.Group():
         gr.Markdown("### European Roulette Table")
         table_layout = [
@@ -2113,6 +1861,7 @@ with gr.Blocks() as demo:
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
 
+    # Create the table with elem_classes
     with gr.Column(elem_classes="roulette-table"):
         for row in table_layout:
             with gr.Row(elem_classes="table-row"):
@@ -2136,6 +1885,7 @@ with gr.Blocks() as demo:
                             outputs=[spins_display, spins_textbox, last_spin_display]
                         )
 
+    # New accordion for Strongest Numbers tables, placed here
     with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-table"):
         with gr.Row():
             with gr.Column():
@@ -2168,7 +1918,7 @@ with gr.Blocks() as demo:
 
     strategy_categories = {
         "Trends": ["Cold Bet Strategy", "Hot Bet Strategy"],
-        "Even Money Strategies": ["Best Even Money Bets", "Fibonacci To Fortune", "Kitchen Martingale", "Victory Vortex"],
+        "Even Money Strategies": ["Best Even Money Bets", "Fibonacci To Fortune"],
         "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],
         "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Best Streets"],
         "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
@@ -2178,7 +1928,10 @@ with gr.Blocks() as demo:
         "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"]
     }
 
+    # Category dropdown choices
     category_choices = ["None"] + sorted(strategy_categories.keys())
+
+    # State to store the current strategy
     selected_strategy = gr.State(value="Best Even Money Bets")
 
     with gr.Row():
@@ -2215,6 +1968,88 @@ with gr.Blocks() as demo:
         with gr.Column():
             gr.Markdown("### Strategy Recommendations")
             strategy_output = gr.HTML(label="Strategy Recommendations")
+            with gr.Column(visible=False) as kitchen_martingale_checkboxes:
+                gr.Markdown("### Kitchen Martingale Checkboxes")
+                kitchen_martingale_checkboxes_list = []
+                betting_progression_km = [
+                    ("(Bankroll: $1.00)", "1ST BET", "$1.00"),
+                    ("(Bankroll: $3.00)", "2ND BET", "$2.00"),
+                    ("(Bankroll: $6.00)", "3RD BET", "$3.00"),
+                    ("(Bankroll: $9.00)", "4TH BET", "$3.00"),
+                    ("(Bankroll: $12.00)", "5TH BET", "$3.00"),
+                    ("(Bankroll: $16.00)", "6TH BET", "$4.00"),
+                    ("(Bankroll: $20.00)", "7TH BET", "$4.00"),
+                    ("(Bankroll: $25.00)", "8TH BET", "$5.00"),
+                    ("(Bankroll: $30.00)", "9TH BET", "$5.00"),
+                    ("(Bankroll: $36.00)", "10TH BET", "$6.00"),
+                    ("(Bankroll: $42.00)", "11TH BET", "$6.00"),
+                    ("(Bankroll: $49.00)", "12TH BET", "$7.00"),
+                    ("(Bankroll: $56.00)", "13TH BET", "$7.00"),
+                    ("(Bankroll: $64.00)", "14TH BET", "$8.00"),
+                    ("(Bankroll: $72.00)", "15TH BET", "$8.00"),
+                    ("(Bankroll: $81.00)", "16TH BET", "$9.00"),
+                    ("(Bankroll: $90.00)", "17TH BET", "$9.00"),
+                    ("(Bankroll: $100.00)", "18TH BET", "$10.00"),
+                    ("(Bankroll: $110.00)", "19TH BET", "$10.00")
+                ]
+                checkbox_counts = [0, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+                flat_progression_km = []
+                for (bankroll, bet_label, bet_amount), count in zip(betting_progression_km, checkbox_counts):
+                    for _ in range(count):
+                        flat_progression_km.append((bankroll, bet_label, bet_amount))
+
+                for i, (bankroll, bet_label, bet_amount) in enumerate(flat_progression_km, 1):
+                    checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
+                    kitchen_martingale_checkboxes_list.append(checkbox)
+
+            with gr.Column(visible=False) as victory_vortex_checkboxes:
+                gr.Markdown("### Victory Vortex Checkboxes")
+                victory_vortex_checkboxes_list = []
+                for i, (bankroll, bet_label, bet_amount) in enumerate(betting_progression_vv, 1):
+                    checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
+                    victory_vortex_checkboxes_list.append(checkbox)
+
+    gr.HTML("""
+    <style>
+      .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+      .roulette-button.red { background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+      .roulette-button.black { background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+      .roulette-button:hover { opacity: 0.8; }
+      table { border-collapse: collapse; text-align: center; }
+      td, th { border: 1px solid #333; padding: 8px; font-family: Arial, sans-serif; }
+      .roulette-button.selected { border: 3px solid yellow !important; opacity: 0.9; }
+      .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid white !important; box-sizing: border-box !important; }
+      .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
+      .roulette-table { display: flex !important; flex-direction: column !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
+      .table-row { display: flex !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap !important; line-height: 0 !important; }
+      button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
+      button.clear-spins-btn:hover { background-color: #cc0000 !important; }
+      button.small-btn { padding: 5px 10px !important; font-size: 12px !important; min-width: 80px !important; }
+      button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
+      button.generate-spins-btn:hover { background-color: #0056b3 !important; }
+      .num-spins-input { margin-right: 5px !important; }
+      .white-row { background-color: white !important; }
+      .num-spins-dropdown { width: 100px !important; margin-right: 5px !important; }
+      .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; }
+      button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
+      button.green-btn:hover { background-color: #218838 !important; }
+      .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
+      /* Style for section labels */
+      #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
+      #spin-analysis label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #strongest-numbers-table label { background-color: #E6E6FA !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      @media (max-width: 600px) {
+          .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
+          td, th { padding: 5px; font-size: 12px; }
+          .gr-textbox { font-size: 12px; }
+          .scrollable-table { max-height: 200px; }
+      }
+    </style>
+    """)
+    print("CSS Updated")
 
     with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
         with gr.Row():
@@ -2246,78 +2081,12 @@ with gr.Blocks() as demo:
                 with gr.Accordion("Sides of Zero", open=True):
                     sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
-    with gr.Accordion("Bet History and Statistics", open=False):
-        bet_history_output = gr.HTML(label="Bet History", value="<p>No bets placed yet.</p>")
-
     with gr.Row():
         save_button = gr.Button("Save Session")
         load_input = gr.File(label="Upload Session")
     save_output = gr.File(label="Download Session")
 
     # Event Handlers
-    bankroll_set_button.click(
-        fn=set_bankroll,
-        inputs=[bankroll_input],
-        outputs=[bankroll_display, bankroll_message]
-    )
-
-    def update_progression_inputs(progression_type):
-        return gr.update(visible=progression_type == "Custom")
-
-    progression_dropdown.change(
-        fn=update_progression_inputs,
-        inputs=[progression_dropdown],
-        outputs=[custom_progression_input]
-    )
-
-    set_progression_button.click(
-        fn=set_progression_type,
-        inputs=[progression_dropdown, custom_progression_input],
-        outputs=[progression_message]
-    )
-
-    def update_bet_type_choices(strategy_name):
-        if not strategy_name or strategy_name == "None":
-            return gr.update(choices=[], value=None)
-        strategy_info = STRATEGIES[strategy_name]
-        categories = strategy_info["categories"]
-        choices = []
-        if "even_money" in categories:
-            choices.extend([f"Even Money: {name}" for name in EVEN_MONEY.keys()])
-        if "dozens" in categories:
-            choices.extend([f"Dozen: {name}" for name in DOZENS.keys()])
-        if "columns" in categories:
-            choices.extend([f"Column: {name}" for name in COLUMNS.keys()])
-        if "streets" in categories:
-            choices.extend([f"Street: {name}" for name in STREETS.keys()])
-        if "six_lines" in categories:
-            choices.extend([f"Double Street: {name}" for name in SIX_LINES.keys()])
-        if "corners" in categories:
-            choices.extend([f"Corner: {name}" for name in CORNERS.keys()])
-        if "splits" in categories:
-            choices.extend([f"Split: {name}" for name in SPLITS.keys()])
-        if "numbers" in categories:
-            choices.extend([f"Straight Up: {num}" for num in range(37)])
-        if "sides" in categories:
-            choices.extend(["Side of Zero: Left Side of Zero", "Side of Zero: Right Side of Zero"])
-        return gr.update(choices=choices, value=choices[0] if choices else None)
-
-    strategy_dropdown.change(
-        fn=update_bet_type_choices,
-        inputs=[strategy_dropdown],
-        outputs=[bet_type_dropdown]
-    ).then(
-        fn=get_current_bet_amount,
-        inputs=[],
-        outputs=[bet_amount_input, bet_message]
-    )
-
-    place_bet_button.click(
-        fn=place_bet,
-        inputs=[bet_type_dropdown, bet_amount_input],
-        outputs=[bet_message]
-    )
-
     spins_textbox.change(
         fn=lambda x: x,
         inputs=spins_textbox,
@@ -2337,8 +2106,7 @@ with gr.Blocks() as demo:
             spins_display, spins_textbox, spin_analysis_output, last_spin_display,
             even_money_output, dozens_output, columns_output, streets_output,
             corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_table, top_18_table, strongest_numbers_output,
-            bet_history_output, bankroll_display
+            straight_up_table, top_18_table, strongest_numbers_output
         ]
     )
 
@@ -2378,28 +2146,20 @@ with gr.Blocks() as demo:
         inputs=[category_dropdown],
         outputs=[strategy_dropdown]
     )
-
+    
     analyze_button.click(
         fn=analyze_spins,
-        inputs=[spins_display, reset_scores_checkbox, strategy_dropdown],
+        inputs=[spins_display, reset_scores_checkbox, strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
         outputs=[
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_table, top_18_table, strongest_numbers_output,
-            dynamic_table_output, strategy_output, bet_history_output, bankroll_display
+            dynamic_table_output, strategy_output
         ]
     ).then(
         fn=create_color_code_table,
         inputs=[],
         outputs=[color_code_output]
-    ).then(
-        fn=update_bet_type_choices,
-        inputs=[strategy_dropdown],
-        outputs=[bet_type_dropdown]
-    ).then(
-        fn=get_current_bet_amount,
-        inputs=[],
-        outputs=[bet_amount_input, bet_message]
     )
 
     reset_button.click(
@@ -2415,7 +2175,7 @@ with gr.Blocks() as demo:
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_table, top_18_table, strongest_numbers_output,
-            dynamic_table_output, strategy_output, bet_history_output, bankroll_display
+            dynamic_table_output, strategy_output, color_code_output
         ]
     )
 
@@ -2429,40 +2189,33 @@ with gr.Blocks() as demo:
         fn=load_session,
         inputs=[load_input],
         outputs=[spins_display, spins_textbox]
-    ).then(
-        fn=lambda: state.bankroll,
-        inputs=[],
-        outputs=[bankroll_display]
     )
 
     undo_button.click(
         fn=undo_last_spin,
-        inputs=[spins_display, strategy_dropdown],
+        inputs=[spins_display, strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
         outputs=[
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_table, top_18_table, strongest_numbers_output,
             spins_textbox, spins_display, dynamic_table_output, strategy_output,
-            color_code_output, bet_history_output, bankroll_display
+            color_code_output
         ]
     )
 
+    # Update both the dynamic table and strategy recommendations when the strategy changes
     strategy_dropdown.change(
-        fn=show_strategy_recommendations,
+        fn=toggle_checkboxes,
         inputs=[strategy_dropdown],
+        outputs=[kitchen_martingale_checkboxes, victory_vortex_checkboxes]
+    ).then(
+        fn=show_strategy_recommendations,
+        inputs=[strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
         outputs=[strategy_output]
     ).then(
         fn=lambda strategy: (print(f"Updating Dynamic Table with Strategy: {strategy}"), create_dynamic_table(strategy if strategy != "None" else None))[-1],
         inputs=[strategy_dropdown],
         outputs=[dynamic_table_output]
-    ).then(
-        fn=update_bet_type_choices,
-        inputs=[strategy_dropdown],
-        outputs=[bet_type_dropdown]
-    ).then(
-        fn=get_current_bet_amount,
-        inputs=[],
-        outputs=[bet_amount_input, bet_message]
     )
 
     strongest_numbers_dropdown.change(
