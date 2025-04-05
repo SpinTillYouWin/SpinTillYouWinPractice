@@ -2,7 +2,7 @@ import gradio as gr
 import pandas as pd
 import json
 from itertools import combinations
-import random
+import random# Build the Gradio interface
 
 # European Roulette wheel order
 WHEEL_EUROPEAN = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23,
@@ -1887,6 +1887,21 @@ def toggle_checkboxes(strategy_name):
     return (gr.update(visible=strategy_name == "Kitchen Martingale"),
             gr.update(visible=strategy_name == "S.T.Y.W: Victory Vortex"))
 
+import math
+
+# Precompute positions for each number on the wheel
+WHEEL_POSITIONS = {}
+wheel_radius = 150  # Radius of the wheel (300px diameter / 2)
+marker_radius = wheel_radius * 0.9  # Place marker slightly inside the wheel
+center_x, center_y = wheel_radius, wheel_radius  # Center of the wheel (150, 150)
+
+for idx, num in enumerate(WHEEL_EUROPEAN):
+    angle_deg = idx * (360 / 37)  # Angle in degrees
+    angle_rad = math.radians(angle_deg)  # Convert to radians
+    x = center_x + marker_radius * math.cos(angle_rad)
+    y = center_y + marker_radius * math.sin(angle_rad)
+    WHEEL_POSITIONS[num] = (x, y)
+
 # Build the Gradio interface
 with gr.Blocks() as demo:
     gr.Markdown("# Roulette Spin Analyzer with Strategies (European Table)")
@@ -1897,6 +1912,7 @@ with gr.Blocks() as demo:
     )
 
     spins_display = gr.State(value="")
+    last_spun_number = gr.State(value=None)  # Track the last spun number
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
         value="",
@@ -1932,7 +1948,7 @@ with gr.Blocks() as demo:
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
 
-    # Create the table and bind events in one go
+    # Create the table and bind events
     with gr.Column(elem_classes="roulette-table"):
         for row in table_layout:
             with gr.Row(elem_classes="table-row"):
@@ -1954,10 +1970,25 @@ with gr.Blocks() as demo:
                         btn.click(
                             fn=add_spin,
                             inputs=[gr.State(value=num), spins_display, last_spin_count],
-                            outputs=[spins_display, spins_textbox, last_spin_display]
+                            outputs=[spins_display, spins_textbox, last_spin_display, last_spun_number]
+                        ).then(
+                            fn=lambda spins, last_num: format_spins_as_html(spins, last_spin_count),
+                            inputs=[spins_display, last_spin_count],
+                            outputs=[last_spin_display]
+                        ).then(
+                            fn=lambda last_num: f"""
+                            <div style="position: relative; width: 300px; height: 300px; margin: 0 auto;">
+                                <img src="https://drive.google.com/uc?export=view&id=1HGayT-stEWtqzbE6WqnR8ufxZXG0bZey" style="width: 100%; height: 100%; object-fit: contain;" alt="European Roulette Wheel">
+                                <div id="wheel-highlight" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                                    {"<div style='position: absolute; left: {WHEEL_POSITIONS[last_num][0]-10}px; top: {WHEEL_POSITIONS[last_num][1]-10}px; width: 20px; height: 20px; background-color: yellow; border-radius: 50%; border: 2px solid black; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;'>{last_num}</div>" if last_num is not None else ""}
+                                </div>
+                            </div>
+                            """,
+                            inputs=[last_spun_number],
+                            outputs=[wheel_display]
                         )
 
-    # New accordion for Strongest Numbers tables, placed here
+    # New accordion for Strongest Numbers tables
     with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-table"):
         with gr.Row():
             with gr.Column():
@@ -1976,6 +2007,7 @@ with gr.Blocks() as demo:
                 lines=2
             )
 
+    # Action buttons (Generate Random Spins, Analyze Spins, Undo Last Spin)
     with gr.Row(elem_classes="white-row"):
         num_spins_input = gr.Dropdown(
             label="Number of Random Spins",
@@ -1988,6 +2020,20 @@ with gr.Blocks() as demo:
         analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
         undo_button = gr.Button("Undo Last Spin", elem_classes="action-button")
 
+    # Add the European Roulette Wheel (positioned below the buttons)
+    with gr.Group():
+        gr.Markdown("### European Roulette Wheel")
+        wheel_display = gr.HTML(
+            value="""
+            <div style="position: relative; width: 300px; height: 300px; margin: 0 auto;">
+                <img src="https://drive.google.com/uc?export=view&id=1HGayT-stEWtqzbE6WqnR8ufxZXG0bZey" style="width: 100%; height: 100%; object-fit: contain;" alt="European Roulette Wheel">
+                <div id="wheel-highlight" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
+            </div>
+            """,
+            label=""
+        )
+
+    # Select Category and Select Strategy dropdowns
     strategy_categories = {
         "Trends": ["Cold Bet Strategy", "Hot Bet Strategy"],
         "Even Money Strategies": ["Best Even Money Bets", "Fibonacci To Fortune"],
@@ -1999,12 +2045,6 @@ with gr.Blocks() as demo:
         "Split Strategies": ["Best Splits"],
         "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"]
     }
-
-    # Category dropdown choices
-    category_choices = ["None"] + sorted(strategy_categories.keys())
-
-    # State to store the current strategy
-    selected_strategy = gr.State(value="Best Even Money Bets")
 
     # Category dropdown choices (remove "None")
     category_choices = sorted(strategy_categories.keys())
@@ -2174,107 +2214,135 @@ with gr.Blocks() as demo:
         load_input = gr.File(label="Upload Session")
     save_output = gr.File(label="Download Session")
 
-    # Event Handlers
-    generate_spins_button.click(
-        fn=generate_random_spins,
-        inputs=[num_spins_input, spins_display, last_spin_count],
-        outputs=[spins_display, spins_textbox, spin_analysis_output]
-    ).then(
-        fn=format_spins_as_html,
-        inputs=[spins_display, last_spin_count],
-        outputs=[last_spin_display]
-    )
+# Event Handlers
+generate_spins_button.click(
+    fn=generate_random_spins,
+    inputs=[num_spins_input, spins_display, last_spin_count],
+    outputs=[spins_display, spins_textbox, spin_analysis_output]
+).then(
+    fn=format_spins_as_html,
+    inputs=[spins_display, last_spin_count],
+    outputs=[last_spin_display]
+).then(
+    fn=lambda spins: int(spins.split(", ")[-1]) if spins else None,
+    inputs=[spins_display],
+    outputs=[last_spun_number]
+).then(
+    fn=lambda last_num: f"""
+    <div style="position: relative; width: 300px; height: 300px; margin: 0 auto;">
+        <img src="https://drive.google.com/uc?export=view&id=1HGayT-stEWtqzbE6WqnR8ufxZXG0bZey" style="width: 100%; height: 100%; object-fit: contain;" alt="European Roulette Wheel">
+        <div id="wheel-highlight" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+            {"<div style='position: absolute; left: {WHEEL_POSITIONS[last_num][0]-10}px; top: {WHEEL_POSITIONS[last_num][1]-10}px; width: 20px; height: 20px; background-color: yellow; border-radius: 50%; border: 2px solid black; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;'>{last_num}</div>" if last_num is not None else ""}
+        </div>
+    </div>
+    """,
+    inputs=[last_spun_number],
+    outputs=[wheel_display]
+)
 
-    last_spin_count.change(
-        fn=format_spins_as_html,
-        inputs=[spins_display, last_spin_count],
-        outputs=[last_spin_display]
-    )
+last_spin_count.change(
+    fn=format_spins_as_html,
+    inputs=[spins_display, last_spin_count],
+    outputs=[last_spin_display]
+)
 
-    # Update the second dropdown based on the selected category
-    def update_strategy_dropdown(category):
-        if category == "None":
-            return gr.update(choices=["None"], value="None")
-        return gr.update(choices=strategy_categories[category], value=strategy_categories[category][0])
+# Update the second dropdown based on the selected category
+def update_strategy_dropdown(category):
+    return gr.update(choices=strategy_categories[category], value=strategy_categories[category][0])
 
-    category_dropdown.change(
-        fn=update_strategy_dropdown,
-        inputs=category_dropdown,
-        outputs=strategy_dropdown
-    )
+category_dropdown.change(
+    fn=update_strategy_dropdown,
+    inputs=category_dropdown,
+    outputs=strategy_dropdown
+)
 
-    analyze_button.click(
-        fn=lambda spins_input, reset_scores, strategy_name, *checkbox_args: analyze_spins(spins_input, reset_scores, strategy_name, *checkbox_args) + (create_color_code_table(),),
-        inputs=[spins_display, reset_scores_checkbox, strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
-        outputs=[
-            spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output,
-            sides_output, straight_up_table, top_18_table, strongest_numbers_output,
-            dynamic_table_output, strategy_output, color_code_output
-        ]
-    )
+analyze_button.click(
+    fn=lambda spins_input, reset_scores, strategy_name, *checkbox_args: analyze_spins(spins_input, reset_scores, strategy_name, *checkbox_args) + (create_color_code_table(),),
+    inputs=[spins_display, reset_scores_checkbox, strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
+    outputs=[
+        spin_analysis_output, even_money_output, dozens_output, columns_output,
+        streets_output, corners_output, six_lines_output, splits_output,
+        sides_output, straight_up_table, top_18_table, strongest_numbers_output,
+        dynamic_table_output, strategy_output, color_code_output
+    ]
+)
 
-    reset_button.click(
-        fn=reset_scores,
-        inputs=[],
-        outputs=[spin_analysis_output]
-    )
+reset_button.click(
+    fn=reset_scores,
+    inputs=[],
+    outputs=[spin_analysis_output]
+)
 
-    clear_button.click(
-        fn=clear_outputs,
-        inputs=[],
-        outputs=[
-            spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output,
-            sides_output, straight_up_table, top_18_table, strongest_numbers_output,
-            dynamic_table_output, strategy_output, color_code_output
-        ]
-    )
+clear_button.click(
+    fn=clear_outputs,
+    inputs=[],
+    outputs=[
+        spin_analysis_output, even_money_output, dozens_output, columns_output,
+        streets_output, corners_output, six_lines_output, splits_output,
+        sides_output, straight_up_table, top_18_table, strongest_numbers_output,
+        dynamic_table_output, strategy_output, color_code_output
+    ]
+)
 
-    save_button.click(
-        fn=save_session,
-        inputs=[],
-        outputs=[save_output]
-    )
+save_button.click(
+    fn=save_session,
+    inputs=[],
+    outputs=[save_output]
+)
 
-    load_input.change(
-        fn=load_session,
-        inputs=[load_input],
-        outputs=[spins_display, spins_textbox]
-    )
+load_input.change(
+    fn=load_session,
+    inputs=[load_input],
+    outputs=[spins_display, spins_textbox]
+).then(
+    fn=lambda spins: int(spins.split(", ")[-1]) if spins else None,
+    inputs=[spins_display],
+    outputs=[last_spun_number]
+).then(
+    fn=lambda last_num: f"""
+    <div style="position: relative; width: 300px; height: 300px; margin: 0 auto;">
+        <img src="https://drive.google.com/uc?export=view&id=1HGayT-stEWtqzbE6WqnR8ufxZXG0bZey" style="width: 100%; height: 100%; object-fit: contain;" alt="European Roulette Wheel">
+        <div id="wheel-highlight" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+            {"<div style='position: absolute; left: {WHEEL_POSITIONS[last_num][0]-10}px; top: {WHEEL_POSITIONS[last_num][1]-10}px; width: 20px; height: 20px; background-color: yellow; border-radius: 50%; border: 2px solid black; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;'>{last_num}</div>" if last_num is not None else ""}
+        </div>
+    </div>
+    """,
+    inputs=[last_spun_number],
+    outputs=[wheel_display]
+)
 
-    undo_button.click(
-        fn=undo_last_spin,
-        inputs=[spins_display, strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
-        outputs=[
-            spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output,
-            sides_output, straight_up_table, top_18_table, strongest_numbers_output,
-            spins_textbox, spins_display, dynamic_table_output, strategy_output,
-            color_code_output
-        ]
-    )
+undo_button.click(
+    fn=undo_last_spin,
+    inputs=[spins_display, strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
+    outputs=[
+        spin_analysis_output, even_money_output, dozens_output, columns_output,
+        streets_output, corners_output, six_lines_output, splits_output,
+        sides_output, straight_up_table, top_18_table, strongest_numbers_output,
+        spins_textbox, spins_display, dynamic_table_output, strategy_output,
+        color_code_output, wheel_display, last_spun_number
+    ]
+)
 
-    # Update both the dynamic table and strategy recommendations when the strategy changes
-    strategy_dropdown.change(
-        fn=toggle_checkboxes,
-        inputs=[strategy_dropdown],
-        outputs=[kitchen_martingale_checkboxes, victory_vortex_checkboxes]
-    ).then(
-        fn=show_strategy_recommendations,
-        inputs=[strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
-        outputs=[strategy_output]
-    ).then(
-        fn=lambda strategy: (print(f"Updating Dynamic Table with Strategy: {strategy}"), create_dynamic_table(strategy if strategy != "None" else None))[-1],
-        inputs=[strategy_dropdown],
-        outputs=[dynamic_table_output]
-    )
+# Update both the dynamic table and strategy recommendations when the strategy changes
+strategy_dropdown.change(
+    fn=toggle_checkboxes,
+    inputs=[strategy_dropdown],
+    outputs=[kitchen_martingale_checkboxes, victory_vortex_checkboxes]
+).then(
+    fn=show_strategy_recommendations,
+    inputs=[strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
+    outputs=[strategy_output]
+).then(
+    fn=lambda strategy: (print(f"Updating Dynamic Table with Strategy: {strategy}"), create_dynamic_table(strategy))[-1],
+    inputs=[strategy_dropdown],
+    outputs=[dynamic_table_output]
+)
 
-    strongest_numbers_dropdown.change(
-        fn=get_strongest_numbers_with_neighbors,
-        inputs=[strongest_numbers_dropdown],
-        outputs=[strongest_numbers_output]
-    )
+strongest_numbers_dropdown.change(
+    fn=get_strongest_numbers_with_neighbors,
+    inputs=[strongest_numbers_dropdown],
+    outputs=[strongest_numbers_output]
+)
 
 # Launch the interface
 demo.launch()
