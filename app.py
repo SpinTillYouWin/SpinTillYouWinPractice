@@ -874,6 +874,25 @@ def clear_all():
     # Clear all outputs
     return "", "", "All spins and scores cleared successfully!", "", "", "", "", "", "", "", "", "", "", "", ""
 
+def get_spin_history():
+    if not state.last_spins:
+        return "<p>No spins yet—add some to see the history!</p>"
+    
+    html = '<table border="1" style="border-collapse: collapse; text-align: center; font-family: Arial, sans-serif;">'
+    html += "<tr><th>Spin #</th><th>Number</th><th>Color</th></tr>"
+    for i, spin in enumerate(state.last_spins, 1):
+        color = colors.get(spin, "unknown")
+        html += f'<tr><td>{i}</td><td>{spin}</td><td style="background-color: {color}; color: white;">{color}</td></tr>'
+    html += "</table>"
+    return html
+
+def quick_spin(current_spins, num_to_show):
+    random_number = str(random.randint(0, 36))
+    return add_spin(random_number, current_spins, num_to_show)
+
+def get_spin_count():
+    return f"Total Spins: {len(state.last_spins)}"
+
 def generate_random_spins(num_spins, current_spins_display, num_to_show):
     num_spins = int(num_spins)
     if num_spins <= 0:
@@ -1847,6 +1866,13 @@ with gr.Blocks() as demo:
             lines=5
         )
 
+    # Add spin counter above the table
+    spin_count_output = gr.Textbox(
+        label="Spin Counter",
+        value=get_spin_count(),
+        interactive=False
+    )
+
     with gr.Group():
         gr.Markdown("### European Roulette Table")
         table_layout = [
@@ -1877,7 +1903,19 @@ with gr.Blocks() as demo:
                             fn=add_spin,
                             inputs=[gr.State(value=num), spins_display, last_spin_count],
                             outputs=[spins_display, spins_textbox, last_spin_display]
+                        ).then(
+                            fn=get_spin_count,
+                            inputs=[],
+                            outputs=[spin_count_output]
+                        ).then(
+                            fn=get_spin_history,
+                            inputs=[],
+                            outputs=[spin_history_output]
                         )
+
+    # New accordion for Spin History, placed here
+    with gr.Accordion("Spin History", open=False, elem_id="spin-history"):
+        spin_history_output = gr.HTML(label="Spin History", value=get_spin_history(), elem_classes="scrollable-table")
 
     # New accordion for Strongest Numbers tables, placed here
     with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-table"):
@@ -1907,6 +1945,7 @@ with gr.Blocks() as demo:
             elem_id="number-of-random-spins"
         )
         generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["generate-spins-btn", "action-button"])
+        quick_spin_button = gr.Button("Quick Spin", elem_classes=["action-button", "green-btn"])
         analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
         undo_button = gr.Button("Undo Last Spin", elem_classes="action-button")
 
@@ -2002,6 +2041,11 @@ with gr.Blocks() as demo:
                     checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
                     victory_vortex_checkboxes_list.append(checkbox)
 
+    with gr.Row():
+        save_button = gr.Button("Save Session")
+        load_input = gr.File(label="Upload Session")
+    save_output = gr.File(label="Download Session")
+
     gr.HTML("""
     <style>
       .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
@@ -2084,12 +2128,28 @@ with gr.Blocks() as demo:
         fn=lambda x: x,
         inputs=spins_textbox,
         outputs=spins_display
+    ).then(
+        fn=get_spin_count,
+        inputs=[],
+        outputs=[spin_count_output]
+    ).then(
+        fn=get_spin_history,
+        inputs=[],
+        outputs=[spin_history_output]
     )
 
     clear_spins_button.click(
         fn=clear_spins,
         inputs=[],
         outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display]
+    ).then(
+        fn=get_spin_count,
+        inputs=[],
+        outputs=[spin_count_output]
+    ).then(
+        fn=get_spin_history,
+        inputs=[],
+        outputs=[spin_history_output]
     )
 
     clear_all_button.click(
@@ -2101,6 +2161,14 @@ with gr.Blocks() as demo:
             corners_output, six_lines_output, splits_output, sides_output,
             straight_up_table, top_18_table, strongest_numbers_output
         ]
+    ).then(
+        fn=get_spin_count,
+        inputs=[],
+        outputs=[spin_count_output]
+    ).then(
+        fn=get_spin_history,
+        inputs=[],
+        outputs=[spin_history_output]
     )
 
     generate_spins_button.click(
@@ -2111,6 +2179,28 @@ with gr.Blocks() as demo:
         fn=format_spins_as_html,
         inputs=[spins_display, last_spin_count],
         outputs=[last_spin_display]
+    ).then(
+        fn=get_spin_count,
+        inputs=[],
+        outputs=[spin_count_output]
+    ).then(
+        fn=get_spin_history,
+        inputs=[],
+        outputs=[spin_history_output]
+    )
+
+    quick_spin_button.click(
+        fn=quick_spin,
+        inputs=[spins_display, last_spin_count],
+        outputs=[spins_display, spins_textbox, last_spin_display]
+    ).then(
+        fn=get_spin_count,
+        inputs=[],
+        outputs=[spin_count_output]
+    ).then(
+        fn=get_spin_history,
+        inputs=[],
+        outputs=[spin_history_output]
     )
 
     last_spin_count.change(
@@ -2149,6 +2239,14 @@ with gr.Blocks() as demo:
         fn=reset_scores,
         inputs=[],
         outputs=[spin_analysis_output]
+    ).then(
+        fn=get_spin_count,
+        inputs=[],
+        outputs=[spin_count_output]
+    ).then(
+        fn=get_spin_history,
+        inputs=[],
+        outputs=[spin_history_output]
     )
 
     clear_button.click(
@@ -2160,6 +2258,14 @@ with gr.Blocks() as demo:
             sides_output, straight_up_table, top_18_table, strongest_numbers_output,
             dynamic_table_output, strategy_output, color_code_output
         ]
+    ).then(
+        fn=get_spin_count,
+        inputs=[],
+        outputs=[spin_count_output]
+    ).then(
+        fn=get_spin_history,
+        inputs=[],
+        outputs=[spin_history_output]
     )
 
     save_button.click(
@@ -2172,6 +2278,14 @@ with gr.Blocks() as demo:
         fn=load_session,
         inputs=[load_input],
         outputs=[spins_display, spins_textbox]
+    ).then(
+        fn=get_spin_count,
+        inputs=[],
+        outputs=[spin_count_output]
+    ).then(
+        fn=get_spin_history,
+        inputs=[],
+        outputs=[spin_history_output]
     )
 
     undo_button.click(
@@ -2184,6 +2298,14 @@ with gr.Blocks() as demo:
             spins_textbox, spins_display, dynamic_table_output, strategy_output,
             color_code_output
         ]
+    ).then(
+        fn=get_spin_count,
+        inputs=[],
+        outputs=[spin_count_output]
+    ).then(
+        fn=get_spin_history,
+        inputs=[],
+        outputs=[spin_history_output]
     )
 
     # Update both the dynamic table and strategy recommendations when the strategy changes
