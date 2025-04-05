@@ -1061,7 +1061,7 @@ def cold_bet_strategy():
 
 def best_dozens():
     recommendations = []
-    sorted_dozens = sorted(dozen_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
     dozens_hits = [item for item in sorted_dozens if item[1] > 0]
     if dozens_hits:
         recommendations.append("Best Dozens (Top 2):")
@@ -1073,7 +1073,7 @@ def best_dozens():
 
 def best_columns():
     recommendations = []
-    sorted_columns = sorted(column_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_columns = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
     columns_hits = [item for item in sorted_columns if item[1] > 0]
     if columns_hits:
         recommendations.append("Best Columns (Top 2):")
@@ -1114,7 +1114,7 @@ def fibonacci_strategy():
 
 def best_streets():
     recommendations = []
-    sorted_streets = sorted(street_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_streets = sorted(state.street_scores.items(), key=lambda x: x[1], reverse=True)
     streets_hits = [item for item in sorted_streets if item[1] > 0]
 
     if not streets_hits:
@@ -1133,7 +1133,7 @@ def best_streets():
 
 def best_double_streets():
     recommendations = []
-    sorted_six_lines = sorted(six_line_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_six_lines = sorted(state.six_line_scores.items(), key=lambda x: x[1], reverse=True)
     six_lines_hits = [item for item in sorted_six_lines if item[1] > 0]
 
     if not six_lines_hits:
@@ -1148,7 +1148,7 @@ def best_double_streets():
 
 def best_corners():
     recommendations = []
-    sorted_corners = sorted(corner_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_corners = sorted(state.corner_scores.items(), key=lambda x: x[1], reverse=True)
     corners_hits = [item for item in sorted_corners if item[1] > 0]
 
     if not corners_hits:
@@ -1163,7 +1163,7 @@ def best_corners():
 
 def best_splits():
     recommendations = []
-    sorted_splits = sorted(split_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_splits = sorted(state.split_scores.items(), key=lambda x: x[1], reverse=True)
     splits_hits = [item for item in sorted_splits if item[1] > 0]
 
     if not splits_hits:
@@ -1178,7 +1178,7 @@ def best_splits():
 
 def best_dozens_and_streets():
     recommendations = []
-    sorted_dozens = sorted(dozen_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
     dozens_hits = [item for item in sorted_dozens if item[1] > 0]
     if dozens_hits:
         recommendations.append("Best Dozens (Top 2):")
@@ -1187,7 +1187,7 @@ def best_dozens_and_streets():
     else:
         recommendations.append("Best Dozens: No hits yet.")
 
-    sorted_streets = sorted(street_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_streets = sorted(state.street_scores.items(), key=lambda x: x[1], reverse=True)
     streets_hits = [item for item in sorted_streets if item[1] > 0]
     if streets_hits:
         recommendations.append("\nTop 3 Streets (Yellow):")
@@ -1206,7 +1206,7 @@ def best_dozens_and_streets():
 
 def best_columns_and_streets():
     recommendations = []
-    sorted_columns = sorted(column_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_columns = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
     columns_hits = [item for item in sorted_columns if item[1] > 0]
     if columns_hits:
         recommendations.append("Best Columns (Top 2):")
@@ -1215,7 +1215,7 @@ def best_columns_and_streets():
     else:
         recommendations.append("Best Columns: No hits yet.")
 
-    sorted_streets = sorted(street_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_streets = sorted(state.street_scores.items(), key=lambda x: x[1], reverse=True)
     streets_hits = [item for item in sorted_streets if item[1] > 0]
     if streets_hits:
         recommendations.append("\nTop 3 Streets (Yellow):")
@@ -1240,19 +1240,19 @@ def non_overlapping_double_street_strategy():
 
     set_scores = []
     for idx, non_overlapping_set in enumerate(non_overlapping_sets):
-        total_score = sum(six_line_scores[name] for name in non_overlapping_set)
+        total_score = sum(state.six_line_scores[name] for name in non_overlapping_set)
         set_scores.append((idx, total_score, non_overlapping_set))
 
     best_set = max(set_scores, key=lambda x: x[1])
     best_set_idx, best_set_score, best_set_streets = best_set
 
-    sorted_streets = sorted(best_set_streets, key=lambda name: six_line_scores[name], reverse=True)
+    sorted_streets = sorted(best_set_streets, key=lambda name: state.six_line_scores[name], reverse=True)
 
     recommendations = []
     recommendations.append(f"Non-Overlapping Double Streets Strategy (Set {best_set_idx + 1} with Total Score: {best_set_score})")
     recommendations.append("Hottest Non-Overlapping Double Streets (Sorted by Hotness):")
     for i, name in enumerate(sorted_streets, 1):
-        score = six_line_scores[name]
+        score = state.six_line_scores[name]
         recommendations.append(f"{i}. {name}: {score}")
 
     return "\n".join(recommendations)
@@ -1265,26 +1265,26 @@ def non_overlapping_corner_strategy():
 
     set_scores = []
     for idx, non_overlapping_set in enumerate(non_overlapping_sets):
-        total_score = sum(corner_scores[name] for name in non_overlapping_set)
+        total_score = sum(state.corner_scores[name] for name in non_overlapping_set)
         set_scores.append((idx, total_score, non_overlapping_set))
 
     best_set = max(set_scores, key=lambda x: x[1])
     best_set_idx, best_set_score, best_set_corners = best_set
 
-    sorted_corners = sorted(best_set_corners, key=lambda name: corner_scores[name], reverse=True)
+    sorted_corners = sorted(best_set_corners, key=lambda name: state.corner_scores[name], reverse=True)
 
     recommendations = []
     recommendations.append(f"Non-Overlapping Corner Strategy (Set {best_set_idx + 1} with Total Score: {best_set_score})")
     recommendations.append("Hottest Non-Overlapping Corners (Sorted by Hotness):")
     for i, name in enumerate(sorted_corners, 1):
-        score = corner_scores[name]
+        score = state.corner_scores[name]
         recommendations.append(f"{i}. {name}: {score}")
 
     return "\n".join(recommendations)
 
 def romanowksy_missing_dozen_strategy():
     recommendations = []
-    sorted_dozens = sorted(dozen_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
     dozens_hits = [item for item in sorted_dozens if item[1] > 0]
     dozens_no_hits = [item for item in sorted_dozens if item[1] == 0]
 
@@ -1319,7 +1319,7 @@ def romanowksy_missing_dozen_strategy():
     recommendations.append(f"\nWeakest Dozen: {weakest_dozen_name} (Score: {weakest_dozen_score})")
 
     weakest_dozen_numbers = set(DOZENS[weakest_dozen_name])
-    straight_up_df = pd.DataFrame(list(scores.items()), columns=["Number", "Score"])
+    straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
     straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
 
     if straight_up_df.empty:
@@ -1359,14 +1359,13 @@ def romanowksy_missing_dozen_strategy():
     return "\n".join(recommendations)
 
 def fibonacci_to_fortune_strategy():
-    global even_money_scores, dozen_scores, column_scores, six_line_scores, DOZENS
     recommendations = []
 
     fib_recommendations = fibonacci_strategy()
     recommendations.append("Fibonacci Strategy:")
     recommendations.append(fib_recommendations)
 
-    even_money_sorted = sorted(even_money_scores.items(), key=lambda x: x[1], reverse=True)
+    even_money_sorted = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
     even_money_hits = [item for item in even_money_sorted if item[1] > 0]
     if even_money_hits:
         best_even_money = even_money_hits[0]
@@ -1376,7 +1375,7 @@ def fibonacci_to_fortune_strategy():
     else:
         recommendations.append("\nBest Even Money Bet: No hits yet.")
 
-    columns_sorted = sorted(column_scores.items(), key=lambda x: x[1], reverse=True)
+    columns_sorted = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
     columns_hits = [item for item in columns_sorted if item[1] > 0]
     if columns_hits:
         recommendations.append("\nBest Two Columns:")
@@ -1385,7 +1384,7 @@ def fibonacci_to_fortune_strategy():
     else:
         recommendations.append("\nBest Two Columns: No hits yet.")
 
-    dozens_sorted = sorted(dozen_scores.items(), key=lambda x: x[1], reverse=True)
+    dozens_sorted = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
     dozens_hits = [item for item in dozens_sorted if item[1] > 0]
     if dozens_hits:
         recommendations.append("\nBest Two Dozens:")
@@ -1394,7 +1393,7 @@ def fibonacci_to_fortune_strategy():
     else:
         recommendations.append("\nBest Two Dozens: No hits yet.")
 
-    weakest_dozen = min(dozen_scores.items(), key=lambda x: x[1])
+    weakest_dozen = min(state.dozen_scores.items(), key=lambda x: x[1])
     weakest_dozen_name, weakest_dozen_score = weakest_dozen
     weakest_dozen_numbers = set(DOZENS[weakest_dozen_name])
 
@@ -1407,7 +1406,7 @@ def fibonacci_to_fortune_strategy():
     for name, numbers in SIX_LINES.items():
         numbers_set = set(numbers)
         if numbers_set.issubset(weakest_dozen_numbers) and not numbers_set.intersection(top_two_dozen_numbers):
-            double_streets_in_weakest.append((name, six_line_scores[name]))
+            double_streets_in_weakest.append((name, state.six_line_scores[name]))
 
     if double_streets_in_weakest:
         double_streets_sorted = sorted(double_streets_in_weakest, key=lambda x: x[1], reverse=True)
@@ -1422,7 +1421,7 @@ def fibonacci_to_fortune_strategy():
 
 def three_eight_six_rising_martingale():
     recommendations = []
-    sorted_streets = sorted(street_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_streets = sorted(state.street_scores.items(), key=lambda x: x[1], reverse=True)
     streets_hits = [item for item in sorted_streets if item[1] > 0]
 
     if not streets_hits:
@@ -1445,7 +1444,7 @@ def three_eight_six_rising_martingale():
 
 def one_dozen_one_column_strategy():
     recommendations = []
-    sorted_dozens = sorted(dozen_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
     dozens_hits = [item for item in sorted_dozens if item[1] > 0]
 
     if not dozens_hits:
@@ -1460,7 +1459,7 @@ def one_dozen_one_column_strategy():
             for name, _ in top_dozens:
                 recommendations.append(f"- {name}")
 
-    sorted_columns = sorted(column_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_columns = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
     columns_hits = [item for item in sorted_columns if item[1] > 0]
 
     if not columns_hits:
@@ -1479,7 +1478,7 @@ def one_dozen_one_column_strategy():
 
 def top_pick_18_numbers_without_neighbours():
     recommendations = []
-    straight_up_df = pd.DataFrame(list(scores.items()), columns=["Number", "Score"])
+    straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
     straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
 
     if straight_up_df.empty or len(straight_up_df) < 18:
@@ -1512,7 +1511,7 @@ def top_pick_18_numbers_without_neighbours():
     return "\n".join(recommendations)
 
 def kitchen_martingale_output(*checkboxes):
-    sorted_even_money = sorted(even_money_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
     even_money_hits = [item for item in sorted_even_money if item[1] > 0]
 
     recommendations = []
@@ -1568,7 +1567,7 @@ def victory_vortex_strategy(*checkboxes):
     recommendations.append("Fibonacci Strategy:")
     recommendations.append(fib_recommendations)
 
-    dozens_sorted = sorted(dozen_scores.items(), key=lambda x: x[1], reverse=True)
+    dozens_sorted = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
     dozens_hits = [item for item in dozens_sorted if item[1] > 0]
     if dozens_hits:
         recommendations.append("\nBest Two Dozens:")
@@ -1577,7 +1576,7 @@ def victory_vortex_strategy(*checkboxes):
     else:
         recommendations.append("\nBest Two Dozens: No hits yet.")
 
-    columns_sorted = sorted(column_scores.items(), key=lambda x: x[1], reverse=True)
+    columns_sorted = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
     columns_hits = [item for item in columns_sorted if item[1] > 0]
     if columns_hits:
         recommendations.append("\nBest Two Columns:")
@@ -1651,7 +1650,7 @@ def create_color_code_table():
 
 def top_numbers_with_neighbours_tiered():
     recommendations = []
-    straight_up_df = pd.DataFrame(list(scores.items()), columns=["Number", "Score"])
+    straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
     straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
 
     if straight_up_df.empty:
@@ -1681,7 +1680,7 @@ def top_numbers_with_neighbours_tiered():
         neighbors = current_neighbors.get(num, (None, None))
         left, right = neighbors
         all_numbers.add(num)
-        number_scores[num] = scores[num]
+        number_scores[num] = state.scores[num]
         if left is not None:
             all_numbers.add(left)
         if right is not None:
@@ -1695,7 +1694,7 @@ def top_numbers_with_neighbours_tiered():
             group.append(left)
         if right is not None:
             group.append(right)
-        number_groups.append((scores[num], group))
+        number_groups.append((state.scores[num], group))
 
     number_groups.sort(key=lambda x: x[0], reverse=True)
     ordered_numbers = []
