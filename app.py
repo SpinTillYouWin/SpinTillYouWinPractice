@@ -356,8 +356,17 @@ def create_dynamic_table(strategy_name=None):
                     number_highlights[str(num)] = color
 
         elif strategy_name == "Best Even Money Bets":
-            trending_even_money = sorted_even_money[0][0] if sorted_even_money else None
-            second_even_money = sorted_even_money[1][0] if len(sorted_even_money) > 1 else None
+            trending_even_money = None
+            second_even_money = None
+            third_even_money = None
+            if sorted_even_money:
+                even_money_hits = [item for item in sorted_even_money if item[1] > 0]
+                if even_money_hits:
+                    trending_even_money = even_money_hits[0][0]
+                    if len(even_money_hits) > 1:
+                        second_even_money = even_money_hits[1][0]
+                    if len(even_money_hits) > 2:
+                        third_even_money = even_money_hits[2][0]
 
         elif strategy_name == "Best Dozens":
             trending_dozen = sorted_dozens[0][0] if sorted_dozens else None
@@ -579,11 +588,11 @@ def create_dynamic_table(strategy_name=None):
             html += f'<td style="background-color: {bg_color}; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">1st Column</td>'
         html += "</tr>"
 
-    html += "<tr>"
+        html += "<tr>"
     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
-    bg_color = top_color if trending_even_money == "Low" else (middle_color if second_even_money == "Low" else "white")
+    bg_color = top_color if trending_even_money == "Low" else (middle_color if second_even_money == "Low" else (lower_color if third_even_money == "Low" else "white"))
     html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">Low (1 to 18)</td>'
-    bg_color = top_color if trending_even_money == "High" else (middle_color if second_even_money == "High" else "white")
+    bg_color = top_color if trending_even_money == "High" else (middle_color if second_even_money == "High" else (lower_color if third_even_money == "High" else "white"))
     html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">High (19 to 36)</td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
@@ -601,14 +610,14 @@ def create_dynamic_table(strategy_name=None):
 
     html += "<tr>"
     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
-    bg_color = top_color if trending_even_money == "Odd" else (middle_color if second_even_money == "Odd" else "white")
+    bg_color = top_color if trending_even_money == "Odd" else (middle_color if second_even_money == "Odd" else (lower_color if third_even_money == "Odd" else "white"))
     html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
     html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">ODD</td>'
-    bg_color = top_color if trending_even_money == "Red" else (middle_color if second_even_money == "Red" else "white")
+    bg_color = top_color if trending_even_money == "Red" else (middle_color if second_even_money == "Red" else (lower_color if third_even_money == "Red" else "white"))
     html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">RED</td>'
-    bg_color = top_color if trending_even_money == "Black" else (middle_color if second_even_money == "Black" else "white")
+    bg_color = top_color if trending_even_money == "Black" else (middle_color if second_even_money == "Black" else (lower_color if third_even_money == "Black" else "white"))
     html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">BLACK</td>'
-    bg_color = top_color if trending_even_money == "Even" else (middle_color if second_even_money == "Even" else "white")
+    bg_color = top_color if trending_even_money == "Even" else (middle_color if second_even_money == "Even" else (lower_color if third_even_money == "Even" else "white"))
     html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">EVEN</td>'
     html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
@@ -897,12 +906,48 @@ def best_even_money_bets():
     recommendations = []
     sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
     even_money_hits = [item for item in sorted_even_money if item[1] > 0]
-    if even_money_hits:
-        recommendations.append("Best Even Money Bets (Top 2):")
-        for i, (name, score) in enumerate(even_money_hits[:2], 1):
-            recommendations.append(f"{i}. {name}: {score}")
-    else:
+    
+    if not even_money_hits:
         recommendations.append("Best Even Money Bets: No hits yet.")
+        return "\n".join(recommendations)
+
+    # Collect the top 3 bets, including ties
+    top_bets = []
+    scores_seen = set()
+    for name, score in sorted_even_money:
+        if len(top_bets) < 3 or score in scores_seen:
+            top_bets.append((name, score))
+            scores_seen.add(score)
+        else:
+            break
+
+    # Display the top 3 bets
+    recommendations.append("Best Even Money Bets (Top 3):")
+    for i, (name, score) in enumerate(top_bets[:3], 1):
+        recommendations.append(f"{i}. {name}: {score}")
+
+    # Check for ties among the top 3 positions
+    if len(top_bets) > 1:
+        # Check for ties at the 1st position
+        first_score = top_bets[0][1]
+        tied_first = [name for name, score in top_bets if score == first_score]
+        if len(tied_first) > 1:
+            recommendations.append(f"Note: Tie for 1st place among {', '.join(tied_first)} with score {first_score}")
+
+        # Check for ties at the 2nd position
+        if len(top_bets) > 1:
+            second_score = top_bets[1][1]
+            tied_second = [name for name, score in top_bets if score == second_score]
+            if len(tied_second) > 1:
+                recommendations.append(f"Note: Tie for 2nd place among {', '.join(tied_second)} with score {second_score}")
+
+        # Check for ties at the 3rd position
+        if len(top_bets) > 2:
+            third_score = top_bets[2][1]
+            tied_third = [name for name, score in top_bets if score == third_score]
+            if len(tied_third) > 1:
+                recommendations.append(f"Note: Tie for 3rd place among {', '.join(tied_third)} with score {third_score}")
+
     return "\n".join(recommendations)
 
 def hot_bet_strategy():
