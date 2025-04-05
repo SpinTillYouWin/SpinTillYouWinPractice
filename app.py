@@ -2115,8 +2115,7 @@ with gr.Blocks() as demo:
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_table, top_18_table, strongest_numbers_output,
-            dynamic_table_output, strategy_output, color_code_output,
-            kitchen_martingale_checkboxes, victory_vortex_checkboxes
+            dynamic_table_output, strategy_output, color_code_output
         ]
     )
 
