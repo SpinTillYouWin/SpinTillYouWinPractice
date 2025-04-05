@@ -201,7 +201,7 @@ def create_dynamic_table(strategy_name=None):
         ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
     ]
 
-    if not any(scores.values()) and not any(even_money_scores.values()):
+    if not any(state.scores.values()) and not any(state.even_money_scores.values()):
         return "<p>Please analyze some spins first to see highlights on the dynamic table.</p>"
 
     trending_even_money = None
@@ -212,13 +212,13 @@ def create_dynamic_table(strategy_name=None):
     second_column = None
     number_highlights = {}
 
-    sorted_even_money = sorted(even_money_scores.items(), key=lambda x: x[1], reverse=True)
-    sorted_dozens = sorted(dozen_scores.items(), key=lambda x: x[1], reverse=True)
-    sorted_columns = sorted(column_scores.items(), key=lambda x: x[1], reverse=True)
-    sorted_streets = sorted(street_scores.items(), key=lambda x: x[1], reverse=True)
-    sorted_six_lines = sorted(six_line_scores.items(), key=lambda x: x[1], reverse=True)
-    sorted_corners = sorted(corner_scores.items(), key=lambda x: x[1], reverse=True)
-    sorted_splits = sorted(split_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_columns = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_streets = sorted(state.street_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_six_lines = sorted(state.six_line_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_corners = sorted(state.corner_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_splits = sorted(state.split_scores.items(), key=lambda x: x[1], reverse=True)
 
     # Define colors based on strategy
     if strategy_name == "Cold Bet Strategy":
@@ -239,7 +239,7 @@ def create_dynamic_table(strategy_name=None):
         lines = strategy_output.split("\n")
 
         if strategy_name == "Top Numbers with Neighbours (Tiered)":
-            straight_up_df = pd.DataFrame(list(scores.items()), columns=["Number", "Score"])
+            straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
             straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
             if not straight_up_df.empty:
                 num_to_take = min(8, len(straight_up_df))
@@ -265,7 +265,7 @@ def create_dynamic_table(strategy_name=None):
                         group.append(left)
                     if right is not None:
                         group.append(right)
-                    number_groups.append((scores[num], group))
+                    number_groups.append((state.scores[num], group))
 
                 number_groups.sort(key=lambda x: x[0], reverse=True)
                 ordered_numbers = []
@@ -311,12 +311,12 @@ def create_dynamic_table(strategy_name=None):
                     number_highlights[str(num)] = color
 
         elif strategy_name == "Cold Bet Strategy":
-            sorted_even_money_cold = sorted(even_money_scores.items(), key=lambda x: x[1])
-            sorted_dozens_cold = sorted(dozen_scores.items(), key=lambda x: x[1])
-            sorted_columns_cold = sorted(column_scores.items(), key=lambda x: x[1])
-            sorted_streets_cold = sorted(street_scores.items(), key=lambda x: x[1])
-            sorted_corners_cold = sorted(corner_scores.items(), key=lambda x: x[1])
-            sorted_splits_cold = sorted(split_scores.items(), key=lambda x: x[1])
+            sorted_even_money_cold = sorted(state.even_money_scores.items(), key=lambda x: x[1])
+            sorted_dozens_cold = sorted(state.dozen_scores.items(), key=lambda x: x[1])
+            sorted_columns_cold = sorted(state.column_scores.items(), key=lambda x: x[1])
+            sorted_streets_cold = sorted(state.street_scores.items(), key=lambda x: x[1])
+            sorted_corners_cold = sorted(state.corner_scores.items(), key=lambda x: x[1])
+            sorted_splits_cold = sorted(state.split_scores.items(), key=lambda x: x[1])
             trending_even_money = sorted_even_money_cold[0][0] if sorted_even_money_cold else None
             second_even_money = sorted_even_money_cold[1][0] if len(sorted_even_money_cold) > 1 else None
             trending_dozen = sorted_dozens_cold[0][0] if sorted_dozens_cold else None
@@ -424,11 +424,11 @@ def create_dynamic_table(strategy_name=None):
             ]
             set_scores = []
             for idx, non_overlapping_set in enumerate(non_overlapping_sets):
-                total_score = sum(six_line_scores.get(name, 0) for name in non_overlapping_set)
+                total_score = sum(state.six_line_scores.get(name, 0) for name in non_overlapping_set)
                 set_scores.append((idx, total_score, non_overlapping_set))
             best_set = max(set_scores, key=lambda x: x[1], default=(0, 0, non_overlapping_sets[0]))
             best_set_streets = best_set[2]
-            sorted_best_set = sorted(best_set_streets, key=lambda name: six_line_scores.get(name, 0), reverse=True)[:9]
+            sorted_best_set = sorted(best_set_streets, key=lambda name: state.six_line_scores.get(name, 0), reverse=True)[:9]
             for i, double_street_name in enumerate(sorted_best_set):
                 numbers = SIX_LINES[double_street_name]
                 color = "rgba(255, 255, 0, 0.5)" if i < 3 else ("rgba(0, 255, 255, 0.5)" if 3 <= i < 6 else "rgba(0, 255, 0, 0.5)")
@@ -436,7 +436,7 @@ def create_dynamic_table(strategy_name=None):
                     number_highlights[str(num)] = color
 
         elif strategy_name == "Non-Overlapping Corner Strategy":
-            sorted_corners = sorted(corner_scores.items(), key=lambda x: x[1], reverse=True)
+            sorted_corners = sorted(state.corner_scores.items(), key=lambda x: x[1], reverse=True)
             selected_corners = []
             selected_numbers = set()
             for corner_name, _ in sorted_corners:
@@ -455,8 +455,8 @@ def create_dynamic_table(strategy_name=None):
         elif strategy_name == "Romanowksy Missing Dozen":
             trending_dozen = sorted_dozens[0][0] if sorted_dozens and sorted_dozens[0][1] > 0 else None
             second_dozen = sorted_dozens[1][0] if len(sorted_dozens) > 1 and sorted_dozens[1][1] > 0 else None
-            weakest_dozen = min(dozen_scores.items(), key=lambda x: x[1], default=("1st Dozen", 0))[0]
-            straight_up_df = pd.DataFrame(list(scores.items()), columns=["Number", "Score"])
+            weakest_dozen = min(state.dozen_scores.items(), key=lambda x: x[1], default=("1st Dozen", 0))[0]
+            straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
             straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
             weak_numbers = [row["Number"] for _, row in straight_up_df.iterrows() if row["Number"] in DOZENS[weakest_dozen]][:8]
             for num in weak_numbers:
@@ -474,8 +474,8 @@ def create_dynamic_table(strategy_name=None):
                 trending_column = sorted_columns[0][0]
             trending_even_money = sorted_even_money[0][0] if sorted_even_money else None
             second_dozen = sorted_dozens[1][0] if len(sorted_dozens) > 1 else None
-            weakest_dozen = min(dozen_scores.items(), key=lambda x: x[1], default=("1st Dozen", 0))[0]
-            double_streets_in_weakest = [(name, six_line_scores.get(name, 0)) for name, numbers in SIX_LINES.items() if set(numbers).issubset(DOZENS[weakest_dozen])]
+            weakest_dozen = min(state.dozen_scores.items(), key=lambda x: x[1], default=("1st Dozen", 0))[0]
+            double_streets_in_weakest = [(name, state.six_line_scores.get(name, 0)) for name, numbers in SIX_LINES.items() if set(numbers).issubset(DOZENS[weakest_dozen])]
             if double_streets_in_weakest:
                 top_double_street = max(double_streets_in_weakest, key=lambda x: x[1])[0]
                 for num in SIX_LINES[top_double_street]:
@@ -502,7 +502,7 @@ def create_dynamic_table(strategy_name=None):
             trending_column = sorted_columns[0][0] if sorted_columns and sorted_columns[0][1] > 0 else None
 
         elif strategy_name == "Top Pick 18 Numbers without Neighbours":
-            straight_up_df = pd.DataFrame(list(scores.items()), columns=["Number", "Score"])
+            straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
             straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
             if len(straight_up_df) >= 18:
                 top_18_df = straight_up_df.head(18)
@@ -536,7 +536,7 @@ def create_dynamic_table(strategy_name=None):
                 border_style = "2px solid black"
                 if strategy_name == "Top Numbers with Neighbours (Tiered)":
                     num_int = int(num)
-                    straight_up_df = pd.DataFrame(list(scores.items()), columns=["Number", "Score"])
+                    straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
                     straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
                     num_to_take = min(8, len(straight_up_df))
                     top_numbers = set(straight_up_df["Number"].head(num_to_take).tolist())
