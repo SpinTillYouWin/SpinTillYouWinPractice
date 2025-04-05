@@ -3,6 +3,7 @@ import pandas as pd
 import json
 from itertools import combinations
 import random
+from roulette_data import *
 
 # European Roulette wheel order
 WHEEL_EUROPEAN = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23,
