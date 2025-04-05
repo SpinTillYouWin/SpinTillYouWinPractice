@@ -2064,7 +2064,6 @@ with gr.Blocks() as demo:
     with gr.Row():
         save_button = gr.Button("Save Session")
         load_input = gr.File(label="Upload Session")
-        gr.File(value=save_output)
 
     gr.HTML("""
     <style>
