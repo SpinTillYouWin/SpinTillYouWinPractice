@@ -1866,12 +1866,36 @@ with gr.Blocks() as demo:
             lines=5
         )
 
-    # Add spin counter above the table
+    # Define outputs that will be used in event handlers
     spin_count_output = gr.Textbox(
         label="Spin Counter",
         value=get_spin_count(),
         interactive=False
     )
+    spin_history_output = gr.HTML(
+        label="Spin History",
+        value=get_spin_history(),
+        elem_classes="scrollable-table"
+    )
+    straight_up_table = gr.HTML(label="Strongest Numbers", elem_classes="scrollable-table")
+    top_18_table = gr.HTML(label="Top 18 Strongest Numbers (Sorted Lowest to Highest)", elem_classes="scrollable-table")
+    strongest_numbers_output = gr.Textbox(
+        label="Strongest Numbers (Sorted Lowest to Highest)",
+        value="",
+        lines=2
+    )
+    dynamic_table_output = gr.HTML(label="Dynamic Table")
+    color_code_output = gr.HTML(label="Color Code Key")
+    strategy_output = gr.HTML(label="Strategy Recommendations")
+    even_money_output = gr.Textbox(label="Even Money Bets", lines=10, max_lines=50)
+    dozens_output = gr.Textbox(label="Dozens", lines=10, max_lines=50)
+    columns_output = gr.Textbox(label="Columns", lines=10, max_lines=50)
+    streets_output = gr.Textbox(label="Streets", lines=10, max_lines=50)
+    corners_output = gr.Textbox(label="Corners", lines=10, max_lines=50)
+    six_lines_output = gr.Textbox(label="Double Streets", lines=10, max_lines=50)
+    splits_output = gr.Textbox(label="Splits", lines=10, max_lines=50)
+    sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
+    save_output = gr.File(label="Download Session")
 
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -1915,26 +1939,22 @@ with gr.Blocks() as demo:
 
     # New accordion for Spin History, placed here
     with gr.Accordion("Spin History", open=False, elem_id="spin-history"):
-        spin_history_output = gr.HTML(label="Spin History", value=get_spin_history(), elem_classes="scrollable-table")
+        gr.HTML(value=spin_history_output)
 
     # New accordion for Strongest Numbers tables, placed here
     with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-table"):
         with gr.Row():
             with gr.Column():
-                straight_up_table = gr.HTML(label="Strongest Numbers", elem_classes="scrollable-table")
+                gr.HTML(value=straight_up_table)
             with gr.Column():
-                top_18_table = gr.HTML(label="Top 18 Strongest Numbers (Sorted Lowest to Highest)", elem_classes="scrollable-table")
+                gr.HTML(value=top_18_table)
         with gr.Row():
             strongest_numbers_dropdown = gr.Dropdown(
                 label="Select Number of Strongest Numbers",
                 choices=["3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33"],
                 value="3"
             )
-            strongest_numbers_output = gr.Textbox(
-                label="Strongest Numbers (Sorted Lowest to Highest)",
-                value="",
-                lines=2
-            )
+            gr.Textbox(value=strongest_numbers_output)
 
     with gr.Row(elem_classes="white-row"):
         num_spins_input = gr.Dropdown(
@@ -1995,11 +2015,11 @@ with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column():
             gr.Markdown("### Dynamic Roulette Table")
-            dynamic_table_output = gr.HTML(label="Dynamic Table")
-            color_code_output = gr.HTML(label="Color Code Key")
+            gr.HTML(value=dynamic_table_output)
+            gr.HTML(value=color_code_output)
         with gr.Column():
             gr.Markdown("### Strategy Recommendations")
-            strategy_output = gr.HTML(label="Strategy Recommendations")
+            gr.HTML(value=strategy_output)
             with gr.Column(visible=False) as kitchen_martingale_checkboxes:
                 gr.Markdown("### Kitchen Martingale Checkboxes")
                 kitchen_martingale_checkboxes_list = []
@@ -2044,7 +2064,7 @@ with gr.Blocks() as demo:
     with gr.Row():
         save_button = gr.Button("Save Session")
         load_input = gr.File(label="Upload Session")
-    save_output = gr.File(label="Download Session")
+    gr.File(value=save_output)
 
     gr.HTML("""
     <style>
@@ -2092,36 +2112,31 @@ with gr.Blocks() as demo:
         with gr.Row():
             with gr.Column():
                 with gr.Accordion("Even Money Bets", open=True):
-                    even_money_output = gr.Textbox(label="Even Money Bets", lines=10, max_lines=50)
+                    gr.Textbox(value=even_money_output)
             with gr.Column():
                 with gr.Accordion("Dozens", open=True):
-                    dozens_output = gr.Textbox(label="Dozens", lines=10, max_lines=50)
+                    gr.Textbox(value=dozens_output)
         with gr.Row():
             with gr.Column():
                 with gr.Accordion("Columns", open=True):
-                    columns_output = gr.Textbox(label="Columns", lines=10, max_lines=50)
+                    gr.Textbox(value=columns_output)
             with gr.Column():
                 with gr.Accordion("Streets", open=True):
-                    streets_output = gr.Textbox(label="Streets", lines=10, max_lines=50)
+                    gr.Textbox(value=streets_output)
         with gr.Row():
             with gr.Column():
                 with gr.Accordion("Corners", open=True):
-                    corners_output = gr.Textbox(label="Corners", lines=10, max_lines=50)
+                    gr.Textbox(value=corners_output)
             with gr.Column():
                 with gr.Accordion("Double Streets", open=True):
-                    six_lines_output = gr.Textbox(label="Double Streets", lines=10, max_lines=50)
+                    gr.Textbox(value=six_lines_output)
         with gr.Row():
             with gr.Column():
                 with gr.Accordion("Splits", open=True):
-                    splits_output = gr.Textbox(label="Splits", lines=10, max_lines=50)
+                    gr.Textbox(value=splits_output)
             with gr.Column():
                 with gr.Accordion("Sides of Zero", open=True):
-                    sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
-
-    with gr.Row():
-        save_button = gr.Button("Save Session")
-        load_input = gr.File(label="Upload Session")
-    save_output = gr.File(label="Download Session")
+                    gr.Textbox(value=sides_output)
 
     # Event Handlers
     spins_textbox.change(
