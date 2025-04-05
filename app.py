@@ -2006,11 +2006,17 @@ with gr.Blocks() as demo:
     # State to store the current strategy
     selected_strategy = gr.State(value="Best Even Money Bets")
 
+    # Category dropdown choices (remove "None")
+    category_choices = sorted(strategy_categories.keys())
+    
+    # State to store the current strategy
+    selected_strategy = gr.State(value="Best Even Money Bets")
+    
     with gr.Row():
         category_dropdown = gr.Dropdown(
             label="Select Category",
             choices=category_choices,
-            value="Even Money Strategies",
+            value="Even Money Strategies",  # Default to a valid category
             allow_custom_value=False,
             elem_id="select-category"
         )
