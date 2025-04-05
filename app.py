@@ -678,84 +678,55 @@ def create_dynamic_table(strategy_name=None):
                         border_style = "4px solid green"
                         if num_int not in top_numbers:
                             highlight_color = colors.get(num, "black")
-                        for row_idx, row in enumerate(table_layout):
-            html += "<tr>"
-            for num in row:
-                if num == "":
-                    html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
-                else:
-                    base_color = colors.get(num, "black")
-                    highlight_color = number_highlights.get(num, base_color)
-                    border_style = "2px solid black"
-                    if strategy_name == "Top Numbers with Neighbours (Tiered)":
-                        num_int = int(num)
-                        straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
-                        straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
-                        num_to_take = min(8, len(straight_up_df))
-                        top_numbers = set(straight_up_df["Number"].head(num_to_take).tolist())
-                        neighbor_numbers = set()
-                        neighbor_to = {}
-                        for n in top_numbers:
-                            left, right = current_neighbors.get(n, (None, None))
-                            if left is not None:
-                                neighbor_numbers.add(left)
-                                neighbor_to[left] = neighbor_to.get(left, set()) | {n}
-                            if right is not None:
-                                neighbor_numbers.add(right)
-                                neighbor_to[right] = neighbor_to.get(right, set()) | {n}
-                        if num_int in neighbor_numbers:
-                            border_style = "4px solid green"
-                            if num_int not in top_numbers:
-                                highlight_color = colors.get(num, "black")
-                    html += f'<td style="height: 40px; background-color: {highlight_color}; color: white; border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;">{num}</td>'
-            if row_idx == 0:
-                bg_color = top_color if trending_column == "3rd Column" else (middle_color if second_column == "3rd Column" else "white")
-                html += f'<td style="background-color: {bg_color}; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">3rd Column</td>'
-            elif row_idx == 1:
-                bg_color = top_color if trending_column == "2nd Column" else (middle_color if second_column == "2nd Column" else "white")
-                html += f'<td style="background-color: {bg_color}; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">2nd Column</td>'
-            elif row_idx == 2:
-                bg_color = top_color if trending_column == "1st Column" else (middle_color if second_column == "1st Column" else "white")
-                html += f'<td style="background-color: {bg_color}; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">1st Column</td>'
-            html += "</tr>"
-
-        html += "<tr>"
-        html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
-        bg_color = top_color if trending_even_money == "Low" else (middle_color if second_even_money == "Low" else "white")
-        html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">Low (1 to 18)</td>'
-        bg_color = top_color if trending_even_money == "High" else (middle_color if second_even_money == "High" else "white")
-        html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">High (19 to 36)</td>'
-        html += '<td style="border-color: black; box-sizing: border-box;"></td>'
+                html += f'<td style="height: 40px; background-color: {highlight_color}; color: white; border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;">{num}</td>'
+        if row_idx == 0:
+            bg_color = top_color if trending_column == "3rd Column" else (middle_color if second_column == "3rd Column" else "white")
+            html += f'<td style="background-color: {bg_color}; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">3rd Column</td>'
+        elif row_idx == 1:
+            bg_color = top_color if trending_column == "2nd Column" else (middle_color if second_column == "2nd Column" else "white")
+            html += f'<td style="background-color: {bg_color}; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">2nd Column</td>'
+        elif row_idx == 2:
+            bg_color = top_color if trending_column == "1st Column" else (middle_color if second_column == "1st Column" else "white")
+            html += f'<td style="background-color: {bg_color}; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">1st Column</td>'
         html += "</tr>"
 
-        html += "<tr>"
-        html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
-        bg_color = top_color if trending_dozen == "1st Dozen" else (middle_color if second_dozen == "1st Dozen" else "white")
-        html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">1st Dozen</td>'
-        bg_color = top_color if trending_dozen == "2nd Dozen" else (middle_color if second_dozen == "2nd Dozen" else "white")
-        html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">2nd Dozen</td>'
-        bg_color = top_color if trending_dozen == "3rd Dozen" else (middle_color if second_dozen == "3rd Dozen" else "white")
-        html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">3rd Dozen</td>'
-        html += '<td style="border-color: black; box-sizing: border-box;"></td>'
-        html += "</tr>"
+    html += "<tr>"
+    html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
+    bg_color = top_color if trending_even_money == "Low" else (middle_color if second_even_money == "Low" else "white")
+    html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">Low (1 to 18)</td>'
+    bg_color = top_color if trending_even_money == "High" else (middle_color if second_even_money == "High" else "white")
+    html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">High (19 to 36)</td>'
+    html += '<td style="border-color: black; box-sizing: border-box;"></td>'
+    html += "</tr>"
 
-        html += "<tr>"
-        html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
-        bg_color = top_color if trending_even_money == "Odd" else (middle_color if second_even_money == "Odd" else "white")
-        html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
-        html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">ODD</td>'
-        bg_color = top_color if trending_even_money == "Red" else (middle_color if second_even_money == "Red" else "white")
-        html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">RED</td>'
-        bg_color = top_color if trending_even_money == "Black" else (middle_color if second_even_money == "Black" else "white")
-        html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">BLACK</td>'
-        bg_color = top_color if trending_even_money == "Even" else (middle_color if second_even_money == "Even" else "white")
-        html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">EVEN</td>'
-        html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
-        html += '<td style="border-color: black; box-sizing: border-box;"></td>'
-        html += "</tr>"
+    html += "<tr>"
+    html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
+    bg_color = top_color if trending_dozen == "1st Dozen" else (middle_color if second_dozen == "1st Dozen" else "white")
+    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">1st Dozen</td>'
+    bg_color = top_color if trending_dozen == "2nd Dozen" else (middle_color if second_dozen == "2nd Dozen" else "white")
+    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">2nd Dozen</td>'
+    bg_color = top_color if trending_dozen == "3rd Dozen" else (middle_color if second_dozen == "3rd Dozen" else "white")
+    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">3rd Dozen</td>'
+    html += '<td style="border-color: black; box-sizing: border-box;"></td>'
+    html += "</tr>"
 
-        html += "</table>"
-        return html
+    html += "<tr>"
+    html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
+    bg_color = top_color if trending_even_money == "Odd" else (middle_color if second_even_money == "Odd" else "white")
+    html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
+    html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">ODD</td>'
+    bg_color = top_color if trending_even_money == "Red" else (middle_color if second_even_money == "Red" else "white")
+    html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">RED</td>'
+    bg_color = top_color if trending_even_money == "Black" else (middle_color if second_even_money == "Black" else "white")
+    html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">BLACK</td>'
+    bg_color = top_color if trending_even_money == "Even" else (middle_color if second_even_money == "Even" else "white")
+    html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">EVEN</td>'
+    html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
+    html += '<td style="border-color: black; box-sizing: border-box;"></td>'
+    html += "</tr>"
+
+    html += "</table>"
+    return html
 
 def get_strongest_numbers_with_neighbors(num_count):
     num_count = int(num_count)
