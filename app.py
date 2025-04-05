@@ -1085,9 +1085,9 @@ def best_columns():
 
 def fibonacci_strategy():
     recommendations = []
-    sorted_dozens = sorted(dozen_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
     dozens_hits = [item for item in sorted_dozens if item[1] > 0]
-    sorted_columns = sorted(column_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_columns = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
     columns_hits = [item for item in sorted_columns if item[1] > 0]
 
     if not dozens_hits and not columns_hits:
@@ -1749,7 +1749,11 @@ STRATEGIES = {
 }
 
 def show_strategy_recommendations(strategy_name, *args):
-    if not any(scores.values()) and not any(even_money_scores.values()):
+    print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
+    print(f"show_strategy_recommendations: even_money_scores = {dict(state.even_money_scores)}")
+    print(f"show_strategy_recommendations: any_scores = {any(state.scores.values())}, any_even_money = {any(state.even_money_scores.values())}")
+    
+    if not any(state.scores.values()) and not any(state.even_money_scores.values()):
         return "<p>Please analyze some spins first to generate scores.</p>"
 
     strategy_info = STRATEGIES[strategy_name]
@@ -1761,6 +1765,8 @@ def show_strategy_recommendations(strategy_name, *args):
         recommendations = strategy_func(*args[34:50])
     else:
         recommendations = strategy_func()
+
+    print(f"show_strategy_recommendations: Strategy {strategy_name} output = {recommendations}")
 
     # If the output is already HTML (e.g., from top_numbers_with_neighbours_tiered), return it as is
     if strategy_name == "Top Numbers with Neighbours (Tiered)":
