@@ -5,6 +5,36 @@ from itertools import combinations
 import random
 from roulette_data import *
 
+class RouletteState:
+    def __init__(self):
+        self.scores = {n: 0 for n in range(37)}
+        self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
+        self.dozen_scores = {name: 0 for name in DOZENS.keys()}
+        self.column_scores = {name: 0 for name in COLUMNS.keys()}
+        self.street_scores = {name: 0 for name in STREETS.keys()}
+        self.corner_scores = {name: 0 for name in CORNERS.keys()}
+        self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
+        self.split_scores = {name: 0 for name in SPLITS.keys()}
+        self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
+        self.selected_numbers = set()
+        self.last_spins = []
+
+    def reset(self):
+        self.scores = {n: 0 for n in range(37)}
+        self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
+        self.dozen_scores = {name: 0 for name in DOZENS.keys()}
+        self.column_scores = {name: 0 for name in COLUMNS.keys()}
+        self.street_scores = {name: 0 for name in STREETS.keys()}
+        self.corner_scores = {name: 0 for name in CORNERS.keys()}
+        self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
+        self.split_scores = {name: 0 for name in SPLITS.keys()}
+        self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
+        self.selected_numbers = set()
+        self.last_spins = []
+
+# Create an instance of RouletteState
+state = RouletteState()
+
 current_table_type = "European"
 current_neighbors = NEIGHBORS_EUROPEAN
 current_left_of_zero = LEFT_OF_ZERO_EUROPEAN
@@ -83,7 +113,6 @@ def format_spins_as_html(spins, num_to_show):
     return "".join(html_spins)
 
 def add_spin(number, current_spins, num_to_show):
-    global selected_numbers
     spins = current_spins.split(", ") if current_spins else []
     if spins == [""]:
         spins = []
@@ -92,7 +121,7 @@ def add_spin(number, current_spins, num_to_show):
         if not (0 <= num <= 36):
             return current_spins, f"Error: '{number}' is out of range (0-36 only).", ""
         spins.append(str(num))
-        selected_numbers.add(num)
+        state.selected_numbers.add(num)
         new_spins = ", ".join(spins)
         return new_spins, new_spins, format_spins_as_html(new_spins, num_to_show)
     except ValueError:
@@ -100,9 +129,9 @@ def add_spin(number, current_spins, num_to_show):
 
 # Function to clear spins
 def clear_spins():
-    global selected_numbers
-    selected_numbers.clear()
-    return "", "", "Spins cleared successfully!", ""  # Added outputs for spin_analysis and last_spin
+    state.selected_numbers.clear()
+    state.last_spins = []
+    return "", "", "Spins cleared successfully!", ""
 
 # Function to save the session
 def save_session():
@@ -741,17 +770,7 @@ def analyze_spins(spins_input, reset_scores, strategy_name, *checkbox_args):
 
 # Function to reset scores
 def reset_scores():
-    global scores, even_money_scores, dozen_scores, column_scores, street_scores, corner_scores, six_line_scores, split_scores, side_scores, last_spins
-    scores = {n: 0 for n in range(37)}
-    even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
-    dozen_scores = {name: 0 for name in DOZENS.keys()}
-    column_scores = {name: 0 for name in COLUMNS.keys()}
-    street_scores = {name: 0 for name in STREETS.keys()}
-    corner_scores = {name: 0 for name in CORNERS.keys()}
-    six_line_scores = {name: 0 for name in SIX_LINES.keys()}
-    split_scores = {name: 0 for name in SPLITS.keys()}
-    side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
-    last_spins = []
+    state.reset()
     return "Scores reset!"
 
 def undo_last_spin(current_spins_display, strategy_name, *checkbox_args):
