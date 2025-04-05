@@ -529,6 +529,36 @@ def create_dynamic_table(strategy_name=None):
                     number_highlights[str(num)] = "rgba(0, 255, 255, 0.5)"
                 for num in last_6:
                     number_highlights[str(num)] = "rgba(0, 255, 0, 0.5)"
+                    
+        elif strategy_name == "Best Even Money Bets + Top 18 Numbers":
+            # Even Money Bets
+            trending_even_money = sorted_even_money[0][0] if sorted_even_money else None
+            second_even_money = sorted_even_money[1][0] if len(sorted_even_money) > 1 else None
+            third_even_money = sorted_even_money[2][0] if len(sorted_even_money) > 2 else None
+            # Ensure we only consider bets with hits
+            if trending_even_money and state.even_money_scores[trending_even_money] == 0:
+                trending_even_money = None
+            if second_even_money and state.even_money_scores[second_even_money] == 0:
+                second_even_money = None
+            if third_even_money and state.even_money_scores[third_even_money] == 0:
+                third_even_money = None
+
+            # Top 18 Numbers without Neighbours
+            straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+            straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
+            if len(straight_up_df) >= 18:
+                top_18_df = straight_up_df.head(18)
+                top_18_numbers = top_18_df["Number"].tolist()
+                top_6 = top_18_numbers[:6]
+                next_6 = top_18_numbers[6:12]
+                last_6 = top_18_numbers[12:18]
+                for num in top_6:
+                    number_highlights[str(num)] = "rgba(255, 255, 0, 0.5)"  # Yellow
+                for num in next_6:
+                    number_highlights[str(num)] = "rgba(0, 255, 255, 0.5)"  # Cyan
+                for num in last_6:
+                    number_highlights[str(num)] = "rgba(0, 255, 0, 0.5)"  # Green
+    
 
     html = '<table border="1" style="border-collapse: collapse; text-align: center; font-size: 14px; font-family: Arial, sans-serif; border-color: black; table-layout: fixed; width: 100%; max-width: 600px;">'
     html += '<colgroup>'
@@ -581,21 +611,25 @@ def create_dynamic_table(strategy_name=None):
 
     html += "<tr>"
     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
-    bg_color = top_color if trending_even_money == "Low" else (middle_color if second_even_money == "Low" else "white")
+    bg_color = top_color if trending_even_money == "Low" else (middle_color if second_even_money == "Low" else (lower_color if third_even_money == "Low" else "white"))
     html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">Low (1 to 18)</td>'
-    bg_color = top_color if trending_even_money == "High" else (middle_color if second_even_money == "High" else "white")
+    bg_color = top_color if trending_even_money == "High" else (middle_color if second_even_money == "High" else (lower_color if third_even_money == "High" else "white"))
     html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">High (19 to 36)</td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
 
     html += "<tr>"
     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
-    bg_color = top_color if trending_dozen == "1st Dozen" else (middle_color if second_dozen == "1st Dozen" else "white")
-    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">1st Dozen</td>'
-    bg_color = top_color if trending_dozen == "2nd Dozen" else (middle_color if second_dozen == "2nd Dozen" else "white")
-    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">2nd Dozen</td>'
-    bg_color = top_color if trending_dozen == "3rd Dozen" else (middle_color if second_dozen == "3rd Dozen" else "white")
-    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">3rd Dozen</td>'
+    bg_color = top_color if trending_even_money == "Odd" else (middle_color if second_even_money == "Odd" else (lower_color if third_even_money == "Odd" else "white"))
+    html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
+    html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">ODD</td>'
+    bg_color = top_color if trending_even_money == "Red" else (middle_color if second_even_money == "Red" else (lower_color if third_even_money == "Red" else "white"))
+    html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">RED</td>'
+    bg_color = top_color if trending_even_money == "Black" else (middle_color if second_even_money == "Black" else (lower_color if third_even_money == "Black" else "white"))
+    html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">BLACK</td>'
+    bg_color = top_color if trending_even_money == "Even" else (middle_color if second_even_money == "Even" else (lower_color if third_even_money == "Even" else "white"))
+    html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">EVEN</td>'
+    html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
 
@@ -1999,7 +2033,7 @@ with gr.Blocks() as demo:
 
     strategy_categories = {
         "Trends": ["Cold Bet Strategy", "Hot Bet Strategy"],
-        "Even Money Strategies": ["Best Even Money Bets", "Fibonacci To Fortune"],
+        "Even Money Strategies": ["Best Even Money Bets", "Best Even Money Bets + Top 18 Numbers", "Fibonacci To Fortune"],  # Added new strategy
         "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],
         "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Best Streets"],
         "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
