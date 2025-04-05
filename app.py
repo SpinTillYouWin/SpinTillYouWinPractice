@@ -2108,6 +2108,15 @@ with gr.Blocks() as demo:
             corners_output, six_lines_output, splits_output, sides_output,
             straight_up_table, top_18_table, strongest_numbers_output
         ]
+    ).then(
+        fn=clear_outputs,
+        inputs=[],
+        outputs=[
+            spin_analysis_output, even_money_output, dozens_output, columns_output,
+            streets_output, corners_output, six_lines_output, splits_output,
+            sides_output, straight_up_table, top_18_table, strongest_numbers_output,
+            dynamic_table_output, strategy_output, color_code_output
+        ]
     )
 
     generate_spins_button.click(
