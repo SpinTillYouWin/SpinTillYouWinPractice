@@ -1820,29 +1820,38 @@ def toggle_checkboxes(strategy_name):
 with gr.Blocks() as demo:
     gr.Markdown("# Roulette Spin Analyzer with Strategies (European Table)")
     
+    # Add a link to the PDF using the corrected absolute URL
     gr.HTML(
-        '<a href="https://drive.google.com/file/d/1o9H8Lakx1i4_OnDrvHRj_6-KHsOWufjF/view?usp=sharing" target="_blank" style="font-size: 16px; color: #007bff; text-decoration: underline;">📄 View Instructions PDF (Opens in Google Drive)</a>'
+        '<a href="https://drive.google.com/file/d/1o9H8Lakx1i4_OnDrvHRj_6-KHsOWufjF/view?usp=sharing" target="_blank" style="font-size: 16px; color: #007bff; text-decoration: underline;">📄 View Instructions1 PDF (Opens in Google Drive)</a>'
     )
 
     spins_display = gr.State(value="")
+    spins_textbox = gr.Textbox(
+        label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
+        value="",
+        interactive=True,
+        elem_id="selected-spins"
+    )
     with gr.Row():
-        with gr.Column(scale=3):
-            spins_textbox = gr.Textbox(
-                label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
-                value="",
-                interactive=True,
-                elem_id="selected-spins"
-            )
-        with gr.Column(scale=1):
-            last_spin_count = gr.Slider(
-                label="Show Last Spins",
-                minimum=1,
-                maximum=36,
-                step=1,
-                value=5,
-                interactive=True
-            )
-    last_spin_display = gr.HTML(label="Last Spins", value="")
+        last_spin_display = gr.HTML(
+            label="Last Spin",
+            value=""
+        )
+        last_spin_count = gr.Slider(
+            label="Show Last Spins",
+            minimum=1,
+            maximum=36,
+            step=1,
+            value=5,
+            interactive=True
+        )
+    with gr.Accordion("Spin Analysis", open=False, elem_id="spin-analysis"):
+        spin_analysis_output = gr.Textbox(
+            label="",
+            value="",
+            interactive=False,
+            lines=5
+        )
 
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -1852,6 +1861,7 @@ with gr.Blocks() as demo:
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
 
+    # Create the table with elem_classes
     with gr.Column(elem_classes="roulette-table"):
         for row in table_layout:
             with gr.Row(elem_classes="table-row"):
@@ -1875,79 +1885,7 @@ with gr.Blocks() as demo:
                             outputs=[spins_display, spins_textbox, last_spin_display]
                         )
 
-    with gr.Row(elem_classes="white-row"):
-        with gr.Column(scale=1):
-            num_spins_input = gr.Dropdown(
-                label="Number of Random Spins",
-                choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
-                value="5",
-                elem_classes="num-spins-dropdown",
-                elem_id="number-of-random-spins"
-            )
-        with gr.Column(scale=1):
-            generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["generate-spins-btn", "action-button"])
-        with gr.Column(scale=1):
-            analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
-        with gr.Column(scale=1):
-            undo_button = gr.Button("Undo Last Spin", elem_classes="action-button")
-
-    strategy_categories = {
-        "Trends": ["Cold Bet Strategy", "Hot Bet Strategy"],
-        "Even Money Strategies": ["Best Even Money Bets", "Fibonacci To Fortune"],
-        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],
-        "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Best Streets"],
-        "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
-        "Double Street Strategies": ["Best Double Streets", "Non-Overlapping Double Street Strategy"],
-        "Corner Strategies": ["Best Corners", "Non-Overlapping Corner Strategy"],
-        "Split Strategies": ["Best Splits"],
-        "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"]
-    }
-
-    category_choices = ["None"] + sorted(strategy_categories.keys())
-    selected_strategy = gr.State(value="Best Even Money Bets")
-
-    with gr.Row():
-        with gr.Column(scale=1):
-            category_dropdown = gr.Dropdown(
-                label="Select Category",
-                choices=category_choices,
-                value="Even Money Strategies",
-                allow_custom_value=False,
-                elem_id="select-category"
-            )
-        with gr.Column(scale=1):
-            strategy_dropdown = gr.Dropdown(
-                label="Select Strategy",
-                choices=strategy_categories["Even Money Strategies"],
-                value="Best Even Money Bets",
-                allow_custom_value=False
-            )
-        with gr.Column(scale=1):
-            reset_strategy_button = gr.Button("Reset Strategy", elem_classes="action-button")
-
-    with gr.Row(elem_classes="white-row"):
-        with gr.Column(scale=1):
-            reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
-        with gr.Column(scale=1):
-            reset_action = gr.Dropdown(
-                label="Reset Action",
-                choices=["Clear Spins", "Reset Scores", "Clear Outputs", "Clear All"],
-                value="Clear All",
-                elem_classes="num-spins-dropdown"
-            )
-        with gr.Column(scale=1):
-            reset_button = gr.Button("Reset", elem_classes="action-button")
-        with gr.Column(scale=1):
-            clear_all_button = gr.Button("Clear All", elem_classes="clear-spins-btn action-button")
-
-    with gr.Accordion("Spin Analysis", open=False, elem_id="spin-analysis"):
-        spin_analysis_output = gr.Textbox(
-            label="",
-            value="",
-            interactive=False,
-            lines=5
-        )
-
+    # New accordion for Strongest Numbers tables, placed here
     with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-table"):
         with gr.Row():
             with gr.Column():
@@ -1965,6 +1903,62 @@ with gr.Blocks() as demo:
                 value="",
                 lines=2
             )
+
+    with gr.Row(elem_classes="white-row"):
+        num_spins_input = gr.Dropdown(
+            label="Number of Random Spins",
+            choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+            value="5",
+            elem_classes="num-spins-dropdown",
+            elem_id="number-of-random-spins"
+        )
+        generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["generate-spins-btn", "action-button"])
+        analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
+        undo_button = gr.Button("Undo Last Spin", elem_classes="action-button")
+
+    strategy_categories = {
+        "Trends": ["Cold Bet Strategy", "Hot Bet Strategy"],
+        "Even Money Strategies": ["Best Even Money Bets", "Fibonacci To Fortune"],
+        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],
+        "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Best Streets"],
+        "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
+        "Double Street Strategies": ["Best Double Streets", "Non-Overlapping Double Street Strategy"],
+        "Corner Strategies": ["Best Corners", "Non-Overlapping Corner Strategy"],
+        "Split Strategies": ["Best Splits"],
+        "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"]
+    }
+
+    # Category dropdown choices
+    category_choices = ["None"] + sorted(strategy_categories.keys())
+
+    # State to store the current strategy
+    selected_strategy = gr.State(value="Best Even Money Bets")
+
+    with gr.Row():
+        category_dropdown = gr.Dropdown(
+            label="Select Category",
+            choices=category_choices,
+            value="Even Money Strategies",
+            allow_custom_value=False,
+            elem_id="select-category"
+        )
+        strategy_dropdown = gr.Dropdown(
+            label="Select Strategy",
+            choices=strategy_categories["Even Money Strategies"],
+            value="Best Even Money Bets",
+            allow_custom_value=False
+        )
+        reset_strategy_button = gr.Button("Reset to Default", elem_classes="action-button")
+
+    with gr.Row(elem_classes="white-row"):
+        reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
+        reset_button = gr.Button("Reset Scores", elem_classes="action-button")
+        clear_button = gr.Button("Clear Outputs", elem_classes="action-button")
+
+    with gr.Row():
+        clear_spins_button = gr.Button("Clear Spins", elem_classes="clear-spins-btn small-btn")
+        clear_all_button = gr.Button("Clear All", elem_classes="clear-spins-btn small-btn")
+        print("Button Class Set")
 
     with gr.Row():
         with gr.Column():
@@ -2015,194 +2009,6 @@ with gr.Blocks() as demo:
                     checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
                     victory_vortex_checkboxes_list.append(checkbox)
 
-    with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
-        with gr.Row():
-            with gr.Column():
-                with gr.Accordion("Even Money Bets", open=False):
-                    even_money_output = gr.Textbox(label="Even Money Bets", lines=10, max_lines=50)
-            with gr.Column():
-                with gr.Accordion("Dozens", open=False):
-                    dozens_output = gr.Textbox(label="Dozens", lines=10, max_lines=50)
-        with gr.Row():
-            with gr.Column():
-                with gr.Accordion("Columns", open=False):
-                    columns_output = gr.Textbox(label="Columns", lines=10, max_lines=50)
-            with gr.Column():
-                with gr.Accordion("Streets", open=False):
-                    streets_output = gr.Textbox(label="Streets", lines=10, max_lines=50)
-        with gr.Row():
-            with gr.Column():
-                with gr.Accordion("Corners", open=False):
-                    corners_output = gr.Textbox(label="Corners", lines=10, max_lines=50)
-            with gr.Column():
-                with gr.Accordion("Double Streets", open=False):
-                    six_lines_output = gr.Textbox(label="Double Streets", lines=10, max_lines=50)
-        with gr.Row():
-            with gr.Column():
-                with gr.Accordion("Splits", open=False):
-                    splits_output = gr.Textbox(label="Splits", lines=10, max_lines=50)
-            with gr.Column():
-                with gr.Accordion("Sides of Zero", open=False):
-                    sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
-
-    with gr.Row():
-        save_button = gr.Button("Save Session")
-        load_input = gr.File(label="Upload Session")
-    save_output = gr.File(label="Download Session")
-
-    # Event Handlers
-    def handle_reset_action(action):
-        if action == "Clear Spins":
-            return clear_spins()
-        elif action == "Reset Scores":
-            return reset_scores(), "", "", ""
-        elif action == "Clear Outputs":
-            return clear_outputs()
-        elif action == "Clear All":
-            return clear_all()
-        return "", "", "", ""
-
-    spins_textbox.change(
-        fn=lambda x: x,
-        inputs=spins_textbox,
-        outputs=spins_display
-    )
-
-    reset_button.click(
-        fn=handle_reset_action,
-        inputs=[reset_action],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display]
-    ).then(
-        fn=lambda action: clear_outputs() if action in ["Clear Outputs", "Clear All"] else ("", "", "", "", "", "", "", "", "", "", "", "", "", ""),
-        inputs=[reset_action],
-        outputs=[
-            spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output,
-            sides_output, straight_up_table, top_18_table, strongest_numbers_output,
-            dynamic_table_output, strategy_output
-        ]
-    ).then(
-        fn=lambda action: create_color_code_table() if action in ["Clear Outputs", "Clear All"] else create_color_code_table(),
-        inputs=[reset_action],
-        outputs=[color_code_output]
-    )
-
-    clear_all_button.click(
-        fn=clear_all,
-        inputs=[],
-        outputs=[
-            spins_display, spins_textbox, spin_analysis_output, last_spin_display,
-            even_money_output, dozens_output, columns_output, streets_output,
-            corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_table, top_18_table, strongest_numbers_output
-        ]
-    ).then(
-        fn=clear_outputs,
-        inputs=[],
-        outputs=[
-            spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output,
-            sides_output, straight_up_table, top_18_table, strongest_numbers_output,
-            dynamic_table_output, strategy_output, color_code_output
-        ]
-    )
-
-    generate_spins_button.click(
-        fn=generate_random_spins,
-        inputs=[num_spins_input, spins_display, last_spin_count],
-        outputs=[spins_display, spins_textbox, spin_analysis_output]
-    ).then(
-        fn=format_spins_as_html,
-        inputs=[spins_display, last_spin_count],
-        outputs=[last_spin_display]
-    )
-
-    last_spin_count.change(
-        fn=format_spins_as_html,
-        inputs=[spins_display, last_spin_count],
-        outputs=[last_spin_display]
-    )
-
-    def update_strategy_dropdown(category):
-        if category == "None":
-            return gr.update(choices=["None"], value="None")
-        return gr.update(choices=strategy_categories[category], value=strategy_categories[category][0])
-
-    category_dropdown.change(
-        fn=update_strategy_dropdown,
-        inputs=category_dropdown,
-        outputs=strategy_dropdown
-    )
-
-    reset_strategy_button.click(
-        fn=reset_strategy_dropdowns,
-        inputs=[],
-        outputs=[category_dropdown, strategy_dropdown, strategy_dropdown]
-    ).then(
-        fn=lambda category: gr.update(choices=strategy_categories[category], value=strategy_categories[category][0]),
-        inputs=[category_dropdown],
-        outputs=[strategy_dropdown]
-    )
-
-    analyze_button.click(
-        fn=analyze_spins,
-        inputs=[spins_display, reset_scores_checkbox, strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
-        outputs=[
-            spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output,
-            sides_output, straight_up_table, top_18_table, strongest_numbers_output,
-            dynamic_table_output, strategy_output
-        ]
-    ).then(
-        fn=create_color_code_table,
-        inputs=[],
-        outputs=[color_code_output]
-    )
-
-    save_button.click(
-        fn=save_session,
-        inputs=[],
-        outputs=[save_output]
-    )
-
-    load_input.change(
-        fn=load_session,
-        inputs=[load_input],
-        outputs=[spins_display, spins_textbox]
-    )
-
-    undo_button.click(
-        fn=undo_last_spin,
-        inputs=[spins_display, strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
-        outputs=[
-            spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output,
-            sides_output, straight_up_table, top_18_table, strongest_numbers_output,
-            spins_textbox, spins_display, dynamic_table_output, strategy_output,
-            color_code_output
-        ]
-    )
-
-    strategy_dropdown.change(
-        fn=toggle_checkboxes,
-        inputs=[strategy_dropdown],
-        outputs=[kitchen_martingale_checkboxes, victory_vortex_checkboxes]
-    ).then(
-        fn=show_strategy_recommendations,
-        inputs=[strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
-        outputs=[strategy_output]
-    ).then(
-        fn=lambda strategy: create_dynamic_table(strategy if strategy != "None" else None),
-        inputs=[strategy_dropdown],
-        outputs=[dynamic_table_output]
-    )
-
-    strongest_numbers_dropdown.change(
-        fn=get_strongest_numbers_with_neighbors,
-        inputs=[strongest_numbers_dropdown],
-        outputs=[strongest_numbers_output]
-    )
-
     gr.HTML("""
     <style>
       .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
@@ -2243,6 +2049,180 @@ with gr.Blocks() as demo:
       }
     </style>
     """)
+    print("CSS Updated")
+
+    with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
+        with gr.Row():
+            with gr.Column():
+                with gr.Accordion("Even Money Bets", open=True):
+                    even_money_output = gr.Textbox(label="Even Money Bets", lines=10, max_lines=50)
+            with gr.Column():
+                with gr.Accordion("Dozens", open=True):
+                    dozens_output = gr.Textbox(label="Dozens", lines=10, max_lines=50)
+        with gr.Row():
+            with gr.Column():
+                with gr.Accordion("Columns", open=True):
+                    columns_output = gr.Textbox(label="Columns", lines=10, max_lines=50)
+            with gr.Column():
+                with gr.Accordion("Streets", open=True):
+                    streets_output = gr.Textbox(label="Streets", lines=10, max_lines=50)
+        with gr.Row():
+            with gr.Column():
+                with gr.Accordion("Corners", open=True):
+                    corners_output = gr.Textbox(label="Corners", lines=10, max_lines=50)
+            with gr.Column():
+                with gr.Accordion("Double Streets", open=True):
+                    six_lines_output = gr.Textbox(label="Double Streets", lines=10, max_lines=50)
+        with gr.Row():
+            with gr.Column():
+                with gr.Accordion("Splits", open=True):
+                    splits_output = gr.Textbox(label="Splits", lines=10, max_lines=50)
+            with gr.Column():
+                with gr.Accordion("Sides of Zero", open=True):
+                    sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
+
+    with gr.Row():
+        save_button = gr.Button("Save Session")
+        load_input = gr.File(label="Upload Session")
+    save_output = gr.File(label="Download Session")
+
+    # Event Handlers
+    spins_textbox.change(
+        fn=lambda x: x,
+        inputs=spins_textbox,
+        outputs=spins_display
+    )
+
+    clear_spins_button.click(
+        fn=clear_spins,
+        inputs=[],
+        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display]
+    )
+
+    clear_all_button.click(
+        fn=clear_all,
+        inputs=[],
+        outputs=[
+            spins_display, spins_textbox, spin_analysis_output, last_spin_display,
+            even_money_output, dozens_output, columns_output, streets_output,
+            corners_output, six_lines_output, splits_output, sides_output,
+            straight_up_table, top_18_table, strongest_numbers_output
+        ]
+    )
+
+    generate_spins_button.click(
+        fn=generate_random_spins,
+        inputs=[num_spins_input, spins_display, last_spin_count],
+        outputs=[spins_display, spins_textbox, spin_analysis_output]
+    ).then(
+        fn=format_spins_as_html,
+        inputs=[spins_display, last_spin_count],
+        outputs=[last_spin_display]
+    )
+
+    last_spin_count.change(
+        fn=format_spins_as_html,
+        inputs=[spins_display, last_spin_count],
+        outputs=[last_spin_display]
+    )
+
+    def update_strategy_dropdown(category):
+        if category == "None":
+            return gr.update(choices=["None"], value="None")
+        return gr.update(choices=strategy_categories[category], value=strategy_categories[category][0])
+
+    category_dropdown.change(
+        fn=update_strategy_dropdown,
+        inputs=category_dropdown,
+        outputs=strategy_dropdown
+    )
+
+    reset_strategy_button.click(
+        fn=reset_strategy_dropdowns,
+        inputs=[],
+        outputs=[category_dropdown, strategy_dropdown, strategy_dropdown]
+    ).then(
+        fn=lambda category: gr.update(choices=strategy_categories[category], value=strategy_categories[category][0]),
+        inputs=[category_dropdown],
+        outputs=[strategy_dropdown]
+    )
+    
+    analyze_button.click(
+        fn=analyze_spins,
+        inputs=[spins_display, reset_scores_checkbox, strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
+        outputs=[
+            spin_analysis_output, even_money_output, dozens_output, columns_output,
+            streets_output, corners_output, six_lines_output, splits_output,
+            sides_output, straight_up_table, top_18_table, strongest_numbers_output,
+            dynamic_table_output, strategy_output
+        ]
+    ).then(
+        fn=create_color_code_table,
+        inputs=[],
+        outputs=[color_code_output]
+    )
+
+    reset_button.click(
+        fn=reset_scores,
+        inputs=[],
+        outputs=[spin_analysis_output]
+    )
+
+    clear_button.click(
+        fn=clear_outputs,
+        inputs=[],
+        outputs=[
+            spin_analysis_output, even_money_output, dozens_output, columns_output,
+            streets_output, corners_output, six_lines_output, splits_output,
+            sides_output, straight_up_table, top_18_table, strongest_numbers_output,
+            dynamic_table_output, strategy_output, color_code_output
+        ]
+    )
+
+    save_button.click(
+        fn=save_session,
+        inputs=[],
+        outputs=[save_output]
+    )
+
+    load_input.change(
+        fn=load_session,
+        inputs=[load_input],
+        outputs=[spins_display, spins_textbox]
+    )
+
+    undo_button.click(
+        fn=undo_last_spin,
+        inputs=[spins_display, strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
+        outputs=[
+            spin_analysis_output, even_money_output, dozens_output, columns_output,
+            streets_output, corners_output, six_lines_output, splits_output,
+            sides_output, straight_up_table, top_18_table, strongest_numbers_output,
+            spins_textbox, spins_display, dynamic_table_output, strategy_output,
+            color_code_output
+        ]
+    )
+
+    # Update both the dynamic table and strategy recommendations when the strategy changes
+    strategy_dropdown.change(
+        fn=toggle_checkboxes,
+        inputs=[strategy_dropdown],
+        outputs=[kitchen_martingale_checkboxes, victory_vortex_checkboxes]
+    ).then(
+        fn=show_strategy_recommendations,
+        inputs=[strategy_dropdown] + kitchen_martingale_checkboxes_list + victory_vortex_checkboxes_list,
+        outputs=[strategy_output]
+    ).then(
+        fn=lambda strategy: (print(f"Updating Dynamic Table with Strategy: {strategy}"), create_dynamic_table(strategy if strategy != "None" else None))[-1],
+        inputs=[strategy_dropdown],
+        outputs=[dynamic_table_output]
+    )
+
+    strongest_numbers_dropdown.change(
+        fn=get_strongest_numbers_with_neighbors,
+        inputs=[strongest_numbers_dropdown],
+        outputs=[strongest_numbers_output]
+    )
 
 # Launch the interface
 demo.launch()
