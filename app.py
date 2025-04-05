@@ -2095,13 +2095,15 @@ category_choices = ["None"] + sorted(strategy_categories.keys())
             choices=category_choices,
             value="Even Money Strategies",
             allow_custom_value=False,
+            interactive=True,  # From the last change
             elem_id="select-category"
         )
         strategy_dropdown = gr.Dropdown(
             label="Select Strategy",
             choices=strategy_categories["Even Money Strategies"],
             value="Best Even Money Bets",
-            allow_custom_value=False
+            allow_custom_value=False,
+            interactive=True  # From the last change
         )
         reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes="action-button")
 
