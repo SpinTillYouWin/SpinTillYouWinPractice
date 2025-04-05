@@ -864,6 +864,9 @@ def undo_last_spin(current_spins_display, strategy_name, *checkbox_args):
             streets_output, corners_output, six_lines_output, splits_output, sides_output,
             straight_up_html, top_18_html, strongest_numbers_output, spins_input, spins_input,
             dynamic_table_html, strategy_output, create_color_code_table())
+    
+def get_spin_count():
+    return f"Total Spins: {len(state.last_spins)}"
 
 def generate_random_spins(num_spins, current_spins_display, num_to_show):
     num_spins = int(num_spins)
@@ -1838,6 +1841,13 @@ with gr.Blocks() as demo:
             lines=5
         )
 
+    # Add spin counter above the table
+    spin_count_output = gr.Textbox(
+        label="Spin Counter",
+        value=get_spin_count(),
+        interactive=False
+    )
+
     with gr.Group():
         gr.Markdown("### European Roulette Table")
         table_layout = [
@@ -1855,7 +1865,7 @@ with gr.Blocks() as demo:
                         gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
                     else:
                         color = colors.get(str(num), "black")
-                        is_selected = int(num) in selected_numbers
+                        is_selected = int(num) in state.selected_numbers
                         btn_classes = f"roulette-button {color}"
                         if is_selected:
                             btn_classes += " selected"
@@ -1869,6 +1879,10 @@ with gr.Blocks() as demo:
                             fn=add_spin,
                             inputs=[gr.State(value=num), spins_display, last_spin_count],
                             outputs=[spins_display, spins_textbox, last_spin_display]
+                        ).then(
+                            fn=get_spin_count,
+                            inputs=[],
+                            outputs=[spin_count_output]
                         )
 
     # New accordion for Strongest Numbers tables, placed here
@@ -1993,60 +2007,6 @@ with gr.Blocks() as demo:
                     checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
                     victory_vortex_checkboxes_list.append(checkbox)
 
-    gr.HTML("""
-    <style>
-      .roulette-button.green { background-color: green; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
-      .roulette-button.red { background-color: red; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
-      .roulette-button.black { background-color: black; color: white; border: 1px solid white !important; text-align: center; font-weight: bold; }
-      .roulette-button:hover { opacity: 0.8; }
-      table { border-collapse: collapse; text-align: center; }
-      td, th { border: 1px solid #333; padding: 8px; font-family: Arial, sans-serif; }
-      .roulette-button.selected { border: 3px solid yellow; opacity: 0.9; }
-      .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex; align-items: center; justify-content: center; border: 1px solid white !important; box-sizing: border-box; }
-      .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box; }
-      .roulette-table { display: flex; flex-direction: column; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
-      .table-row { display: flex; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap; line-height: 0 !important; }
-      button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
-      button.clear-spins-btn:hover { background-color: #cc0000 !important; }
-      button.small-btn { padding: 5px 10px !important; font-size: 12px !important; min-width: 80px !important; }
-      button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
-      button.generate-spins-btn:hover { background-color: #0056b3 !important; }
-      .num-spins-input { margin-right: 5px !important; }
-      .white-row { background-color: white !important; }
-      .num-spins-dropdown { width: 100px !important; margin-right: 5px !important; }
-      .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; }
-      button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
-      button.green-btn:hover { background-color: #218838 !important; }
-      .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
-      /* Style for section labels */
-      #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
-      #spin-analysis label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
-      #strongest-numbers-table label { background-color: #E6E6FA !important; color: black !important; padding: 5px; border-radius: 3px; }
-      #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
-      #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
-      #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
-      @media (max-width: 600px) {
-          .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
-          td, th { padding: 5px; font-size: 12px; }
-          .gr-textbox { font-size: 12px; }
-          .scrollable-table { max-height: 200px; }
-      }
-    </style>
-    """)
-    print("CSS Updated")
-
-    spins_textbox.change(
-        fn=lambda x: x,
-        inputs=spins_textbox,
-        outputs=spins_display
-    )
-
-    clear_spins_button.click(
-        fn=clear_spins,
-        inputs=[],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display]
-    )
-
     with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
         with gr.Row():
             with gr.Column():
@@ -2083,6 +2043,22 @@ with gr.Blocks() as demo:
     save_output = gr.File(label="Download Session")
 
     # Event Handlers
+    spins_textbox.change(
+        fn=lambda x: x,
+        inputs=spins_textbox,
+        outputs=spins_display
+    )
+
+    clear_spins_button.click(
+        fn=clear_spins,
+        inputs=[],
+        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display]
+    ).then(
+        fn=get_spin_count,
+        inputs=[],
+        outputs=[spin_count_output]
+    )
+
     generate_spins_button.click(
         fn=generate_random_spins,
         inputs=[num_spins_input, spins_display, last_spin_count],
@@ -2091,6 +2067,10 @@ with gr.Blocks() as demo:
         fn=format_spins_as_html,
         inputs=[spins_display, last_spin_count],
         outputs=[last_spin_display]
+    ).then(
+        fn=get_spin_count,
+        inputs=[],
+        outputs=[spin_count_output]
     )
 
     last_spin_count.change(
@@ -2099,7 +2079,6 @@ with gr.Blocks() as demo:
         outputs=[last_spin_display]
     )
 
-    # Update the second dropdown based on the selected category
     def update_strategy_dropdown(category):
         if category == "None":
             return gr.update(choices=["None"], value="None")
@@ -2130,6 +2109,10 @@ with gr.Blocks() as demo:
         fn=reset_scores,
         inputs=[],
         outputs=[spin_analysis_output]
+    ).then(
+        fn=get_spin_count,
+        inputs=[],
+        outputs=[spin_count_output]
     )
 
     clear_button.click(
@@ -2141,6 +2124,10 @@ with gr.Blocks() as demo:
             sides_output, straight_up_table, top_18_table, strongest_numbers_output,
             dynamic_table_output, strategy_output, color_code_output
         ]
+    ).then(
+        fn=get_spin_count,
+        inputs=[],
+        outputs=[spin_count_output]
     )
 
     save_button.click(
@@ -2153,6 +2140,10 @@ with gr.Blocks() as demo:
         fn=load_session,
         inputs=[load_input],
         outputs=[spins_display, spins_textbox]
+    ).then(
+        fn=get_spin_count,
+        inputs=[],
+        outputs=[spin_count_output]
     )
 
     undo_button.click(
@@ -2165,9 +2156,12 @@ with gr.Blocks() as demo:
             spins_textbox, spins_display, dynamic_table_output, strategy_output,
             color_code_output
         ]
+    ).then(
+        fn=get_spin_count,
+        inputs=[],
+        outputs=[spin_count_output]
     )
 
-    # Update both the dynamic table and strategy recommendations when the strategy changes
     strategy_dropdown.change(
         fn=toggle_checkboxes,
         inputs=[strategy_dropdown],
