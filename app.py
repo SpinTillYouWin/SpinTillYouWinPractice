@@ -2059,14 +2059,14 @@ with gr.Blocks() as demo:
                 lines=2
             )
 
-    with gr.Row(elem_classes="white-row"):
-        num_spins_input = gr.Dropdown(
-            label="Number of Random Spins",
-            choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
-            value="5",
-            elem_classes="num-spins-dropdown",
-            elem_id="number-of-random-spins"
-        )
+        with gr.Row(elem_classes="white-row"):
+            num_spins_input = gr.Dropdown(
+                label="Number of Random Spins",
+                choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+                value="5",
+                elem_classes="num-spins-dropdown",
+                elem_id="number-of-random-spins"
+            )
         generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["generate-spins-btn", "action-button"])
         analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
         undo_button = gr.Button("Undo Last Spin", elem_classes="action-button")
@@ -2084,7 +2084,7 @@ with gr.Blocks() as demo:
     }
 
     # Category dropdown choices
-category_choices = ["None"] + sorted(strategy_categories.keys())
+    category_choices = ["None"] + sorted(strategy_categories.keys())
 
     # State to store the current strategy
     selected_strategy = gr.State(value="Best Even Money Bets")
