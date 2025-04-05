@@ -1948,12 +1948,12 @@ with gr.Blocks() as demo:
             value="Best Even Money Bets",
             allow_custom_value=False
         )
-        reset_strategy_button = gr.Button("Reset to Default", elem_classes="action-button")
+        reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes="action-button")
 
     with gr.Row(elem_classes="white-row"):
         reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
-        reset_button = gr.Button("Reset Scores", elem_classes="action-button")
-        clear_button = gr.Button("Clear Outputs", elem_classes="action-button")
+        reset_button = gr.Button("Reset Scores", elem_classes="action-button", visible=False)
+        clear_button = gr.Button("Clear Outputs", elem_classes="action-button", visible=False)
 
     with gr.Row():
         clear_spins_button = gr.Button("Clear Spins", elem_classes="clear-spins-btn small-btn")
