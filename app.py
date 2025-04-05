@@ -3,6 +3,7 @@ import pandas as pd
 import json
 from itertools import combinations
 import random
+import time  # Added for testing the spinner
 from roulette_data import *
 from functools import lru_cache
 
