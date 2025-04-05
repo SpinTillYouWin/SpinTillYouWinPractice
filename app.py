@@ -219,6 +219,7 @@ def create_dynamic_table(strategy_name=None):
 
     trending_even_money = None
     second_even_money = None
+    third_even_money = None  # Added to prevent UnboundLocalError
     trending_dozen = None
     second_dozen = None
     trending_column = None
