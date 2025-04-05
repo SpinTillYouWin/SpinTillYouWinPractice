@@ -4,6 +4,7 @@ import json
 from itertools import combinations
 import random
 from roulette_data import *
+from functools import lru_cache
 
 class RouletteState:
     def __init__(self):
@@ -206,6 +207,9 @@ def create_html_table(df, title):
     return html
 
 # Function to create the dynamic roulette table with highlighted trending sections
+from functools import lru_cache
+
+@lru_cache(maxsize=32)
 def create_dynamic_table(strategy_name=None):
     print(f"create_dynamic_table called with strategy: {strategy_name}")
     table_layout = [
@@ -217,14 +221,7 @@ def create_dynamic_table(strategy_name=None):
     if not any(state.scores.values()) and not any(state.even_money_scores.values()):
         return "<p>Please analyze some spins first to see highlights on the dynamic table.</p>"
 
-    trending_even_money = None
-    second_even_money = None
-    trending_dozen = None
-    second_dozen = None
-    trending_column = None
-    second_column = None
-    number_highlights = {}
-
+    # Precompute sorted scores once
     sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
     sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
     sorted_columns = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
@@ -233,14 +230,20 @@ def create_dynamic_table(strategy_name=None):
     sorted_corners = sorted(state.corner_scores.items(), key=lambda x: x[1], reverse=True)
     sorted_splits = sorted(state.split_scores.items(), key=lambda x: x[1], reverse=True)
 
+    trending_even_money = None
+    second_even_money = None
+    trending_dozen = None
+    second_dozen = None
+    trending_column = None
+    second_column = None
+    number_highlights = {}
+
     # Define colors based on strategy
     if strategy_name == "Cold Bet Strategy":
-        # Cold colors for Cold Bet Strategy
         top_color = "#D3D3D3"  # Light Gray (Cold Top)
         middle_color = "#DDA0DD"  # Plum (Cold Middle)
         lower_color = "#E0FFFF"  # Light Cyan (Cold Lower)
     else:
-        # Hot colors for all other strategies
         top_color = "rgba(255, 255, 0, 0.5)"  # Yellow
         middle_color = "rgba(0, 255, 255, 0.5)"  # Cyan
         lower_color = "rgba(0, 255, 0, 0.5)"  # Green
@@ -258,7 +261,6 @@ def create_dynamic_table(strategy_name=None):
                 num_to_take = min(8, len(straight_up_df))
                 top_numbers = set(straight_up_df["Number"].head(num_to_take).tolist())
                 neighbor_numbers = set()
-                # Track which numbers are neighbors to others
                 neighbor_to = {}
                 for num in top_numbers:
                     left, right = current_neighbors.get(num, (None, None))
@@ -269,7 +271,6 @@ def create_dynamic_table(strategy_name=None):
                         neighbor_numbers.add(right)
                         neighbor_to[right] = neighbor_to.get(right, set()) | {num}
 
-                # Sort numbers by score of their "parent" number
                 number_groups = []
                 for num in top_numbers:
                     left, right = current_neighbors.get(num, (None, None))
@@ -618,6 +619,9 @@ def create_dynamic_table(strategy_name=None):
     return html
 
 # Function to get strongest numbers with neighbors
+from functools import lru_cache
+
+@lru_cache(maxsize=32)
 def get_strongest_numbers_with_neighbors(num_count):
     num_count = int(num_count)
     straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
@@ -673,50 +677,44 @@ def analyze_spins(spins_input, reset_scores, strategy_name, *checkbox_args):
         state.last_spins.extend(spins)
         spin_results = []
         for spin in spins:
-            hit_sections = []
             spin_value = int(spin)
+            hit_sections = []
 
-            for name, numbers in EVEN_MONEY.items():
-                if int(spin) in numbers:
-                    hit_sections.append(name)
-                    state.even_money_scores[name] += 1
+            # Use list comprehensions for faster section checks
+            hit_sections.extend([name for name, numbers in EVEN_MONEY.items() if spin_value in numbers])
+            for name in [n for n, nums in EVEN_MONEY.items() if spin_value in nums]:
+                state.even_money_scores[name] += 1
 
-            for name, numbers in DOZENS.items():
-                if int(spin) in numbers:
-                    hit_sections.append(name)
-                    state.dozen_scores[name] += 1
+            hit_sections.extend([name for name, numbers in DOZENS.items() if spin_value in numbers])
+            for name in [n for n, nums in DOZENS.items() if spin_value in nums]:
+                state.dozen_scores[name] += 1
 
-            for name, numbers in COLUMNS.items():
-                if int(spin) in numbers:
-                    hit_sections.append(name)
-                    state.column_scores[name] += 1
+            hit_sections.extend([name for name, numbers in COLUMNS.items() if spin_value in numbers])
+            for name in [n for n, nums in COLUMNS.items() if spin_value in nums]:
+                state.column_scores[name] += 1
 
-            for name, numbers in STREETS.items():
-                if int(spin) in numbers:
-                    hit_sections.append(name)
-                    state.street_scores[name] += 1
+            hit_sections.extend([name for name, numbers in STREETS.items() if spin_value in numbers])
+            for name in [n for n, nums in STREETS.items() if spin_value in nums]:
+                state.street_scores[name] += 1
 
-            for name, numbers in CORNERS.items():
-                if int(spin) in numbers:
-                    hit_sections.append(name)
-                    state.corner_scores[name] += 1
+            hit_sections.extend([name for name, numbers in CORNERS.items() if spin_value in numbers])
+            for name in [n for n, nums in CORNERS.items() if spin_value in nums]:
+                state.corner_scores[name] += 1
 
-            for name, numbers in SIX_LINES.items():
-                if int(spin) in numbers:
-                    hit_sections.append(name)
-                    state.six_line_scores[name] += 1
+            hit_sections.extend([name for name, numbers in SIX_LINES.items() if spin_value in numbers])
+            for name in [n for n, nums in SIX_LINES.items() if spin_value in nums]:
+                state.six_line_scores[name] += 1
 
-            for name, numbers in SPLITS.items():
-                if int(spin) in numbers:
-                    hit_sections.append(name)
-                    state.split_scores[name] += 1
+            hit_sections.extend([name for name, numbers in SPLITS.items() if spin_value in numbers])
+            for name in [n for n, nums in SPLITS.items() if spin_value in nums]:
+                state.split_scores[name] += 1
 
             if spin != "0":
-                state.scores[int(spin)] += 1
+                state.scores[spin_value] += 1
                 hit_sections.append(f"Straight Up {spin}")
-            elif spin == "0":
+            else:
                 state.scores[0] += 1
-                hit_sections.append(f"Straight Up {spin}")
+                hit_sections.append("Straight Up 0")
 
             if str(spin) in [str(x) for x in current_left_of_zero]:
                 hit_sections.append("Left Side of Zero")
@@ -725,10 +723,9 @@ def analyze_spins(spins_input, reset_scores, strategy_name, *checkbox_args):
                 hit_sections.append("Right Side of Zero")
                 state.side_scores["Right Side of Zero"] += 1
 
-            if int(spin) in current_neighbors:
-                left, right = current_neighbors[int(spin)]
-                hit_sections.append(f"Left Neighbor: {left}")
-                hit_sections.append(f"Right Neighbor: {right}")
+            if spin_value in current_neighbors:
+                left, right = current_neighbors[spin_value]
+                hit_sections.extend([f"Left Neighbor: {left}", f"Right Neighbor: {right}"])
 
             spin_results.append(f"Spin {spin} hits: {', '.join(hit_sections)}\nTotal sections hit: {len(hit_sections)}")
 
