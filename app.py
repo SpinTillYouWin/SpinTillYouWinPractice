@@ -2290,7 +2290,7 @@ with gr.Blocks() as demo:
         outputs=[last_spin_display]
     )
 
-    def update_strategy_dropdown(category):
+def update_strategy_dropdown(category):
     return gr.update(choices=strategy_categories[category], value=strategy_categories[category][0])
 
     category_dropdown.change(
