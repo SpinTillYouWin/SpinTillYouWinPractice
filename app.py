@@ -117,15 +117,17 @@ def add_spin(number, current_spins, num_to_show):
     if spins == [""]:
         spins = []
     try:
-        num = int(number)
+        num = int(number.strip())  # Remove any whitespace
         if not (0 <= num <= 36):
-            return current_spins, f"Error: '{number}' is out of range (0-36 only).", ""
+            return current_spins, current_spins, f"Error: '{number}' is out of range. Please use numbers between 0 and 36."
         spins.append(str(num))
         state.selected_numbers.add(num)
         new_spins = ", ".join(spins)
         return new_spins, new_spins, format_spins_as_html(new_spins, num_to_show)
     except ValueError:
-        return current_spins, f"Error: '{number}' is not a valid number (use 0-36 only).", ""
+        return current_spins, current_spins, f"Error: '{number}' is not a valid number. Please enter a whole number between 0 and 36."
+    except Exception as e:
+        return current_spins, current_spins, f"Unexpected error: {str(e)}. Please try again or contact support."
 
 # Function to clear spins
 def clear_spins():
@@ -153,18 +155,29 @@ def save_session():
 
 # Function to load the session
 def load_session(file):
-    global last_spins, scores
-    if file is None:
-        return "", ""
     try:
+        if file is None:
+            return "", "Please upload a session file to load."
         with open(file.name, "r") as f:
             session_data = json.load(f)
-        last_spins = session_data.get("spins", [])
-        scores = session_data.get("scores", {n: 0 for n in range(37)})
-        new_spins = ", ".join(last_spins)
-        return new_spins, new_spins
+        state.last_spins = session_data.get("spins", [])
+        state.scores = session_data.get("scores", {n: 0 for n in range(37)})
+        state.even_money_scores = session_data.get("even_money_scores", {name: 0 for name in EVEN_MONEY.keys()})
+        state.dozen_scores = session_data.get("dozen_scores", {name: 0 for name in DOZENS.keys()})
+        state.column_scores = session_data.get("column_scores", {name: 0 for name in COLUMNS.keys()})
+        state.street_scores = session_data.get("street_scores", {name: 0 for name in STREETS.keys()})
+        state.corner_scores = session_data.get("corner_scores", {name: 0 for name in CORNERS.keys()})
+        state.six_line_scores = session_data.get("six_line_scores", {name: 0 for name in SIX_LINES.keys()})
+        state.split_scores = session_data.get("split_scores", {name: 0 for name in SPLITS.keys()})
+        state.side_scores = session_data.get("side_scores", {"Left Side of Zero": 0, "Right Side of Zero": 0})
+        new_spins = ", ".join(state.last_spins)
+        return new_spins, f"Session loaded successfully with {len(state.last_spins)} spins."
+    except FileNotFoundError:
+        return "", f"Error: The file '{file.name if file else 'unknown'}' was not found."
+    except json.JSONDecodeError:
+        return "", "Error: The session file is corrupted or not valid JSON. Please upload a valid file."
     except Exception as e:
-        return f"Error loading file: {str(e)}", f"Error loading file: {str(e)}"
+        return "", f"Unexpected error loading session: {str(e)}. Please try again or check the file."
 
 # Function to calculate statistical insights
 def statistical_insights():
@@ -635,127 +648,131 @@ def get_strongest_numbers_with_neighbors(num_count):
 # Function to analyze spins
 # Continuing from analyze_spins function
 def analyze_spins(spins_input, reset_scores, strategy_name, *checkbox_args):
-    if not spins_input or not spins_input.strip():
-        return "Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", ""
+    try:
+        if not spins_input or not spins_input.strip():
+            return "Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", ""
 
-    raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
-    spins = []
+        raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
+        spins = []
 
-    for spin in raw_spins:
-        if not spin.isdigit():
-            return f"Error: '{spin}' is not a valid number. Use digits only (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", ""
-        num = int(spin)
-        if not (0 <= num <= 36):
-            return f"Error: '{num}' is out of range. Numbers must be between 0 and 36.", "", "", "", "", "", "", "", "", "", "", "", "", ""
-        spins.append(str(num))
+        for spin in raw_spins:
+            try:
+                num = int(spin)
+                if not (0 <= num <= 36):
+                    return f"Error: '{spin}' is out of range. Use numbers between 0 and 36.", "", "", "", "", "", "", "", "", "", "", "", "", ""
+                spins.append(str(num))
+            except ValueError:
+                return f"Error: '{spin}' is not a valid number. Use whole numbers (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", ""
 
-    if not spins:
-        return "No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", ""
+        if not spins:
+            return "No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", ""
 
-    if reset_scores:
-        state.reset()
+        if reset_scores:
+            state.reset()
 
-    state.last_spins.extend(spins)
-    spin_results = []
-    for spin in spins:
-        hit_sections = []
-        spin_value = int(spin)
+        state.last_spins.extend(spins)
+        spin_results = []
+        for spin in spins:
+            hit_sections = []
+            spin_value = int(spin)
 
-        for name, numbers in EVEN_MONEY.items():
-            if int(spin) in numbers:
-                hit_sections.append(name)
-                state.even_money_scores[name] += 1
+            for name, numbers in EVEN_MONEY.items():
+                if int(spin) in numbers:
+                    hit_sections.append(name)
+                    state.even_money_scores[name] += 1
 
-        for name, numbers in DOZENS.items():
-            if int(spin) in numbers:
-                hit_sections.append(name)
-                state.dozen_scores[name] += 1
+            for name, numbers in DOZENS.items():
+                if int(spin) in numbers:
+                    hit_sections.append(name)
+                    state.dozen_scores[name] += 1
 
-        for name, numbers in COLUMNS.items():
-            if int(spin) in numbers:
-                hit_sections.append(name)
-                state.column_scores[name] += 1
+            for name, numbers in COLUMNS.items():
+                if int(spin) in numbers:
+                    hit_sections.append(name)
+                    state.column_scores[name] += 1
 
-        for name, numbers in STREETS.items():
-            if int(spin) in numbers:
-                hit_sections.append(name)
-                state.street_scores[name] += 1
+            for name, numbers in STREETS.items():
+                if int(spin) in numbers:
+                    hit_sections.append(name)
+                    state.street_scores[name] += 1
 
-        for name, numbers in CORNERS.items():
-            if int(spin) in numbers:
-                hit_sections.append(name)
-                state.corner_scores[name] += 1
+            for name, numbers in CORNERS.items():
+                if int(spin) in numbers:
+                    hit_sections.append(name)
+                    state.corner_scores[name] += 1
 
-        for name, numbers in SIX_LINES.items():
-            if int(spin) in numbers:
-                hit_sections.append(name)
-                state.six_line_scores[name] += 1
+            for name, numbers in SIX_LINES.items():
+                if int(spin) in numbers:
+                    hit_sections.append(name)
+                    state.six_line_scores[name] += 1
 
-        for name, numbers in SPLITS.items():
-            if int(spin) in numbers:
-                hit_sections.append(name)
-                state.split_scores[name] += 1
+            for name, numbers in SPLITS.items():
+                if int(spin) in numbers:
+                    hit_sections.append(name)
+                    state.split_scores[name] += 1
 
-        if spin != "0":
-            state.scores[int(spin)] += 1
-            hit_sections.append(f"Straight Up {spin}")
-        elif spin == "0":
-            state.scores[0] += 1
-            hit_sections.append(f"Straight Up {spin}")
+            if spin != "0":
+                state.scores[int(spin)] += 1
+                hit_sections.append(f"Straight Up {spin}")
+            elif spin == "0":
+                state.scores[0] += 1
+                hit_sections.append(f"Straight Up {spin}")
 
-        if str(spin) in [str(x) for x in current_left_of_zero]:
-            hit_sections.append("Left Side of Zero")
-            state.side_scores["Left Side of Zero"] += 1
-        if str(spin) in [str(x) for x in current_right_of_zero]:
-            hit_sections.append("Right Side of Zero")
-            state.side_scores["Right Side of Zero"] += 1
+            if str(spin) in [str(x) for x in current_left_of_zero]:
+                hit_sections.append("Left Side of Zero")
+                state.side_scores["Left Side of Zero"] += 1
+            if str(spin) in [str(x) for x in current_right_of_zero]:
+                hit_sections.append("Right Side of Zero")
+                state.side_scores["Right Side of Zero"] += 1
 
-        if int(spin) in current_neighbors:
-            left, right = current_neighbors[int(spin)]
-            hit_sections.append(f"Left Neighbor: {left}")
-            hit_sections.append(f"Right Neighbor: {right}")
+            if int(spin) in current_neighbors:
+                left, right = current_neighbors[int(spin)]
+                hit_sections.append(f"Left Neighbor: {left}")
+                hit_sections.append(f"Right Neighbor: {right}")
 
-        spin_results.append(f"Spin {spin} hits: {', '.join(hit_sections)}\nTotal sections hit: {len(hit_sections)}")
+            spin_results.append(f"Spin {spin} hits: {', '.join(hit_sections)}\nTotal sections hit: {len(hit_sections)}")
 
-    spin_analysis_output = "\n".join(spin_results)
-    even_money_output = "Even Money Bets:\n" + "\n".join(f"{name}: {score}" for name, score in state.even_money_scores.items())
-    dozens_output = "Dozens:\n" + "\n".join(f"{name}: {score}" for name, score in state.dozen_scores.items())
-    columns_output = "Columns:\n" + "\n".join(f"{name}: {score}" for name, score in state.column_scores.items())
-    streets_output = "Streets:\n" + "\n".join(f"{name}: {score}" for name, score in state.street_scores.items() if score > 0)
-    corners_output = "Corners:\n" + "\n".join(f"{name}: {score}" for name, score in state.corner_scores.items() if score > 0)
-    six_lines_output = "Double Streets:\n" + "\n".join(f"{name}: {score}" for name, score in state.six_line_scores.items() if score > 0)
-    splits_output = "Splits:\n" + "\n".join(f"{name}: {score}" for name, score in state.split_scores.items() if score > 0)
-    sides_output = "Sides of Zero:\n" + "\n".join(f"{name}: {score}" for name, score in state.side_scores.items())
+        spin_analysis_output = "\n".join(spin_results)
+        even_money_output = "Even Money Bets:\n" + "\n".join(f"{name}: {score}" for name, score in state.even_money_scores.items())
+        dozens_output = "Dozens:\n" + "\n".join(f"{name}: {score}" for name, score in state.dozen_scores.items())
+        columns_output = "Columns:\n" + "\n".join(f"{name}: {score}" for name, score in state.column_scores.items())
+        streets_output = "Streets:\n" + "\n".join(f"{name}: {score}" for name, score in state.street_scores.items() if score > 0)
+        corners_output = "Corners:\n" + "\n".join(f"{name}: {score}" for name, score in state.corner_scores.items() if score > 0)
+        six_lines_output = "Double Streets:\n" + "\n".join(f"{name}: {score}" for name, score in state.six_line_scores.items() if score > 0)
+        splits_output = "Splits:\n" + "\n".join(f"{name}: {score}" for name, score in state.split_scores.items() if score > 0)
+        sides_output = "Sides of Zero:\n" + "\n".join(f"{name}: {score}" for name, score in state.side_scores.items())
 
-    straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
-    straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
-    straight_up_df["Left Neighbor"] = straight_up_df["Number"].apply(lambda x: current_neighbors[x][0] if x in current_neighbors else "")
-    straight_up_df["Right Neighbor"] = straight_up_df["Number"].apply(lambda x: current_neighbors[x][1] if x in current_neighbors else "")
-    straight_up_html = create_html_table(straight_up_df[["Number", "Left Neighbor", "Right Neighbor", "Score"]], "Strongest Numbers")
+        straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+        straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
+        straight_up_df["Left Neighbor"] = straight_up_df["Number"].apply(lambda x: current_neighbors[x][0] if x in current_neighbors else "")
+        straight_up_df["Right Neighbor"] = straight_up_df["Number"].apply(lambda x: current_neighbors[x][1] if x in current_neighbors else "")
+        straight_up_html = create_html_table(straight_up_df[["Number", "Left Neighbor", "Right Neighbor", "Score"]], "Strongest Numbers")
 
-    top_18_df = straight_up_df.head(18).sort_values(by="Number", ascending=True)
-    numbers = top_18_df["Number"].tolist()
-    if len(numbers) < 18:
-        numbers.extend([""] * (18 - len(numbers)))
-    grid_data = [numbers[i::3] for i in range(3)]
-    top_18_html = "<h3>Top 18 Strongest Numbers (Sorted Lowest to Highest)</h3>"
-    top_18_html += '<table border="1" style="border-collapse: collapse; text-align: center;">'
-    for row in grid_data:
-        top_18_html += "<tr>"
-        for num in row:
-            top_18_html += f'<td style="padding: 5px; width: 40px;">{num}</td>'
-        top_18_html += "</tr>"
-    top_18_html += "</table>"
+        top_18_df = straight_up_df.head(18).sort_values(by="Number", ascending=True)
+        numbers = top_18_df["Number"].tolist()
+        if len(numbers) < 18:
+            numbers.extend([""] * (18 - len(numbers)))
+        grid_data = [numbers[i::3] for i in range(3)]
+        top_18_html = "<h3>Top 18 Strongest Numbers (Sorted Lowest to Highest)</h3>"
+        top_18_html += '<table border="1" style="border-collapse: collapse; text-align: center;">'
+        for row in grid_data:
+            top_18_html += "<tr>"
+            for num in row:
+                top_18_html += f'<td style="padding: 5px; width: 40px;">{num}</td>'
+            top_18_html += "</tr>"
+        top_18_html += "</table>"
 
-    strongest_numbers_output = get_strongest_numbers_with_neighbors(3)
-    dynamic_table_html = create_dynamic_table(strategy_name)
+        strongest_numbers_output = get_strongest_numbers_with_neighbors(3)
+        dynamic_table_html = create_dynamic_table(strategy_name)
 
-    strategy_output = show_strategy_recommendations(strategy_name, *checkbox_args)
-    print(f"analyze_spins: Strategy output = {strategy_output}")  # Debug print
+        strategy_output = show_strategy_recommendations(strategy_name, *checkbox_args)
+        print(f"analyze_spins: Strategy output = {strategy_output}")
 
-    return (spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html, strategy_output)
+        return (spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output, sides_output,
+                straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html, strategy_output)
+    except Exception as e:
+        return f"Unexpected error while analyzing spins: {str(e)}. Please try again.", "", "", "", "", "", "", "", "", "", "", "", "", ""
 
 # Function to reset scores
 def reset_scores():
