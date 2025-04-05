@@ -359,6 +359,13 @@ def create_dynamic_table(strategy_name=None):
             trending_even_money = sorted_even_money[0][0] if sorted_even_money else None
             second_even_money = sorted_even_money[1][0] if len(sorted_even_money) > 1 else None
             third_even_money = sorted_even_money[2][0] if len(sorted_even_money) > 2 else None
+            # Ensure we only consider bets with hits
+            if trending_even_money and state.even_money_scores[trending_even_money] == 0:
+                trending_even_money = None
+            if second_even_money and state.even_money_scores[second_even_money] == 0:
+                second_even_money = None
+            if third_even_money and state.even_money_scores[third_even_money] == 0:
+                third_even_money = None
 
         elif strategy_name == "Best Dozens":
             trending_dozen = sorted_dozens[0][0] if sorted_dozens else None
@@ -580,7 +587,7 @@ def create_dynamic_table(strategy_name=None):
             html += f'<td style="background-color: {bg_color}; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">1st Column</td>'
         html += "</tr>"
 
-    html += "<tr>"
+        html += "<tr>"
     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
     bg_color = top_color if trending_even_money == "Low" else (middle_color if second_even_money == "Low" else (lower_color if third_even_money == "Low" else "white"))
     html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">Low (1 to 18)</td>'
