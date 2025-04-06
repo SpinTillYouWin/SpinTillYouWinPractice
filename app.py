@@ -2484,7 +2484,7 @@ with gr.Blocks() as demo:
     
     # Add a link to the PDF using the corrected absolute URL
     gr.HTML(
-        '<a href="https://drive.google.com/file/d/1o9H8Lakx1i4_OnDrvHRj_6-KHsOWufjF/view?usp=sharing" target="_blank" style="font-size: 16px; color: #007bff; text-decoration: underline;">📄 View Instructions1 PDF (Opens in Google Drive)</a>'
+        '<a href="https://drive.google.com/file/d/1o9H8Lakx1i4_OnDrvHRj_6-KHsOWufjF/view?usp=sharing" target="_blank" style="font-size: 16px; color: #007bff; text-decoration: underline;">🎥 Roulette Analyzer Guide + Video Instructions</a>'
     )
 
     spins_display = gr.State(value="")
@@ -2504,10 +2504,10 @@ with gr.Blocks() as demo:
             minimum=1,
             maximum=36,
             step=1,
-            value=5,
+            value=36,
             interactive=True
         )
-    with gr.Accordion("Spin Analysis", open=False, elem_id="spin-analysis"):
+    with gr.Accordion("Spin Logic Reactor 🧠", open=False, elem_id="spin-analysis"):
         spin_analysis_output = gr.Textbox(
             label="",
             value="",
@@ -2570,7 +2570,7 @@ with gr.Blocks() as demo:
         num_spins_input = gr.Dropdown(
             label="Number of Random Spins",
             choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
-            value="5",
+            value="10",
             elem_classes="num-spins-dropdown",
             elem_id="number-of-random-spins"
         )
