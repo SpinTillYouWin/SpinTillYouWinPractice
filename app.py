@@ -2780,7 +2780,7 @@ with gr.Blocks() as demo:
 
     # State to store the current strategy
     selected_strategy = gr.State(value="Best Even Money Bets")
-
+    # Strategy dropdown row
     with gr.Row():
         category_dropdown = gr.Dropdown(
             label="Select Category",
@@ -2789,11 +2789,6 @@ with gr.Blocks() as demo:
             allow_custom_value=False,
             elem_id="select-category"
         )
-        strongest_numbers_dropdown.change(
-            fn=lambda num_count: (print(f"strongest_numbers_dropdown changed to: {num_count}"), get_strongest_numbers_with_neighbors(num_count))[-1],
-            inputs=[strongest_numbers_dropdown],
-            outputs=[strongest_numbers_output]
-        )
         strategy_dropdown = gr.Dropdown(
             label="Select Strategy",
             choices=strategy_categories["Even Money Strategies"],
@@ -2801,7 +2796,6 @@ with gr.Blocks() as demo:
             allow_custom_value=False
         )
         reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes="action-button")
-        # Add slider for number of neighbors, initially hidden
         neighbours_count_slider = gr.Slider(
             label="Number of Neighbors (Left + Right)",
             minimum=1,
@@ -2820,20 +2814,22 @@ with gr.Blocks() as demo:
             interactive=True,
             visible=False
         )
+
+    # Color pickers row (added previously)
     with gr.Row():
         top_color_picker = gr.ColorPicker(
             label="Top Tier Color",
-            value="rgba(255, 255, 0, 0.5)",  # Yellow default
+            value="rgba(255, 255, 0, 0.5)",
             interactive=True
         )
         middle_color_picker = gr.ColorPicker(
             label="Middle Tier Color",
-            value="rgba(0, 255, 255, 0.5)",  # Cyan default
+            value="rgba(0, 255, 255, 0.5)",
             interactive=True
         )
         lower_color_picker = gr.ColorPicker(
             label="Lower Tier Color",
-            value="rgba(0, 255, 0, 0.5)",  # Green default
+            value="rgba(0, 255, 0, 0.5)",
             interactive=True
         )
         reset_colors_button = gr.Button("Reset Colors", elem_classes="action-button")
@@ -3146,6 +3142,23 @@ with gr.Blocks() as demo:
         fn=clear_last_spins_display,
         inputs=[],
         outputs=[last_spin_display]
+    )
+
+    # Color picker change events (should be at 4-space indent)
+    top_color_picker.change(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+    middle_color_picker.change(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+    lower_color_picker.change(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
     )
 # Launch the interface
 demo.launch()
