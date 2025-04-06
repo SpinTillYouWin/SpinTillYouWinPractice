@@ -2645,7 +2645,10 @@ def reset_colors():
     default_middle = "rgba(0, 255, 255, 0.5)"  # Cyan
     default_lower = "rgba(0, 255, 0, 0.5)"  # Green
     return default_top, default_middle, default_lower
-    
+def clear_last_spins_display():
+    """Clear the Last Spins HTML display without affecting spins data."""
+    return "<h4>Last Spins</h4><p>Display cleared. Add spins to see them here.</p>"
+
 # Build the Gradio interface
 with gr.Blocks() as demo:
     gr.Markdown("# Roulette Spin Analyzer with Strategies (European Table)")
@@ -2664,7 +2667,7 @@ with gr.Blocks() as demo:
     )
     with gr.Row():
         last_spin_display = gr.HTML(
-            label="Last Spins",  # Updated label for consistency
+            label="Last Spins",
             value=""
         )
         last_spin_count = gr.Slider(
@@ -2675,6 +2678,8 @@ with gr.Blocks() as demo:
             value=36,
             interactive=True
         )
+        clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes="action-button")
+            
     with gr.Accordion("Spin Logic Reactor 🧠", open=False, elem_id="spin-analysis"):
         spin_analysis_output = gr.Textbox(
             label="",
@@ -3136,6 +3141,11 @@ with gr.Blocks() as demo:
         fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
+    )
+    clear_last_spins_button.click(
+        fn=clear_last_spins_display,
+        inputs=[],
+        outputs=[last_spin_display]
     )
 # Launch the interface
 demo.launch()
