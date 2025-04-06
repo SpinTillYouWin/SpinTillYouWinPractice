@@ -86,14 +86,14 @@ betting_progression_vv = [
 
 def format_spins_as_html(spins, num_to_show):
     if not spins:
-        return ""
+        return "<h4>Last Spins</h4><p>No spins yet.</p>"
     
     # Split the spins string into a list and reverse to get the most recent first
     spin_list = spins.split(", ") if spins else []
     spin_list = spin_list[-int(num_to_show):] if spin_list else []  # Take the last N spins
     
     if not spin_list:
-        return ""
+        return "<h4>Last Spins</h4><p>No spins yet.</p>"
     
     # Define colors for each number (matching the European Roulette Table)
     colors = {
@@ -108,9 +108,10 @@ def format_spins_as_html(spins, num_to_show):
     html_spins = []
     for spin in spin_list:
         color = colors.get(spin.strip(), "black")  # Default to black if not found
-        html_spins.append(f'<span style="background-color: {color}; color: white; padding: 2px 5px; margin-right: 5px; border-radius: 3px;">{spin}</span>')
+        html_spins.append(f'<span style="background-color: {color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px; display: inline-block;">{spin}</span>')
     
-    return "".join(html_spins)
+    # Wrap the spins in a div with flexbox to enable wrapping, and add a title
+    return f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
 
 def add_spin(number, current_spins, num_to_show):
     spins = current_spins.split(", ") if current_spins else []
@@ -2495,7 +2496,7 @@ with gr.Blocks() as demo:
     )
     with gr.Row():
         last_spin_display = gr.HTML(
-            label="Last Spin",
+            label="Last Spins",  # Updated label for consistency
             value=""
         )
         last_spin_count = gr.Slider(
