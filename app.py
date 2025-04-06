@@ -2624,9 +2624,12 @@ with gr.Blocks() as demo:
 
     with gr.Row():
         with gr.Column():
+    with gr.Row():
+        with gr.Column():
             gr.Markdown("### Dynamic Roulette Table")
             dynamic_table_output = gr.HTML(label="Dynamic Table")
-            color_code_output = gr.HTML(label="Color Code Key")
+            with gr.Accordion("Color Code Key", open=False):
+                color_code_output = gr.HTML(label="Color Code Key")
         with gr.Column():
             gr.Markdown("### Strategy Recommendations")
             strategy_output = gr.HTML(label="Strategy Recommendations")
