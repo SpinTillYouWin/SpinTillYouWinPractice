@@ -369,6 +369,140 @@ def create_dynamic_table(strategy_name=None):
                     if len(even_money_hits) > 2:
                         third_even_money = even_money_hits[2][0]
 
+        elif strategy_name == "Best Dozens + Top Pick 18 Numbers":
+            # Best Dozens (same as Best Dozens)
+            trending_dozen = None
+            second_dozen = None
+            if sorted_dozens:
+                dozens_hits = [item for item in sorted_dozens if item[1] > 0]
+                if dozens_hits:
+                    trending_dozen = dozens_hits[0][0]
+                    if len(dozens_hits) > 1:
+                        second_dozen = dozens_hits[1][0]
+
+            # Top 18 Numbers without Neighbours (same as Top Pick 18 Numbers without Neighbours)
+            straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+            straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
+            if len(straight_up_df) >= 18:
+                top_18_df = straight_up_df.head(18)
+                top_18_numbers = top_18_df["Number"].tolist()
+                top_6 = top_18_numbers[:6]
+                next_6 = top_18_numbers[6:12]
+                last_6 = top_18_numbers[12:18]
+                for num in top_6:
+                    number_highlights[str(num)] = "rgba(255, 255, 0, 0.5)"  # Yellow
+                for num in next_6:
+                    number_highlights[str(num)] = "rgba(0, 255, 255, 0.5)"  # Cyan
+                for num in last_6:
+                    number_highlights[str(num)] = "rgba(0, 255, 0, 0.5)"  # Green
+
+        elif strategy_name == "Best Columns + Top Pick 18 Numbers":
+            # Best Columns (same as Best Columns)
+            trending_column = None
+            second_column = None
+            if sorted_columns:
+                columns_hits = [item for item in sorted_columns if item[1] > 0]
+                if columns_hits:
+                    trending_column = columns_hits[0][0]
+                    if len(columns_hits) > 1:
+                        second_column = columns_hits[1][0]
+
+            # Top 18 Numbers without Neighbours (same as Top Pick 18 Numbers without Neighbours)
+            straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+            straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
+            if len(straight_up_df) >= 18:
+                top_18_df = straight_up_df.head(18)
+                top_18_numbers = top_18_df["Number"].tolist()
+                top_6 = top_18_numbers[:6]
+                next_6 = top_18_numbers[6:12]
+                last_6 = top_18_numbers[12:18]
+                for num in top_6:
+                    number_highlights[str(num)] = "rgba(255, 255, 0, 0.5)"  # Yellow
+                for num in next_6:
+                    number_highlights[str(num)] = "rgba(0, 255, 255, 0.5)"  # Cyan
+                for num in last_6:
+                    number_highlights[str(num)] = "rgba(0, 255, 0, 0.5)"  # Green
+
+        elif strategy_name == "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers":
+            # Best Dozens (same as Best Dozens)
+            trending_dozen = None
+            second_dozen = None
+            if sorted_dozens:
+                dozens_hits = [item for item in sorted_dozens if item[1] > 0]
+                if dozens_hits:
+                    trending_dozen = dozens_hits[0][0]
+                    if len(dozens_hits) > 1:
+                        second_dozen = dozens_hits[1][0]
+
+            # Even Money Bets (same as Best Even Money Bets)
+            trending_even_money = None
+            second_even_money = None
+            third_even_money = None
+            if sorted_even_money:
+                even_money_hits = [item for item in sorted_even_money if item[1] > 0]
+                if even_money_hits:
+                    trending_even_money = even_money_hits[0][0]
+                    if len(even_money_hits) > 1:
+                        second_even_money = even_money_hits[1][0]
+                    if len(even_money_hits) > 2:
+                        third_even_money = even_money_hits[2][0]
+
+            # Top 18 Numbers without Neighbours (same as Top Pick 18 Numbers without Neighbours)
+            straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+            straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
+            if len(straight_up_df) >= 18:
+                top_18_df = straight_up_df.head(18)
+                top_18_numbers = top_18_df["Number"].tolist()
+                top_6 = top_18_numbers[:6]
+                next_6 = top_18_numbers[6:12]
+                last_6 = top_18_numbers[12:18]
+                for num in top_6:
+                    number_highlights[str(num)] = "rgba(255, 255, 0, 0.5)"  # Yellow
+                for num in next_6:
+                    number_highlights[str(num)] = "rgba(0, 255, 255, 0.5)"  # Cyan
+                for num in last_6:
+                    number_highlights[str(num)] = "rgba(0, 255, 0, 0.5)"  # Green
+
+        elif strategy_name == "Best Columns + Best Even Money Bets + Top Pick 18 Numbers":
+            # Best Columns (same as Best Columns)
+            trending_column = None
+            second_column = None
+            if sorted_columns:
+                columns_hits = [item for item in sorted_columns if item[1] > 0]
+                if columns_hits:
+                    trending_column = columns_hits[0][0]
+                    if len(columns_hits) > 1:
+                        second_column = columns_hits[1][0]
+
+            # Even Money Bets (same as Best Even Money Bets)
+            trending_even_money = None
+            second_even_money = None
+            third_even_money = None
+            if sorted_even_money:
+                even_money_hits = [item for item in sorted_even_money if item[1] > 0]
+                if even_money_hits:
+                    trending_even_money = even_money_hits[0][0]
+                    if len(even_money_hits) > 1:
+                        second_even_money = even_money_hits[1][0]
+                    if len(even_money_hits) > 2:
+                        third_even_money = even_money_hits[2][0]
+
+            # Top 18 Numbers without Neighbours (same as Top Pick 18 Numbers without Neighbours)
+            straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+            straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
+            if len(straight_up_df) >= 18:
+                top_18_df = straight_up_df.head(18)
+                top_18_numbers = top_18_df["Number"].tolist()
+                top_6 = top_18_numbers[:6]
+                next_6 = top_18_numbers[6:12]
+                last_6 = top_18_numbers[12:18]
+                for num in top_6:
+                    number_highlights[str(num)] = "rgba(255, 255, 0, 0.5)"  # Yellow
+                for num in next_6:
+                    number_highlights[str(num)] = "rgba(0, 255, 255, 0.5)"  # Cyan
+                for num in last_6:
+                    number_highlights[str(num)] = "rgba(0, 255, 0, 0.5)"  # Green
+        
         elif strategy_name == "Best Dozens":
             trending_dozen = sorted_dozens[0][0] if sorted_dozens else None
             second_dozen = sorted_dozens[1][0] if len(sorted_dozens) > 1 else None
@@ -1696,6 +1830,374 @@ def best_even_money_and_top_18():
 
     return "\n".join(recommendations)
 
+def best_dozens_and_top_18():
+    recommendations = []
+
+    # Best Dozens (Top 2 with tie handling, same as best_dozens)
+    sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
+    dozens_hits = [item for item in sorted_dozens if item[1] > 0]
+    if dozens_hits:
+        # Collect the top 2 dozens, including ties
+        top_dozens = []
+        scores_seen = set()
+        for name, score in sorted_dozens:
+            if len(top_dozens) < 2 or score in scores_seen:
+                top_dozens.append((name, score))
+                scores_seen.add(score)
+            else:
+                break
+
+        # Display the top 2 dozens
+        recommendations.append("Best Dozens (Top 2):")
+        for i, (name, score) in enumerate(top_dozens[:2], 1):
+            recommendations.append(f"{i}. {name}: {score}")
+
+        # Check for ties among the top 2 positions
+        if len(top_dozens) > 1:
+            first_score = top_dozens[0][1]
+            tied_first = [name for name, score in top_dozens if score == first_score]
+            if len(tied_first) > 1:
+                recommendations.append(f"Note: Tie for 1st place among {', '.join(tied_first)} with score {first_score}")
+
+            if len(top_dozens) > 1:
+                second_score = top_dozens[1][1]
+                tied_second = [name for name, score in top_dozens if score == second_score]
+                if len(tied_second) > 1:
+                    recommendations.append(f"Note: Tie for 2nd place among {', '.join(tied_second)} with score {second_score}")
+    else:
+        recommendations.append("Best Dozens: No hits yet.")
+
+    # Top Pick 18 Numbers without Neighbours (same as top_pick_18_numbers_without_neighbours)
+    recommendations.append("")  # Add a blank line for separation
+    straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+    straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
+
+    if straight_up_df.empty or len(straight_up_df) < 18:
+        recommendations.append("Top Pick 18 Numbers without Neighbours: Not enough numbers have hit yet (need at least 18).")
+        return "\n".join(recommendations)
+
+    top_18_df = straight_up_df.head(18)
+    top_18_numbers = top_18_df["Number"].tolist()
+
+    top_6 = top_18_numbers[:6]
+    next_6 = top_18_numbers[6:12]
+    last_6 = top_18_numbers[12:18]
+
+    recommendations.append("Top Pick 18 Numbers without Neighbours:")
+    recommendations.append("\nTop 6 Numbers (Yellow):")
+    for i, num in enumerate(top_6, 1):
+        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
+        recommendations.append(f"{i}. Number {num} (Score: {score})")
+
+    recommendations.append("\nNext 6 Numbers (Blue):")
+    for i, num in enumerate(next_6, 1):
+        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
+        recommendations.append(f"{i}. Number {num} (Score: {score})")
+
+    recommendations.append("\nLast 6 Numbers (Green):")
+    for i, num in enumerate(last_6, 1):
+        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
+        recommendations.append(f"{i}. Number {num} (Score: {score})")
+
+    return "\n".join(recommendations)
+
+def best_columns_and_top_18():
+    recommendations = []
+
+    # Best Columns (Top 2 with tie handling, same as best_columns)
+    sorted_columns = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
+    columns_hits = [item for item in sorted_columns if item[1] > 0]
+    if columns_hits:
+        # Collect the top 2 columns, including ties
+        top_columns = []
+        scores_seen = set()
+        for name, score in sorted_columns:
+            if len(top_columns) < 2 or score in scores_seen:
+                top_columns.append((name, score))
+                scores_seen.add(score)
+            else:
+                break
+
+        # Display the top 2 columns
+        recommendations.append("Best Columns (Top 2):")
+        for i, (name, score) in enumerate(top_columns[:2], 1):
+            recommendations.append(f"{i}. {name}: {score}")
+
+        # Check for ties among the top 2 positions
+        if len(top_columns) > 1:
+            first_score = top_columns[0][1]
+            tied_first = [name for name, score in top_columns if score == first_score]
+            if len(tied_first) > 1:
+                recommendations.append(f"Note: Tie for 1st place among {', '.join(tied_first)} with score {first_score}")
+
+            if len(top_columns) > 1:
+                second_score = top_columns[1][1]
+                tied_second = [name for name, score in top_columns if score == second_score]
+                if len(tied_second) > 1:
+                    recommendations.append(f"Note: Tie for 2nd place among {', '.join(tied_second)} with score {second_score}")
+    else:
+        recommendations.append("Best Columns: No hits yet.")
+
+    # Top Pick 18 Numbers without Neighbours (same as top_pick_18_numbers_without_neighbours)
+    recommendations.append("")  # Add a blank line for separation
+    straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+    straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
+
+    if straight_up_df.empty or len(straight_up_df) < 18:
+        recommendations.append("Top Pick 18 Numbers without Neighbours: Not enough numbers have hit yet (need at least 18).")
+        return "\n".join(recommendations)
+
+    top_18_df = straight_up_df.head(18)
+    top_18_numbers = top_18_df["Number"].tolist()
+
+    top_6 = top_18_numbers[:6]
+    next_6 = top_18_numbers[6:12]
+    last_6 = top_18_numbers[12:18]
+
+    recommendations.append("Top Pick 18 Numbers without Neighbours:")
+    recommendations.append("\nTop 6 Numbers (Yellow):")
+    for i, num in enumerate(top_6, 1):
+        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
+        recommendations.append(f"{i}. Number {num} (Score: {score})")
+
+    recommendations.append("\nNext 6 Numbers (Blue):")
+    for i, num in enumerate(next_6, 1):
+        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
+        recommendations.append(f"{i}. Number {num} (Score: {score})")
+
+    recommendations.append("\nLast 6 Numbers (Green):")
+    for i, num in enumerate(last_6, 1):
+        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
+        recommendations.append(f"{i}. Number {num} (Score: {score})")
+
+    return "\n".join(recommendations)
+
+def best_dozens_even_money_and_top_18():
+    recommendations = []
+
+    # Best Dozens (Top 2 with tie handling, same as best_dozens)
+    sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
+    dozens_hits = [item for item in sorted_dozens if item[1] > 0]
+    if dozens_hits:
+        # Collect the top 2 dozens, including ties
+        top_dozens = []
+        scores_seen = set()
+        for name, score in sorted_dozens:
+            if len(top_dozens) < 2 or score in scores_seen:
+                top_dozens.append((name, score))
+                scores_seen.add(score)
+            else:
+                break
+
+        # Display the top 2 dozens
+        recommendations.append("Best Dozens (Top 2):")
+        for i, (name, score) in enumerate(top_dozens[:2], 1):
+            recommendations.append(f"{i}. {name}: {score}")
+
+        # Check for ties among the top 2 positions
+        if len(top_dozens) > 1:
+            first_score = top_dozens[0][1]
+            tied_first = [name for name, score in top_dozens if score == first_score]
+            if len(tied_first) > 1:
+                recommendations.append(f"Note: Tie for 1st place among {', '.join(tied_first)} with score {first_score}")
+
+            if len(top_dozens) > 1:
+                second_score = top_dozens[1][1]
+                tied_second = [name for name, score in top_dozens if score == second_score]
+                if len(tied_second) > 1:
+                    recommendations.append(f"Note: Tie for 2nd place among {', '.join(tied_second)} with score {second_score}")
+    else:
+        recommendations.append("Best Dozens: No hits yet.")
+
+    # Best Even Money Bets (Top 3 with tie handling, same as best_even_money_bets)
+    recommendations.append("")  # Add a blank line for separation
+    sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
+    even_money_hits = [item for item in sorted_even_money if item[1] > 0]
+    
+    if even_money_hits:
+        # Collect the top 3 bets, including ties
+        top_bets = []
+        scores_seen = set()
+        for name, score in sorted_even_money:
+            if len(top_bets) < 3 or score in scores_seen:
+                top_bets.append((name, score))
+                scores_seen.add(score)
+            else:
+                break
+
+        # Display the top 3 bets
+        recommendations.append("Best Even Money Bets (Top 3):")
+        for i, (name, score) in enumerate(top_bets[:3], 1):
+            recommendations.append(f"{i}. {name}: {score}")
+
+        # Check for ties among the top 3 positions
+        if len(top_bets) > 1:
+            first_score = top_bets[0][1]
+            tied_first = [name for name, score in top_bets if score == first_score]
+            if len(tied_first) > 1:
+                recommendations.append(f"Note: Tie for 1st place among {', '.join(tied_first)} with score {first_score}")
+
+            if len(top_bets) > 1:
+                second_score = top_bets[1][1]
+                tied_second = [name for name, score in top_bets if score == second_score]
+                if len(tied_second) > 1:
+                    recommendations.append(f"Note: Tie for 2nd place among {', '.join(tied_second)} with score {second_score}")
+
+            if len(top_bets) > 2:
+                third_score = top_bets[2][1]
+                tied_third = [name for name, score in top_bets if score == third_score]
+                if len(tied_third) > 1:
+                    recommendations.append(f"Note: Tie for 3rd place among {', '.join(tied_third)} with score {third_score}")
+    else:
+        recommendations.append("Best Even Money Bets: No hits yet.")
+
+    # Top Pick 18 Numbers without Neighbours (same as top_pick_18_numbers_without_neighbours)
+    recommendations.append("")  # Add a blank line for separation
+    straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+    straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
+
+    if straight_up_df.empty or len(straight_up_df) < 18:
+        recommendations.append("Top Pick 18 Numbers without Neighbours: Not enough numbers have hit yet (need at least 18).")
+        return "\n".join(recommendations)
+
+    top_18_df = straight_up_df.head(18)
+    top_18_numbers = top_18_df["Number"].tolist()
+
+    top_6 = top_18_numbers[:6]
+    next_6 = top_18_numbers[6:12]
+    last_6 = top_18_numbers[12:18]
+
+    recommendations.append("Top Pick 18 Numbers without Neighbours:")
+    recommendations.append("\nTop 6 Numbers (Yellow):")
+    for i, num in enumerate(top_6, 1):
+        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
+        recommendations.append(f"{i}. Number {num} (Score: {score})")
+
+    recommendations.append("\nNext 6 Numbers (Blue):")
+    for i, num in enumerate(next_6, 1):
+        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
+        recommendations.append(f"{i}. Number {num} (Score: {score})")
+
+    recommendations.append("\nLast 6 Numbers (Green):")
+    for i, num in enumerate(last_6, 1):
+        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
+        recommendations.append(f"{i}. Number {num} (Score: {score})")
+
+    return "\n".join(recommendations)
+
+def best_columns_even_money_and_top_18():
+    recommendations = []
+
+    # Best Columns (Top 2 with tie handling, same as best_columns)
+    sorted_columns = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
+    columns_hits = [item for item in sorted_columns if item[1] > 0]
+    if columns_hits:
+        # Collect the top 2 columns, including ties
+        top_columns = []
+        scores_seen = set()
+        for name, score in sorted_columns:
+            if len(top_columns) < 2 or score in scores_seen:
+                top_columns.append((name, score))
+                scores_seen.add(score)
+            else:
+                break
+
+        # Display the top 2 columns
+        recommendations.append("Best Columns (Top 2):")
+        for i, (name, score) in enumerate(top_columns[:2], 1):
+            recommendations.append(f"{i}. {name}: {score}")
+
+        # Check for ties among the top 2 positions
+        if len(top_columns) > 1:
+            first_score = top_columns[0][1]
+            tied_first = [name for name, score in top_columns if score == first_score]
+            if len(tied_first) > 1:
+                recommendations.append(f"Note: Tie for 1st place among {', '.join(tied_first)} with score {first_score}")
+
+            if len(top_columns) > 1:
+                second_score = top_columns[1][1]
+                tied_second = [name for name, score in top_columns if score == second_score]
+                if len(tied_second) > 1:
+                    recommendations.append(f"Note: Tie for 2nd place among {', '.join(tied_second)} with score {second_score}")
+    else:
+        recommendations.append("Best Columns: No hits yet.")
+
+    # Best Even Money Bets (Top 3 with tie handling, same as best_even_money_bets)
+    recommendations.append("")  # Add a blank line for separation
+    sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
+    even_money_hits = [item for item in sorted_even_money if item[1] > 0]
+    
+    if even_money_hits:
+        # Collect the top 3 bets, including ties
+        top_bets = []
+        scores_seen = set()
+        for name, score in sorted_even_money:
+            if len(top_bets) < 3 or score in scores_seen:
+                top_bets.append((name, score))
+                scores_seen.add(score)
+            else:
+                break
+
+        # Display the top 3 bets
+        recommendations.append("Best Even Money Bets (Top 3):")
+        for i, (name, score) in enumerate(top_bets[:3], 1):
+            recommendations.append(f"{i}. {name}: {score}")
+
+        # Check for ties among the top 3 positions
+        if len(top_bets) > 1:
+            first_score = top_bets[0][1]
+            tied_first = [name for name, score in top_bets if score == first_score]
+            if len(tied_first) > 1:
+                recommendations.append(f"Note: Tie for 1st place among {', '.join(tied_first)} with score {first_score}")
+
+            if len(top_bets) > 1:
+                second_score = top_bets[1][1]
+                tied_second = [name for name, score in top_bets if score == second_score]
+                if len(tied_second) > 1:
+                    recommendations.append(f"Note: Tie for 2nd place among {', '.join(tied_second)} with score {second_score}")
+
+            if len(top_bets) > 2:
+                third_score = top_bets[2][1]
+                tied_third = [name for name, score in top_bets if score == third_score]
+                if len(tied_third) > 1:
+                    recommendations.append(f"Note: Tie for 3rd place among {', '.join(tied_third)} with score {third_score}")
+    else:
+        recommendations.append("Best Even Money Bets: No hits yet.")
+
+    # Top Pick 18 Numbers without Neighbours (same as top_pick_18_numbers_without_neighbours)
+    recommendations.append("")  # Add a blank line for separation
+    straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+    straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
+
+    if straight_up_df.empty or len(straight_up_df) < 18:
+        recommendations.append("Top Pick 18 Numbers without Neighbours: Not enough numbers have hit yet (need at least 18).")
+        return "\n".join(recommendations)
+
+    top_18_df = straight_up_df.head(18)
+    top_18_numbers = top_18_df["Number"].tolist()
+
+    top_6 = top_18_numbers[:6]
+    next_6 = top_18_numbers[6:12]
+    last_6 = top_18_numbers[12:18]
+
+    recommendations.append("Top Pick 18 Numbers without Neighbours:")
+    recommendations.append("\nTop 6 Numbers (Yellow):")
+    for i, num in enumerate(top_6, 1):
+        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
+        recommendations.append(f"{i}. Number {num} (Score: {score})")
+
+    recommendations.append("\nNext 6 Numbers (Blue):")
+    for i, num in enumerate(next_6, 1):
+        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
+        recommendations.append(f"{i}. Number {num} (Score: {score})")
+
+    recommendations.append("\nLast 6 Numbers (Green):")
+    for i, num in enumerate(last_6, 1):
+        score = top_18_df[top_18_df["Number"] == num]["Score"].iloc[0]
+        recommendations.append(f"{i}. Number {num} (Score: {score})")
+
+    return "\n".join(recommendations)
+
 def kitchen_martingale_output(*checkboxes):
     sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
     even_money_hits = [item for item in sorted_even_money if item[1] > 0]
@@ -1914,9 +2416,13 @@ STRATEGIES = {
     "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
     "Cold Bet Strategy": {"function": cold_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
     "Best Even Money Bets": {"function": best_even_money_bets, "categories": ["even_money"]},
-    "Best Even Money Bets + Top Pick 18 Numbers": {"function": best_even_money_and_top_18, "categories": ["even_money", "numbers"]},  # New strategy
+    "Best Even Money Bets + Top Pick 18 Numbers": {"function": best_even_money_and_top_18, "categories": ["even_money", "numbers"]},
     "Best Dozens": {"function": best_dozens, "categories": ["dozens"]},
+    "Best Dozens + Top Pick 18 Numbers": {"function": best_dozens_and_top_18, "categories": ["dozens", "numbers"]},  # New strategy
     "Best Columns": {"function": best_columns, "categories": ["columns"]},
+    "Best Columns + Top Pick 18 Numbers": {"function": best_columns_and_top_18, "categories": ["columns", "numbers"]},  # New strategy
+    "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers": {"function": best_dozens_even_money_and_top_18, "categories": ["dozens", "even_money", "numbers", "trends"]},  # New strategy
+    "Best Columns + Best Even Money Bets + Top Pick 18 Numbers": {"function": best_columns_even_money_and_top_18, "categories": ["columns", "even_money", "numbers", "trends"]},  # New strategy
     "Fibonacci Strategy": {"function": fibonacci_strategy, "categories": ["dozens", "columns"]},
     "Best Streets": {"function": best_streets, "categories": ["streets"]},
     "Best Double Streets": {"function": best_double_streets, "categories": ["six_lines"]},
@@ -2072,10 +2578,10 @@ with gr.Blocks() as demo:
         undo_button = gr.Button("Undo Last Spin", elem_classes="action-button")
 
     strategy_categories = {
-        "Trends": ["Cold Bet Strategy", "Hot Bet Strategy"],
-        "Even Money Strategies": ["Best Even Money Bets", "Best Even Money Bets + Top Pick 18 Numbers", "Fibonacci To Fortune"],  # Added new strategy
-        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],
-        "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Best Streets"],
+        "Trends": ["Cold Bet Strategy", "Hot Bet Strategy", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"],  # Added new strategies
+        "Even Money Strategies": ["Best Even Money Bets", "Best Even Money Bets + Top Pick 18 Numbers", "Fibonacci To Fortune"],
+        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Top Pick 18 Numbers", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],  # Added new strategies
+        "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Streets"],  # Added new strategies
         "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
         "Double Street Strategies": ["Best Double Streets", "Non-Overlapping Double Street Strategy"],
         "Corner Strategies": ["Best Corners", "Non-Overlapping Corner Strategy"],
