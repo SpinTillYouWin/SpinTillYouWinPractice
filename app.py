@@ -2624,60 +2624,9 @@ with gr.Blocks() as demo:
 
     with gr.Row():
         with gr.Column():
-    with gr.Row():
-        with gr.Column():
             gr.Markdown("### Dynamic Roulette Table")
             dynamic_table_output = gr.HTML(label="Dynamic Table")
-            with gr.Accordion("Color Code Key", open=False):
-                color_code_output = gr.HTML(label="Color Code Key")
-        with gr.Column():
-            gr.Markdown("### Strategy Recommendations")
-            strategy_output = gr.HTML(label="Strategy Recommendations")
-            with gr.Column(visible=False) as kitchen_martingale_checkboxes:
-                gr.Markdown("### Kitchen Martingale Checkboxes")
-                kitchen_martingale_checkboxes_list = []
-                betting_progression_km = [
-                    ("(Bankroll: $1.00)", "1ST BET", "$1.00"),
-                    ("(Bankroll: $3.00)", "2ND BET", "$2.00"),
-                    ("(Bankroll: $6.00)", "3RD BET", "$3.00"),
-                    ("(Bankroll: $9.00)", "4TH BET", "$3.00"),
-                    ("(Bankroll: $12.00)", "5TH BET", "$3.00"),
-                    ("(Bankroll: $16.00)", "6TH BET", "$4.00"),
-                    ("(Bankroll: $20.00)", "7TH BET", "$4.00"),
-                    ("(Bankroll: $25.00)", "8TH BET", "$5.00"),
-                    ("(Bankroll: $30.00)", "9TH BET", "$5.00"),
-                    ("(Bankroll: $36.00)", "10TH BET", "$6.00"),
-                    ("(Bankroll: $42.00)", "11TH BET", "$6.00"),
-                    ("(Bankroll: $49.00)", "12TH BET", "$7.00"),
-                    ("(Bankroll: $56.00)", "13TH BET", "$7.00"),
-                    ("(Bankroll: $64.00)", "14TH BET", "$8.00"),
-                    ("(Bankroll: $72.00)", "15TH BET", "$8.00"),
-                    ("(Bankroll: $81.00)", "16TH BET", "$9.00"),
-                    ("(Bankroll: $90.00)", "17TH BET", "$9.00"),
-                    ("(Bankroll: $100.00)", "18TH BET", "$10.00"),
-                    ("(Bankroll: $110.00)", "19TH BET", "$10.00")
-                ]
-                checkbox_counts = [0, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
-                flat_progression_km = []
-                for (bankroll, bet_label, bet_amount), count in zip(betting_progression_km, checkbox_counts):
-                    for _ in range(count):
-                        flat_progression_km.append((bankroll, bet_label, bet_amount))
-
-                for i, (bankroll, bet_label, bet_amount) in enumerate(flat_progression_km, 1):
-                    checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
-                    kitchen_martingale_checkboxes_list.append(checkbox)
-
-            with gr.Column(visible=False) as victory_vortex_checkboxes:
-                gr.Markdown("### Victory Vortex Checkboxes")
-                victory_vortex_checkboxes_list = []
-                for i, (bankroll, bet_label, bet_amount) in enumerate(betting_progression_vv, 1):
-                    checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
-                    victory_vortex_checkboxes_list.append(checkbox)    with gr.Row():
-        with gr.Column():
-            gr.Markdown("### Dynamic Roulette Table")
-            dynamic_table_output = gr.HTML(label="Dynamic Table")
-            with gr.Accordion("Color Code Key", open=False):
-                color_code_output = gr.HTML(label="Color Code Key")
+            color_code_output = gr.HTML(label="Color Code Key")
         with gr.Column():
             gr.Markdown("### Strategy Recommendations")
             strategy_output = gr.HTML(label="Strategy Recommendations")
@@ -2763,56 +2712,6 @@ with gr.Blocks() as demo:
     </style>
     """)
     print("CSS Updated")
-
-    with gr.Row():
-        with gr.Column():
-            gr.Markdown("### Dynamic Roulette Table")
-            dynamic_table_output = gr.HTML(label="Dynamic Table")
-            with gr.Accordion("Color Code Key", open=False):
-                color_code_output = gr.HTML(label="Color Code Key")
-        with gr.Column():
-            gr.Markdown("### Strategy Recommendations")
-            strategy_output = gr.HTML(label="Strategy Recommendations")
-            with gr.Column(visible=False) as kitchen_martingale_checkboxes:
-                gr.Markdown("### Kitchen Martingale Checkboxes")
-                kitchen_martingale_checkboxes_list = []
-                betting_progression_km = [
-                    ("(Bankroll: $1.00)", "1ST BET", "$1.00"),
-                    ("(Bankroll: $3.00)", "2ND BET", "$2.00"),
-                    ("(Bankroll: $6.00)", "3RD BET", "$3.00"),
-                    ("(Bankroll: $9.00)", "4TH BET", "$3.00"),
-                    ("(Bankroll: $12.00)", "5TH BET", "$3.00"),
-                    ("(Bankroll: $16.00)", "6TH BET", "$4.00"),
-                    ("(Bankroll: $20.00)", "7TH BET", "$4.00"),
-                    ("(Bankroll: $25.00)", "8TH BET", "$5.00"),
-                    ("(Bankroll: $30.00)", "9TH BET", "$5.00"),
-                    ("(Bankroll: $36.00)", "10TH BET", "$6.00"),
-                    ("(Bankroll: $42.00)", "11TH BET", "$6.00"),
-                    ("(Bankroll: $49.00)", "12TH BET", "$7.00"),
-                    ("(Bankroll: $56.00)", "13TH BET", "$7.00"),
-                    ("(Bankroll: $64.00)", "14TH BET", "$8.00"),
-                    ("(Bankroll: $72.00)", "15TH BET", "$8.00"),
-                    ("(Bankroll: $81.00)", "16TH BET", "$9.00"),
-                    ("(Bankroll: $90.00)", "17TH BET", "$9.00"),
-                    ("(Bankroll: $100.00)", "18TH BET", "$10.00"),
-                    ("(Bankroll: $110.00)", "19TH BET", "$10.00")
-                ]
-                checkbox_counts = [0, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
-                flat_progression_km = []
-                for (bankroll, bet_label, bet_amount), count in zip(betting_progression_km, checkbox_counts):
-                    for _ in range(count):
-                        flat_progression_km.append((bankroll, bet_label, bet_amount))
-
-                for i, (bankroll, bet_label, bet_amount) in enumerate(flat_progression_km, 1):
-                    checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
-                    kitchen_martingale_checkboxes_list.append(checkbox)
-
-            with gr.Column(visible=False) as victory_vortex_checkboxes:
-                gr.Markdown("### Victory Vortex Checkboxes")
-                victory_vortex_checkboxes_list = []
-                for i, (bankroll, bet_label, bet_amount) in enumerate(betting_progression_vv, 1):
-                    checkbox = gr.Checkbox(label=f"{i}. {bankroll} {bet_label} {bet_amount}", value=False)
-                    victory_vortex_checkboxes_list.append(checkbox)
 
     with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
         with gr.Row():
