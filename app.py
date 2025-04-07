@@ -2945,18 +2945,20 @@ with gr.Blocks() as demo:
           max-width: none !important;
           overflow: visible !important;
       }
-      #selected-spins label {
-          white-space: normal !important;
-          width: 100% !important;
-          height: auto !important;
-          overflow: visible !important;
-          display: block !important;
-          background-color: #87CEEB;
-          color: black;
-          padding: 5px;
-          border-radius: 3px;
-          line-height: 1.2em !important;
-      }
+        #selected-spins label {
+            white-space: normal !important;
+            width: 100% !important;
+            height: auto !important;
+            overflow: visible !important;
+            display: block !important;
+            background-color: #87CEEB;
+            color: black;
+            padding: 10px 5px !important; /* Increased top/bottom padding */
+            border-radius: 3px;
+            line-height: 1.5em !important; /* Increased for better spacing */
+            font-size: 14px !important; /* Reduced font size */
+            margin-top: 5px !important; /* Added to shift text downward */
+        }
       #selected-spins {
           width: 100% !important;
           min-width: 800px !important;
@@ -2990,6 +2992,7 @@ with gr.Blocks() as demo:
       .long-slider .gr-box { width: 100% !important; }
       .compact-dropdown { width: 60px !important; margin: 0 5px !important; padding: 0 !important; }
       .compact-dropdown .gr-box { width: 100% !important; }
+
 
       /* Section Labels */
       #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
