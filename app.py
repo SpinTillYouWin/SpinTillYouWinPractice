@@ -1263,7 +1263,7 @@ def reset_strategy_dropdowns():
 
 def generate_random_spins(num_spins, current_spins_display, last_spin_count):
     try:
-        num_spins = int(num_spins)
+        num_spins = int(num_spins)  # This will be 5 from gr.State(value="5")
         if num_spins <= 0:
             return current_spins_display, current_spins_display, "Please select a number of spins greater than 0."
 
@@ -3127,7 +3127,7 @@ with gr.Blocks() as demo:
 
     generate_spins_button.click(
         fn=generate_random_spins,
-        inputs=[gr.State(value="1"), spins_display, last_spin_count],
+        inputs=[gr.State(value="5"), spins_display, last_spin_count],  # Change "1" to "5"
         outputs=[spins_display, spins_textbox, spin_analysis_output]
     ).then(
         fn=format_spins_as_html,
