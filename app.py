@@ -2729,40 +2729,27 @@ with gr.Blocks() as demo:
                             inputs=[gr.State(value=num), spins_display, last_spin_count],
                             outputs=[spins_display, spins_textbox, last_spin_display]
                         )
+
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
             last_spin_display
             last_spin_count
+
     # 4. Row 4: Spin Controls
     with gr.Row():
-        with gr.Column():
+        with gr.Column(scale=2):
             clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
-            with gr.Row():
-                with gr.Column(scale=1):
-                    undo_button = gr.Button("Undo Spins", elem_classes=["action-button", "small-btn"])
-                    undo_count_slider = gr.Slider(
-                        label="Spins to Undo",
-                        minimum=1,
-                        maximum=36,
-                        step=1,
-                        value=1,
-                        interactive=True,
-                        elem_classes="compact-slider"
-                    )
-                with gr.Column(scale=1):
-                    generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button", "small-btn"])
-                    num_spins_input = gr.Dropdown(
-                        label="Number of Random Spins",
-                        choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
-                        value="10",
-                        elem_classes="compact-dropdown"
-                    )
+        with gr.Column(scale=1):
+            undo_button = gr.Button("Undo Spins", elem_classes=["action-button"])
+        with gr.Column(scale=1):
+            generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
 
     # 5. Row 5: Selected Spins Textbox
     with gr.Row(elem_id="selected-spins-row"):
         with gr.Column(min_width=800):
             spins_textbox
+
     # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
         with gr.Column(scale=2):
@@ -2975,21 +2962,22 @@ with gr.Blocks() as demo:
       /* Buttons */
       button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
       button.clear-spins-btn:hover { background-color: #cc0000 !important; }
-      button.small-btn { padding: 5px 10px !important; font-size: 12px !important; min-width: 60px !important; }
       button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
       button.generate-spins-btn:hover { background-color: #0056b3 !important; }
-      .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; }
+      .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; width: 100% !important; box-sizing: border-box !important; }
       button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
       button.green-btn:hover { background-color: #218838 !important; }
+      /* Ensure columns have appropriate spacing */
+      .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
 
       /* Compact Components */
-      .compact-slider { width: 60px !important; margin: 0 !important; padding: 0 !important; }
-      .compact-slider .gr-box { width: 100% !important; }
       .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
       .long-slider .gr-box { width: 100% !important; }
-      .compact-dropdown { width: 60px !important; margin: 0 5px !important; padding: 0 !important; }
-      .compact-dropdown .gr-box { width: 100% !important; }
-
+      /* Target the Accordion and its children */
+      .gr-accordion { background-color: #ffffff !important; }
+      .gr-accordion * { background-color: #ffffff !important; }
+      .gr-accordion .gr-column { background-color: #ffffff !important; }
+      .gr-accordion .gr-row { background-color: #ffffff !important; }
 
       /* Section Labels */
       #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
@@ -3008,9 +2996,7 @@ with gr.Blocks() as demo:
           td, th { padding: 5px; font-size: 12px; }
           .gr-textbox { font-size: 12px; }
           .scrollable-table { max-height: 200px; }
-          .compact-slider { width: 60px !important; }
           .long-slider { width: 100% !important; }
-          .compact-dropdown { width: 60px !important; }
           .header-title { font-size: 1.8em !important; }
           .guide-link { font-size: 0.9em !important; }
       }
@@ -3059,7 +3045,7 @@ with gr.Blocks() as demo:
 
     generate_spins_button.click(
         fn=generate_random_spins,
-        inputs=[num_spins_input, spins_display, last_spin_count],
+        inputs=[gr.State(value="1"), spins_display, last_spin_count],
         outputs=[spins_display, spins_textbox, spin_analysis_output]
     ).then(
         fn=format_spins_as_html,
@@ -3164,7 +3150,7 @@ with gr.Blocks() as demo:
 
     undo_button.click(
         fn=undo_last_spin,
-        inputs=[spins_display, undo_count_slider, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+        inputs=[spins_display, gr.State(value=1), strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
         outputs=[
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
@@ -3176,6 +3162,16 @@ with gr.Blocks() as demo:
         fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
+    )
+
+    generate_spins_button.click(
+        fn=generate_random_spins,
+        inputs=[gr.State(value="1"), spins_display, last_spin_count],
+        outputs=[spins_display, spins_textbox, spin_analysis_output]
+    ).then(
+        fn=format_spins_as_html,
+        inputs=[spins_display, last_spin_count],
+        outputs=[last_spin_display]
     )
 
     neighbours_count_slider.change(
