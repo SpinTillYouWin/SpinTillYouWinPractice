@@ -2701,7 +2701,7 @@ with gr.Blocks() as demo:
 
     # 2. Row 2: Selected Spins Textbox
     with gr.Row():
-        with gr.Column():
+        with gr.Column(min_width=600):  # Increased min_width to ensure enough space
             spins_textbox
 
     # 3. Row 3: European Roulette Table
@@ -2943,11 +2943,18 @@ with gr.Blocks() as demo:
       #selected-spins label {
           white-space: normal !important;
           width: 100% !important;
+          height: auto !important;
+          overflow: visible !important;
           display: block !important;
           background-color: #87CEEB;
           color: black;
           padding: 5px;
           border-radius: 3px;
+          line-height: 1.2em !important;
+      }
+      #selected-spins {
+          width: 100% !important;
+          min-width: 600px !important; /* Match the column min_width */
       }
 
       /* Roulette Table */
