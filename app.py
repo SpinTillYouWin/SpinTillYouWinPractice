@@ -2738,18 +2738,25 @@ with gr.Blocks() as demo:
     # 4. Row 4: Analyze Spins Button
     analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
 
-    # 5. Row 5: Last Spins Display and Show Last Spins Slider
+    # 5. Row 5: Clear Spins and Clear All Buttons
+    with gr.Row():
+        with gr.Column(scale=1):
+            clear_spins_button = gr.Button("Clear Spins", elem_classes=["clear-spins-btn", "small-btn"])
+        with gr.Column(scale=1):
+            clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
+
+    # 6. Row 6: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
             last_spin_display
             last_spin_count
 
-    # 6. Row 6: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
+    # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
     with gr.Row():
-        with gr.Column(scale=3):  # Increased scale for Dynamic Roulette Table
+        with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table")
             dynamic_table_output = gr.HTML(label="Dynamic Table")
-        with gr.Column(scale=1):  # Decreased scale for Strategy Recommendations
+        with gr.Column(scale=1):
             gr.Markdown("### Strategy Recommendations")
             strategy_output = gr.HTML(label="Strategy Recommendations")
         with gr.Column(scale=1, min_width=200):
@@ -2789,26 +2796,7 @@ with gr.Blocks() as demo:
             )
             reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
 
-    # 7. Row 7: Color Pickers
-    with gr.Row():
-        top_color_picker = gr.ColorPicker(
-            label="Top Tier Color",
-            value="rgba(255, 255, 0, 0.5)",
-            interactive=True
-        )
-        middle_color_picker = gr.ColorPicker(
-            label="Middle Tier Color",
-            value="rgba(0, 255, 255, 0.5)",
-            interactive=True
-        )
-        lower_color_picker = gr.ColorPicker(
-            label="Lower Tier Color",
-            value="rgba(0, 255, 0, 0.5)",
-            interactive=True
-        )
-        reset_colors_button = gr.Button("Reset Colors", elem_classes=["action-button"])
-
-    # 8. Row 8: Spin Controls
+    # 8. Row 8: Remaining Spin Controls
     with gr.Row():
         with gr.Column():
             clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button", "small-btn"])
@@ -2831,15 +2819,31 @@ with gr.Blocks() as demo:
                     elem_classes="compact-dropdown"
                 )
                 generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button", "small-btn"])
-            with gr.Row():
-                clear_spins_button = gr.Button("Clear Spins", elem_classes=["clear-spins-btn", "small-btn"])
-                clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
 
     # 9. Row 9: Color Code Key (Collapsible)
     with gr.Accordion("Color Code Key", open=False):
         color_code_output = gr.HTML(label="Color Code Key")
 
-    # 10. Row 10: Analysis Outputs (Collapsible)
+    # 10. Row 10: Color Pickers
+    with gr.Row():
+        top_color_picker = gr.ColorPicker(
+            label="Top Tier Color",
+            value="rgba(255, 255, 0, 0.5)",
+            interactive=True
+        )
+        middle_color_picker = gr.ColorPicker(
+            label="Middle Tier Color",
+            value="rgba(0, 255, 255, 0.5)",
+            interactive=True
+        )
+        lower_color_picker = gr.ColorPicker(
+            label="Lower Tier Color",
+            value="rgba(0, 255, 0, 0.5)",
+            interactive=True
+        )
+        reset_colors_button = gr.Button("Reset Colors", elem_classes=["action-button"])
+
+    # 11. Row 11: Analysis Outputs (Collapsible)
     with gr.Accordion("Spin Logic Reactor 🧠", open=False, elem_id="spin-analysis"):
         spin_analysis_output = gr.Textbox(
             label="",
@@ -2899,7 +2903,7 @@ with gr.Blocks() as demo:
                 with gr.Accordion("Sides of Zero", open=True):
                     sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
-    # 11. Row 11: Save/Load Session (Collapsible)
+    # 12. Row 12: Save/Load Session (Collapsible)
     with gr.Accordion("Save/Load Session", open=False):
         with gr.Row():
             save_button = gr.Button("Save Session")
@@ -2934,6 +2938,17 @@ with gr.Blocks() as demo:
       /* Header Styling */
       .header-title { text-align: center !important; font-size: 2.5em !important; margin-bottom: 5px !important; color: #333 !important; }
       .guide-link { display: block !important; text-align: center !important; font-size: 1.1em !important; color: #007bff !important; text-decoration: underline !important; margin-bottom: 10px !important; }
+
+      /* Fix Selected Spins Label Cutoff */
+      #selected-spins label {
+          white-space: normal !important;
+          width: 100% !important;
+          display: block !important;
+          background-color: #87CEEB;
+          color: black;
+          padding: 5px;
+          border-radius: 3px;
+      }
 
       /* Roulette Table */
       .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
