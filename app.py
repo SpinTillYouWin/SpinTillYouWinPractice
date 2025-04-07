@@ -2699,43 +2699,7 @@ with gr.Blocks() as demo:
                 '<a href="https://drive.google.com/file/d/1o9H8Lakx1i4_OnDrvHRj_6-KHsOWufjF/view?usp=sharing" target="_blank" class="guide-link">🎥 Roulette Analyzer Guide + Video Instructions</a>'
             )
 
-    # 2. Row 2: Spin Controls
-    with gr.Row():
-        with gr.Column():
-            clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
-            with gr.Row():
-                with gr.Column(scale=1):
-                    undo_button = gr.Button("Undo Spins", elem_classes=["action-button", "small-btn"])
-                    undo_count_slider = gr.Slider(
-                        label="Spins to Undo",
-                        minimum=1,
-                        maximum=36,
-                        step=1,
-                        value=1,
-                        interactive=True,
-                        elem_classes="compact-slider"
-                    )
-                with gr.Column(scale=1):
-                    generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button", "small-btn"])
-                    num_spins_input = gr.Dropdown(
-                        label="Number of Random Spins",
-                        choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
-                        value="10",
-                        elem_classes="compact-dropdown"
-                    )
-
-    # 3. Row 3: Selected Spins Textbox
-    with gr.Row(elem_id="selected-spins-row"):
-        with gr.Column(min_width=800):
-            spins_textbox
-
-    # 4. Row 4: Last Spins Display and Show Last Spins Slider
-    with gr.Row():
-        with gr.Column():
-            last_spin_display
-            last_spin_count
-
-    # 5. Row 5: European Roulette Table
+    # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
         table_layout = [
@@ -2765,7 +2729,40 @@ with gr.Blocks() as demo:
                             inputs=[gr.State(value=num), spins_display, last_spin_count],
                             outputs=[spins_display, spins_textbox, last_spin_display]
                         )
+    # 3. Row 3: Last Spins Display and Show Last Spins Slider
+    with gr.Row():
+        with gr.Column():
+            last_spin_display
+            last_spin_count
+    # 4. Row 4: Spin Controls
+    with gr.Row():
+        with gr.Column():
+            clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
+            with gr.Row():
+                with gr.Column(scale=1):
+                    undo_button = gr.Button("Undo Spins", elem_classes=["action-button", "small-btn"])
+                    undo_count_slider = gr.Slider(
+                        label="Spins to Undo",
+                        minimum=1,
+                        maximum=36,
+                        step=1,
+                        value=1,
+                        interactive=True,
+                        elem_classes="compact-slider"
+                    )
+                with gr.Column(scale=1):
+                    generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button", "small-btn"])
+                    num_spins_input = gr.Dropdown(
+                        label="Number of Random Spins",
+                        choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+                        value="10",
+                        elem_classes="compact-dropdown"
+                    )
 
+    # 5. Row 5: Selected Spins Textbox
+    with gr.Row(elem_id="selected-spins-row"):
+        with gr.Column(min_width=800):
+            spins_textbox
     # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
         with gr.Column(scale=2):
