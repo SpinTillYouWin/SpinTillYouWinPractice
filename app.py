@@ -148,6 +148,7 @@ def format_spins_as_html(spins, num_to_show):
     return f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
 
 def add_spin(number, current_spins, num_to_show):
+    print(f"add_spin: number='{number}', current_spins='{current_spins}'")
     spins = current_spins.split(", ") if current_spins else []
     if spins == [""]:
         spins = []
@@ -155,9 +156,68 @@ def add_spin(number, current_spins, num_to_show):
         num = int(number.strip())  # Remove any whitespace
         if not (0 <= num <= 36):
             return current_spins, current_spins, f"Error: '{number}' is out of range. Please use numbers between 0 and 36."
+        
+        # Record the spin's effects for undoing
+        action = {"spin": num, "increments": {}}
+
+        # Update scores and track increments (similar to analyze_spins)
+        for name, numbers in EVEN_MONEY.items():
+            if num in numbers:
+                state.even_money_scores[name] += 1
+                action["increments"].setdefault("even_money_scores", {})[name] = 1
+
+        for name, numbers in DOZENS.items():
+            if num in numbers:
+                state.dozen_scores[name] += 1
+                action["increments"].setdefault("dozen_scores", {})[name] = 1
+
+        for name, numbers in COLUMNS.items():
+            if num in numbers:
+                state.column_scores[name] += 1
+                action["increments"].setdefault("column_scores", {})[name] = 1
+
+        for name, numbers in STREETS.items():
+            if num in numbers:
+                state.street_scores[name] += 1
+                action["increments"].setdefault("street_scores", {})[name] = 1
+
+        for name, numbers in CORNERS.items():
+            if num in numbers:
+                state.corner_scores[name] += 1
+                action["increments"].setdefault("corner_scores", {})[name] = 1
+
+        for name, numbers in SIX_LINES.items():
+            if num in numbers:
+                state.six_line_scores[name] += 1
+                action["increments"].setdefault("six_line_scores", {})[name] = 1
+
+        for name, numbers in SPLITS.items():
+            if num in numbers:
+                state.split_scores[name] += 1
+                action["increments"].setdefault("split_scores", {})[name] = 1
+
+        if number != "0":
+            state.scores[int(number)] += 1
+            action["increments"].setdefault("scores", {})[int(number)] = 1
+        else:
+            state.scores[0] += 1
+            action["increments"]["scores"] = {0: 1}
+
+        if str(number) in [str(x) for x in current_left_of_zero]:
+            state.side_scores["Left Side of Zero"] += 1
+            action["increments"].setdefault("side_scores", {})["Left Side of Zero"] = 1
+        if str(number) in [str(x) for x in current_right_of_zero]:
+            state.side_scores["Right Side of Zero"] += 1
+            action["increments"].setdefault("side_scores", {})["Right Side of Zero"] = 1
+
+        # Add the spin to state.last_spins and state.spin_history
         spins.append(str(num))
         state.selected_numbers.add(num)
+        state.last_spins.append(str(num))
+        state.spin_history.append(action)  # Record the action for undoing
+
         new_spins = ", ".join(spins)
+        print(f"add_spin: new_spins='{new_spins}'")
         return new_spins, new_spins, format_spins_as_html(new_spins, num_to_show)
     except ValueError:
         return current_spins, current_spins, f"Error: '{number}' is not a valid number. Please enter a whole number between 0 and 36."
