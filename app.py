@@ -2699,12 +2699,43 @@ with gr.Blocks() as demo:
                 '<a href="https://drive.google.com/file/d/1o9H8Lakx1i4_OnDrvHRj_6-KHsOWufjF/view?usp=sharing" target="_blank" class="guide-link">🎥 Roulette Analyzer Guide + Video Instructions</a>'
             )
 
-    # 2. Row 2: Selected Spins Textbox
+    # 2. Row 2: Spin Controls
     with gr.Row():
-        with gr.Column(min_width=600):  # Increased min_width to ensure enough space
+        with gr.Column():
+            clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
+            with gr.Row():
+                with gr.Column(scale=1):
+                    undo_button = gr.Button("Undo Spins", elem_classes=["action-button", "small-btn"])
+                    undo_count_slider = gr.Slider(
+                        label="Spins to Undo",
+                        minimum=1,
+                        maximum=36,
+                        step=1,
+                        value=1,
+                        interactive=True,
+                        elem_classes="compact-slider"
+                    )
+                with gr.Column(scale=1):
+                    generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button", "small-btn"])
+                    num_spins_input = gr.Dropdown(
+                        label="Number of Random Spins",
+                        choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+                        value="10",
+                        elem_classes="compact-dropdown"
+                    )
+
+    # 3. Row 3: Selected Spins Textbox
+    with gr.Row(elem_id="selected-spins-row"):
+        with gr.Column(min_width=800):
             spins_textbox
 
-    # 3. Row 3: European Roulette Table
+    # 4. Row 4: Last Spins Display and Show Last Spins Slider
+    with gr.Row():
+        with gr.Column():
+            last_spin_display
+            last_spin_count
+
+    # 5. Row 5: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
         table_layout = [
@@ -2735,21 +2766,14 @@ with gr.Blocks() as demo:
                             outputs=[spins_display, spins_textbox, last_spin_display]
                         )
 
-    # 4. Row 4: Analyze Spins Button
-    analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
-
-    # 5. Row 5: Clear Spins and Clear All Buttons
+    # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
+        with gr.Column(scale=2):
+            analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
         with gr.Column(scale=1):
             clear_spins_button = gr.Button("Clear Spins", elem_classes=["clear-spins-btn", "small-btn"])
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
-
-    # 6. Row 6: Last Spins Display and Show Last Spins Slider
-    with gr.Row():
-        with gr.Column():
-            last_spin_display
-            last_spin_count
 
     # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
     with gr.Row():
@@ -2796,35 +2820,7 @@ with gr.Blocks() as demo:
             )
             reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
 
-    # 8. Row 8: Remaining Spin Controls
-    with gr.Row():
-        with gr.Column():
-            clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button", "small-btn"])
-            with gr.Row():
-                undo_count_slider = gr.Slider(
-                    label="Spins to Undo",
-                    minimum=1,
-                    maximum=36,
-                    step=1,
-                    value=1,
-                    interactive=True,
-                    elem_classes="compact-slider"
-                )
-                undo_button = gr.Button("Undo Spins", elem_classes=["action-button", "small-btn"])
-            with gr.Row():
-                num_spins_input = gr.Dropdown(
-                    label="Number of Random Spins",
-                    choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
-                    value="10",
-                    elem_classes="compact-dropdown"
-                )
-                generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button", "small-btn"])
-
-    # 9. Row 9: Color Code Key (Collapsible)
-    with gr.Accordion("Color Code Key", open=False):
-        color_code_output = gr.HTML(label="Color Code Key")
-
-    # 10. Row 10: Color Pickers
+    # 8. Row 8: Color Pickers
     with gr.Row():
         top_color_picker = gr.ColorPicker(
             label="Top Tier Color",
@@ -2843,7 +2839,11 @@ with gr.Blocks() as demo:
         )
         reset_colors_button = gr.Button("Reset Colors", elem_classes=["action-button"])
 
-    # 11. Row 11: Analysis Outputs (Collapsible)
+    # 9. Row 9: Color Code Key (Collapsible)
+    with gr.Accordion("Color Code Key", open=False):
+        color_code_output = gr.HTML(label="Color Code Key")
+
+    # 10. Row 10: Analysis Outputs (Collapsible)
     with gr.Accordion("Spin Logic Reactor 🧠", open=False, elem_id="spin-analysis"):
         spin_analysis_output = gr.Textbox(
             label="",
@@ -2903,7 +2903,7 @@ with gr.Blocks() as demo:
                 with gr.Accordion("Sides of Zero", open=True):
                     sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
-    # 12. Row 12: Save/Load Session (Collapsible)
+    # 11. Row 11: Save/Load Session (Collapsible)
     with gr.Accordion("Save/Load Session", open=False):
         with gr.Row():
             save_button = gr.Button("Save Session")
@@ -2940,6 +2940,11 @@ with gr.Blocks() as demo:
       .guide-link { display: block !important; text-align: center !important; font-size: 1.1em !important; color: #007bff !important; text-decoration: underline !important; margin-bottom: 10px !important; }
 
       /* Fix Selected Spins Label Cutoff */
+      #selected-spins-row {
+          width: 100% !important;
+          max-width: none !important;
+          overflow: visible !important;
+      }
       #selected-spins label {
           white-space: normal !important;
           width: 100% !important;
@@ -2954,7 +2959,7 @@ with gr.Blocks() as demo:
       }
       #selected-spins {
           width: 100% !important;
-          min-width: 600px !important; /* Match the column min_width */
+          min-width: 800px !important;
       }
 
       /* Roulette Table */
@@ -2971,7 +2976,7 @@ with gr.Blocks() as demo:
       /* Buttons */
       button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
       button.clear-spins-btn:hover { background-color: #cc0000 !important; }
-      button.small-btn { padding: 5px 10px !important; font-size: 12px !important; min-width: 80px !important; }
+      button.small-btn { padding: 5px 10px !important; font-size: 12px !important; min-width: 60px !important; }
       button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
       button.generate-spins-btn:hover { background-color: #0056b3 !important; }
       .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; }
@@ -2979,11 +2984,11 @@ with gr.Blocks() as demo:
       button.green-btn:hover { background-color: #218838 !important; }
 
       /* Compact Components */
-      .compact-slider { width: 150px !important; margin: 0 !important; padding: 0 !important; }
+      .compact-slider { width: 60px !important; margin: 0 !important; padding: 0 !important; }
       .compact-slider .gr-box { width: 100% !important; }
       .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
       .long-slider .gr-box { width: 100% !important; }
-      .compact-dropdown { width: 80px !important; margin: 0 5px !important; padding: 0 !important; }
+      .compact-dropdown { width: 60px !important; margin: 0 5px !important; padding: 0 !important; }
       .compact-dropdown .gr-box { width: 100% !important; }
 
       /* Section Labels */
@@ -3003,7 +3008,7 @@ with gr.Blocks() as demo:
           td, th { padding: 5px; font-size: 12px; }
           .gr-textbox { font-size: 12px; }
           .scrollable-table { max-height: 200px; }
-          .compact-slider { width: 100px !important; }
+          .compact-slider { width: 60px !important; }
           .long-slider { width: 100% !important; }
           .compact-dropdown { width: 60px !important; }
           .header-title { font-size: 1.8em !important; }
