@@ -2931,12 +2931,14 @@ with gr.Blocks() as demo:
                 value="3",
                 allow_custom_value=False,
                 interactive=True,
-                elem_id="strongest-numbers-dropdown"
+                elem_id="strongest-numbers-dropdown",
+                visible=False  # Hide the dropdown
             )
             strongest_numbers_output = gr.Textbox(
                 label="Strongest Numbers (Sorted Lowest to Highest)",
                 value="",
-                lines=2
+                lines=2,
+                visible=False  # Hide the textbox
             )
 
     with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
