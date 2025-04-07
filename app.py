@@ -948,12 +948,30 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     return html
 
 def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, top_color=None, middle_color=None, lower_color=None):
-    """Main function to coordinate dynamic table creation with custom colors."""
     print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
     sorted_sections = calculate_trending_sections()
-    trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color = apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
+    
+    # If no spins yet, initialize with default even money focus
+    if sorted_sections is None and strategy_name == "Best Even Money Bets":
+        trending_even_money = "Red"  # Default to "Red" as an example
+        second_even_money = "Black"
+        third_even_money = "Even"
+        trending_dozen = None
+        second_dozen = None
+        trending_column = None
+        second_column = None
+        number_highlights = {}
+        top_color = top_color if top_color else "rgba(255, 255, 0, 0.5)"
+        middle_color = middle_color if middle_color else "rgba(0, 255, 255, 0.5)"
+        lower_color = lower_color if lower_color else "rgba(0, 255, 0, 0.5)"
+    else:
+        trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color = apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
+    
+    # If still no highlights and no sorted_sections, provide a default message
+    if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
+        return "<p>No spins yet. Select a strategy to see default highlights.</p>"
+    
     return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)
-
 # Function to get strongest numbers with neighbors
 def get_strongest_numbers_with_neighbors(num_count):
     num_count = int(num_count)
@@ -2653,19 +2671,18 @@ def show_strategy_recommendations(strategy_name, neighbours_count, strong_number
         print(f"show_strategy_recommendations: strategy_name = {strategy_name}, neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}, args = {args}")
 
         if strategy_name == "None":
-            return "<p>No strategy selected. Please choose a strategy to see recommendations.</p>"        
+            return "<p>No strategy selected. Please choose a strategy to see recommendations.</p>"
+        
+        # If no spins yet, provide a default for "Best Even Money Bets"
         if not any(state.scores.values()) and not any(state.even_money_scores.values()):
+            if strategy_name == "Best Even Money Bets":
+                return "<p>No spins yet. Default Even Money Bets to consider:<br>1. Red<br>2. Black<br>3. Even</p>"
             return "<p>Please analyze some spins first to generate scores.</p>"
 
         strategy_info = STRATEGIES[strategy_name]
         strategy_func = strategy_info["function"]
 
-        if strategy_name == "Kitchen Martingale":
-            recommendations = strategy_func(*args[:34])
-        elif strategy_name == "S.T.Y.W: Victory Vortex":
-            recommendations = strategy_func(*args[34:50])
-        elif strategy_name == "Neighbours of Strong Number":
-            # Pass both neighbours_count and strong_numbers_count to the function
+        if strategy_name == "Neighbours of Strong Number":
             try:
                 neighbours_count = int(neighbours_count)
                 strong_numbers_count = int(strong_numbers_count)
@@ -2680,12 +2697,11 @@ def show_strategy_recommendations(strategy_name, neighbours_count, strong_number
 
         print(f"show_strategy_recommendations: Strategy {strategy_name} output = {recommendations}")
 
-        # If the output is already HTML (e.g., from top_numbers_with_neighbours_tiered), return it as is
+        # If the output is already HTML, return it as is
         if strategy_name == "Top Numbers with Neighbours (Tiered)":
             return recommendations
-        # Otherwise, convert plain text to HTML by replacing newlines with <br> tags
+        # Otherwise, convert plain text to HTML
         else:
-            # Split the plain text by newlines and wrap each line in a <p> tag
             lines = recommendations.split("\n")
             html_lines = [f"<p>{line}</p>" for line in lines if line.strip()]
             return "".join(html_lines)
@@ -2823,22 +2839,28 @@ with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table")
-            dynamic_table_output = gr.HTML(label="Dynamic Table")
+            dynamic_table_output = gr.HTML(
+                label="Dynamic Table",
+                value=create_dynamic_table(strategy_name="Best Even Money Bets")  # Initial value with default strategy
+            )
         with gr.Column(scale=1):
             gr.Markdown("### Strategy Recommendations")
-            strategy_output = gr.HTML(label="Strategy Recommendations")
+            strategy_output = gr.HTML(
+                label="Strategy Recommendations",
+                value=show_strategy_recommendations("Best Even Money Bets", 2, 1)  # Initial value with default strategy
+            )
         with gr.Column(scale=1, min_width=200):
             category_dropdown = gr.Dropdown(
                 label="Select Category",
                 choices=category_choices,
-                value="Even Money Strategies",
+                value="Even Money Strategies",  # Already set correctly
                 allow_custom_value=False,
                 elem_id="select-category"
             )
             strategy_dropdown = gr.Dropdown(
                 label="Select Strategy",
                 choices=strategy_categories["Even Money Strategies"],
-                value="Best Even Money Bets",
+                value="Best Even Money Bets",  # Already set correctly
                 allow_custom_value=False
             )
             reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
