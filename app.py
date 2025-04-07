@@ -2651,13 +2651,7 @@ def clear_last_spins_display():
 
 # Build the Gradio interface
 with gr.Blocks() as demo:
-    gr.Markdown("# Roulette Spin Analyzer with Strategies (European Table)")
-    
-    # Add a link to the PDF using the corrected absolute URL
-    gr.HTML(
-        '<a href="https://drive.google.com/file/d/1o9H8Lakx1i4_OnDrvHRj_6-KHsOWufjF/view?usp=sharing" target="_blank" style="font-size: 16px; color: #007bff; text-decoration: underline;">🎥 Roulette Analyzer Guide + Video Instructions</a>'
-    )
-
+    # Define state and components used across sections at the top
     spins_display = gr.State(value="")
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
@@ -2665,29 +2659,52 @@ with gr.Blocks() as demo:
         interactive=True,
         elem_id="selected-spins"
     )
-    with gr.Row():
-        last_spin_display = gr.HTML(
-            label="Last Spins",
-            value=""
-        )
-        last_spin_count = gr.Slider(
-            label="Show Last Spins",
-            minimum=1,
-            maximum=36,
-            step=1,
-            value=36,
-            interactive=True
-        )
-        clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes="action-button")
-            
-    with gr.Accordion("Spin Logic Reactor 🧠", open=False, elem_id="spin-analysis"):
-        spin_analysis_output = gr.Textbox(
-            label="",
-            value="",
-            interactive=False,
-            lines=5
-        )
+    last_spin_display = gr.HTML(
+        label="Last Spins",
+        value=""
+    )
+    last_spin_count = gr.Slider(
+        label="Show Last Spins",
+        minimum=1,
+        maximum=36,
+        step=1,
+        value=36,
+        interactive=True,
+        elem_classes="long-slider"
+    )
 
+    # Define strategy categories and choices
+    strategy_categories = {
+        "Trends": ["Cold Bet Strategy", "Hot Bet Strategy", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"],
+        "Even Money Strategies": ["Best Even Money Bets", "Best Even Money Bets + Top Pick 18 Numbers", "Fibonacci To Fortune"],
+        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Top Pick 18 Numbers", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],
+        "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Streets"],
+        "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
+        "Double Street Strategies": ["Best Double Streets", "Non-Overlapping Double Street Strategy"],
+        "Corner Strategies": ["Best Corners", "Non-Overlapping Corner Strategy"],
+        "Split Strategies": ["Best Splits"],
+        "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"],
+        "Neighbours Strategies": ["Neighbours of Strong Number"]
+    }
+    category_choices = ["None"] + sorted(strategy_categories.keys())
+
+    # 1. Row 1: Header
+    with gr.Row(elem_id="header-row"):
+        with gr.Column(scale=1):
+            gr.Markdown(
+                "# Roulette Spin Analyzer with Strategies (European Table)",
+                elem_classes="header-title"
+            )
+            gr.HTML(
+                '<a href="https://drive.google.com/file/d/1o9H8Lakx1i4_OnDrvHRj_6-KHsOWufjF/view?usp=sharing" target="_blank" class="guide-link">🎥 Roulette Analyzer Guide + Video Instructions</a>'
+            )
+
+    # 2. Row 2: Selected Spins Textbox
+    with gr.Row():
+        with gr.Column():
+            spins_textbox
+
+    # 3. Row 3: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
         table_layout = [
@@ -2695,8 +2712,6 @@ with gr.Blocks() as demo:
             ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
-
-    # Create the table with elem_classes
     with gr.Column(elem_classes="roulette-table"):
         for row in table_layout:
             with gr.Row(elem_classes="table-row"):
@@ -2720,7 +2735,119 @@ with gr.Blocks() as demo:
                             outputs=[spins_display, spins_textbox, last_spin_display]
                         )
 
-    # New accordion for Strongest Numbers tables, placed here
+    # 4. Row 4: Analyze Spins Button
+    analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
+
+    # 5. Row 5: Last Spins Display and Show Last Spins Slider
+    with gr.Row():
+        with gr.Column():
+            last_spin_display
+            last_spin_count
+
+    # 6. Row 6: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
+    with gr.Row():
+        with gr.Column(scale=3):  # Increased scale for Dynamic Roulette Table
+            gr.Markdown("### Dynamic Roulette Table")
+            dynamic_table_output = gr.HTML(label="Dynamic Table")
+        with gr.Column(scale=1):  # Decreased scale for Strategy Recommendations
+            gr.Markdown("### Strategy Recommendations")
+            strategy_output = gr.HTML(label="Strategy Recommendations")
+        with gr.Column(scale=1, min_width=200):
+            category_dropdown = gr.Dropdown(
+                label="Select Category",
+                choices=category_choices,
+                value="Even Money Strategies",
+                allow_custom_value=False,
+                elem_id="select-category"
+            )
+            strategy_dropdown = gr.Dropdown(
+                label="Select Strategy",
+                choices=strategy_categories["Even Money Strategies"],
+                value="Best Even Money Bets",
+                allow_custom_value=False
+            )
+            reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
+            neighbours_count_slider = gr.Slider(
+                label="Number of Neighbors (Left + Right)",
+                minimum=1,
+                maximum=5,
+                step=1,
+                value=2,
+                interactive=True,
+                visible=False,
+                elem_classes="long-slider"
+            )
+            strong_numbers_count_slider = gr.Slider(
+                label="Strong Numbers to Highlight (Neighbours Strategy)",
+                minimum=1,
+                maximum=18,
+                step=1,
+                value=1,
+                interactive=True,
+                visible=False,
+                elem_classes="long-slider"
+            )
+            reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
+
+    # 7. Row 7: Color Pickers
+    with gr.Row():
+        top_color_picker = gr.ColorPicker(
+            label="Top Tier Color",
+            value="rgba(255, 255, 0, 0.5)",
+            interactive=True
+        )
+        middle_color_picker = gr.ColorPicker(
+            label="Middle Tier Color",
+            value="rgba(0, 255, 255, 0.5)",
+            interactive=True
+        )
+        lower_color_picker = gr.ColorPicker(
+            label="Lower Tier Color",
+            value="rgba(0, 255, 0, 0.5)",
+            interactive=True
+        )
+        reset_colors_button = gr.Button("Reset Colors", elem_classes=["action-button"])
+
+    # 8. Row 8: Spin Controls
+    with gr.Row():
+        with gr.Column():
+            clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button", "small-btn"])
+            with gr.Row():
+                undo_count_slider = gr.Slider(
+                    label="Spins to Undo",
+                    minimum=1,
+                    maximum=36,
+                    step=1,
+                    value=1,
+                    interactive=True,
+                    elem_classes="compact-slider"
+                )
+                undo_button = gr.Button("Undo Spins", elem_classes=["action-button", "small-btn"])
+            with gr.Row():
+                num_spins_input = gr.Dropdown(
+                    label="Number of Random Spins",
+                    choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+                    value="10",
+                    elem_classes="compact-dropdown"
+                )
+                generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button", "small-btn"])
+            with gr.Row():
+                clear_spins_button = gr.Button("Clear Spins", elem_classes=["clear-spins-btn", "small-btn"])
+                clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
+
+    # 9. Row 9: Color Code Key (Collapsible)
+    with gr.Accordion("Color Code Key", open=False):
+        color_code_output = gr.HTML(label="Color Code Key")
+
+    # 10. Row 10: Analysis Outputs (Collapsible)
+    with gr.Accordion("Spin Logic Reactor 🧠", open=False, elem_id="spin-analysis"):
+        spin_analysis_output = gr.Textbox(
+            label="",
+            value="",
+            interactive=False,
+            lines=5
+        )
+
     with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-table"):
         with gr.Row():
             with gr.Column():
@@ -2741,164 +2868,6 @@ with gr.Blocks() as demo:
                 value="",
                 lines=2
             )
-
-    with gr.Row(elem_classes="white-row"):
-        num_spins_input = gr.Dropdown(
-            label="Number of Random Spins",
-            choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
-            value="10",
-            elem_classes="num-spins-dropdown",
-            elem_id="number-of-random-spins"
-        )
-        generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["generate-spins-btn", "action-button"])
-        analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
-        undo_count_slider = gr.Slider(
-            label="Spins to Undo",
-            minimum=1,
-            maximum=36,
-            step=1,
-            value=1,
-            interactive=True
-        )
-        undo_button = gr.Button("Undo Spins", elem_classes="action-button")
-
-    strategy_categories = {
-        "Trends": ["Cold Bet Strategy", "Hot Bet Strategy", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"],
-        "Even Money Strategies": ["Best Even Money Bets", "Best Even Money Bets + Top Pick 18 Numbers", "Fibonacci To Fortune"],
-        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Top Pick 18 Numbers", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],
-        "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Streets"],
-        "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
-        "Double Street Strategies": ["Best Double Streets", "Non-Overlapping Double Street Strategy"],
-        "Corner Strategies": ["Best Corners", "Non-Overlapping Corner Strategy"],
-        "Split Strategies": ["Best Splits"],
-        "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"],
-        "Neighbours Strategies": ["Neighbours of Strong Number"]
-    }
-
-    # Category dropdown choices
-    category_choices = ["None"] + sorted(strategy_categories.keys())
-
-    # State to store the current strategy
-    selected_strategy = gr.State(value="Best Even Money Bets")
-    # Strategy dropdown row
-    with gr.Row():
-        category_dropdown = gr.Dropdown(
-            label="Select Category",
-            choices=category_choices,
-            value="Even Money Strategies",
-            allow_custom_value=False,
-            elem_id="select-category"
-        )
-        strategy_dropdown = gr.Dropdown(
-            label="Select Strategy",
-            choices=strategy_categories["Even Money Strategies"],
-            value="Best Even Money Bets",
-            allow_custom_value=False
-        )
-        reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes="action-button")
-        neighbours_count_slider = gr.Slider(
-            label="Number of Neighbors (Left + Right)",
-            minimum=1,
-            maximum=5,
-            step=1,
-            value=2,
-            interactive=True,
-            visible=False
-        )
-        strong_numbers_count_slider = gr.Slider(
-            label="Strong Numbers to Highlight (Neighbours Strategy)",
-            minimum=1,
-            maximum=18,
-            step=1,
-            value=1,
-            interactive=True,
-            visible=False
-        )
-
-    # Color pickers row (added previously)
-    with gr.Row():
-        top_color_picker = gr.ColorPicker(
-            label="Top Tier Color",
-            value="rgba(255, 255, 0, 0.5)",
-            interactive=True
-        )
-        middle_color_picker = gr.ColorPicker(
-            label="Middle Tier Color",
-            value="rgba(0, 255, 255, 0.5)",
-            interactive=True
-        )
-        lower_color_picker = gr.ColorPicker(
-            label="Lower Tier Color",
-            value="rgba(0, 255, 0, 0.5)",
-            interactive=True
-        )
-        reset_colors_button = gr.Button("Reset Colors", elem_classes="action-button")
-
-    with gr.Row(elem_classes="white-row"):
-        reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
-        reset_button = gr.Button("Reset Scores", elem_classes="action-button", visible=False)
-        clear_button = gr.Button("Clear Outputs", elem_classes="action-button", visible=False)
-
-    with gr.Row():
-        clear_spins_button = gr.Button("Clear Spins", elem_classes="clear-spins-btn small-btn")
-        clear_all_button = gr.Button("Clear All", elem_classes="clear-spins-btn small-btn")
-        print("Button Class Set")
-
-    with gr.Row():
-        with gr.Column():
-            gr.Markdown("### Dynamic Roulette Table")
-            dynamic_table_output = gr.HTML(label="Dynamic Table")
-            color_code_output = gr.HTML(label="Color Code Key")
-        with gr.Column():
-            gr.Markdown("### Strategy Recommendations")
-            strategy_output = gr.HTML(label="Strategy Recommendations")
-
-    gr.HTML("""
-    <style>
-      .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-      .roulette-button.red { background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-      .roulette-button.black { background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-      .roulette-button:hover { opacity: 0.8; }
-      table { border-collapse: collapse; text-align: center; }
-      td, th { border: 1px solid #333; padding: 8px; font-family: Arial, sans-serif; }
-      .roulette-button.selected { border: 3px solid yellow !important; opacity: 0.9; }
-      .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid white !important; box-sizing: border-box !important; }
-      .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
-      .roulette-table { display: flex !important; flex-direction: column !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
-      .table-row { display: flex !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap !important; line-height: 0 !important; }
-      button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
-      button.clear-spins-btn:hover { background-color: #cc0000 !important; }
-      button.small-btn { padding: 5px 10px !important; font-size: 12px !important; min-width: 80px !important; }
-      button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
-      button.generate-spins-btn:hover { background-color: #0056b3 !important; }
-      .num-spins-input { margin-right: 5px !important; }
-      .white-row { background-color: white !important; }
-      .num-spins-dropdown { width: 100px !important; margin-right: 5px !important; }
-      .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; }
-      button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
-      button.green-btn:hover { background-color: #218838 !important; }
-      .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
-      /* Style for section labels */
-      #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
-      #spin-analysis label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
-      #strongest-numbers-table label { background-color: #E6E6FA !important; color: black !important; padding: 5px; border-radius: 3px; }
-      #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
-      #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
-      #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
-      @media (max-width: 600px) {
-          .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
-          td, th { padding: 5px; font-size: 12px; }
-          .gr-textbox { font-size: 12px; }
-          .scrollable-table { max-height: 200px; }
-      }
-      #strongest-numbers-dropdown select {
-          -webkit-appearance: menulist !important;
-          -moz-appearance: menulist !important;
-          appearance: menulist !important;
-      }
-    </style>
-    """)
-    print("CSS Updated")
 
     with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
         with gr.Row():
@@ -2930,10 +2899,103 @@ with gr.Blocks() as demo:
                 with gr.Accordion("Sides of Zero", open=True):
                     sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
-    with gr.Row():
-        save_button = gr.Button("Save Session")
-        load_input = gr.File(label="Upload Session")
-    save_output = gr.File(label="Download Session")
+    # 11. Row 11: Save/Load Session (Collapsible)
+    with gr.Accordion("Save/Load Session", open=False):
+        with gr.Row():
+            save_button = gr.Button("Save Session")
+            load_input = gr.File(label="Upload Session")
+        save_output = gr.File(label="Download Session")
+
+    # CSS and Event Handlers
+    gr.HTML("""
+    <style>
+      /* General Layout */
+      .gr-row { margin: 0 !important; padding: 5px 0 !important; }
+      .gr-column { margin: 0 !important; padding: 5px !important; }
+      .gr-box { border-radius: 5px !important; }
+
+      /* Ensure Header Stays at the Top */
+      #header-row {
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          z-index: 1000 !important;
+          background-color: white !important;
+          padding: 10px 0 !important;
+          margin: 0 !important;
+      }
+
+      /* Add padding to the body to account for the fixed header */
+      body {
+          padding-top: 80px !important; /* Adjust based on header height */
+      }
+
+      /* Header Styling */
+      .header-title { text-align: center !important; font-size: 2.5em !important; margin-bottom: 5px !important; color: #333 !important; }
+      .guide-link { display: block !important; text-align: center !important; font-size: 1.1em !important; color: #007bff !important; text-decoration: underline !important; margin-bottom: 10px !important; }
+
+      /* Roulette Table */
+      .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+      .roulette-button.red { background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+      .roulette-button.black { background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+      .roulette-button:hover { opacity: 0.8; }
+      .roulette-button.selected { border: 3px solid yellow !important; opacity: 0.9; }
+      .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid white !important; box-sizing: border-box !important; }
+      .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
+      .roulette-table { display: flex !important; flex-direction: column !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
+      .table-row { display: flex !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap !important; line-height: 0 !important; }
+
+      /* Buttons */
+      button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
+      button.clear-spins-btn:hover { background-color: #cc0000 !important; }
+      button.small-btn { padding: 5px 10px !important; font-size: 12px !important; min-width: 80px !important; }
+      button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
+      button.generate-spins-btn:hover { background-color: #0056b3 !important; }
+      .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; }
+      button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
+      button.green-btn:hover { background-color: #218838 !important; }
+
+      /* Compact Components */
+      .compact-slider { width: 150px !important; margin: 0 !important; padding: 0 !important; }
+      .compact-slider .gr-box { width: 100% !important; }
+      .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+      .long-slider .gr-box { width: 100% !important; }
+      .compact-dropdown { width: 80px !important; margin: 0 5px !important; padding: 0 !important; }
+      .compact-dropdown .gr-box { width: 100% !important; }
+
+      /* Section Labels */
+      #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
+      #spin-analysis label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #strongest-numbers-table label { background-color: #E6E6FA !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
+
+      /* Scrollable Tables */
+      .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
+
+      /* Responsive Design */
+      @media (max-width: 600px) {
+          .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
+          td, th { padding: 5px; font-size: 12px; }
+          .gr-textbox { font-size: 12px; }
+          .scrollable-table { max-height: 200px; }
+          .compact-slider { width: 100px !important; }
+          .long-slider { width: 100% !important; }
+          .compact-dropdown { width: 60px !important; }
+          .header-title { font-size: 1.8em !important; }
+          .guide-link { font-size: 0.9em !important; }
+      }
+
+      #strongest-numbers-dropdown select {
+          -webkit-appearance: menulist !important;
+          -moz-appearance: menulist !important;
+          appearance: menulist !important;
+      }
+    </style>
+    """)
+    print("CSS Updated")
 
     # Event Handlers
     spins_textbox.change(
@@ -3006,14 +3068,12 @@ with gr.Blocks() as demo:
     )
 
     def toggle_neighbours_slider(strategy_name):
-        # Show both sliders only for the "Neighbours of Strong Number" strategy
         is_visible = strategy_name == "Neighbours of Strong Number"
         return (
-            gr.update(visible=is_visible),  # For neighbours_count_slider
-            gr.update(visible=is_visible)   # For strong_numbers_count_slider
+            gr.update(visible=is_visible),
+            gr.update(visible=is_visible)
         )
 
-    # Update the strategy dropdown change to show/hide the slider and update the table
     strategy_dropdown.change(
         fn=toggle_neighbours_slider,
         inputs=[strategy_dropdown],
@@ -3046,30 +3106,13 @@ with gr.Blocks() as demo:
         inputs=[],
         outputs=[color_code_output]
     )
-    
-    reset_button.click(
-        fn=reset_scores,
-        inputs=[],
-        outputs=[spin_analysis_output]
-    )
-    
-    clear_button.click(
-        fn=clear_outputs,
-        inputs=[],
-        outputs=[
-            spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output,
-            sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-            dynamic_table_output, strategy_output, color_code_output
-        ]
-    )
-    
+
     save_button.click(
         fn=save_session,
         inputs=[],
         outputs=[save_output]
     )
-    
+
     load_input.change(
         fn=load_session,
         inputs=[load_input, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
@@ -3091,14 +3134,14 @@ with gr.Blocks() as demo:
         inputs=[],
         outputs=[color_code_output]
     )
-    
+
     undo_button.click(
         fn=undo_last_spin,
         inputs=[spins_display, undo_count_slider, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
         outputs=[
             spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output,
+            streets_output, corners_output, six_lines_output, splits_output,
+            sides_output, straight_up_html, top_18_html, strongest_numbers_output,
             spins_textbox, spins_display, dynamic_table_output, strategy_output,
             color_code_output
         ]
@@ -3107,8 +3150,7 @@ with gr.Blocks() as demo:
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     )
-    
-    # Update the dynamic table and strategy recommendations when the neighbours_count_slider changes
+
     neighbours_count_slider.change(
         fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
@@ -3118,8 +3160,7 @@ with gr.Blocks() as demo:
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
         outputs=[strategy_output]
     )
-    
-    # Update the dynamic table and strategy recommendations when the strong_numbers_count_slider changes
+
     strong_numbers_count_slider.change(
         fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
@@ -3129,6 +3170,7 @@ with gr.Blocks() as demo:
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
         outputs=[strategy_output]
     )
+
     reset_colors_button.click(
         fn=reset_colors,
         inputs=[],
@@ -3138,27 +3180,30 @@ with gr.Blocks() as demo:
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     )
+
     clear_last_spins_button.click(
         fn=clear_last_spins_display,
         inputs=[],
         outputs=[last_spin_display]
     )
 
-    # Color picker change events (should be at 4-space indent)
     top_color_picker.change(
         fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     )
+
     middle_color_picker.change(
         fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     )
+
     lower_color_picker.change(
         fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     )
+
 # Launch the interface
 demo.launch()
