@@ -3082,7 +3082,7 @@ with gr.Blocks() as demo:
       /* Scrollable Tables */
       .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
 
-      /* Tooltip Styling */
+      /* Tooltip Styling - Adjusted for visibility */
       .tooltip-container {
           position: relative;
           display: inline-block;
@@ -3090,21 +3090,21 @@ with gr.Blocks() as demo:
       }
 
       .tooltip-container .tooltip-text {
-          visibility: hidden;
           width: 200px;
-          background-color: #333;
+          background-color: #555; /* Slightly lighter gray for contrast */
           color: #fff;
           text-align: center;
           border-radius: 5px;
-          padding: 5px;
+          padding: 8px;
           position: absolute;
-          z-index: 1000;
-          bottom: 125%; /* Position above the button */
+          z-index: 2000; /* Increased to ensure it’s above other elements */
+          top: -40px; /* Position above button, adjusted from bottom */
           left: 50%;
           transform: translateX(-50%);
+          font-size: 12px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Add shadow for depth */
           opacity: 0;
           transition: opacity 0.3s;
-          font-size: 12px;
       }
 
       .tooltip-container:hover .tooltip-text {
@@ -3140,6 +3140,7 @@ with gr.Blocks() as demo:
           .tooltip-container .tooltip-text {
               width: 150px; /* Smaller tooltip on mobile */
               font-size: 10px;
+              top: -35px; /* Adjusted for smaller screens */
           }
       }
 
