@@ -2821,7 +2821,7 @@ with gr.Blocks() as demo:
         with gr.Column(scale=1):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
 
-    # 5. Row 5: Selected Spins Textbox
+        # 5. Row 5: Selected Spins Textbox
     with gr.Row(elem_id="selected-spins-row"):
         with gr.Column(min_width=800):
             spins_textbox
@@ -2829,7 +2829,15 @@ with gr.Blocks() as demo:
     # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
         with gr.Column(scale=2):
-            analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
+            analyze_button_html = gr.HTML(
+                value='''
+                <div class="tooltip-container">
+                    <button id="analyze-spins-btn" class="action-button green-btn">Analyze Spins</button>
+                    <span class="tooltip-text">Processes the spins entered and updates all analysis outputs.</span>
+                </div>
+                ''',
+                elem_id="analyze-spins-wrapper"
+            )
         with gr.Column(scale=1):
             clear_spins_button = gr.Button("Clear Spins", elem_classes=["clear-spins-btn", "small-btn"])
         with gr.Column(scale=1):
@@ -2978,7 +2986,7 @@ with gr.Blocks() as demo:
             load_input = gr.File(label="Upload Session")
         save_output = gr.File(label="Download Session")
 
-    # CSS and Event Handlers
+        # CSS and Event Handlers
     gr.HTML("""
     <style>
       /* General Layout */
@@ -3074,6 +3082,52 @@ with gr.Blocks() as demo:
       /* Scrollable Tables */
       .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
 
+      /* Tooltip Styling */
+      .tooltip-container {
+          position: relative;
+          display: inline-block;
+          width: 100%;
+      }
+
+      .tooltip-container .tooltip-text {
+          visibility: hidden;
+          width: 200px;
+          background-color: #333;
+          color: #fff;
+          text-align: center;
+          border-radius: 5px;
+          padding: 5px;
+          position: absolute;
+          z-index: 1000;
+          bottom: 125%; /* Position above the button */
+          left: 50%;
+          transform: translateX(-50%);
+          opacity: 0;
+          transition: opacity 0.3s;
+          font-size: 12px;
+      }
+
+      .tooltip-container:hover .tooltip-text {
+          visibility: visible;
+          opacity: 1;
+      }
+
+      /* Ensure the button inherits existing styles */
+      #analyze-spins-btn {
+          width: 100%;
+          padding: 5px 10px;
+          font-size: 14px;
+          background-color: #28a745;
+          color: white;
+          border: 1px solid #000;
+          border-radius: 5px;
+          cursor: pointer;
+      }
+
+      #analyze-spins-btn:hover {
+          background-color: #218838;
+      }
+
       /* Responsive Design */
       @media (max-width: 600px) {
           .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
@@ -3083,6 +3137,10 @@ with gr.Blocks() as demo:
           .long-slider { width: 100% !important; }
           .header-title { font-size: 1.8em !important; }
           .guide-link { font-size: 0.9em !important; }
+          .tooltip-container .tooltip-text {
+              width: 150px; /* Smaller tooltip on mobile */
+              font-size: 10px;
+          }
       }
 
       #strongest-numbers-dropdown select {
@@ -3091,8 +3149,16 @@ with gr.Blocks() as demo:
           appearance: menulist !important;
       }
     </style>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const analyzeBtn = document.getElementById("analyze-spins-btn");
+        analyzeBtn.addEventListener("click", function() {
+            gradioApp().querySelector("#analyze-spins-wrapper").dispatchEvent(new Event("click"));
+        });
+    });
+    </script>
     """)
-    print("CSS Updated")
+    print("CSS and JavaScript Updated")
 
     # Event Handlers
     spins_textbox.change(
@@ -3185,7 +3251,7 @@ with gr.Blocks() as demo:
         outputs=[dynamic_table_output]
     )
 
-    analyze_button.click(
+        analyze_button_html.click(
         fn=analyze_spins,
         inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
         outputs=[
