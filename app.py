@@ -155,7 +155,7 @@ def add_spin(number, current_spins, num_to_show):
     try:
         num = int(number.strip())  # Remove any whitespace
         if not (0 <= num <= 36):
-            return current_spins, current_spins, f"Error: '{number}' is out of range. Please use numbers between 0 and 36."
+            return current_spins, current_spins, f"Error: '{number}' is out of range. Please use numbers between 0 and 36.", update_spin_counter()
         
         # Record the spin's effects for undoing
         action = {"spin": num, "increments": {}}
@@ -218,11 +218,11 @@ def add_spin(number, current_spins, num_to_show):
 
         new_spins = ", ".join(spins)
         print(f"add_spin: new_spins='{new_spins}'")
-        return new_spins, new_spins, format_spins_as_html(new_spins, num_to_show)
+        return new_spins, new_spins, format_spins_as_html(new_spins, num_to_show), update_spin_counter()
     except ValueError:
-        return current_spins, current_spins, f"Error: '{number}' is not a valid number. Please enter a whole number between 0 and 36."
+        return current_spins, current_spins, f"Error: '{number}' is not a valid number. Please enter a whole number between 0 and 36.", update_spin_counter()
     except Exception as e:
-        return current_spins, current_spins, f"Unexpected error: {str(e)}. Please try again or contact support."
+        return current_spins, current_spins, f"Unexpected error: {str(e)}. Please try again or contact support.", update_spin_counter()
 
 # Function to clear spins
 def clear_spins():
@@ -2470,7 +2470,12 @@ def create_color_code_table():
     </div>
     '''
     return html
-
+    
+def update_spin_counter():
+    """Return the current number of spins as formatted HTML."""
+    spin_count = len(state.last_spins)
+    return f'<span style="font-size: 14px; margin-left: 10px;">Spins: {spin_count}</span>'
+    
 def top_numbers_with_neighbours_tiered():
     recommendations = []
     straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
@@ -2803,7 +2808,7 @@ with gr.Blocks() as demo:
                         btn.click(
                             fn=add_spin,
                             inputs=[gr.State(value=num), spins_display, last_spin_count],
-                            outputs=[spins_display, spins_textbox, last_spin_display]
+                            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter]
                         )
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
@@ -2826,7 +2831,7 @@ with gr.Blocks() as demo:
         with gr.Column(min_width=800):
             spins_textbox
             spin_counter = gr.HTML(
-                value='<span style="font-size: 14px; margin-left: 10px;">Spins: 0</span>',
+                value=update_spin_counter(),  # Initial value
                 label="Total Spins"
             )
     
