@@ -3122,7 +3122,7 @@ with gr.Blocks() as demo:
           padding: 6px;
           position: absolute;
           z-index: 2000;
-          top: -35px; /* Above the button */
+          top: -40px; /* Adjusted for better visibility */
           left: 50%;
           transform: translateX(-50%);
           font-size: 11px; /* Smaller, less intrusive */
@@ -3137,11 +3137,33 @@ with gr.Blocks() as demo:
       }
 
       /* Button Styles */
-      #analyze-spins-btn, #undo-spins-btn, #generate-spins-btn {
+      #analyze-spins-btn {
           width: 100%;
           padding: 5px 10px;
           font-size: 14px;
           background-color: #28a745; /* Green for Analyze */
+          color: white;
+          border: 1px solid #000;
+          border-radius: 5px;
+          cursor: pointer;
+      }
+
+      #undo-spins-btn {
+          width: 100%;
+          padding: 5px 10px;
+          font-size: 14px;
+          background-color: #007bff; /* Blue to match Generate */
+          color: white;
+          border: 1px solid #000;
+          border-radius: 5px;
+          cursor: pointer;
+      }
+
+      #generate-spins-btn {
+          width: 100%;
+          padding: 5px 10px;
+          font-size: 14px;
+          background-color: #007bff; /* Blue for Generate */
           color: white;
           border: 1px solid #000;
           border-radius: 5px;
@@ -3160,7 +3182,8 @@ with gr.Blocks() as demo:
       }
 
       #analyze-spins-btn:hover { background-color: #218838; }
-      #undo-spins-btn:hover, #generate-spins-btn:hover { background-color: #0056b3; } /* Blue hover for others */
+      #undo-spins-btn:hover { background-color: #0056b3; }
+      #generate-spins-btn:hover { background-color: #0056b3; }
       #clear-spins-btn:hover { background-color: #cc0000; }
 
       /* Responsive Design */
@@ -3175,7 +3198,7 @@ with gr.Blocks() as demo:
           .tooltip-container .tooltip-text {
               width: 140px;
               font-size: 10px;
-              top: -30px;
+              top: -35px;
           }
       }
 
