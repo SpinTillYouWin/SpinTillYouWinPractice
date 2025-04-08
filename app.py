@@ -2753,6 +2753,10 @@ with gr.Blocks() as demo:
         interactive=True,
         elem_classes="long-slider"
     )
+    spin_counter = gr.HTML(
+        value=update_spin_counter(),  # Initial value
+        label="Total Spins"
+    )
 
     # Define strategy categories and choices
     strategy_categories = {
@@ -2830,10 +2834,7 @@ with gr.Blocks() as demo:
     with gr.Row(elem_id="selected-spins-row"):
         with gr.Column(min_width=800):
             spins_textbox
-            spin_counter = gr.HTML(
-                value=update_spin_counter(),  # Initial value
-                label="Total Spins"
-            )
+            spin_counter  # Just reference it, no need to redefine
     
     # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
