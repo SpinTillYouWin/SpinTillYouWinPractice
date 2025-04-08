@@ -2817,9 +2817,25 @@ with gr.Blocks() as demo:
         with gr.Column(scale=2):
             clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
         with gr.Column(scale=1):
-            undo_button = gr.Button("Undo Spins", elem_classes=["action-button"])
+            undo_button_html = gr.HTML(
+                value='''
+                <div class="tooltip-container">
+                    <button id="undo-spins-btn" class="action-button">Undo Spins</button>
+                    <span class="tooltip-text">Takes back your last spin or spins.</span>
+                </div>
+                ''',
+                elem_id="undo-spins-wrapper"
+            )
         with gr.Column(scale=1):
-            generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
+            generate_spins_button_html = gr.HTML(
+                value='''
+                <div class="tooltip-container">
+                    <button id="generate-spins-btn" class="action-button">Generate Random Spins</button>
+                    <span class="tooltip-text">Adds some random spins for you to play with.</span>
+                </div>
+                ''',
+                elem_id="generate-spins-wrapper"
+            )
 
         # 5. Row 5: Selected Spins Textbox
     with gr.Row(elem_id="selected-spins-row"):
@@ -2833,13 +2849,21 @@ with gr.Blocks() as demo:
                 value='''
                 <div class="tooltip-container">
                     <button id="analyze-spins-btn" class="action-button green-btn">Analyze Spins</button>
-                    <span class="tooltip-text">Processes the spins entered and updates all analysis outputs.</span>
+                    <span class="tooltip-text">Checks your spins and shows what’s hot.</span>
                 </div>
                 ''',
                 elem_id="analyze-spins-wrapper"
             )
         with gr.Column(scale=1):
-            clear_spins_button = gr.Button("Clear Spins", elem_classes=["clear-spins-btn", "small-btn"])
+            clear_spins_button_html = gr.HTML(
+                value='''
+                <div class="tooltip-container">
+                    <button id="clear-spins-btn" class="clear-spins-btn small-btn">Clear Spins</button>
+                    <span class="tooltip-text">Wipes out your spin list to start fresh.</span>
+                </div>
+                ''',
+                elem_id="clear-spins-wrapper"
+            )
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
 
@@ -3082,7 +3106,7 @@ with gr.Blocks() as demo:
       /* Scrollable Tables */
       .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
 
-      /* Tooltip Styling - Adjusted for visibility */
+      /* Tooltip Styling - Subtle and User-Friendly */
       .tooltip-container {
           position: relative;
           display: inline-block;
@@ -3090,43 +3114,54 @@ with gr.Blocks() as demo:
       }
 
       .tooltip-container .tooltip-text {
-          width: 200px;
-          background-color: #555; /* Slightly lighter gray for contrast */
+          width: 180px;
+          background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black */
           color: #fff;
           text-align: center;
-          border-radius: 5px;
-          padding: 8px;
+          border-radius: 4px;
+          padding: 6px;
           position: absolute;
-          z-index: 2000; /* Increased to ensure it’s above other elements */
-          top: -40px; /* Position above button, adjusted from bottom */
+          z-index: 2000;
+          top: -35px; /* Above the button */
           left: 50%;
           transform: translateX(-50%);
-          font-size: 12px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Add shadow for depth */
+          font-size: 11px; /* Smaller, less intrusive */
           opacity: 0;
-          transition: opacity 0.3s;
+          transition: opacity 0.2s ease-in-out; /* Quick fade */
+          pointer-events: none; /* Prevents tooltip from blocking clicks */
       }
 
       .tooltip-container:hover .tooltip-text {
-          visibility: visible;
           opacity: 1;
+          transition-delay: 0.3s; /* Slight delay before showing */
       }
 
-      /* Ensure the button inherits existing styles */
-      #analyze-spins-btn {
+      /* Button Styles */
+      #analyze-spins-btn, #undo-spins-btn, #generate-spins-btn {
           width: 100%;
           padding: 5px 10px;
           font-size: 14px;
-          background-color: #28a745;
+          background-color: #28a745; /* Green for Analyze */
           color: white;
           border: 1px solid #000;
           border-radius: 5px;
           cursor: pointer;
       }
 
-      #analyze-spins-btn:hover {
-          background-color: #218838;
+      #clear-spins-btn {
+          width: 100%;
+          padding: 5px 10px;
+          font-size: 14px;
+          background-color: #ff4444; /* Red for Clear */
+          color: white;
+          border: 1px solid #000;
+          border-radius: 5px;
+          cursor: pointer;
       }
+
+      #analyze-spins-btn:hover { background-color: #218838; }
+      #undo-spins-btn:hover, #generate-spins-btn:hover { background-color: #0056b3; } /* Blue hover for others */
+      #clear-spins-btn:hover { background-color: #cc0000; }
 
       /* Responsive Design */
       @media (max-width: 600px) {
@@ -3138,9 +3173,9 @@ with gr.Blocks() as demo:
           .header-title { font-size: 1.8em !important; }
           .guide-link { font-size: 0.9em !important; }
           .tooltip-container .tooltip-text {
-              width: 150px; /* Smaller tooltip on mobile */
+              width: 140px;
               font-size: 10px;
-              top: -35px; /* Adjusted for smaller screens */
+              top: -30px;
           }
       }
 
@@ -3153,8 +3188,21 @@ with gr.Blocks() as demo:
     <script>
     document.addEventListener("DOMContentLoaded", function() {
         const analyzeBtn = document.getElementById("analyze-spins-btn");
+        const undoBtn = document.getElementById("undo-spins-btn");
+        const generateBtn = document.getElementById("generate-spins-btn");
+        const clearSpinsBtn = document.getElementById("clear-spins-btn");
+
         analyzeBtn.addEventListener("click", function() {
             gradioApp().querySelector("#analyze-spins-wrapper").dispatchEvent(new Event("click"));
+        });
+        undoBtn.addEventListener("click", function() {
+            gradioApp().querySelector("#undo-spins-wrapper").dispatchEvent(new Event("click"));
+        });
+        generateBtn.addEventListener("click", function() {
+            gradioApp().querySelector("#generate-spins-wrapper").dispatchEvent(new Event("click"));
+        });
+        clearSpinsBtn.addEventListener("click", function() {
+            gradioApp().querySelector("#clear-spins-wrapper").dispatchEvent(new Event("click"));
         });
     });
     </script>
@@ -3168,7 +3216,7 @@ with gr.Blocks() as demo:
         outputs=[spins_display, last_spin_display]
     )
 
-    clear_spins_button.click(
+    clear_spins_button_html.click(
         fn=clear_spins,
         inputs=[],
         outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display]
@@ -3194,9 +3242,9 @@ with gr.Blocks() as demo:
         ]
     )
 
-    generate_spins_button.click(
+    generate_spins_button_html.click(
         fn=generate_random_spins,
-        inputs=[gr.State(value="5"), spins_display, last_spin_count],  # Change "1" to "5"
+        inputs=[gr.State(value="5"), spins_display, last_spin_count],
         outputs=[spins_display, spins_textbox, spin_analysis_output]
     ).then(
         fn=format_spins_as_html,
@@ -3299,7 +3347,7 @@ with gr.Blocks() as demo:
         outputs=[color_code_output]
     )
 
-    undo_button.click(
+    undo_button_html.click(
         fn=undo_last_spin,
         inputs=[spins_display, gr.State(value=1), strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
         outputs=[
@@ -3315,7 +3363,7 @@ with gr.Blocks() as demo:
         outputs=[dynamic_table_output]
     )
 
-    generate_spins_button.click(
+    generate_spins_button_html.click(
         fn=generate_random_spins,
         inputs=[gr.State(value="1"), spins_display, last_spin_count],
         outputs=[spins_display, spins_textbox, spin_analysis_output]
