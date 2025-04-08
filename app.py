@@ -228,7 +228,7 @@ def add_spin(number, current_spins, num_to_show):
 def clear_spins():
     state.selected_numbers.clear()
     state.last_spins = []
-    return "", "", "Spins cleared successfully!", ""
+    return "", "", "Spins cleared successfully!", "", update_spin_counter()
 
 # Function to save the session
 def save_session():
@@ -1171,7 +1171,7 @@ def reset_scores():
 
 def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_count, strong_numbers_count, *checkbox_args):
     if not state.spin_history:
-        return ("No spins to undo.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table())
+        return ("No spins to undo.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter())
 
     try:
         undo_count = int(undo_count)
@@ -1237,9 +1237,9 @@ def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_
         strategy_output = show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *checkbox_args)
 
         return (spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output, sides_output,
-                straight_up_html, top_18_html, strongest_numbers_output, spins_input, spins_input,
-                dynamic_table_html, strategy_output, create_color_code_table())
+            streets_output, corners_output, six_lines_output, splits_output, sides_output,
+            straight_up_html, top_18_html, strongest_numbers_output, spins_input, spins_input,
+            dynamic_table_html, strategy_output, create_color_code_table(), update_spin_counter())
     except ValueError:
         return ("Error: Invalid undo count. Please use a positive number.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table())
     except Exception as e:
@@ -1247,13 +1247,10 @@ def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_
         return (f"Unexpected error during undo: {str(e)}", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table())
 
 def clear_all():
-    # Clear spins
     state.selected_numbers.clear()
     state.last_spins = []
-    # Reset scores
     state.reset()
-    # Clear all outputs
-    return "", "", "All spins and scores cleared successfully!", "", "", "", "", "", "", "", "", "", "", "", ""
+    return "", "", "All spins and scores cleared successfully!", "", "", "", "", "", "", "", "", "", "", "", "", update_spin_counter()
 
 def reset_strategy_dropdowns():
     default_category = "Even Money Strategies"
@@ -1263,9 +1260,9 @@ def reset_strategy_dropdowns():
 
 def generate_random_spins(num_spins, current_spins_display, last_spin_count):
     try:
-        num_spins = int(num_spins)  # This will be 5 from gr.State(value="5")
+        num_spins = int(num_spins)
         if num_spins <= 0:
-            return current_spins_display, current_spins_display, "Please select a number of spins greater than 0."
+            return current_spins_display, current_spins_display, "Please select a number of spins greater than 0.", update_spin_counter()
 
         new_spins = [str(random.randint(0, 36)) for _ in range(num_spins)]
         if current_spins_display and current_spins_display.strip():
@@ -1274,15 +1271,17 @@ def generate_random_spins(num_spins, current_spins_display, last_spin_count):
         else:
             updated_spins = new_spins
 
+        # Update state.last_spins
+        state.last_spins = updated_spins  # Replace the list entirely
         spins_text = ", ".join(updated_spins)
         print(f"generate_random_spins: Setting spins_textbox to '{spins_text}'")
-        return spins_text, spins_text, f"Generated {num_spins} random spins: {', '.join(new_spins)}"
+        return spins_text, spins_text, f"Generated {num_spins} random spins: {', '.join(new_spins)}", update_spin_counter()
     except ValueError:
         print("generate_random_spins: Invalid number of spins entered.")
-        return current_spins_display, current_spins_display, "Please enter a valid number of spins."
+        return current_spins_display, current_spins_display, "Please enter a valid number of spins.", update_spin_counter()
     except Exception as e:
         print(f"generate_random_spins: Unexpected error: {str(e)}")
-        return current_spins_display, current_spins_display, f"Error generating spins: {str(e)}"
+        return current_spins_display, current_spins_display, f"Error generating spins: {str(e)}", update_spin_counter()
 
 # Strategy functions
 def best_even_money_bets():
@@ -3126,7 +3125,7 @@ with gr.Blocks() as demo:
     clear_spins_button.click(
         fn=clear_spins,
         inputs=[],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display]
+        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter]
     )
 
     clear_all_button.click(
@@ -3136,28 +3135,23 @@ with gr.Blocks() as demo:
             spins_display, spins_textbox, spin_analysis_output, last_spin_display,
             even_money_output, dozens_output, columns_output, streets_output,
             corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output
+            straight_up_html, top_18_html, strongest_numbers_output, spin_counter
         ]
     ).then(
         fn=clear_outputs,
         inputs=[],
         outputs=[
-            spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output,
-            sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-            dynamic_table_output, strategy_output, color_code_output
-        ]
-    )
-
-    generate_spins_button.click(
-        fn=generate_random_spins,
-        inputs=[gr.State(value="5"), spins_display, last_spin_count],  # Change "1" to "5"
-        outputs=[spins_display, spins_textbox, spin_analysis_output]
-    ).then(
-        fn=format_spins_as_html,
-        inputs=[spins_display, last_spin_count],
-        outputs=[last_spin_display]
-    )
+            spin_analysis_output, even_money_output, dozens_output, columns
+    
+        generate_spins_button.click(
+            fn=generate_random_spins,
+            inputs=[gr.State(value="5"), spins_display, last_spin_count],
+            outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter]
+        ).then(
+            fn=format_spins_as_html,
+            inputs=[spins_display, last_spin_count],
+            outputs=[last_spin_display]
+        )
 
     last_spin_count.change(
         fn=format_spins_as_html,
@@ -3262,7 +3256,7 @@ with gr.Blocks() as demo:
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_html, top_18_html, strongest_numbers_output,
             spins_textbox, spins_display, dynamic_table_output, strategy_output,
-            color_code_output
+            color_code_output, spin_counter
         ]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
@@ -3313,7 +3307,7 @@ with gr.Blocks() as demo:
     clear_last_spins_button.click(
         fn=clear_last_spins_display,
         inputs=[],
-        outputs=[last_spin_display]
+        outputs=[last_spin_display, spin_counter]  # Keep counter consistent
     )
 
     top_color_picker.change(
