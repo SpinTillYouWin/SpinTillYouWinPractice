@@ -2471,14 +2471,13 @@ def create_color_code_table():
     return html
     
 def update_spin_counter():
-    """Return the current number of spins as formatted HTML."""
+    """Return the current number of spins as formatted HTML with inline styling."""
     spin_count = len(state.last_spins)
-    return f'<span style="font-size: 14px; margin-left: 10px;">Spins: {spin_count}</span>'
+    return f'<span style="font-size: 16px;">Total Spins: {spin_count}</span>'
     
 def top_numbers_with_neighbours_tiered():
     recommendations = []
     straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
-    straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
 
     if straight_up_df.empty:
         return "<p>Top Numbers with Neighbours (Tiered): No numbers have hit yet.</p>"
@@ -2741,7 +2740,8 @@ with gr.Blocks() as demo:
     )
     last_spin_display = gr.HTML(
         label="Last Spins",
-        value=""
+        value="",
+        elem_classes=["last-spins-container"]  # Add styling for Last Spins
     )
     last_spin_count = gr.Slider(
         label="Show Last Spins",
@@ -2753,8 +2753,9 @@ with gr.Blocks() as demo:
         elem_classes="long-slider"
     )
     spin_counter = gr.HTML(
-        value=update_spin_counter(),  # Initial value
-        label="Total Spins"
+        value='<span style="font-size: 16px;">Total Spins: 0</span>',  # Restore inline label
+        label="Total Spins",
+        elem_classes=["spin-counter"]  # Restore styling class
     )
 
     # Define strategy categories and choices
@@ -2820,7 +2821,7 @@ with gr.Blocks() as demo:
             last_spin_display
             last_spin_count
 
-    # 4. Row 4: Spin Controls
+        # 4. Row 4: Spin Controls
     with gr.Row():
         with gr.Column(scale=2):
             clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
@@ -2829,11 +2830,12 @@ with gr.Blocks() as demo:
         with gr.Column(scale=1):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
     
-    # 5. Row 5: Selected Spins Textbox
+    # 5. Row 5: Selected Spins Textbox and Spin Counter
     with gr.Row(elem_id="selected-spins-row"):
-        with gr.Column(min_width=800):
+        with gr.Column(scale=4, min_width=600):
             spins_textbox
-            spin_counter  # Just reference it, no need to redefine
+        with gr.Column(scale=1, min_width=200):
+            spin_counter  # Restore side-by-side layout with styling
     
     # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
@@ -3079,9 +3081,40 @@ with gr.Blocks() as demo:
       #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
       #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
       #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
-    
+      
       /* Scrollable Tables */
       .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
+    
+      /* Spin Counter Styling */
+      .spin-counter {
+          font-size: 16px !important;
+          font-weight: bold !important;
+          color: #ffffff !important;
+          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
+          padding: 8px 12px !important;
+          border: 2px solid #3498DB !important; /* Darker blue border */
+          border-radius: 8px !important;
+          margin-top: 0 !important; /* Align with textbox */
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important; /* Slightly stronger shadow */
+          transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
+      }
+      .spin-counter:hover {
+          transform: scale(1.05) !important; /* Slight zoom on hover */
+          box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
+      }
+    
+      /* Last Spins Container */
+      .last-spins-container {
+          background-color: #f5f5f5 !important; /* Light gray background */
+          border: 1px solid #d3d3d3 !important; /* Subtle gray border */
+          padding: 10px !important;
+          border-radius: 5px !important;
+          margin-top: 10px !important;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; /* Very light shadow */
+      }
     
       /* Responsive Design */
       @media (max-width: 600px) {
