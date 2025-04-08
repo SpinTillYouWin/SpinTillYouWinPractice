@@ -2986,7 +2986,7 @@ with gr.Blocks() as demo:
             load_input = gr.File(label="Upload Session")
         save_output = gr.File(label="Download Session")
 
-        # CSS and Event Handlers
+    # CSS and Event Handlers
     gr.HTML("""
     <style>
       /* General Layout */
@@ -3251,7 +3251,7 @@ with gr.Blocks() as demo:
         outputs=[dynamic_table_output]
     )
 
-        analyze_button_html.click(
+    analyze_button_html.click(
         fn=analyze_spins,
         inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
         outputs=[
