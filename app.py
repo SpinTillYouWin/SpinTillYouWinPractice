@@ -2820,12 +2820,16 @@ with gr.Blocks() as demo:
             undo_button = gr.Button("Undo Spins", elem_classes=["action-button"])
         with gr.Column(scale=1):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
-
+    
     # 5. Row 5: Selected Spins Textbox
     with gr.Row(elem_id="selected-spins-row"):
         with gr.Column(min_width=800):
             spins_textbox
-
+            spin_counter = gr.HTML(
+                value='<span style="font-size: 14px; margin-left: 10px;">Spins: 0</span>',
+                label="Total Spins"
+            )
+    
     # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
         with gr.Column(scale=2):
@@ -2985,7 +2989,7 @@ with gr.Blocks() as demo:
       .gr-row { margin: 0 !important; padding: 5px 0 !important; }
       .gr-column { margin: 0 !important; padding: 5px !important; }
       .gr-box { border-radius: 5px !important; }
-
+    
       /* Ensure Header Stays at the Top */
       #header-row {
           position: fixed !important;
@@ -2997,16 +3001,16 @@ with gr.Blocks() as demo:
           padding: 10px 0 !important;
           margin: 0 !important;
       }
-
+    
       /* Add padding to the body to account for the fixed header */
       body {
           padding-top: 80px !important; /* Adjust based on header height */
       }
-
+    
       /* Header Styling */
       .header-title { text-align: center !important; font-size: 2.5em !important; margin-bottom: 5px !important; color: #333 !important; }
       .guide-link { display: block !important; text-align: center !important; font-size: 1.1em !important; color: #007bff !important; text-decoration: underline !important; margin-bottom: 10px !important; }
-
+    
       /* Fix Selected Spins Label Cutoff */
       #selected-spins-row {
           width: 100% !important;
@@ -3031,7 +3035,7 @@ with gr.Blocks() as demo:
           width: 100% !important;
           min-width: 800px !important;
       }
-
+    
       /* Roulette Table */
       .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
       .roulette-button.red { background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
@@ -3042,7 +3046,7 @@ with gr.Blocks() as demo:
       .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
       .roulette-table { display: flex !important; flex-direction: column !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
       .table-row { display: flex !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap !important; line-height: 0 !important; }
-
+    
       /* Buttons */
       button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
       button.clear-spins-btn:hover { background-color: #cc0000 !important; }
@@ -3053,7 +3057,7 @@ with gr.Blocks() as demo:
       button.green-btn:hover { background-color: #218838 !important; }
       /* Ensure columns have appropriate spacing */
       .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
-
+    
       /* Compact Components */
       .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
       .long-slider .gr-box { width: 100% !important; }
@@ -3062,7 +3066,7 @@ with gr.Blocks() as demo:
       .gr-accordion * { background-color: #ffffff !important; }
       .gr-accordion .gr-column { background-color: #ffffff !important; }
       .gr-accordion .gr-row { background-color: #ffffff !important; }
-
+    
       /* Section Labels */
       #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
       #spin-analysis label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
@@ -3070,10 +3074,10 @@ with gr.Blocks() as demo:
       #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
       #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
       #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
-
+    
       /* Scrollable Tables */
       .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
-
+    
       /* Responsive Design */
       @media (max-width: 600px) {
           .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
@@ -3084,11 +3088,23 @@ with gr.Blocks() as demo:
           .header-title { font-size: 1.8em !important; }
           .guide-link { font-size: 0.9em !important; }
       }
-
+    
       #strongest-numbers-dropdown select {
           -webkit-appearance: menulist !important;
           -moz-appearance: menulist !important;
           appearance: menulist !important;
+      }
+      #strategy-dropdown select {
+          font-size: 14px;
+          padding: 5px;
+          background-color: #f9f9f9;
+          border: 1px solid #ccc;
+          border-radius: 3px;
+      }
+      #strategy-dropdown select option:checked {
+          font-weight: bold;
+          background-color: #e0e0ff; /* Light blue to indicate selection */
+          color: #000;
       }
     </style>
     """)
