@@ -2732,6 +2732,13 @@ def clear_last_spins_display():
 with gr.Blocks() as demo:
     # Define state and components used across sections at the top
     spins_display = gr.State(value="")
+    loading_state = gr.State(value=False)  # Add this new line
+    spins_textbox = gr.Textbox(
+        label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
+        value="",
+        interactive=True,
+        elem_id="selected-spins"
+    )
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
         value="",
@@ -3105,12 +3112,15 @@ with gr.Blocks() as demo:
           transform: scale(1.05) !important; /* Slight zoom on hover */
           box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
       }
-      .gr-loading .action-button.green-btn {
+      .action-button.green-btn {
           position: relative !important;
-          pointer-events: none !important; /* Disable clicks while loading */
-          opacity: 0.7 !important;
+          transition: opacity 0.3s ease !important;
       }
-      .gr-loading .action-button.green-btn::after {
+      .action-button.green-btn[aria-busy="true"] {
+          opacity: 0.7 !important;
+          pointer-events: none !important;
+      }
+      .action-button.green-btn[aria-busy="true"]::after {
           content: '';
           position: absolute;
           top: 50%;
@@ -3261,7 +3271,25 @@ with gr.Blocks() as demo:
         outputs=[dynamic_table_output]
     )
 
+    def start_loading():
+        return True
+
+    def stop_loading(result):
+        return False
+
+    def update_button(loading):
+        return gr.update(value="Analyzing..." if loading else "Analyze Spins", interactive=not loading)
+
+    analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
     analyze_button.click(
+        fn=start_loading,
+        inputs=[],
+        outputs=[loading_state]
+    ).then(
+        fn=update_button,
+        inputs=[loading_state],
+        outputs=[analyze_button]
+    ).then(
         fn=analyze_spins,
         inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
         outputs=[
@@ -3269,8 +3297,15 @@ with gr.Blocks() as demo:
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_html, top_18_html, strongest_numbers_output,
             dynamic_table_output, strategy_output
-        ],
-        _js="() => { document.body.classList.add('gr-loading'); setTimeout(() => document.body.classList.remove('gr-loading'), 5000); }"
+        ]
+    ).then(
+        fn=stop_loading,
+        inputs=[spin_analysis_output],
+        outputs=[loading_state]
+    ).then(
+        fn=update_button,
+        inputs=[loading_state],
+        outputs=[analyze_button]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
