@@ -3105,6 +3105,28 @@ with gr.Blocks() as demo:
           transform: scale(1.05) !important; /* Slight zoom on hover */
           box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
       }
+      .gr-loading .action-button.green-btn {
+          position: relative !important;
+          pointer-events: none !important; /* Disable clicks while loading */
+          opacity: 0.7 !important;
+      }
+      .gr-loading .action-button.green-btn::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 20px;
+          height: 20px;
+          border: 3px solid #fff;
+          border-top: 3px solid #28a745;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          transform: translate(-50%, -50%);
+      }
+      @keyframes spin {
+          0% { transform: translate(-50%, -50%) rotate(0deg); }
+          100% { transform: translate(-50%, -50%) rotate(360deg); }
+      }
     
       /* Last Spins Container */
       .last-spins-container {
@@ -3247,7 +3269,8 @@ with gr.Blocks() as demo:
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_html, top_18_html, strongest_numbers_output,
             dynamic_table_output, strategy_output
-        ]
+        ],
+        _js="() => { document.body.classList.add('gr-loading'); setTimeout(() => document.body.classList.remove('gr-loading'), 5000); }"
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
