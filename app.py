@@ -3115,7 +3115,7 @@ with gr.Blocks() as demo:
     """)
     print("CSS Updated")
 
-    # Event Handlers
+# Event Handlers
     spins_textbox.change(
         fn=lambda x: (x, format_spins_as_html(x, last_spin_count.value)),
         inputs=spins_textbox,
@@ -3141,12 +3141,17 @@ with gr.Blocks() as demo:
         fn=clear_outputs,
         inputs=[],
         outputs=[
-            spin_analysis_output, even_money_output, dozens_output, columns
-    
+            spin_analysis_output, even_money_output, dozens_output, columns_output,
+            streets_output, corners_output, six_lines_output, splits_output,
+            sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+            dynamic_table_output, strategy_output, color_code_output
+        ]
+    )
+
     generate_spins_button.click(
         fn=generate_random_spins,
-        inputs=[gr.State(value="1"), spins_display, last_spin_count],
-        outputs=[spins_display, spins_textbox, spin_analysis_output]  # Incomplete, no closing ']'
+        inputs=[gr.State(value="5"), spins_display, last_spin_count],  # Consolidated to use value="5" for consistency
+        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter]
     ).then(
         fn=format_spins_as_html,
         inputs=[spins_display, last_spin_count],
@@ -3257,22 +3262,11 @@ with gr.Blocks() as demo:
             sides_output, straight_up_html, top_18_html, strongest_numbers_output,
             spins_textbox, spins_display, dynamic_table_output, strategy_output,
             color_code_output, spin_counter
-        ],
+        ]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
-    )
-
-    # Corrected generate_spins_button.click (replace the incomplete one)
-    generate_spins_button.click(
-        fn=generate_random_spins,
-        inputs=[gr.State(value="5"), spins_display, last_spin_count],  # Match earlier definition
-        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter],
-    ).then(
-        fn=format_spins_as_html,
-        inputs=[spins_display, last_spin_count],
-        outputs=[last_spin_display]
     )
 
     neighbours_count_slider.change(
