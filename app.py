@@ -3143,15 +3143,15 @@ with gr.Blocks() as demo:
         outputs=[
             spin_analysis_output, even_money_output, dozens_output, columns
     
-        generate_spins_button.click(
-            fn=generate_random_spins,
-            inputs=[gr.State(value="5"), spins_display, last_spin_count],
-            outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter]
-        ).then(
-            fn=format_spins_as_html,
-            inputs=[spins_display, last_spin_count],
-            outputs=[last_spin_display]
-        )
+    generate_spins_button.click(
+        fn=generate_random_spins,
+        inputs=[gr.State(value="1"), spins_display, last_spin_count],
+        outputs=[spins_display, spins_textbox, spin_analysis_output]  # Incomplete, no closing ']'
+    ).then(
+        fn=format_spins_as_html,
+        inputs=[spins_display, last_spin_count],
+        outputs=[last_spin_display]
+    )
 
     last_spin_count.change(
         fn=format_spins_as_html,
