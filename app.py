@@ -2898,14 +2898,14 @@ with gr.Blocks() as demo:
             category_dropdown = gr.Dropdown(
                 label="Select Category",
                 choices=category_choices,
-                value="Even Money Strategies",  # Already set correctly
+                value="Even Money Strategies",
                 allow_custom_value=False,
                 elem_id="select-category"
             )
             strategy_dropdown = gr.Dropdown(
                 label="Select Strategy",
                 choices=strategy_categories["Even Money Strategies"],
-                value="Best Even Money Bets",  # Already set correctly
+                value="Best Even Money Bets",
                 allow_custom_value=False
             )
             reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
@@ -2929,7 +2929,10 @@ with gr.Blocks() as demo:
                 visible=False,
                 elem_classes="long-slider"
             )
-            reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=
+            reset_scores_checkbox = gr.Checkbox(
+                label="Reset Scores on Analysis",
+                value=True
+            )
 
     # 8. Row 8: Color Pickers
     with gr.Row():
