@@ -3062,7 +3062,10 @@ with gr.Blocks() as demo:
                 elem_classes="header-title"
             )
             gr.HTML(
-                '<a href="https://drive.google.com/file/d/1o9H8Lakx1i4_OnDrvHRj_6-KHsOWufjF/view?usp=sharing" target="_blank" class="guide-link">🎥 Roulette Analyzer Guide + Video Instructions</a>'
+                '''
+                <a href="https://drive.google.com/file/d/1o9H8Lakx1i4_OnDrvHRj_6-KHsOWufjF/view?usp=sharing" target="_blank" class="guide-link">🎥 Roulette Analyzer Guide + Video Instructions</a>
+                <button id="start-tour-btn" onclick="startTour()" style="margin-left: 10px; padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Take the Tour!</button>
+                '''
             )
 
     # 2. Row 2: European Roulette Table
