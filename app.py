@@ -556,10 +556,9 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
                 for num in neighbor_numbers:
                     if str(num) not in number_highlights:  # Avoid overwriting strong numbers
                         number_highlights[str(num)] = middle_color if middle_color else "rgba(0, 255, 255, 0.5)"  # Cyan for neighbors
-
+    # Line 2: Updated code (corrected indentation and completed "Best Columns + Top Pick 18 Numbers" block)
     return trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color
 
-        # Corrected indentation starts here - all elifs align with the outer 'if'
     elif strategy_name == "Best Columns + Top Pick 18 Numbers":
         trending_column = None
         second_column = None
@@ -583,7 +582,7 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
                 number_highlights[str(num)] = middle_color
             for num in last_6:
                 number_highlights[str(num)] = lower_color
-
+    # Line 3: One below coding full (start of next block)
     elif strategy_name == "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers":
         trending_dozen = None
         second_dozen = None
