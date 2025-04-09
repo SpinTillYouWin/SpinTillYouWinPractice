@@ -2665,6 +2665,35 @@ STRATEGIES = {
     "Top Numbers with Neighbours (Tiered)": {"function": top_numbers_with_neighbours_tiered, "categories": ["numbers"]},
     "Neighbours of Strong Number": {"function": neighbours_of_strong_number, "categories": ["neighbours"]}
 }
+STRATEGY_EXPLANATIONS = {
+    "Hot Bet Strategy": "<p><strong>Hot Bet Strategy</strong>: Focuses on the most frequent hits across all betting categories (even money, dozens, columns, streets, corners, splits, and numbers). It highlights the hottest sections to maximize bets on current trends.</p>",
+    "Cold Bet Strategy": "<p><strong>Cold Bet Strategy</strong>: Targets the least-hit sections, betting on numbers and categories that haven’t appeared recently, based on the idea that they’re 'due' to hit.</p>",
+    "Best Even Money Bets": "<p><strong>Best Even Money Bets</strong>: Identifies the top-performing even money bets (Red, Black, Even, Odd, Low, High) with the highest hit counts, ideal for low-risk, high-frequency betting.</p>",
+    "Best Even Money Bets + Top Pick 18 Numbers": "<p><strong>Best Even Money Bets + Top Pick 18 Numbers</strong>: Combines the top 3 even money bets with the 18 most frequent straight-up numbers, split into tiers for broader coverage.</p>",
+    "Best Dozens": "<p><strong>Best Dozens</strong>: Highlights the two dozens (1-12, 13-24, 25-36) with the most hits, offering a balanced approach to medium-risk betting.</p>",
+    "Best Dozens + Top Pick 18 Numbers": "<p><strong>Best Dozens + Top Pick 18 Numbers</strong>: Pairs the top 2 dozens with the 18 most frequent numbers, tiered for priority, blending outside and inside bets.</p>",
+    "Best Columns": "<p><strong>Best Columns</strong>: Selects the two columns (1st, 2nd, 3rd) with the highest hit counts, similar to dozens but based on vertical table layout.</p>",
+    "Best Columns + Top Pick 18 Numbers": "<p><strong>Best Columns + Top Pick 18 Numbers</strong>: Combines the top 2 columns with the 18 most frequent numbers, tiered for strategic betting.</p>",
+    "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers": "<p><strong>Best Dozens + Best Even Money Bets + Top Pick 18 Numbers</strong>: A hybrid strategy mixing the top 2 dozens, top 3 even money bets, and top 18 numbers for comprehensive coverage.</p>",
+    "Best Columns + Best Even Money Bets + Top Pick 18 Numbers": "<p><strong>Best Columns + Best Even Money Bets + Top Pick 18 Numbers</strong>: Merges the top 2 columns, top 3 even money bets, and top 18 numbers for a versatile betting approach.</p>",
+    "Fibonacci Strategy": "<p><strong>Fibonacci Strategy</strong>: Compares the best dozen and column, selecting the one with the highest score (or both if tied), inspired by the Fibonacci betting progression.</p>",
+    "Best Streets": "<p><strong>Best Streets</strong>: Highlights the top streets (3-number rows) by hit count, tiered into top 3, next 3, and lower 3 for precise inside betting.</p>",
+    "Best Double Streets": "<p><strong>Best Double Streets</strong>: Ranks the top double streets (6-number rows) by hits, offering a broader inside bet option.</p>",
+    "Best Corners": "<p><strong>Best Corners</strong>: Identifies the top corners (4-number squares) by hit frequency, ranked for targeted betting.</p>",
+    "Best Splits": "<p><strong>Best Splits</strong>: Lists the top splits (2-number pairs) by hits, ideal for high-payout, specific inside bets.</p>",
+    "Best Dozens + Best Streets": "<p><strong>Best Dozens + Best Streets</strong>: Combines the top 2 dozens with the top 9 streets, tiered for a mix of outside and inside bets.</p>",
+    "Best Columns + Best Streets": "<p><strong>Best Columns + Best Streets</strong>: Pairs the top 2 columns with the top 9 streets, tiered for combined coverage.</p>",
+    "Non-Overlapping Double Street Strategy": "<p><strong>Non-Overlapping Double Street Strategy</strong>: Selects the best set of non-overlapping double streets (5 sets of 6 numbers) with the highest total hits, ranked within the set.</p>",
+    "Non-Overlapping Corner Strategy": "<p><strong>Non-Overlapping Corner Strategy</strong>: Chooses up to 9 non-overlapping corners (4-number groups) with the highest hits, ensuring no number overlap.</p>",
+    "Romanowksy Missing Dozen": "<p><strong>Romanowksy Missing Dozen</strong>: Focuses on the top 2 dozens and highlights the weakest dozen’s strongest numbers or neighbors for a contrarian approach.</p>",
+    "Fibonacci To Fortune": "<p><strong>Fibonacci To Fortune</strong>: Builds on Fibonacci by adding the best even money bet, top 2 columns and dozens, and a double street from the weakest dozen.</p>",
+    "3-8-6 Rising Martingale": "<p><strong>3-8-6 Rising Martingale</strong>: Highlights the top 8 streets in tiers (3-3-2) for a Martingale-inspired progression on inside bets.</p>",
+    "1 Dozen +1 Column Strategy": "<p><strong>1 Dozen +1 Column Strategy</strong>: Selects the single best dozen and column by hit count, covering 24 numbers with potential overlap.</p>",
+    "Top Pick 18 Numbers without Neighbours": "<p><strong>Top Pick 18 Numbers without Neighbours</strong>: Picks the 18 most frequent numbers, tiered into 6-6-6, focusing solely on straight-up bets.</p>",
+    "Top Numbers with Neighbours (Tiered)": "<p><strong>Top Numbers with Neighbours (Tiered)</strong>: Takes the top 8 numbers and includes their neighbors, tiered into 8-8-8 for a neighbor-focused strategy.</p>",
+    "Neighbours of Strong Number": "<p><strong>Neighbours of Strong Number</strong>: Highlights a user-defined number of strongest numbers and their neighbors (left and right), customizable by count.</p>",
+    "None": "<p>No strategy selected. Choose a strategy from the dropdown to see its explanation and recommendations.</p>"
+}
 
 def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
     try:
@@ -2859,6 +2888,11 @@ with gr.Blocks() as demo:
             strategy_output = gr.HTML(
                 label="Strategy Recommendations",
                 value=show_strategy_recommendations("Best Even Money Bets", 2, 1)  # Initial value with default strategy
+            )
+            strategy_explanation = gr.HTML(
+                label="Strategy Explanation",
+                value="<p>Select a strategy to see its explanation here.</p>",
+                elem_classes=["strategy-explanation"]
             )
         with gr.Column(scale=1, min_width=200):
             category_dropdown = gr.Dropdown(
@@ -3105,6 +3139,15 @@ with gr.Blocks() as demo:
           transform: scale(1.05) !important; /* Slight zoom on hover */
           box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
       }
+      .strategy-explanation {
+          background-color: #f0f8ff !important; /* Light blue background */
+          border: 1px solid #87ceeb !important; /* Soft blue border */
+          padding: 10px !important;
+          border-radius: 5px !important;
+          margin-top: 10px !important;
+          font-size: 14px !important;
+          color: #333 !important;
+      }
     
       /* Last Spins Container */
       .last-spins-container {
@@ -3218,17 +3261,19 @@ with gr.Blocks() as demo:
         outputs=[strategy_dropdown]
     )
 
-    def toggle_neighbours_slider(strategy_name):
+    def toggle_neighbours_slider_and_show_explanation(strategy_name):
         is_visible = strategy_name == "Neighbours of Strong Number"
+        explanation = STRATEGY_EXPLANATIONS.get(strategy_name, "<p>Explanation not available for this strategy.</p>")
         return (
             gr.update(visible=is_visible),
-            gr.update(visible=is_visible)
+            gr.update(visible=is_visible),
+            explanation
         )
 
     strategy_dropdown.change(
-        fn=toggle_neighbours_slider,
+        fn=toggle_neighbours_slider_and_show_explanation,
         inputs=[strategy_dropdown],
-        outputs=[neighbours_count_slider, strong_numbers_count_slider]
+        outputs=[neighbours_count_slider, strong_numbers_count_slider, strategy_explanation]
     ).then(
         fn=show_strategy_recommendations,
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
