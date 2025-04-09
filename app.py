@@ -1,46 +1,12 @@
 import gradio as gr
 import pandas as pd
 import json
-import smtplib
-from email.mime.text import MIMEText
 from itertools import combinations
 import random
 from roulette_data import (
     EVEN_MONEY, DOZENS, COLUMNS, STREETS, CORNERS, SIX_LINES, SPLITS,
     NEIGHBORS_EUROPEAN, LEFT_OF_ZERO_EUROPEAN, RIGHT_OF_ZERO_EUROPEAN
 )
-def send_email_progression(player_message, developer_email="your_email@example.com"):
-    """Send the player's betting progression via email."""
-    try:
-        # Email configuration (example using Gmail)
-        smtp_server = "smtp.gmail.com"
-        smtp_port = 587
-        sender_email = "your_email@example.com"
-        sender_password = "your_app_password"  # Use an App Password if using Gmail
-
-        # Create the email
-        msg = MIMEText(player_message)
-        msg["Subject"] = "New Betting Progression Submission"
-        msg["From"] = sender_email
-        msg["To"] = developer_email
-
-        # Send the email
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.starttls()
-            server.login(sender_email, sender_password)
-            server.sendmail(sender_email, developer_email, msg.as_string())
-        return "Thank you! Your betting progression has been emailed to the developer."
-    except Exception as e:
-        return f"Error sending email: {str(e)}. Please try again or contact the developer directly."
-# Add this function near the top of your script (after imports)
-def submit_player_progression(player_message):
-    """Save the player's betting progression message to a file."""
-    try:
-        with open("player_progressions.txt", "a") as f:
-            f.write(f"Player Submission ({pd.Timestamp.now()}):\n{player_message}\n\n")
-        return "Thank you! Your betting progression has been submitted. The developer will review it soon."
-    except Exception as e:
-        return f"Error saving your submission: {str(e)}. Please try again."
 
 def validate_roulette_data():
     """Validate that all required constants from roulette_data.py are present and correctly formatted."""
@@ -98,25 +64,25 @@ class RouletteState:
         self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
         self.selected_numbers = set()
         self.last_spins = []
-        self.spin_history = []
+        self.spin_history = []  # Tracks each spin's effects for undoing
 
-        # Betting progression fields
+        # New betting progression fields
         self.bankroll = 1000
-        self.initial_bankroll = 1000
+        self.initial_bankroll = 1000  # For profit/loss tracking
         self.base_unit = 10
-        self.stop_loss = -500
-        self.stop_win = 200
+        self.stop_loss = -500  # Relative to initial_bankroll
+        self.stop_win = 200    # Relative to initial_bankroll
         self.bet_type = "Even Money"
         self.progression = "Martingale"
         self.current_bet = self.base_unit
         self.next_bet = self.base_unit
-        self.progression_state = None
+        self.progression_state = None  # e.g., Fibonacci index or Labouchere list
         self.is_stopped = False
         self.message = f"Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
         self.status = "Active"
-        self.custom_progression_rule = None  # Store custom progression rule
 
     def reset(self):
+        # Existing reset logic
         self.scores = {n: 0 for n in range(37)}
         self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
         self.dozen_scores = {name: 0 for name in DOZENS.keys()}
@@ -128,7 +94,10 @@ class RouletteState:
         self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
         self.selected_numbers = set()
         self.last_spins = []
-        self.spin_history = []
+        self.spin_history = []  # Reset history too
+
+        # Reset betting progression (optional: only if you want full reset to affect progression)
+        # self.reset_progression()
 
     def reset_progression(self):
         self.current_bet = self.base_unit
@@ -162,7 +131,7 @@ class RouletteState:
             self.status = "Stopped: Insufficient bankroll"
             self.message = "Cannot continue: Bankroll too low."
             return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
-
+    
         if self.progression == "Martingale":
             self.current_bet = self.next_bet
             self.next_bet = self.base_unit if won else self.current_bet * 2
@@ -198,7 +167,7 @@ class RouletteState:
                 self.message = f"Loss! Keep bet at {self.next_bet}"
         elif self.progression == "Labouchere":
             if self.progression_state is None:
-                self.progression_state = [1, 2, 3, 4]
+                self.progression_state = [1, 2, 3, 4]  # Default, updated by UI
             self.current_bet = self.next_bet
             if won and len(self.progression_state) > 1:
                 self.progression_state.pop(0)
@@ -220,27 +189,9 @@ class RouletteState:
             self.current_bet = self.next_bet
             self.next_bet = max(self.base_unit, self.current_bet - self.base_unit) if won else self.current_bet + self.base_unit
             self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-        elif self.progression == "Custom":
-            # Handle custom progression logic
-            if self.custom_progression_rule:
-                # Simple parsing for now: look for keywords like "double", "reset", etc.
-                rule = self.custom_progression_rule.lower()
-                self.current_bet = self.next_bet
-                if "double" in rule and not won:
-                    self.next_bet = self.current_bet * 2
-                    self.message = f"Loss! Doubled bet to {self.next_bet} (Custom Rule)"
-                elif "reset" in rule and won:
-                    self.next_bet = self.base_unit
-                    self.message = f"Win! Reset bet to {self.next_bet} (Custom Rule)"
-                else:
-                    self.next_bet = self.current_bet  # Default: keep the bet the same
-                    self.message = f"{'Win' if won else 'Loss'}! Bet unchanged at {self.next_bet} (Custom Rule)"
-            else:
-                self.current_bet = self.next_bet
-                self.next_bet = self.base_unit
-                self.message = "Custom progression not set. Using base bet."
-        
+    
         return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
+
 # Create an instance of RouletteState (unchanged)
 state = RouletteState()
 
@@ -2893,177 +2844,6 @@ def clear_last_spins_display():
 # Build the Gradio interface
 with gr.Blocks() as demo:
     # Define state and components used across sections at the top
-    # Add this function near the top of your script (after imports)
-def submit_player_progression(player_message):
-    """Save the player's betting progression message to a file."""
-    try:
-        with open("player_progressions.txt", "a") as f:
-            f.write(f"Player Submission ({pd.Timestamp.now()}):\n{player_message}\n\n")
-        return "Thank you! Your betting progression has been submitted. The developer will review it soon."
-    except Exception as e:
-        return f"Error saving your submission: {str(e)}. Please try again."
-
-# Modify the RouletteState class to handle custom progression
-class RouletteState:
-    def __init__(self):
-        self.scores = {n: 0 for n in range(37)}
-        self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
-        self.dozen_scores = {name: 0 for name in DOZENS.keys()}
-        self.column_scores = {name: 0 for name in COLUMNS.keys()}
-        self.street_scores = {name: 0 for name in STREETS.keys()}
-        self.corner_scores = {name: 0 for name in CORNERS.keys()}
-        self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
-        self.split_scores = {name: 0 for name in SPLITS.keys()}
-        self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
-        self.selected_numbers = set()
-        self.last_spins = []
-        self.spin_history = []
-
-        # Betting progression fields
-        self.bankroll = 1000
-        self.initial_bankroll = 1000
-        self.base_unit = 10
-        self.stop_loss = -500
-        self.stop_win = 200
-        self.bet_type = "Even Money"
-        self.progression = "Martingale"
-        self.current_bet = self.base_unit
-        self.next_bet = self.base_unit
-        self.progression_state = None
-        self.is_stopped = False
-        self.message = f"Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
-        self.status = "Active"
-        self.custom_progression_rule = None  # Store custom progression rule
-
-    def reset(self):
-        self.scores = {n: 0 for n in range(37)}
-        self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
-        self.dozen_scores = {name: 0 for name in DOZENS.keys()}
-        self.column_scores = {name: 0 for name in COLUMNS.keys()}
-        self.street_scores = {name: 0 for name in STREETS.keys()}
-        self.corner_scores = {name: 0 for name in CORNERS.keys()}
-        self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
-        self.split_scores = {name: 0 for name in SPLITS.keys()}
-        self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
-        self.selected_numbers = set()
-        self.last_spins = []
-        self.spin_history = []
-
-    def reset_progression(self):
-        self.current_bet = self.base_unit
-        self.next_bet = self.base_unit
-        self.progression_state = None
-        self.is_stopped = False
-        self.message = f"Progression reset. Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
-        self.status = "Active"
-        return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
-
-    def update_bankroll(self, won):
-        payout = {"Even Money": 1, "Dozens": 2, "Columns": 2, "Straight Bets": 35}[self.bet_type]
-        if won:
-            self.bankroll += self.current_bet * payout
-        else:
-            self.bankroll -= self.current_bet
-        profit = self.bankroll - self.initial_bankroll
-        if profit <= self.stop_loss:
-            self.is_stopped = True
-            self.status = f"Stopped: Hit Stop Loss of {self.stop_loss}"
-        elif profit >= self.stop_win:
-            self.is_stopped = True
-            self.status = f"Stopped: Hit Stop Win of {self.stop_win}"
-
-    def update_progression(self, won):
-        if self.is_stopped:
-            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
-        self.update_bankroll(won)
-        if self.bankroll < self.current_bet:
-            self.is_stopped = True
-            self.status = "Stopped: Insufficient bankroll"
-            self.message = "Cannot continue: Bankroll too low."
-            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
-
-        if self.progression == "Martingale":
-            self.current_bet = self.next_bet
-            self.next_bet = self.base_unit if won else self.current_bet * 2
-            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-        elif self.progression == "Fibonacci":
-            fib = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
-            if self.progression_state is None:
-                self.progression_state = 0
-            self.current_bet = self.next_bet
-            if won:
-                self.progression_state = max(0, self.progression_state - 2)
-                self.next_bet = fib[self.progression_state] * self.base_unit
-                self.message = f"Win! Move back to {self.next_bet}"
-            else:
-                self.progression_state = min(len(fib) - 1, self.progression_state + 1)
-                self.next_bet = fib[self.progression_state] * self.base_unit
-                self.message = f"Loss! Next Fibonacci bet: {self.next_bet}"
-        elif self.progression == "Triple Martingale":
-            self.current_bet = self.next_bet
-            self.next_bet = self.base_unit if won else self.current_bet * 3
-            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-        elif self.progression == "Oscar’s Grind":
-            self.current_bet = self.next_bet
-            profit = self.bankroll - self.initial_bankroll
-            if won and profit > 0:
-                self.next_bet = self.base_unit
-                self.message = f"Win! Profit achieved, reset to {self.next_bet}"
-            elif won:
-                self.next_bet = self.current_bet + self.base_unit
-                self.message = f"Win! Increase to {self.next_bet}"
-            else:
-                self.next_bet = self.current_bet
-                self.message = f"Loss! Keep bet at {self.next_bet}"
-        elif self.progression == "Labouchere":
-            if self.progression_state is None:
-                self.progression_state = [1, 2, 3, 4]
-            self.current_bet = self.next_bet
-            if won and len(self.progression_state) > 1:
-                self.progression_state.pop(0)
-                self.progression_state.pop(-1)
-                self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit if len(self.progression_state) > 1 else self.progression_state[0] * self.base_unit if self.progression_state else self.base_unit
-                self.message = f"Win! Next bet: {self.next_bet} (Sequence: {self.progression_state})"
-            elif won:
-                self.next_bet = self.base_unit
-                self.message = f"Win! Sequence complete, reset to {self.next_bet}"
-            else:
-                self.progression_state.append(self.current_bet // self.base_unit)
-                self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit
-                self.message = f"Loss! Next bet: {self.next_bet} (Sequence: {self.progression_state})"
-        elif self.progression == "Ladder":
-            self.current_bet = self.next_bet
-            self.next_bet = self.base_unit if won else self.current_bet + self.base_unit
-            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-        elif self.progression == "D’Alembert":
-            self.current_bet = self.next_bet
-            self.next_bet = max(self.base_unit, self.current_bet - self.base_unit) if won else self.current_bet + self.base_unit
-            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-        elif self.progression == "Custom":
-            # Handle custom progression logic
-            if self.custom_progression_rule:
-                # Simple parsing for now: look for keywords like "double", "reset", etc.
-                rule = self.custom_progression_rule.lower()
-                self.current_bet = self.next_bet
-                if "double" in rule and not won:
-                    self.next_bet = self.current_bet * 2
-                    self.message = f"Loss! Doubled bet to {self.next_bet} (Custom Rule)"
-                elif "reset" in rule and won:
-                    self.next_bet = self.base_unit
-                    self.message = f"Win! Reset bet to {self.next_bet} (Custom Rule)"
-                else:
-                    self.next_bet = self.current_bet  # Default: keep the bet the same
-                    self.message = f"{'Win' if won else 'Loss'}! Bet unchanged at {self.next_bet} (Custom Rule)"
-            else:
-                self.current_bet = self.next_bet
-                self.next_bet = self.base_unit
-                self.message = "Custom progression not set. Using base bet."
-        
-        return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
-
-# Modify the Gradio interface to include the new components
-with gr.Blocks() as demo:
-    # Existing state and components...
     spins_display = gr.State(value="")
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
@@ -3074,7 +2854,7 @@ with gr.Blocks() as demo:
     last_spin_display = gr.HTML(
         label="Last Spins",
         value="",
-        elem_classes=["last-spins-container"]
+        elem_classes=["last-spins-container"]  # Add styling for Last Spins
     )
     last_spin_count = gr.Slider(
         label="Show Last Spins",
@@ -3086,11 +2866,12 @@ with gr.Blocks() as demo:
         elem_classes="long-slider"
     )
     spin_counter = gr.HTML(
-        value='<span style="font-size: 16px;">Total Spins: 0</span>',
+        value='<span style="font-size: 16px;">Total Spins: 0</span>',  # Restore inline label
         label="Total Spins",
-        elem_classes=["spin-counter"]
+        elem_classes=["spin-counter"]  # Restore styling class
     )
 
+    # Define strategy categories and choices
     strategy_categories = {
         "Trends": ["Cold Bet Strategy", "Hot Bet Strategy", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"],
         "Even Money Strategies": ["Best Even Money Bets", "Best Even Money Bets + Top Pick 18 Numbers", "Fibonacci To Fortune"],
@@ -3105,7 +2886,7 @@ with gr.Blocks() as demo:
     }
     category_choices = ["None"] + sorted(strategy_categories.keys())
 
-    # Row 1: Header
+    # 1. Row 1: Header
     with gr.Row(elem_id="header-row"):
         with gr.Column(scale=1):
             gr.Markdown(
@@ -3116,7 +2897,7 @@ with gr.Blocks() as demo:
                 '<a href="https://drive.google.com/file/d/1o9H8Lakx1i4_OnDrvHRj_6-KHsOWufjF/view?usp=sharing" target="_blank" class="guide-link">🎥 Roulette Analyzer Guide + Video Instructions</a>'
             )
 
-    # Row 2: European Roulette Table
+    # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
         table_layout = [
@@ -3147,13 +2928,13 @@ with gr.Blocks() as demo:
                             outputs=[spins_display, spins_textbox, last_spin_display, spin_counter]
                         )
 
-    # Row 3: Last Spins Display and Show Last Spins Slider
+    # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
             last_spin_display
             last_spin_count
 
-    # Row 4: Spin Controls
+        # 4. Row 4: Spin Controls
     with gr.Row():
         with gr.Column(scale=2):
             clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
@@ -3161,15 +2942,15 @@ with gr.Blocks() as demo:
             undo_button = gr.Button("Undo Spins", elem_classes=["action-button"])
         with gr.Column(scale=1):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
-
-    # Row 5: Selected Spins Textbox and Spin Counter
+    
+    # 5. Row 5: Selected Spins Textbox and Spin Counter
     with gr.Row(elem_id="selected-spins-row"):
         with gr.Column(scale=4, min_width=600):
             spins_textbox
         with gr.Column(scale=1, min_width=200):
-            spin_counter
-
-    # Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
+            spin_counter  # Restore side-by-side layout with styling
+    
+    # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
         with gr.Column(scale=2):
             analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
@@ -3178,7 +2959,7 @@ with gr.Blocks() as demo:
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
 
-    # Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
+        # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table")
@@ -3229,7 +3010,7 @@ with gr.Blocks() as demo:
             )
             reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
 
-    # Row 8: Betting Progression Tracker
+    # Betting Progression Tracker (New Row)
     with gr.Row():
         with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
             with gr.Row():
@@ -3245,19 +3026,13 @@ with gr.Blocks() as demo:
                 )
                 progression_dropdown = gr.Dropdown(
                     label="Progression",
-                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Custom"],
+                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert"],
                     value="Martingale"
                 )
                 labouchere_sequence = gr.Textbox(
                     label="Labouchere Sequence (comma-separated)",
                     value="1, 2, 3, 4",
                     visible=False
-                )
-                custom_progression_input = gr.Textbox(
-                    label="Custom Progression Rule (e.g., 'Double after loss, reset after win')",
-                    value="",
-                    visible=False,
-                    interactive=True
                 )
             with gr.Row():
                 win_button = gr.Button("Win")
@@ -3271,24 +3046,7 @@ with gr.Blocks() as demo:
                 message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
                 status_output = gr.Textbox(label="Status", value="Active", interactive=False)
 
-    # New Row: Player Submission for Custom Betting Progression
-    with gr.Row():
-        with gr.Accordion("Submit Your Betting Progression", open=False):
-            gr.Markdown("### Share Your Betting Progression with the Developer")
-            player_progression_input = gr.Textbox(
-                label="Describe Your Betting Progression",
-                placeholder="E.g., 'Double the bet after a loss, reset to base unit after a win.'",
-                lines=3,
-                interactive=True
-            )
-            submit_progression_button = gr.Button("Submit Progression")
-            submission_status = gr.Textbox(
-                label="Submission Status",
-                value="",
-                interactive=False
-            )
-
-    # Row 9: Color Pickers
+    # 8. Row 8: Color Pickers
     with gr.Row():
         top_color_picker = gr.ColorPicker(
             label="Top Tier Color",
@@ -3307,11 +3065,11 @@ with gr.Blocks() as demo:
         )
         reset_colors_button = gr.Button("Reset Colors", elem_classes=["action-button"])
 
-    # Row 10: Color Code Key (Collapsible)
+    # 9. Row 9: Color Code Key (Collapsible)
     with gr.Accordion("Color Code Key", open=False):
         color_code_output = gr.HTML(label="Color Code Key")
 
-    # Row 11: Analysis Outputs (Collapsible)
+    # 10. Row 10: Analysis Outputs (Collapsible)
     with gr.Accordion("Spin Logic Reactor 🧠", open=False, elem_id="spin-analysis"):
         spin_analysis_output = gr.Textbox(
             label="",
@@ -3334,13 +3092,13 @@ with gr.Blocks() as demo:
                 allow_custom_value=False,
                 interactive=True,
                 elem_id="strongest-numbers-dropdown",
-                visible=False
+                visible=False  # Hide the dropdown
             )
             strongest_numbers_output = gr.Textbox(
                 label="Strongest Numbers (Sorted Lowest to Highest)",
                 value="",
                 lines=2,
-                visible=False
+                visible=False  # Hide the textbox
             )
 
     with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
@@ -3373,21 +3131,21 @@ with gr.Blocks() as demo:
                 with gr.Accordion("Sides of Zero", open=True):
                     sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
-    # Row 12: Save/Load Session (Collapsible)
+    # 11. Row 11: Save/Load Session (Collapsible)
     with gr.Accordion("Save/Load Session", open=False):
         with gr.Row():
             save_button = gr.Button("Save Session")
             load_input = gr.File(label="Upload Session")
         save_output = gr.File(label="Download Session")
 
-    # Update the CSS to style the new components
+    # CSS and Event Handlers
     gr.HTML("""
     <style>
-      /* Existing CSS... */
+      /* General Layout */
       .gr-row { margin: 0 !important; padding: 5px 0 !important; }
       .gr-column { margin: 0 !important; padding: 5px !important; }
       .gr-box { border-radius: 5px !important; }
-
+    
       /* Ensure Header Stays at the Top */
       #header-row {
           position: fixed !important;
@@ -3399,38 +3157,42 @@ with gr.Blocks() as demo:
           padding: 10px 0 !important;
           margin: 0 !important;
       }
-
+    
+      /* Add padding to the body to account for the fixed header */
       body {
-          padding-top: 80px !important;
+          padding-top: 80px !important; /* Adjust based on header height */
       }
-
+    
+      /* Header Styling */
       .header-title { text-align: center !important; font-size: 2.5em !important; margin-bottom: 5px !important; color: #333 !important; }
       .guide-link { display: block !important; text-align: center !important; font-size: 1.1em !important; color: #007bff !important; text-decoration: underline !important; margin-bottom: 10px !important; }
-
+    
+      /* Fix Selected Spins Label Cutoff */
       #selected-spins-row {
           width: 100% !important;
           max-width: none !important;
           overflow: visible !important;
       }
-      #selected-spins label {
-          white-space: normal !important;
-          width: 100% !important;
-          height: auto !important;
-          overflow: visible !important;
-          display: block !important;
-          background-color: #87CEEB;
-          color: black;
-          padding: 10px 5px !important;
-          border-radius: 3px;
-          line-height: 1.5em !important;
-          font-size: 14px !important;
-          margin-top: 5px !important;
-      }
+        #selected-spins label {
+            white-space: normal !important;
+            width: 100% !important;
+            height: auto !important;
+            overflow: visible !important;
+            display: block !important;
+            background-color: #87CEEB;
+            color: black;
+            padding: 10px 5px !important; /* Increased top/bottom padding */
+            border-radius: 3px;
+            line-height: 1.5em !important; /* Increased for better spacing */
+            font-size: 14px !important; /* Reduced font size */
+            margin-top: 5px !important; /* Added to shift text downward */
+        }
       #selected-spins {
           width: 100% !important;
           min-width: 800px !important;
       }
-
+    
+      /* Roulette Table */
       .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
       .roulette-button.red { background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
       .roulette-button.black { background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
@@ -3440,7 +3202,8 @@ with gr.Blocks() as demo:
       .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
       .roulette-table { display: flex !important; flex-direction: column !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
       .table-row { display: flex !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap !important; line-height: 0 !important; }
-
+    
+      /* Buttons */
       button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
       button.clear-spins-btn:hover { background-color: #cc0000 !important; }
       button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
@@ -3448,53 +3211,61 @@ with gr.Blocks() as demo:
       .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; width: 100% !important; box-sizing: border-box !important; }
       button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
       button.green-btn:hover { background-color: #218838 !important; }
+      /* Ensure columns have appropriate spacing */
       .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
-
+    
+      /* Compact Components */
       .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
       .long-slider .gr-box { width: 100% !important; }
+      /* Target the Accordion and its children */
       .gr-accordion { background-color: #ffffff !important; }
       .gr-accordion * { background-color: #ffffff !important; }
       .gr-accordion .gr-column { background-color: #ffffff !important; }
       .gr-accordion .gr-row { background-color: #ffffff !important; }
-
+    
+      /* Section Labels */
       #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
       #spin-analysis label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
       #strongest-numbers-table label { background-color: #E6E6FA !important; color: black !important; padding: 5px; border-radius: 3px; }
       #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
       #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
       #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
-
+      
+      /* Scrollable Tables */
       .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
-
+    
+      /* Spin Counter Styling */
       .spin-counter {
           font-size: 16px !important;
           font-weight: bold !important;
           color: #ffffff !important;
-          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important;
+          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
           padding: 8px 12px !important;
-          border: 2px solid #3498DB !important;
+          border: 2px solid #3498DB !important; /* Darker blue border */
           border-radius: 8px !important;
-          margin-top: 0 !important;
+          margin-top: 0 !important; /* Align with textbox */
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
-          transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important; /* Slightly stronger shadow */
+          transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
       }
       .spin-counter:hover {
-          transform: scale(1.05) !important;
-          box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+          transform: scale(1.05) !important; /* Slight zoom on hover */
+          box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
       }
-
+    
+      /* Last Spins Container */
       .last-spins-container {
-          background-color: #f5f5f5 !important;
-          border: 1px solid #d3d3d3 !important;
+          background-color: #f5f5f5 !important; /* Light gray background */
+          border: 1px solid #d3d3d3 !important; /* Subtle gray border */
           padding: 10px !important;
           border-radius: 5px !important;
           margin-top: 10px !important;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; /* Very light shadow */
       }
-
+    
+      /* Responsive Design */
       @media (max-width: 600px) {
           .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
           td, th { padding: 5px; font-size: 12px; }
@@ -3504,7 +3275,7 @@ with gr.Blocks() as demo:
           .header-title { font-size: 1.8em !important; }
           .guide-link { font-size: 0.9em !important; }
       }
-
+    
       #strongest-numbers-dropdown select {
           -webkit-appearance: menulist !important;
           -moz-appearance: menulist !important;
@@ -3519,7 +3290,7 @@ with gr.Blocks() as demo:
       }
       #strategy-dropdown select option:checked {
           font-weight: bold;
-          background-color: #e0e0ff;
+          background-color: #e0e0ff; /* Light blue to indicate selection */
           color: #000;
       }
       .betting-progression .gr-textbox { width: 100%; margin: 5px 0; }
@@ -3529,7 +3300,7 @@ with gr.Blocks() as demo:
     """)
     print("CSS Updated")
 
-    # Update Event Handlers
+# Event Handlers
     spins_textbox.change(
         fn=lambda x: (x, format_spins_as_html(x, last_spin_count.value)),
         inputs=spins_textbox,
@@ -3564,7 +3335,7 @@ with gr.Blocks() as demo:
 
     generate_spins_button.click(
         fn=generate_random_spins,
-        inputs=[gr.State(value="5"), spins_display, last_spin_count],
+        inputs=[gr.State(value="5"), spins_display, last_spin_count],  # Consolidated to use value="5" for consistency
         outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter]
     ).then(
         fn=format_spins_as_html,
@@ -3716,7 +3487,7 @@ with gr.Blocks() as demo:
     clear_last_spins_button.click(
         fn=clear_last_spins_display,
         inputs=[],
-        outputs=[last_spin_display, spin_counter]
+        outputs=[last_spin_display, spin_counter]  # Keep counter consistent
     )
 
     top_color_picker.change(
@@ -3736,8 +3507,7 @@ with gr.Blocks() as demo:
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     )
-
-    def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence, custom_rule):
+    def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence):
         state.bankroll = bankroll
         state.initial_bankroll = bankroll
         state.base_unit = base_unit
@@ -3751,88 +3521,30 @@ with gr.Blocks() as demo:
             except ValueError:
                 state.progression_state = [1, 2, 3, 4]
                 return bankroll, base_unit, base_unit, "Invalid sequence, using default [1, 2, 3, 4]", "Active"
-        elif progression == "Custom":
-            state.custom_progression_rule = custom_rule
         state.reset_progression()
         return state.bankroll, state.current_bet, state.next_bet, state.message, state.status
 
-    def toggle_progression_inputs(progression):
-        return (
-            gr.update(visible=progression == "Labouchere"),
-            gr.update(visible=progression == "Custom")
-        )
-
-    bankroll_input.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, custom_progression_input],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    base_unit_input.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, custom_progression_input],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    stop_loss_input.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, custom_progression_input],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    stop_win_input.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, custom_progression_input],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    bet_type_dropdown.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, custom_progression_input],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    progression_dropdown.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, custom_progression_input],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    ).then(
-        fn=toggle_progression_inputs,
-        inputs=progression_dropdown,
-        outputs=[labouchere_sequence, custom_progression_input]
-    )
-    labouchere_sequence.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, custom_progression_input],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    custom_progression_input.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, custom_progression_input],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-
-    win_button.click(
-        fn=lambda: state.update_progression(True),
-        inputs=[],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    lose_button.click(
-        fn=lambda: state.update_progression(False),
-        inputs=[],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
+    def toggle_labouchere(progression):
+        return gr.update(visible=progression == "Labouchere")
+    
+    # Config updates
+    bankroll_input.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    base_unit_input.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    stop_loss_input.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    stop_win_input.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    bet_type_dropdown.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    progression_dropdown.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]).then(fn=toggle_labouchere, inputs=progression_dropdown, outputs=labouchere_sequence)
+    labouchere_sequence.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    
+    # Win/Lose actions
+    win_button.click(fn=lambda: state.update_progression(True), inputs=[], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    lose_button.click(fn=lambda: state.update_progression(False), inputs=[], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    
+    # Reset
     reset_progression_button.click(
-        fn=lambda: state.reset_progression(),
-        inputs=[],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-
-    # New Event Handler for Player Submission
-    submit_progression_button.click(
-        fn=send_email_progression,
-        inputs=[player_progression_input],
-        outputs=[submission_status]
-    ).then(
-        fn=lambda: "",
-        inputs=[],
-        outputs=[player_progression_input]
-    )
-
+    fn=lambda: state.reset_progression(),
+    inputs=[],
+    outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+)
 # Launch the interface
 demo.launch()
