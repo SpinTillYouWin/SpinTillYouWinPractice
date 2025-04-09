@@ -3063,7 +3063,7 @@ with gr.Blocks() as demo:
             )
             gr.HTML(
                 '''
-                <a href="https://drive.google.com/file/d/1o9H8Lakx1i4_OnDrvHRj_6-KHsOWufjF/view?usp=sharing" target="_blank" class="guide-link">🎥 Roulette Analyzer Guide + Video Instructions</a>
+                <a href="https://drive.google.com/file/d/1o9H8Lakx1i4_OnDrvHRj_6-KHsOWufjF/view?usp=sharing" target="_blank" class="guide-link" style="margin-right: 10px;">🎥 Roulette Analyzer Guide + Video Instructions</a>
                 <button id="start-tour-btn" onclick="startTour()" style="margin-left: 10px; padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Take the Tour!</button>
                 '''
             )
@@ -3426,16 +3426,25 @@ with gr.Blocks() as demo:
           background-color: white !important;
           padding: 10px 0 !important;
           margin: 0 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          flex-wrap: wrap !important;
       }
     
       /* Add padding to the body to account for the fixed header */
       body {
-          padding-top: 80px !important; /* Adjust based on header height */
+          padding-top: 120px !important; /* Increased to account for taller header */
+      }
+    
+      /* Ensure content below header is not overlapped */
+      .roulette-table {
+          margin-top: 120px !important; /* Match body padding-top */
       }
     
       /* Header Styling */
       .header-title { text-align: center !important; font-size: 2.5em !important; margin-bottom: 5px !important; color: #333 !important; }
-      .guide-link { display: block !important; text-align: center !important; font-size: 1.1em !important; color: #007bff !important; text-decoration: underline !important; margin-bottom: 10px !important; }
+      .guide-link { display: inline !important; font-size: 1.1em !important; color: #007bff !important; text-decoration: underline !important; }
     
       /* Fix Selected Spins Label Cutoff */
       #selected-spins-row {
