@@ -2478,77 +2478,59 @@ def update_spin_counter():
 def top_numbers_with_neighbours_tiered():
     recommendations = []
     straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+    straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
 
     if straight_up_df.empty:
         return "<p>Top Numbers with Neighbours (Tiered): No numbers have hit yet.</p>"
 
-    # Start with the HTML table for Strongest Numbers
-    table_html = '<table border="1" style="border-collapse: collapse; text-align: center; font-family: Arial, sans-serif;">'
-    table_html += "<tr><th>Hit</th><th>Left N.</th><th>Right N.</th></tr>"  # Table header
-    for _, row in straight_up_df.iterrows():
-        num = str(row["Number"])
-        left, right = current_neighbors.get(row["Number"], ("", ""))
-        left = str(left) if left is not None else ""
-        right = str(right) if right is not None else ""
-        table_html += f"<tr><td>{num}</td><td>{left}</td><td>{right}</td></tr>"
-    table_html += "</table>"
-
-    # Wrap the table in a div with a heading
-    recommendations.append("<h3>Strongest Numbers:</h3>")
-    recommendations.append(table_html)
-
+    # Take top 8 numbers by score (or fewer if less than 8 have hits)
     num_to_take = min(8, len(straight_up_df))
     top_numbers = straight_up_df["Number"].head(num_to_take).tolist()
 
-    all_numbers = set()
-    number_scores = {}
-    for num in top_numbers:
-        neighbors = current_neighbors.get(num, (None, None))
-        left, right = neighbors
-        all_numbers.add(num)
-        number_scores[num] = state.scores[num]
-        if left is not None:
-            all_numbers.add(left)
-        if right is not None:
-            all_numbers.add(right)
-
+    # Collect numbers and their neighbors into groups
     number_groups = []
     for num in top_numbers:
         left, right = current_neighbors.get(num, (None, None))
-        group = [num]
+        group = [str(num)]
         if left is not None:
-            group.append(left)
+            group.append(str(left))
         if right is not None:
-            group.append(right)
+            group.append(str(right))
         number_groups.append((state.scores[num], group))
 
+    # Sort groups by the score of the main number
     number_groups.sort(key=lambda x: x[0], reverse=True)
+
+    # Flatten into ordered list, up to 24 numbers (8 groups x 3)
     ordered_numbers = []
     for _, group in number_groups:
         ordered_numbers.extend(group)
-
-    ordered_numbers = ordered_numbers[:24]
+    ordered_numbers = ordered_numbers[:24]  # Cap at 24 (8 per tier)
+    
+    # Split into tiers
     top_8 = ordered_numbers[:8]
     next_8 = ordered_numbers[8:16]
     last_8 = ordered_numbers[16:24]
 
-    recommendations.append("<h3>Top Numbers with Neighbours (Tiered):</h3>")
-    recommendations.append("<p><strong>Top Tier (Yellow):</strong></p>")
-    for i, num in enumerate(top_8, 1):
-        score = number_scores.get(num, "Neighbor")
-        recommendations.append(f"<p>{i}. Number {num} (Score: {score})</p>")
+    # Build HTML table matching Strongest Numbers format
+    table_html = '<table border="1" style="border-collapse: collapse; text-align: center; font-family: Arial, sans-serif;">'
+    table_html += "<tr><th>Hit</th><th>Left N.</th><th>Right N.</th><th>Score</th></tr>"
+    for num in top_numbers:
+        score = state.scores[num]
+        left, right = current_neighbors.get(num, ("", ""))
+        left = str(left) if left is not None else ""
+        right = str(right) if right is not None else ""
+        table_html += f"<tr><td>{num}</td><td>{left}</td><td>{right}</td><td>{score}</td></tr>"
+    table_html += "</table>"
 
-    recommendations.append("<p><strong>Second Tier (Blue):</strong></p>")
-    for i, num in enumerate(next_8, 1):
-        score = number_scores.get(num, "Neighbor")
-        recommendations.append(f"<p>{i}. Number {num} (Score: {score})</p>")
+    # Add tiered recommendations
+    recommendations.append("<h3>Top Numbers with Neighbours (Tiered)</h3>")
+    recommendations.append(table_html)
+    recommendations.append("<p><strong>Top Tier (Yellow):</strong> " + ", ".join(top_8) + "</p>")
+    recommendations.append("<p><strong>Second Tier (Cyan):</strong> " + (", ".join(next_8) if next_8 else "None") + "</p>")
+    recommendations.append("<p><strong>Third Tier (Green):</strong> " + (", ".join(last_8) if last_8 else "None") + "</p>")
 
-    recommendations.append("<p><strong>Third Tier (Green):</strong></p>")
-    for i, num in enumerate(last_8, 1):
-        score = number_scores.get(num, "Neighbor")
-        recommendations.append(f"<p>{i}. Number {num} (Score: {score})</p>")
-
-    return "\n".join(recommendations)
+    return "".join(recommendations)
 
 def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
     """Recommend numbers and their neighbors based on hit frequency."""
