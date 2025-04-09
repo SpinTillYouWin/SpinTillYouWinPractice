@@ -3096,7 +3096,7 @@ with gr.Blocks() as demo:
         with gr.Column(scale=1, min_width=200):
             spin_counter  # Restore side-by-side layout with styling
     
-    # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
+        # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
         with gr.Column(scale=2):
             analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
@@ -3105,7 +3105,7 @@ with gr.Blocks() as demo:
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
 
-        # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
+    # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table")
@@ -3127,13 +3127,13 @@ with gr.Blocks() as demo:
                     interactive=True
                 )
                 hot_numbers_input = gr.Textbox(
-                    label="Hot Numbers (e.g., 5, 12, 23)",
-                    placeholder="Enter comma-separated numbers",
+                    label="Hot Numbers (e.g., 5:10, 12:9, 23:8)",
+                    placeholder="Enter as 'number:percentage, number:percentage'",
                     interactive=True
                 )
                 cold_numbers_input = gr.Textbox(
-                    label="Cold Numbers (e.g., 0, 7, 19)",
-                    placeholder="Enter comma-separated numbers",
+                    label="Cold Numbers (e.g., 0:0, 7:1, 19:1)",
+                    placeholder="Enter as 'number:percentage, number:percentage'",
                     interactive=True
                 )
                 even_odd_input = gr.Textbox(
@@ -3219,57 +3219,34 @@ with gr.Blocks() as demo:
                 base_unit_input = gr.Number(label="Base Unit", value=10)
                 stop_loss_input = gr.Number(label="Stop Loss", value=-500)
                 stop_win_input = gr.Number(label="Stop Win", value=200)
-        with gr.Accordion("Casino Data Insights", open=False):
-            spins_count_dropdown = gr.Dropdown(
-                label="Past Spins Count",
-                choices=["30", "50", "100", "200", "300", "500"],
-                value="100",
-                interactive=True
-            )
-            hot_numbers_input = gr.Textbox(
-                label="Hot Numbers (e.g., 5:10, 12:9, 23:8)",
-                placeholder="Enter as 'number:percentage, number:percentage'",
-                interactive=True
-            )
-            cold_numbers_input = gr.Textbox(
-                label="Cold Numbers (e.g., 0:0, 7:1, 19:1)",
-                placeholder="Enter as 'number:percentage, number:percentage'",
-                interactive=True
-            )
-            even_odd_input = gr.Textbox(
-                label="Even vs Odd % (e.g., 52 vs 48)",
-                placeholder="Enter as 'Even % vs Odd %'",
-                interactive=True
-            )
-            red_black_input = gr.Textbox(
-                label="Red vs Black % (e.g., 49 vs 51)",
-                placeholder="Enter as 'Red % vs Black %'",
-                interactive=True
-            )
-            low_high_input = gr.Textbox(
-                label="Low vs High % (e.g., 47 vs 53)",
-                placeholder="Enter as 'Low % vs High %'",
-                interactive=True
-            )
-            dozens_input = gr.Textbox(
-                label="Dozens % (e.g., 35 vs 33 vs 32)",
-                placeholder="Enter as '1st % vs 2nd % vs 3rd %'",
-                interactive=True
-            )
-            columns_input = gr.Textbox(
-                label="Columns % (e.g., 34 vs 33 vs 33)",
-                placeholder="Enter as '1st % vs 2nd % vs 3rd %'",
-                interactive=True
-            )
-            use_winners_checkbox = gr.Checkbox(
-                label="Highlight Casino Winners",
-                value=False,
-                interactive=True
-            )
-            casino_data_output = gr.HTML(
-                label="Casino Data Insights",
-                value="<p>No casino data entered yet.</p>"
-            )
+            with gr.Row():
+                bet_type_dropdown = gr.Dropdown(
+                    label="Bet Type",
+                    choices=["Even Money", "Dozens", "Columns", "Straight Bets"],
+                    value="Even Money"
+                )
+                progression_dropdown = gr.Dropdown(
+                    label="Progression",
+                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert"],
+                    value="Martingale"
+                )
+                labouchere_sequence = gr.Textbox(
+                    label="Labouchere Sequence (comma-separated)",
+                    value="1, 2, 3, 4",
+                    visible=False
+                )
+            with gr.Row():
+                win_button = gr.Button("Win")
+                lose_button = gr.Button("Lose")
+                reset_progression_button = gr.Button("Reset Progression")
+            with gr.Row():
+                bankroll_output = gr.Textbox(label="Current Bankroll", value="1000", interactive=False)
+                current_bet_output = gr.Textbox(label="Current Bet", value="10", interactive=False)
+                next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
+            with gr.Row():
+                message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
+                status_output = gr.Textbox(label="Status", value="Active", interactive=False)
+
     # 8. Row 8: Color Pickers
     with gr.Row():
         top_color_picker = gr.ColorPicker(
@@ -3751,65 +3728,59 @@ with gr.Blocks() as demo:
     def toggle_labouchere(progression):
         return gr.update(visible=progression == "Labouchere")
 
-    # Casino data event handlers (from Suggestion 4)
-    spins_count_dropdown.change(
-        fn=update_casino_data,
-        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
-        outputs=[casino_data_output]
+    bankroll_input.change(
+        fn=update_config,
+        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
     )
-    hot_numbers_input.change(
-        fn=update_casino_data,
-        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
-        outputs=[casino_data_output]
+    base_unit_input.change(
+        fn=update_config,
+        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
     )
-    cold_numbers_input.change(
-        fn=update_casino_data,
-        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
-        outputs=[casino_data_output]
+    stop_loss_input.change(
+        fn=update_config,
+        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
     )
-    even_odd_input.change(
-        fn=update_casino_data,
-        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
-        outputs=[casino_data_output]
+    stop_win_input.change(
+        fn=update_config,
+        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
     )
-    red_black_input.change(
-        fn=update_casino_data,
-        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
-        outputs=[casino_data_output]
+    bet_type_dropdown.change(
+        fn=update_config,
+        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
     )
-    low_high_input.change(
-        fn=update_casino_data,
-        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
-        outputs=[casino_data_output]
-    )
-    dozens_input.change(
-        fn=update_casino_data,
-        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
-        outputs=[casino_data_output]
-    )
-    columns_input.change(
-        fn=update_casino_data,
-        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
-        outputs=[casino_data_output]
-    )
-    use_winners_checkbox.change(
-        fn=update_casino_data,
-        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
-        outputs=[casino_data_output]
+    progression_dropdown.change(
+        fn=update_config,
+        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
     ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
+        fn=toggle_labouchere,
+        inputs=progression_dropdown,
+        outputs=labouchere_sequence
     )
-    reset_casino_data_button.click(
-        fn=reset_casino_data,
+    labouchere_sequence.change(
+        fn=update_config,
+        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+    )
+    win_button.click(
+        fn=lambda: state.update_progression(True),
         inputs=[],
-        outputs=[
-            spins_count_dropdown, hot_numbers_input, cold_numbers_input,
-            even_odd_input, red_black_input, low_high_input,
-            dozens_input, columns_input, use_winners_checkbox,
-            casino_data_output
-        ]
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+    )
+    lose_button.click(
+        fn=lambda: state.update_progression(False),
+        inputs=[],
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+    )
+    reset_progression_button.click(
+        fn=lambda: state.reset_progression(),
+        inputs=[],
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
