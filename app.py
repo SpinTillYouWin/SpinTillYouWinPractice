@@ -2959,6 +2959,39 @@ with gr.Blocks() as demo:
 
     # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
     with gr.Row():
+        with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
+    with gr.Row():
+        bankroll_input = gr.Number(label="Bankroll", value=1000)
+        base_unit_input = gr.Number(label="Base Unit", value=10)
+        stop_loss_input = gr.Number(label="Stop Loss", value=-500)
+        stop_win_input = gr.Number(label="Stop Win", value=200)
+    with gr.Row():
+        bet_type_dropdown = gr.Dropdown(
+            label="Bet Type",
+            choices=["Even Money", "Dozens", "Columns", "Straight Bets"],
+            value="Even Money"
+        )
+        progression_dropdown = gr.Dropdown(
+            label="Progression",
+            choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert"],
+            value="Martingale"
+        )
+        labouchere_sequence = gr.Textbox(
+            label="Labouchere Sequence (comma-separated)",
+            value="1, 2, 3, 4",
+            visible=False
+        )
+    with gr.Row():
+        win_button = gr.Button("Win")
+        lose_button = gr.Button("Lose")
+        reset_progression_button = gr.Button("Reset Progression")
+    with gr.Row():
+        bankroll_output = gr.Textbox(label="Current Bankroll", value="1000", interactive=False)
+        current_bet_output = gr.Textbox(label="Current Bet", value="10", interactive=False)
+        next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
+    with gr.Row():
+        message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
+        status_output = gr.Textbox(label="Status", value="Active", interactive=False)
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table")
             dynamic_table_output = gr.HTML(
@@ -3255,6 +3288,9 @@ with gr.Blocks() as demo:
           background-color: #e0e0ff; /* Light blue to indicate selection */
           color: #000;
       }
+      .betting-progression .gr-textbox { width: 100%; margin: 5px 0; }
+      .betting-progression .gr-button { width: 100px; margin: 5px; }
+      .betting-progression .gr-row { display: flex; flex-wrap: wrap; gap: 10px; }
     </style>
     """)
     print("CSS Updated")
@@ -3466,6 +3502,41 @@ with gr.Blocks() as demo:
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     )
+    def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence):
+        state.bankroll = bankroll
+        state.initial_bankroll = bankroll
+        state.base_unit = base_unit
+        state.stop_loss = stop_loss
+        state.stop_win = stop_win
+        state.bet_type = bet_type
+        state.progression = progression
+        if progression == "Labouchere":
+            try:
+                state.progression_state = [int(x.strip()) for x in sequence.split(",")]
+            except ValueError:
+                state.progression_state = [1, 2, 3, 4]
+                return bankroll, base_unit, base_unit, "Invalid sequence, using default [1, 2, 3, 4]", "Active"
+        state.reset_progression()
+        return state.bankroll, state.current_bet, state.next_bet, state.message, state.status
+
+    def toggle_labouchere(progression):
+        return gr.update(visible=progression == "Labouchere")
+    
+    # Config updates
+    bankroll_input.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    base_unit_input.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    stop_loss_input.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    stop_win_input.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    bet_type_dropdown.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    progression_dropdown.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]).then(fn=toggle_labouchere, inputs=progression_dropdown, outputs=labouchere_sequence)
+    labouchere_sequence.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    
+    # Win/Lose actions
+    win_button.click(fn=lambda: state.update_progression(True), inputs=[], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    lose_button.click(fn=lambda: state.update_progression(False), inputs=[], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    
+    # Reset
+    reset_progression_button.click(fn=lambda: (state.reset_progression(), (state.bankroll, state.current_bet, state.next_bet, state.message, state.status)), inputs=[], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
 
 # Launch the interface
 demo.launch()
