@@ -2957,65 +2957,32 @@ with gr.Blocks() as demo:
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
 
-    # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
+        # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
     with gr.Row():
-        with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
-    with gr.Row():
-        bankroll_input = gr.Number(label="Bankroll", value=1000)
-        base_unit_input = gr.Number(label="Base Unit", value=10)
-        stop_loss_input = gr.Number(label="Stop Loss", value=-500)
-        stop_win_input = gr.Number(label="Stop Win", value=200)
-    with gr.Row():
-        bet_type_dropdown = gr.Dropdown(
-            label="Bet Type",
-            choices=["Even Money", "Dozens", "Columns", "Straight Bets"],
-            value="Even Money"
-        )
-        progression_dropdown = gr.Dropdown(
-            label="Progression",
-            choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert"],
-            value="Martingale"
-        )
-        labouchere_sequence = gr.Textbox(
-            label="Labouchere Sequence (comma-separated)",
-            value="1, 2, 3, 4",
-            visible=False
-        )
-    with gr.Row():
-        win_button = gr.Button("Win")
-        lose_button = gr.Button("Lose")
-        reset_progression_button = gr.Button("Reset Progression")
-    with gr.Row():
-        bankroll_output = gr.Textbox(label="Current Bankroll", value="1000", interactive=False)
-        current_bet_output = gr.Textbox(label="Current Bet", value="10", interactive=False)
-        next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
-    with gr.Row():
-        message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
-        status_output = gr.Textbox(label="Status", value="Active", interactive=False)
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table")
             dynamic_table_output = gr.HTML(
                 label="Dynamic Table",
-                value=create_dynamic_table(strategy_name="Best Even Money Bets")  # Initial value with default strategy
+                value=create_dynamic_table(strategy_name="Best Even Money Bets")
             )
         with gr.Column(scale=1):
             gr.Markdown("### Strategy Recommendations")
             strategy_output = gr.HTML(
                 label="Strategy Recommendations",
-                value=show_strategy_recommendations("Best Even Money Bets", 2, 1)  # Initial value with default strategy
+                value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
             )
         with gr.Column(scale=1, min_width=200):
             category_dropdown = gr.Dropdown(
                 label="Select Category",
                 choices=category_choices,
-                value="Even Money Strategies",  # Already set correctly
+                value="Even Money Strategies",
                 allow_custom_value=False,
                 elem_id="select-category"
             )
             strategy_dropdown = gr.Dropdown(
                 label="Select Strategy",
                 choices=strategy_categories["Even Money Strategies"],
-                value="Best Even Money Bets",  # Already set correctly
+                value="Best Even Money Bets",
                 allow_custom_value=False
             )
             reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
@@ -3040,6 +3007,42 @@ with gr.Blocks() as demo:
                 elem_classes="long-slider"
             )
             reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
+
+    # Betting Progression Tracker (New Row)
+    with gr.Row():
+        with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
+            with gr.Row():
+                bankroll_input = gr.Number(label="Bankroll", value=1000)
+                base_unit_input = gr.Number(label="Base Unit", value=10)
+                stop_loss_input = gr.Number(label="Stop Loss", value=-500)
+                stop_win_input = gr.Number(label="Stop Win", value=200)
+            with gr.Row():
+                bet_type_dropdown = gr.Dropdown(
+                    label="Bet Type",
+                    choices=["Even Money", "Dozens", "Columns", "Straight Bets"],
+                    value="Even Money"
+                )
+                progression_dropdown = gr.Dropdown(
+                    label="Progression",
+                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert"],
+                    value="Martingale"
+                )
+                labouchere_sequence = gr.Textbox(
+                    label="Labouchere Sequence (comma-separated)",
+                    value="1, 2, 3, 4",
+                    visible=False
+                )
+            with gr.Row():
+                win_button = gr.Button("Win")
+                lose_button = gr.Button("Lose")
+                reset_progression_button = gr.Button("Reset Progression")
+            with gr.Row():
+                bankroll_output = gr.Textbox(label="Current Bankroll", value="1000", interactive=False)
+                current_bet_output = gr.Textbox(label="Current Bet", value="10", interactive=False)
+                next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
+            with gr.Row():
+                message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
+                status_output = gr.Textbox(label="Status", value="Active", interactive=False)
 
     # 8. Row 8: Color Pickers
     with gr.Row():
