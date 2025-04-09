@@ -53,6 +53,7 @@ def validate_roulette_data():
 
 class RouletteState:
     def __init__(self):
+            def __init__(self):
         self.scores = {n: 0 for n in range(37)}
         self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
         self.dozen_scores = {name: 0 for name in DOZENS.keys()}
@@ -65,6 +66,19 @@ class RouletteState:
         self.selected_numbers = set()
         self.last_spins = []
         self.spin_history = []  # Tracks each spin's effects for undoing
+
+        # Casino data storage
+        self.casino_data = {
+            "spins_count": 100,  # Default number of spins
+            "hot_numbers": {},   # {number: percentage, e.g., 5: 10.0}
+            "cold_numbers": {},  # {number: percentage, e.g., 0: 0.0}
+            "even_odd": {"Even": 0.0, "Odd": 0.0},
+            "red_black": {"Red": 0.0, "Black": 0.0},
+            "low_high": {"Low": 0.0, "High": 0.0},
+            "dozens": {"1st Dozen": 0.0, "2nd Dozen": 0.0, "3rd Dozen": 0.0},
+            "columns": {"1st Column": 0.0, "2nd Column": 0.0, "3rd Column": 0.0}
+        }
+        self.use_casino_winners = False  # Toggle to highlight casino winners
 
         # New betting progression fields
         self.bankroll = 1000
@@ -355,7 +369,9 @@ def save_session():
         "corner_scores": state.corner_scores,
         "six_line_scores": state.six_line_scores,
         "split_scores": state.split_scores,
-        "side_scores": state.side_scores
+        "side_scores": state.side_scores,
+        "casino_data": state.casino_data,
+        "use_casino_winners": state.use_casino_winners
     }
     with open("session.json", "w") as f:
         json.dump(session_data, f)
@@ -382,10 +398,21 @@ def load_session(file, strategy_name, neighbours_count, strong_numbers_count, *c
         state.six_line_scores = session_data.get("six_line_scores", {name: 0 for name in SIX_LINES.keys()})
         state.split_scores = session_data.get("split_scores", {name: 0 for name in SPLITS.keys()})
         state.side_scores = session_data.get("side_scores", {"Left Side of Zero": 0, "Right Side of Zero": 0})
+        state.casino_data = session_data.get("casino_data", {
+            "spins_count": 100,
+            "hot_numbers": {},
+            "cold_numbers": {},
+            "even_odd": {"Even": 0.0, "Odd": 0.0},
+            "red_black": {"Red": 0.0, "Black": 0.0},
+            "low_high": {"Low": 0.0, "High": 0.0},
+            "dozens": {"1st Dozen": 0.0, "2nd Dozen": 0.0, "3rd Dozen": 0.0},
+            "columns": {"1st Column": 0.0, "2nd Column": 0.0, "3rd Column": 0.0}
+        })
+        state.use_casino_winners = session_data.get("use_casino_winners", False)
 
         new_spins = ", ".join(state.last_spins)
         spin_analysis_output = f"Session loaded successfully with {len(state.last_spins)} spins."
-
+        
         # Compute UI outputs
         even_money_output = "Even Money Bets:\n" + "\n".join(f"{name}: {score}" for name, score in state.even_money_scores.items())
         dozens_output = "Dozens:\n" + "\n".join(f"{name}: {score}" for name, score in state.dozen_scores.items())
@@ -984,6 +1011,18 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     if all(v is None for v in [trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column]) and not number_highlights:
         return "<p>Please analyze some spins first to see highlights on the dynamic table.</p>"
 
+    # Define casino winners if highlighting is enabled
+    casino_winners = {"numbers": set(), "even_money": set(), "dozens": set(), "columns": set()}
+    if state.use_casino_winners:
+        casino_winners["numbers"] = set(state.casino_data["hot_numbers"].keys())
+        casino_winners["even_money"] = {
+            max(state.casino_data["even_odd"], key=state.casino_data["even_odd"].get),
+            max(state.casino_data["red_black"], key=state.casino_data["red_black"].get),
+            max(state.casino_data["low_high"], key=state.casino_data["low_high"].get)
+        }
+        casino_winners["dozens"] = {max(state.casino_data["dozens"], key=state.casino_data["dozens"].get)}
+        casino_winners["columns"] = {max(state.casino_data["columns"], key=state.casino_data["columns"].get)}
+
     table_layout = [
         ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
         ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
@@ -1006,58 +1045,165 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
             else:
                 base_color = colors.get(num, "black")
                 highlight_color = number_highlights.get(num, base_color)
-                # Updated styles for better contrast
-                border_style = "3px solid black"  # Thicker border
-                text_style = "color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"  # Bold text with shadow
+                border_style = "3px dashed #FFD700" if num in casino_winners["numbers"] else "3px solid black"
+                text_style = "color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"
                 html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;">{num}</td>'
         if row_idx == 0:
             bg_color = top_color if trending_column == "3rd Column" else (middle_color if second_column == "3rd Column" else "white")
-            html += f'<td style="background-color: {bg_color}; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">3rd Column</td>'
+            border_style = "3px dashed #FFD700" if "3rd Column" in casino_winners["columns"] else "1px solid black"
+            html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">3rd Column</td>'
         elif row_idx == 1:
             bg_color = top_color if trending_column == "2nd Column" else (middle_color if second_column == "2nd Column" else "white")
-            html += f'<td style="background-color: {bg_color}; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">2nd Column</td>'
+            border_style = "3px dashed #FFD700" if "2nd Column" in casino_winners["columns"] else "1px solid black"
+            html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">2nd Column</td>'
         elif row_idx == 2:
             bg_color = top_color if trending_column == "1st Column" else (middle_color if second_column == "1st Column" else "white")
-            html += f'<td style="background-color: {bg_color}; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">1st Column</td>'
+            border_style = "3px dashed #FFD700" if "1st Column" in casino_winners["columns"] else "1px solid black"
+            html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">1st Column</td>'
         html += "</tr>"
 
     html += "<tr>"
     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
     bg_color = top_color if trending_even_money == "Low" else (middle_color if second_even_money == "Low" else (lower_color if third_even_money == "Low" else "white"))
-    html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">Low (1 to 18)</td>'
+    border_style = "3px dashed #FFD700" if "Low" in casino_winners["even_money"] else "1px solid black"
+    html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">Low (1 to 18)</td>'
     bg_color = top_color if trending_even_money == "High" else (middle_color if second_even_money == "High" else (lower_color if third_even_money == "High" else "white"))
-    html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">High (19 to 36)</td>'
+    border_style = "3px dashed #FFD700" if "High" in casino_winners["even_money"] else "1px solid black"
+    html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">High (19 to 36)</td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
 
     html += "<tr>"
     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
     bg_color = top_color if trending_dozen == "1st Dozen" else (middle_color if second_dozen == "1st Dozen" else "white")
-    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">1st Dozen</td>'
+    border_style = "3px dashed #FFD700" if "1st Dozen" in casino_winners["dozens"] else "1px solid black"
+    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">1st Dozen</td>'
     bg_color = top_color if trending_dozen == "2nd Dozen" else (middle_color if second_dozen == "2nd Dozen" else "white")
-    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">2nd Dozen</td>'
+    border_style = "3px dashed #FFD700" if "2nd Dozen" in casino_winners["dozens"] else "1px solid black"
+    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">2nd Dozen</td>'
     bg_color = top_color if trending_dozen == "3rd Dozen" else (middle_color if second_dozen == "3rd Dozen" else "white")
-    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">3rd Dozen</td>'
+    border_style = "3px dashed #FFD700" if "3rd Dozen" in casino_winners["dozens"] else "1px solid black"
+    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">3rd Dozen</td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
 
     html += "<tr>"
     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
     bg_color = top_color if trending_even_money == "Odd" else (middle_color if second_even_money == "Odd" else (lower_color if third_even_money == "Odd" else "white"))
+    border_style = "3px dashed #FFD700" if "Odd" in casino_winners["even_money"] else "1px solid black"
     html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
-    html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">ODD</td>'
+    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">ODD</td>'
     bg_color = top_color if trending_even_money == "Red" else (middle_color if second_even_money == "Red" else (lower_color if third_even_money == "Red" else "white"))
-    html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">RED</td>'
+    border_style = "3px dashed #FFD700" if "Red" in casino_winners["even_money"] else "1px solid black"
+    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">RED</td>'
     bg_color = top_color if trending_even_money == "Black" else (middle_color if second_even_money == "Black" else (lower_color if third_even_money == "Black" else "white"))
-    html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">BLACK</td>'
+    border_style = "3px dashed #FFD700" if "Black" in casino_winners["even_money"] else "1px solid black"
+    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">BLACK</td>'
     bg_color = top_color if trending_even_money == "Even" else (middle_color if second_even_money == "Even" else (lower_color if third_even_money == "Even" else "white"))
-    html += f'<td style="background-color: {bg_color}; color: black; border-color: black; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">EVEN</td>'
+    border_style = "3px dashed #FFD700" if "Even" in casino_winners["even_money"] else "1px solid black"
+    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">EVEN</td>'
     html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
 
     html += "</table>"
     return html
+
+def update_casino_data(spins_count, hot_nums, cold_nums, even_odd, red_black, low_high, dozens, columns, use_winners):
+    """Parse casino data inputs, update state, and generate HTML output."""
+    try:
+        state.casino_data["spins_count"] = int(spins_count)
+        state.use_casino_winners = use_winners
+
+        # Parse Hot Numbers with percentages
+        state.casino_data["hot_numbers"] = {}
+        if hot_nums and hot_nums.strip():
+            for pair in hot_nums.split(","):
+                num, perc = pair.strip().split(":")
+                n = int(num.strip())
+                p = float(perc.strip())
+                if not (0 <= n <= 36):
+                    raise ValueError(f"Hot number {n} out of range (0-36)")
+                if not (0 <= p <= 100):
+                    raise ValueError(f"Hot number percentage {p} out of range (0-100)")
+                state.casino_data["hot_numbers"][n] = p
+
+        # Parse Cold Numbers with percentages
+        state.casino_data["cold_numbers"] = {}
+        if cold_nums and cold_nums.strip():
+            for pair in cold_nums.split(","):
+                num, perc = pair.strip().split(":")
+                n = int(num.strip())
+                p = float(perc.strip())
+                if not (0 <= n <= 36):
+                    raise ValueError(f"Cold number {n} out of range (0-36)")
+                if not (0 <= p <= 100):
+                    raise ValueError(f"Cold number percentage {p} out of range (0-100)")
+                state.casino_data["cold_numbers"][n] = p
+
+        # Parse Percentage Pairs/Triplets
+        def parse_percentages(input_str, keys, expected_len, category):
+            if not input_str or not input_str.strip():
+                return {k: 0.0 for k in keys}
+            percentages = [float(p.strip()) for p in input_str.split("vs")]
+            if len(percentages) != expected_len:
+                raise ValueError(f"{category} must have {expected_len} percentages")
+            total = sum(percentages)
+            if not 99 <= total <= 101:  # Allow 1% rounding error
+                raise ValueError(f"{category} percentages must sum to ~100%, got {total}%")
+            return dict(zip(keys, percentages))
+
+        state.casino_data["even_odd"] = parse_percentages(even_odd, ["Even", "Odd"], 2, "Even vs Odd")
+        state.casino_data["red_black"] = parse_percentages(red_black, ["Red", "Black"], 2, "Red vs Black")
+        state.casino_data["low_high"] = parse_percentages(low_high, ["Low", "High"], 2, "Low vs High")
+        state.casino_data["dozens"] = parse_percentages(dozens, ["1st Dozen", "2nd Dozen", "3rd Dozen"], 3, "Dozens")
+        state.casino_data["columns"] = parse_percentages(columns, ["1st Column", "2nd Column", "3rd Column"], 3, "Columns")
+
+        # Generate HTML Output
+        output = f"<h4>Casino Data Insights (Last {spins_count} Spins):</h4>"
+        output += f"<p>Hot Numbers: {', '.join(f'{n} ({p:.1f}%)' for n, p in state.casino_data['hot_numbers'].items()) or 'None'}</p>"
+        output += f"<p>Cold Numbers: {', '.join(f'{n} ({p:.1f}%)' for n, p in state.casino_data['cold_numbers'].items()) or 'None'}</p>"
+        for key, name in [("even_odd", "Even vs Odd"), ("red_black", "Red vs Black"), ("low_high", "Low vs High")]:
+            winner = max(state.casino_data[key], key=state.casino_data[key].get)
+            output += f"<p>{name}: " + " vs ".join(
+                f"<b>{v:.1f}%</b>" if k == winner else f"{v:.1f}%" for k, v in state.casino_data[key].items()
+            ) + f" (Winner: {winner})</p>"
+        for key, name in [("dozens", "Dozens"), ("columns", "Columns")]:
+            winner = max(state.casino_data[key], key=state.casino_data[key].get)
+            output += f"<p>{name}: " + " vs ".join(
+                f"<b>{v:.1f}%</b>" if k == winner else f"{v:.1f}%" for k, v in state.casino_data[key].items()
+            ) + f" (Winner: {winner})</p>"
+        return output
+    except ValueError as e:
+        return f"<p>Error: {str(e)}</p>"
+    except Exception as e:
+        return f"<p>Unexpected error parsing casino data: {str(e)}</p>"
+        
+def reset_casino_data():
+    """Reset casino data to defaults and clear UI inputs."""
+    state.casino_data = {
+        "spins_count": 100,
+        "hot_numbers": {},
+        "cold_numbers": {},
+        "even_odd": {"Even": 0.0, "Odd": 0.0},
+        "red_black": {"Red": 0.0, "Black": 0.0},
+        "low_high": {"Low": 0.0, "High": 0.0},
+        "dozens": {"1st Dozen": 0.0, "2nd Dozen": 0.0, "3rd Dozen": 0.0},
+        "columns": {"1st Column": 0.0, "2nd Column": 0.0, "3rd Column": 0.0}
+    }
+    state.use_casino_winners = False
+    return (
+        "100",  # spins_count_dropdown
+        "",     # hot_numbers_input
+        "",     # cold_numbers_input
+        "",     # even_odd_input
+        "",     # red_black_input
+        "",     # low_high_input
+        "",     # dozens_input
+        "",     # columns_input
+        False,  # use_winners_checkbox
+        "<p>Casino data reset to defaults.</p>"  # casino_data_output
+    )
 
 def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, top_color=None, middle_color=None, lower_color=None):
     print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
@@ -1084,6 +1230,7 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
         return "<p>No spins yet. Select a strategy to see default highlights.</p>"
     
     return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)
+
 # Function to get strongest numbers with neighbors
 def get_strongest_numbers_with_neighbors(num_count):
     num_count = int(num_count)
@@ -2973,6 +3120,61 @@ with gr.Blocks() as demo:
                 label="Strategy Recommendations",
                 value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
             )
+            with gr.Accordion("Casino Data Insights", open=False):
+                spins_count_dropdown = gr.Dropdown(
+                    label="Past Spins Count",
+                    choices=["30", "50", "100", "200", "300", "500"],
+                    value="100",
+                    interactive=True
+                )
+                hot_numbers_input = gr.Textbox(
+                    label="Hot Numbers (e.g., 5, 12, 23)",
+                    placeholder="Enter comma-separated numbers",
+                    interactive=True
+                )
+                cold_numbers_input = gr.Textbox(
+                    label="Cold Numbers (e.g., 0, 7, 19)",
+                    placeholder="Enter comma-separated numbers",
+                    interactive=True
+                )
+                even_odd_input = gr.Textbox(
+                    label="Even vs Odd % (e.g., 52 vs 48)",
+                    placeholder="Enter as 'Even % vs Odd %'",
+                    interactive=True
+                )
+                red_black_input = gr.Textbox(
+                    label="Red vs Black % (e.g., 49 vs 51)",
+                    placeholder="Enter as 'Red % vs Black %'",
+                    interactive=True
+                )
+                low_high_input = gr.Textbox(
+                    label="Low vs High % (e.g., 47 vs 53)",
+                    placeholder="Enter as 'Low % vs High %'",
+                    interactive=True
+                )
+                dozens_input = gr.Textbox(
+                    label="Dozens % (e.g., 35 vs 33 vs 32)",
+                    placeholder="Enter as '1st % vs 2nd % vs 3rd %'",
+                    interactive=True
+                )
+                columns_input = gr.Textbox(
+                    label="Columns % (e.g., 34 vs 33 vs 33)",
+                    placeholder="Enter as '1st % vs 2nd % vs 3rd %'",
+                    interactive=True
+                )
+                use_winners_checkbox = gr.Checkbox(
+                    label="Highlight Casino Winners",
+                    value=False,
+                    interactive=True
+                )
+                reset_casino_data_button = gr.Button(
+                    "Reset Casino Data",
+                    elem_classes=["action-button"]
+                )
+                casino_data_output = gr.HTML(
+                    label="Casino Data Insights",
+                    value="<p>No casino data entered yet.</p>"
+                )
         with gr.Column(scale=1, min_width=200):
             category_dropdown = gr.Dropdown(
                 label="Select Category",
@@ -3018,34 +3220,57 @@ with gr.Blocks() as demo:
                 base_unit_input = gr.Number(label="Base Unit", value=10)
                 stop_loss_input = gr.Number(label="Stop Loss", value=-500)
                 stop_win_input = gr.Number(label="Stop Win", value=200)
-            with gr.Row():
-                bet_type_dropdown = gr.Dropdown(
-                    label="Bet Type",
-                    choices=["Even Money", "Dozens", "Columns", "Straight Bets"],
-                    value="Even Money"
-                )
-                progression_dropdown = gr.Dropdown(
-                    label="Progression",
-                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert"],
-                    value="Martingale"
-                )
-                labouchere_sequence = gr.Textbox(
-                    label="Labouchere Sequence (comma-separated)",
-                    value="1, 2, 3, 4",
-                    visible=False
-                )
-            with gr.Row():
-                win_button = gr.Button("Win")
-                lose_button = gr.Button("Lose")
-                reset_progression_button = gr.Button("Reset Progression")
-            with gr.Row():
-                bankroll_output = gr.Textbox(label="Current Bankroll", value="1000", interactive=False)
-                current_bet_output = gr.Textbox(label="Current Bet", value="10", interactive=False)
-                next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
-            with gr.Row():
-                message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
-                status_output = gr.Textbox(label="Status", value="Active", interactive=False)
-
+        with gr.Accordion("Casino Data Insights", open=False):
+            spins_count_dropdown = gr.Dropdown(
+                label="Past Spins Count",
+                choices=["30", "50", "100", "200", "300", "500"],
+                value="100",
+                interactive=True
+            )
+            hot_numbers_input = gr.Textbox(
+                label="Hot Numbers (e.g., 5:10, 12:9, 23:8)",
+                placeholder="Enter as 'number:percentage, number:percentage'",
+                interactive=True
+            )
+            cold_numbers_input = gr.Textbox(
+                label="Cold Numbers (e.g., 0:0, 7:1, 19:1)",
+                placeholder="Enter as 'number:percentage, number:percentage'",
+                interactive=True
+            )
+            even_odd_input = gr.Textbox(
+                label="Even vs Odd % (e.g., 52 vs 48)",
+                placeholder="Enter as 'Even % vs Odd %'",
+                interactive=True
+            )
+            red_black_input = gr.Textbox(
+                label="Red vs Black % (e.g., 49 vs 51)",
+                placeholder="Enter as 'Red % vs Black %'",
+                interactive=True
+            )
+            low_high_input = gr.Textbox(
+                label="Low vs High % (e.g., 47 vs 53)",
+                placeholder="Enter as 'Low % vs High %'",
+                interactive=True
+            )
+            dozens_input = gr.Textbox(
+                label="Dozens % (e.g., 35 vs 33 vs 32)",
+                placeholder="Enter as '1st % vs 2nd % vs 3rd %'",
+                interactive=True
+            )
+            columns_input = gr.Textbox(
+                label="Columns % (e.g., 34 vs 33 vs 33)",
+                placeholder="Enter as '1st % vs 2nd % vs 3rd %'",
+                interactive=True
+            )
+            use_winners_checkbox = gr.Checkbox(
+                label="Highlight Casino Winners",
+                value=False,
+                interactive=True
+            )
+            casino_data_output = gr.HTML(
+                label="Casino Data Insights",
+                value="<p>No casino data entered yet.</p>"
+            )
     # 8. Row 8: Color Pickers
     with gr.Row():
         top_color_picker = gr.ColorPicker(
@@ -3502,6 +3727,105 @@ with gr.Blocks() as demo:
         outputs=[dynamic_table_output]
     )
 
+        lower_color_picker.change(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+    def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence):
+        state.bankroll = bankroll
+        state.initial_bankroll = bankroll
+        state.base_unit = base_unit
+        state.stop_loss = stop_loss
+        state.stop_win = stop_win
+        state.bet_type = bet_type
+        state.progression = progression
+        if progression == "Labouchere":
+            try:
+                state.progression_state = [int(x.strip()) for x in sequence.split(",")]
+            except ValueError:
+                state.progression_state = [1, 2, 3, 4]
+                return bankroll, base_unit, base_unit, "Invalid sequence, using default [1, 2, 3, 4]", "Active"
+        state.reset_progression()
+        return state.bankroll, state.current_bet, state.next_bet, state.message, state.status
+
+    def toggle_labouchere(progression):
+        return gr.update(visible=progression == "Labouchere")
+
+    # Casino data event handlers (from Suggestion 4)
+    spins_count_dropdown.change(
+        fn=update_casino_data,
+        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        outputs=[casino_data_output]
+    )
+    hot_numbers_input.change(
+        fn=update_casino_data,
+        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        outputs=[casino_data_output]
+    )
+    cold_numbers_input.change(
+        fn=update_casino_data,
+        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        outputs=[casino_data_output]
+    )
+    even_odd_input.change(
+        fn=update_casino_data,
+        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        outputs=[casino_data_output]
+    )
+    red_black_input.change(
+        fn=update_casino_data,
+        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        outputs=[casino_data_output]
+    )
+    low_high_input.change(
+        fn=update_casino_data,
+        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        outputs=[casino_data_output]
+    )
+    dozens_input.change(
+        fn=update_casino_data,
+        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        outputs=[casino_data_output]
+    )
+    columns_input.change(
+        fn=update_casino_data,
+        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        outputs=[casino_data_output]
+    )
+    use_winners_checkbox.change(
+        fn=update_casino_data,
+        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        outputs=[casino_data_output]
+    ).then(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+    reset_casino_data_button.click(
+        fn=reset_casino_data,
+        inputs=[],
+        outputs=[
+            spins_count_dropdown, hot_numbers_input, cold_numbers_input,
+            even_odd_input, red_black_input, low_high_input,
+            dozens_input, columns_input, use_winners_checkbox,
+            casino_data_output
+        ]
+    ).then(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+
+    # Config updates
+    bankroll_input.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    base_unit_input.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    stop_loss_input.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    stop_win_input.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    bet_type_dropdown.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
+    progression_dropdown.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]).then(fn=toggle_labouchere, inputs=progression_dropdown, outputs=labouchere_sequence)
+    labouchere_sequence.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])    
+    # Win/Lose actions
     lower_color_picker.change(
         fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
@@ -3526,8 +3850,59 @@ with gr.Blocks() as demo:
 
     def toggle_labouchere(progression):
         return gr.update(visible=progression == "Labouchere")
-    
-    # Config updates
+
+    # Casino data event handlers (from Suggestion 4)
+    spins_count_dropdown.change(
+        fn=update_casino_data,
+        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        outputs=[casino_data_output]
+    )
+    hot_numbers_input.change(
+        fn=update_casino_data,
+        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        outputs=[casino_data_output]
+    )
+    cold_numbers_input.change(
+        fn=update_casino_data,
+        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        outputs=[casino_data_output]
+    )
+    even_odd_input.change(
+        fn=update_casino_data,
+        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        outputs=[casino_data_output]
+    )
+    red_black_input.change(
+        fn=update_casino_data,
+        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        outputs=[casino_data_output]
+    )
+    low_high_input.change(
+        fn=update_casino_data,
+        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        outputs=[casino_data_output]
+    )
+    dozens_input.change(
+        fn=update_casino_data,
+        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        outputs=[casino_data_output]
+    )
+    columns_input.change(
+        fn=update_casino_data,
+        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        outputs=[casino_data_output]
+    )
+    use_winners_checkbox.change(
+        fn=update_casino_data,
+        inputs=[spins_count_dropdown, hot_numbers_input, cold_numbers_input, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        outputs=[casino_data_output]
+    ).then(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+
+    # Config updates (including toggle_labouchere)
     bankroll_input.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
     base_unit_input.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
     stop_loss_input.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
@@ -3535,10 +3910,6 @@ with gr.Blocks() as demo:
     bet_type_dropdown.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
     progression_dropdown.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]).then(fn=toggle_labouchere, inputs=progression_dropdown, outputs=labouchere_sequence)
     labouchere_sequence.change(fn=update_config, inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
-    
-    # Win/Lose actions
-    win_button.click(fn=lambda: state.update_progression(True), inputs=[], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
-    lose_button.click(fn=lambda: state.update_progression(False), inputs=[], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
     
     # Reset
     reset_progression_button.click(
