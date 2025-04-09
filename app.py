@@ -3405,6 +3405,8 @@ with gr.Blocks() as demo:
 
     # CSS and Event Handlers
     gr.HTML("""
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css">
+    <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
     <style>
       /* General Layout */
       .gr-row { margin: 0 !important; padding: 5px 0 !important; }
@@ -3561,6 +3563,11 @@ with gr.Blocks() as demo:
       .betting-progression .gr-textbox { width: 100%; margin: 5px 0; }
       .betting-progression .gr-button { width: 100px; margin: 5px; }
       .betting-progression .gr-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    
+      /* Shepherd.js Tweaks */
+      .shepherd-modal-overlay-container { opacity: 0.5; } /* Darker overlay to block app clicks */
+      .shepherd-button { background-color: #007bff; color: white; padding: 5px 10px; border-radius: 3px; }
+      .shepherd-button:hover { background-color: #0056b3; }
     </style>
     """)
     print("CSS Updated")
