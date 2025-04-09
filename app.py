@@ -3681,6 +3681,27 @@ with gr.Blocks() as demo:
         outputs=[dynamic_table_output]
     )
 
+    # Betting progression event handlers
+    def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence):
+        state.bankroll = bankroll
+        state.initial_bankroll = bankroll
+        state.base_unit = base_unit
+        state.stop_loss = stop_loss
+        state.stop_win = stop_win
+        state.bet_type = bet_type
+        state.progression = progression
+        if progression == "Labouchere":
+            try:
+                state.progression_state = [int(x.strip()) for x in sequence.split(",")]
+            except ValueError:
+                state.progression_state = [1, 2, 3, 4]
+                return bankroll, base_unit, base_unit, "Invalid sequence, using default [1, 2, 3, 4]", "Active"
+        state.reset_progression()
+        return state.bankroll, state.current_bet, state.next_bet, state.message, state.status
+
+    def toggle_labouchere(progression):
+        return gr.update(visible=progression == "Labouchere")
+
     # Casino data event handlers
     spins_count_dropdown.change(
         fn=update_casino_data,
@@ -3717,7 +3738,7 @@ with gr.Blocks() as demo:
         inputs=[spins_count_dropdown, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
         outputs=[casino_data_output]
     ).then(
-        fn=create_dynamic_table,
+        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     )
@@ -3735,27 +3756,7 @@ with gr.Blocks() as demo:
         outputs=[dynamic_table_output]
     )
 
-    # Betting progression event handlers
-    def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence):
-        state.bankroll = bankroll
-        state.initial_bankroll = bankroll
-        state.base_unit = base_unit
-        state.stop_loss = stop_loss
-        state.stop_win = stop_win
-        state.bet_type = bet_type
-        state.progression = progression
-        if progression == "Labouchere":
-            try:
-                state.progression_state = [int(x.strip()) for x in sequence.split(",")]
-            except ValueError:
-                state.progression_state = [1, 2, 3, 4]
-                return bankroll, base_unit, base_unit, "Invalid sequence, using default [1, 2, 3, 4]", "Active"
-        state.reset_progression()
-        return state.bankroll, state.current_bet, state.next_bet, state.message, state.status
-
-    def toggle_labouchere(progression):
-        return gr.update(visible=progression == "Labouchere")
-
+    # Betting progression event handlers (continued)
     bankroll_input.change(
         fn=update_config,
         inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
