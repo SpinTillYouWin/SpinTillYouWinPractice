@@ -3063,8 +3063,7 @@ with gr.Blocks() as demo:
             )
             gr.HTML(
                 '''
-                <a href="https://drive.google.com/file/d/1o9H8Lakx1i4_OnDrvHRj_6-KHsOWufjF/view?usp=sharing" target="_blank" class="guide-link" style="margin-right: 10px;">🎥 Roulette Analyzer Guide + Video Instructions</a>
-                <button id="start-tour-btn" onclick="startTour()" style="margin-left: 10px; padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Take the Tour!</button>
+                <button id="start-tour-btn" onclick="startTour()" style="padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Take the Tour!</button>
                 '''
             )
 
@@ -3444,7 +3443,6 @@ with gr.Blocks() as demo:
     
       /* Header Styling */
       .header-title { text-align: center !important; font-size: 2.5em !important; margin-bottom: 5px !important; color: #333 !important; }
-      .guide-link { display: inline !important; font-size: 1.1em !important; color: #007bff !important; text-decoration: underline !important; }
     
       /* Fix Selected Spins Label Cutoff */
       #selected-spins-row {
@@ -3552,7 +3550,6 @@ with gr.Blocks() as demo:
           .scrollable-table { max-height: 200px; }
           .long-slider { width: 100% !important; }
           .header-title { font-size: 1.8em !important; }
-          .guide-link { font-size: 0.9em !important; }
       }
     
       #strongest-numbers-dropdown select {
