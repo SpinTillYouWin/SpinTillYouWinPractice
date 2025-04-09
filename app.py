@@ -53,7 +53,6 @@ def validate_roulette_data():
 
 class RouletteState:
     def __init__(self):
-            def __init__(self):
         self.scores = {n: 0 for n in range(37)}
         self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
         self.dozen_scores = {name: 0 for name in DOZENS.keys()}
