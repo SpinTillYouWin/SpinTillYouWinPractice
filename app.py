@@ -1011,9 +1011,10 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
         return "<p>Please analyze some spins first to see highlights on the dynamic table.</p>"
 
     # Define casino winners if highlighting is enabled
-    casino_winners = {"numbers": set(), "even_money": set(), "dozens": set(), "columns": set()}
+    casino_winners = {"hot_numbers": set(), "cold_numbers": set(), "even_money": set(), "dozens": set(), "columns": set()}
     if state.use_casino_winners:
-        casino_winners["numbers"] = set(state.casino_data["hot_numbers"].keys())
+        casino_winners["hot_numbers"] = set(state.casino_data["hot_numbers"].keys())
+        casino_winners["cold_numbers"] = set(state.casino_data["cold_numbers"].keys())
         casino_winners["even_money"] = {
             max(state.casino_data["even_odd"], key=state.casino_data["even_odd"].get),
             max(state.casino_data["red_black"], key=state.casino_data["red_black"].get),
@@ -1044,7 +1045,12 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
             else:
                 base_color = colors.get(num, "black")
                 highlight_color = number_highlights.get(num, base_color)
-                border_style = "3px dashed #FFD700" if num in casino_winners["numbers"] else "3px solid black"
+                if num in casino_winners["hot_numbers"]:
+                    border_style = "3px dashed #FFD700"  # Gold for Hot Numbers
+                elif num in casino_winners["cold_numbers"]:
+                    border_style = "3px dashed #C0C0C0"  # Silver for Cold Numbers
+                else:
+                    border_style = "3px solid black"
                 text_style = "color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"
                 html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;">{num}</td>'
         if row_idx == 0:
@@ -1114,31 +1120,23 @@ def update_casino_data(spins_count, hot_nums, cold_nums, even_odd, red_black, lo
         state.casino_data["spins_count"] = int(spins_count)
         state.use_casino_winners = use_winners
 
-        # Parse Hot Numbers with percentages
+        # Parse Hot Numbers (comma-separated numbers)
         state.casino_data["hot_numbers"] = {}
         if hot_nums and hot_nums.strip():
-            for pair in hot_nums.split(","):
-                num, perc = pair.strip().split(":")
+            for num in hot_nums.split(","):
                 n = int(num.strip())
-                p = float(perc.strip())
                 if not (0 <= n <= 36):
                     raise ValueError(f"Hot number {n} out of range (0-36)")
-                if not (0 <= p <= 100):
-                    raise ValueError(f"Hot number percentage {p} out of range (0-100)")
-                state.casino_data["hot_numbers"][n] = p
+                state.casino_data["hot_numbers"][n] = 0.0  # No percentage, just presence
 
-        # Parse Cold Numbers with percentages
+        # Parse Cold Numbers (comma-separated numbers)
         state.casino_data["cold_numbers"] = {}
         if cold_nums and cold_nums.strip():
-            for pair in cold_nums.split(","):
-                num, perc = pair.strip().split(":")
+            for num in cold_nums.split(","):
                 n = int(num.strip())
-                p = float(perc.strip())
                 if not (0 <= n <= 36):
                     raise ValueError(f"Cold number {n} out of range (0-36)")
-                if not (0 <= p <= 100):
-                    raise ValueError(f"Cold number percentage {p} out of range (0-100)")
-                state.casino_data["cold_numbers"][n] = p
+                state.casino_data["cold_numbers"][n] = 0.0  # No percentage, just presence
 
         # Parse Percentage Pairs/Triplets
         def parse_percentages(input_str, keys, expected_len, category):
@@ -1160,8 +1158,8 @@ def update_casino_data(spins_count, hot_nums, cold_nums, even_odd, red_black, lo
 
         # Generate HTML Output
         output = f"<h4>Casino Data Insights (Last {spins_count} Spins):</h4>"
-        output += f"<p>Hot Numbers: {', '.join(f'{n} ({p:.1f}%)' for n, p in state.casino_data['hot_numbers'].items()) or 'None'}</p>"
-        output += f"<p>Cold Numbers: {', '.join(f'{n} ({p:.1f}%)' for n, p in state.casino_data['cold_numbers'].items()) or 'None'}</p>"
+        output += f"<p>Hot Numbers: {', '.join(f'{n}' for n in state.casino_data['hot_numbers']) or 'None'}</p>"
+        output += f"<p>Cold Numbers: {', '.join(f'{n}' for n in state.casino_data['cold_numbers']) or 'None'}</p>"
         for key, name in [("even_odd", "Even vs Odd"), ("red_black", "Red vs Black"), ("low_high", "Low vs High")]:
             winner = max(state.casino_data[key], key=state.casino_data[key].get)
             output += f"<p>{name}: " + " vs ".join(
@@ -3096,7 +3094,7 @@ with gr.Blocks() as demo:
         with gr.Column(scale=1, min_width=200):
             spin_counter  # Restore side-by-side layout with styling
     
-        # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
+            # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
         with gr.Column(scale=2):
             analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
@@ -3127,13 +3125,13 @@ with gr.Blocks() as demo:
                     interactive=True
                 )
                 hot_numbers_input = gr.Textbox(
-                    label="Hot Numbers (e.g., 5:10, 12:9, 23:8)",
-                    placeholder="Enter as 'number:percentage, number:percentage'",
+                    label="Hot Numbers (e.g., 5, 12, 23)",
+                    placeholder="Enter comma-separated numbers",
                     interactive=True
                 )
                 cold_numbers_input = gr.Textbox(
-                    label="Cold Numbers (e.g., 0:0, 7:1, 19:1)",
-                    placeholder="Enter as 'number:percentage, number:percentage'",
+                    label="Cold Numbers (e.g., 0, 7, 19)",
+                    placeholder="Enter comma-separated numbers",
                     interactive=True
                 )
                 even_odd_input = gr.Textbox(
