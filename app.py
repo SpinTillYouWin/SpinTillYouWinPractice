@@ -3742,8 +3742,7 @@ with gr.Blocks() as demo:
     ).then(
         fn=create_dynamic_table,
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output],
-        _js="() => [document.querySelector('#select-strategy').value, ...arguments.slice(1)]"  # Ensure strategy updates
+        outputs=[dynamic_table_output]
     )
     cold_numbers_input.change(
         fn=update_casino_data,
@@ -3752,8 +3751,7 @@ with gr.Blocks() as demo:
     ).then(
         fn=create_dynamic_table,
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output],
-        _js="() => [document.querySelector('#select-strategy').value, ...arguments.slice(1)]"
+        outputs=[dynamic_table_output]
     )
     even_odd_input.change(
         fn=update_casino_data,
@@ -3787,8 +3785,7 @@ with gr.Blocks() as demo:
     ).then(
         fn=create_dynamic_table,
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output],
-        _js="() => [document.querySelector('#select-strategy').value, ...arguments.slice(1)]"
+        outputs=[dynamic_table_output]
     )
     add_hot_to_spins_checkbox.change(
         fn=update_casino_data,
@@ -3797,8 +3794,7 @@ with gr.Blocks() as demo:
     ).then(
         fn=create_dynamic_table,
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output],
-        _js="() => [document.querySelector('#select-strategy').value, ...arguments.slice(1)]"
+        outputs=[dynamic_table_output]
     )
     add_cold_to_spins_checkbox.change(
         fn=update_casino_data,
@@ -3807,8 +3803,7 @@ with gr.Blocks() as demo:
     ).then(
         fn=create_dynamic_table,
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output],
-        _js="() => [document.querySelector('#select-strategy').value, ...arguments.slice(1)]"
+        outputs=[dynamic_table_output]
     )
     reset_casino_data_button.click(
         fn=reset_casino_data,
@@ -3823,8 +3818,7 @@ with gr.Blocks() as demo:
     ).then(
         fn=create_dynamic_table,
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output],
-        _js="() => [document.querySelector('#select-strategy').value, ...arguments.slice(1)]"
+        outputs=[dynamic_table_output]
     )
 
     # Betting progression event handlers
@@ -3838,7 +3832,7 @@ with gr.Blocks() as demo:
         state.progression = progression
         if progression == "Labouchere":
             try:
-                state.progression_state = [int(x.strip()) for x in sequence.split(",")]
+                state.progression_state = [int suffixx.strip()) for x in sequence.split(",")]
             except ValueError:
                 state.progression_state = [1, 2, 3, 4]
                 return bankroll, base_unit, base_unit, "Invalid sequence, using default [1, 2, 3, 4]", "Active"
@@ -3879,8 +3873,8 @@ with gr.Blocks() as demo:
         outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
     ).then(
         fn=toggle_labouchere,
-        inputs=progression_dropdown,
-        outputs=labouchere_sequence
+        inputs=[progression_dropdown],
+        outputs=[labouchere_sequence]
     )
     labouchere_sequence.change(
         fn=update_config,
