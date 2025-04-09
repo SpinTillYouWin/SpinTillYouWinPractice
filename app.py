@@ -3105,31 +3105,6 @@ with gr.Blocks() as demo:
           transform: scale(1.05) !important; /* Slight zoom on hover */
           box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
       }
-      .action-button.green-btn {
-          position: relative !important;
-          transition: opacity 0.3s ease !important;
-      }
-      .action-button.green-btn[aria-busy="true"] {
-          opacity: 0.7 !important;
-          pointer-events: none !important;
-      }
-      .action-button.green-btn[aria-busy="true"]::after {
-          content: '';
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 20px;
-          height: 20px;
-          border: 3px solid #fff;
-          border-top: 3px solid #28a745;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          transform: translate(-50%, -50%);
-      }
-      @keyframes spin {
-          0% { transform: translate(-50%, -50%) rotate(0deg); }
-          100% { transform: translate(-50%, -50%) rotate(360deg); }
-      }
     
       /* Last Spins Container */
       .last-spins-container {
@@ -3264,7 +3239,6 @@ with gr.Blocks() as demo:
         outputs=[dynamic_table_output]
     )
 
-    analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
     analyze_button.click(
         fn=analyze_spins,
         inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
