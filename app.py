@@ -1120,6 +1120,7 @@ def update_casino_data(spins_count, hot_nums, cold_nums, even_odd, red_black, lo
     try:
         state.casino_data["spins_count"] = int(spins_count)
         state.use_casino_winners = use_winners
+        spins_changed = False
 
         # Parse Hot Numbers (comma-separated numbers)
         state.casino_data["hot_numbers"] = {}
@@ -1128,9 +1129,10 @@ def update_casino_data(spins_count, hot_nums, cold_nums, even_odd, red_black, lo
                 n = int(num.strip())
                 if not (0 <= n <= 36):
                     raise ValueError(f"Hot number {n} out of range (0-36)")
-                state.casino_data["hot_numbers"][n] = 0.0  # No percentage, just presence
+                state.casino_data["hot_numbers"][n] = 0.0
             if add_hot_to_spins:
                 state.last_spins.extend([str(n) for n in state.casino_data["hot_numbers"].keys()])
+                spins_changed = True
 
         # Parse Cold Numbers (comma-separated numbers)
         state.casino_data["cold_numbers"] = {}
@@ -1139,9 +1141,10 @@ def update_casino_data(spins_count, hot_nums, cold_nums, even_odd, red_black, lo
                 n = int(num.strip())
                 if not (0 <= n <= 36):
                     raise ValueError(f"Cold number {n} out of range (0-36)")
-                state.casino_data["cold_numbers"][n] = 0.0  # No percentage, just presence
+                state.casino_data["cold_numbers"][n] = 0.0
             if add_cold_to_spins:
                 state.last_spins.extend([str(n) for n in state.casino_data["cold_numbers"].keys()])
+                spins_changed = True
 
         # Debug print to verify parsing
         print(f"Hot Numbers Parsed: {state.casino_data['hot_numbers']}")
@@ -1178,11 +1181,11 @@ def update_casino_data(spins_count, hot_nums, cold_nums, even_odd, red_black, lo
                 f"<b>{v:.1f}%</b>" if k == winner else f"{v:.1f}%" for k, v in state.casino_data[key].items()
             ) + f" (Winner: {winner})</p>"
         print(f"Generated HTML Output: {output}")
-        return output
+        return output, spins_changed
     except ValueError as e:
-        return f"<p>Error: {str(e)}</p>"
+        return f"<p>Error: {str(e)}</p>", False
     except Exception as e:
-        return f"<p>Unexpected error parsing casino data: {str(e)}</p>"
+        return f"<p>Unexpected error parsing casino data: {str(e)}</p>", False
         
 def reset_casino_data():
     """Reset casino data to defaults and clear UI inputs."""
@@ -3739,7 +3742,8 @@ with gr.Blocks() as demo:
     ).then(
         fn=create_dynamic_table,
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
+        outputs=[dynamic_table_output],
+        _js="() => [document.querySelector('#select-strategy').value, ...arguments.slice(1)]"  # Ensure strategy updates
     )
     cold_numbers_input.change(
         fn=update_casino_data,
@@ -3748,7 +3752,8 @@ with gr.Blocks() as demo:
     ).then(
         fn=create_dynamic_table,
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
+        outputs=[dynamic_table_output],
+        _js="() => [document.querySelector('#select-strategy').value, ...arguments.slice(1)]"
     )
     even_odd_input.change(
         fn=update_casino_data,
@@ -3782,7 +3787,8 @@ with gr.Blocks() as demo:
     ).then(
         fn=create_dynamic_table,
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
+        outputs=[dynamic_table_output],
+        _js="() => [document.querySelector('#select-strategy').value, ...arguments.slice(1)]"
     )
     add_hot_to_spins_checkbox.change(
         fn=update_casino_data,
@@ -3791,7 +3797,8 @@ with gr.Blocks() as demo:
     ).then(
         fn=create_dynamic_table,
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
+        outputs=[dynamic_table_output],
+        _js="() => [document.querySelector('#select-strategy').value, ...arguments.slice(1)]"
     )
     add_cold_to_spins_checkbox.change(
         fn=update_casino_data,
@@ -3800,7 +3807,8 @@ with gr.Blocks() as demo:
     ).then(
         fn=create_dynamic_table,
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
+        outputs=[dynamic_table_output],
+        _js="() => [document.querySelector('#select-strategy').value, ...arguments.slice(1)]"
     )
     reset_casino_data_button.click(
         fn=reset_casino_data,
@@ -3815,7 +3823,8 @@ with gr.Blocks() as demo:
     ).then(
         fn=create_dynamic_table,
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
+        outputs=[dynamic_table_output],
+        _js="() => [document.querySelector('#select-strategy').value, ...arguments.slice(1)]"
     )
 
     # Betting progression event handlers
