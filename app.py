@@ -1138,6 +1138,10 @@ def update_casino_data(spins_count, hot_nums, cold_nums, even_odd, red_black, lo
                     raise ValueError(f"Cold number {n} out of range (0-36)")
                 state.casino_data["cold_numbers"][n] = 0.0  # No percentage, just presence
 
+        # Debug print to verify parsing
+        print(f"Hot Numbers Parsed: {state.casino_data['hot_numbers']}")
+        print(f"Cold Numbers Parsed: {state.casino_data['cold_numbers']}")
+
         # Parse Percentage Pairs/Triplets
         def parse_percentages(input_str, keys, expected_len, category):
             if not input_str or not input_str.strip():
@@ -1158,8 +1162,8 @@ def update_casino_data(spins_count, hot_nums, cold_nums, even_odd, red_black, lo
 
         # Generate HTML Output
         output = f"<h4>Casino Data Insights (Last {spins_count} Spins):</h4>"
-        output += f"<p>Hot Numbers: {', '.join(f'{n}' for n in state.casino_data['hot_numbers']) or 'None'}</p>"
-        output += f"<p>Cold Numbers: {', '.join(f'{n}' for n in state.casino_data['cold_numbers']) or 'None'}</p>"
+        output += f"<p>Hot Numbers: {', '.join(str(n) for n in state.casino_data['hot_numbers'].keys()) or 'None'}</p>"
+        output += f"<p>Cold Numbers: {', '.join(str(n) for n in state.casino_data['cold_numbers'].keys()) or 'None'}</p>"
         for key, name in [("even_odd", "Even vs Odd"), ("red_black", "Red vs Black"), ("low_high", "Low vs High")]:
             winner = max(state.casino_data[key], key=state.casino_data[key].get)
             output += f"<p>{name}: " + " vs ".join(
@@ -1170,6 +1174,7 @@ def update_casino_data(spins_count, hot_nums, cold_nums, even_odd, red_black, lo
             output += f"<p>{name}: " + " vs ".join(
                 f"<b>{v:.1f}%</b>" if k == winner else f"{v:.1f}%" for k, v in state.casino_data[key].items()
             ) + f" (Winner: {winner})</p>"
+        print(f"Generated HTML Output: {output}")  # Debug print
         return output
     except ValueError as e:
         return f"<p>Error: {str(e)}</p>"
