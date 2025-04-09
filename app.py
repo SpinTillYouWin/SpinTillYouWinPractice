@@ -407,7 +407,47 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
             strategy_output = strategy_info["function"]()
         lines = strategy_output.split("\n")
 
-        if strategy_name == "Hot Bet Strategy":
+        if strategy_name == "Top Numbers with Neighbours (Tiered)":
+            straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+            straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
+            if not straight_up_df.empty:
+                num_to_take = min(8, len(straight_up_df))
+                top_numbers = set(straight_up_df["Number"].head(num_to_take).tolist())
+                neighbor_numbers = set()
+                neighbor_to = {}
+                for num in top_numbers:
+                    left, right = current_neighbors.get(num, (None, None))
+                    if left is not None:
+                        neighbor_numbers.add(left)
+                        neighbor_to[left] = neighbor_to.get(left, set()) | {num}
+                    if right is not None:
+                        neighbor_numbers.add(right)
+                        neighbor_to[right] = neighbor_to.get(right, set()) | {num}
+                number_groups = []
+                for num in top_numbers:
+                    left, right = current_neighbors.get(num, (None, None))
+                    group = [num]
+                    if left is not None:
+                        group.append(left)
+                    if right is not None:
+                        group.append(right)
+                    number_groups.append((state.scores[num], group))
+                number_groups.sort(key=lambda x: x[0], reverse=True)
+                ordered_numbers = []
+                for _, group in number_groups:
+                    ordered_numbers.extend(group)
+                ordered_numbers = ordered_numbers[:24]
+                top_8 = ordered_numbers[:8]
+                next_8 = ordered_numbers[8:16]
+                last_8 = ordered_numbers[16:24]
+                for num in top_8:
+                    number_highlights[str(num)] = top_color
+                for num in next_8:
+                    number_highlights[str(num)] = middle_color
+                for num in last_8:
+                    number_highlights[str(num)] = lower_color
+
+        elif strategy_name == "Hot Bet Strategy":
             trending_even_money = sorted_sections["even_money"][0][0] if sorted_sections["even_money"] else None
             second_even_money = sorted_sections["even_money"][1][0] if len(sorted_sections["even_money"]) > 1 else None
             trending_dozen = sorted_sections["dozens"][0][0] if sorted_sections["dozens"] else None
@@ -478,7 +518,98 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
                     if len(even_money_hits) > 2:
                         third_even_money = even_money_hits[2][0]
 
-        elif strategy_name == "Best Even Money Bets + Top Pick 18 Numbers":
+        elif strategy_name == "Best Dozens + Top Pick 18 Numbers":
+            trending_dozen = None
+            second_dozen = None
+            if sorted_sections["dozens"]:
+                dozens_hits = [item for item in sorted_sections["dozens"] if item[1] > 0]
+                if dozens_hits:
+                    trending_dozen = dozens_hits[0][0]
+                    if len(dozens_hits) > 1:
+                        second_dozen = dozens_hits[1][0]
+            straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+            straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
+            if len(straight_up_df) >= 18:
+                top_18_df = straight_up_df.head(18)
+                top_18_numbers = top_18_df["Number"].tolist()
+                top_6 = top_18_numbers[:6]
+                next_6 = top_18_numbers[6:12]
+                last_6 = top_18_numbers[12:18]
+                for num in top_6:
+                    number_highlights[str(num)] = top_color
+                for num in next_6:
+                    number_highlights[str(num)] = middle_color
+                for num in last_6:
+                    number_highlights[str(num)] = lower_color
+
+        elif strategy_name == "Best Columns + Top Pick 18 Numbers":
+            trending_column = None
+            second_column = None
+            if sorted_sections["columns"]:
+                columns_hits = [item for item in sorted_sections["columns"] if item[1] > 0]
+                if columns_hits:
+                    trending_column = columns_hits[0][0]
+                    if len(columns_hits) > 1:
+                        second_column = columns_hits[1][0]
+            straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+            straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
+            if len(straight_up_df) >= 18:
+                top_18_df = straight_up_df.head(18)
+                top_18_numbers = top_18_df["Number"].tolist()
+                top_6 = top_18_numbers[:6]
+                next_6 = top_18_numbers[6:12]
+                last_6 = top_18_numbers[12:18]
+                for num in top_6:
+                    number_highlights[str(num)] = top_color
+                for num in next_6:
+                    number_highlights[str(num)] = middle_color
+                for num in last_6:
+                    number_highlights[str(num)] = lower_color
+
+        elif strategy_name == "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers":
+            trending_dozen = None
+            second_dozen = None
+            if sorted_sections["dozens"]:
+                dozens_hits = [item for item in sorted_sections["dozens"] if item[1] > 0]
+                if dozens_hits:
+                    trending_dozen = dozens_hits[0][0]
+                    if len(dozens_hits) > 1:
+                        second_dozen = dozens_hits[1][0]
+            trending_even_money = None
+            second_even_money = None
+            third_even_money = None
+            if sorted_sections["even_money"]:
+                even_money_hits = [item for item in sorted_sections["even_money"] if item[1] > 0]
+                if even_money_hits:
+                    trending_even_money = even_money_hits[0][0]
+                    if len(even_money_hits) > 1:
+                        second_even_money = even_money_hits[1][0]
+                    if len(even_money_hits) > 2:
+                        third_even_money = even_money_hits[2][0]
+            straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+            straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
+            if len(straight_up_df) >= 18:
+                top_18_df = straight_up_df.head(18)
+                top_18_numbers = top_18_df["Number"].tolist()
+                top_6 = top_18_numbers[:6]
+                next_6 = top_18_numbers[6:12]
+                last_6 = top_18_numbers[12:18]
+                for num in top_6:
+                    number_highlights[str(num)] = top_color
+                for num in next_6:
+                    number_highlights[str(num)] = middle_color
+                for num in last_6:
+                    number_highlights[str(num)] = lower_color
+
+        elif strategy_name == "Best Columns + Best Even Money Bets + Top Pick 18 Numbers":
+            trending_column = None
+            second_column = None
+            if sorted_sections["columns"]:
+                columns_hits = [item for item in sorted_sections["columns"] if item[1] > 0]
+                if columns_hits:
+                    trending_column = columns_hits[0][0]
+                    if len(columns_hits) > 1:
+                        second_column = columns_hits[1][0]
             trending_even_money = None
             second_even_money = None
             third_even_money = None
@@ -509,65 +640,158 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
             trending_dozen = sorted_sections["dozens"][0][0] if sorted_sections["dozens"] else None
             second_dozen = sorted_sections["dozens"][1][0] if len(sorted_sections["dozens"]) > 1 else None
 
-        elif strategy_name == "Best Dozens + Top Pick 18 Numbers":
-            trending_dozen = None
-            second_dozen = None
-            if sorted_sections["dozens"]:
-                dozens_hits = [item for item in sorted_sections["dozens"] if item[1] > 0]
-                if dozens_hits:
-                    trending_dozen = dozens_hits[0][0]
-                    if len(dozens_hits) > 1:
-                        second_dozen = dozens_hits[1][0]
-            straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
-            straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
-            if len(straight_up_df) >= 18:
-                top_18_df = straight_up_df.head(18)
-                top_18_numbers = top_18_df["Number"].tolist()
-                top_6 = top_18_numbers[:6]
-                next_6 = top_18_numbers[6:12]
-                last_6 = top_18_numbers[12:18]
-                for num in top_6:
-                    number_highlights[str(num)] = top_color
-                for num in next_6:
-                    number_highlights[str(num)] = middle_color
-                for num in last_6:
-                    number_highlights[str(num)] = lower_color
-
         elif strategy_name == "Best Columns":
             trending_column = sorted_sections["columns"][0][0] if sorted_sections["columns"] else None
             second_column = sorted_sections["columns"][1][0] if len(sorted_sections["columns"]) > 1 else None
 
-        elif strategy_name == "Top Numbers with Neighbours (Tiered)":
+        elif strategy_name == "Fibonacci Strategy":
+            best_dozen_score = sorted_sections["dozens"][0][1] if sorted_sections["dozens"] else 0
+            best_column_score = sorted_sections["columns"][0][1] if sorted_sections["columns"] else 0
+            if best_dozen_score > best_column_score:
+                trending_dozen = sorted_sections["dozens"][0][0]
+            elif best_column_score > best_dozen_score:
+                trending_column = sorted_sections["columns"][0][0]
+            else:
+                trending_dozen = sorted_sections["dozens"][0][0]
+                trending_column = sorted_sections["columns"][0][0]
+
+        elif strategy_name == "Best Streets":
+            top_streets = sorted_sections["streets"][:9]
+            for i, (street_name, _) in enumerate(top_streets):
+                numbers = STREETS[street_name]
+                color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
+                for num in numbers:
+                    number_highlights[str(num)] = color
+
+        elif strategy_name == "Best Double Streets":
+            top_six_lines = sorted_sections["six_lines"][:9]
+            for i, (six_line_name, _) in enumerate(top_six_lines):
+                numbers = SIX_LINES[six_line_name]
+                color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
+                for num in numbers:
+                    number_highlights[str(num)] = color
+
+        elif strategy_name == "Best Corners":
+            top_corners = sorted_sections["corners"][:9]
+            for i, (corner_name, _) in enumerate(top_corners):
+                numbers = CORNERS[corner_name]
+                color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
+                for num in numbers:
+                    number_highlights[str(num)] = color
+
+        elif strategy_name == "Best Splits":
+            top_splits = sorted_sections["splits"][:9]
+            for i, (split_name, _) in enumerate(top_splits):
+                numbers = SPLITS[split_name]
+                color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
+                for num in numbers:
+                    number_highlights[str(num)] = color
+
+        elif strategy_name == "Best Dozens + Best Streets":
+            trending_dozen = sorted_sections["dozens"][0][0] if sorted_sections["dozens"] else None
+            second_dozen = sorted_sections["dozens"][1][0] if len(sorted_sections["dozens"]) > 1 else None
+            top_streets = sorted_sections["streets"][:9]
+            for i, (street_name, _) in enumerate(top_streets):
+                numbers = STREETS[street_name]
+                color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
+                for num in numbers:
+                    number_highlights[str(num)] = color
+
+        elif strategy_name == "Best Columns + Best Streets":
+            trending_column = sorted_sections["columns"][0][0] if sorted_sections["columns"] else None
+            second_column = sorted_sections["columns"][1][0] if len(sorted_sections["columns"]) > 1 else None
+            top_streets = sorted_sections["streets"][:9]
+            for i, (street_name, _) in enumerate(top_streets):
+                numbers = STREETS[street_name]
+                color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
+                for num in numbers:
+                    number_highlights[str(num)] = color
+
+        elif strategy_name == "Non-Overlapping Double Street Strategy":
+            non_overlapping_sets = [
+                ["1ST D.STREET – 1, 4", "3RD D.STREET – 7, 10", "5TH D.STREET – 13, 16", "7TH D.STREET – 19, 22", "9TH D.STREET – 25, 28"],
+                ["2ND D.STREET – 4, 7", "4TH D.STREET – 10, 13", "6TH D.STREET – 16, 19", "8TH D.STREET – 22, 25", "10TH D.STREET – 28, 31"]
+            ]
+            set_scores = []
+            for idx, non_overlapping_set in enumerate(non_overlapping_sets):
+                total_score = sum(state.six_line_scores.get(name, 0) for name in non_overlapping_set)
+                set_scores.append((idx, total_score, non_overlapping_set))
+            best_set = max(set_scores, key=lambda x: x[1], default=(0, 0, non_overlapping_sets[0]))
+            best_set_streets = best_set[2]
+            sorted_best_set = sorted(best_set_streets, key=lambda name: state.six_line_scores.get(name, 0), reverse=True)[:9]
+            for i, double_street_name in enumerate(sorted_best_set):
+                numbers = SIX_LINES[double_street_name]
+                color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
+                for num in numbers:
+                    number_highlights[str(num)] = color
+
+        elif strategy_name == "Non-Overlapping Corner Strategy":
+            sorted_corners = sorted(state.corner_scores.items(), key=lambda x: x[1], reverse=True)
+            selected_corners = []
+            selected_numbers = set()
+            for corner_name, _ in sorted_corners:
+                if len(selected_corners) >= 9:
+                    break
+                corner_numbers = set(CORNERS[corner_name])
+                if not corner_numbers & selected_numbers:
+                    selected_corners.append(corner_name)
+                    selected_numbers.update(corner_numbers)
+            for i, corner_name in enumerate(selected_corners):
+                numbers = CORNERS[corner_name]
+                color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
+                for num in numbers:
+                    number_highlights[str(num)] = color
+
+        elif strategy_name == "Romanowksy Missing Dozen":
+            trending_dozen = sorted_sections["dozens"][0][0] if sorted_sections["dozens"] and sorted_sections["dozens"][0][1] > 0 else None
+            second_dozen = sorted_sections["dozens"][1][0] if len(sorted_sections["dozens"]) > 1 and sorted_sections["dozens"][1][1] > 0 else None
+            weakest_dozen = min(state.dozen_scores.items(), key=lambda x: x[1], default=("1st Dozen", 0))[0]
             straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
             straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
-            if not straight_up_df.empty:
-                num_to_take = min(8, len(straight_up_df))
-                top_numbers = set(straight_up_df["Number"].head(num_to_take).tolist())
-                neighbor_numbers = set()
-                for num in top_numbers:
-                    left, right = current_neighbors.get(num, (None, None))
-                    if left is not None:
-                        neighbor_numbers.add(left)
-                    if right is not None:
-                        neighbor_numbers.add(right)
-    # Line 1: One above coding full (end of "Top Numbers with Neighbours (Tiered)")
-                # Assign yellow to strong numbers, cyan to neighbors
-                for num in top_numbers:
-                    number_highlights[str(num)] = top_color if top_color else "rgba(255, 255, 0, 0.5)"  # Yellow for strong
-                for num in neighbor_numbers:
-                    if str(num) not in number_highlights:  # Avoid overwriting strong numbers
-                        number_highlights[str(num)] = middle_color if middle_color else "rgba(0, 255, 255, 0.5)"  # Cyan for neighbors
+            weak_numbers = [row["Number"] for _, row in straight_up_df.iterrows() if row["Number"] in DOZENS[weakest_dozen]][:8]
+            for num in weak_numbers:
+                number_highlights[str(num)] = top_color
 
-    # Line 2: Updated code (corrected indentation, no premature return, complete "Best Columns + Top Pick 18 Numbers" block)
-        elif strategy_name == "Best Columns + Top Pick 18 Numbers":
-            trending_column = None
-            second_column = None
-            if sorted_sections["columns"]:
-                columns_hits = [item for item in sorted_sections["columns"] if item[1] > 0]
-                if columns_hits:
-                    trending_column = columns_hits[0][0]
-                    if len(columns_hits) > 1:
-                        second_column = columns_hits[1][0]
+        elif strategy_name == "Fibonacci To Fortune":
+            best_dozen_score = sorted_sections["dozens"][0][1] if sorted_sections["dozens"] else 0
+            best_column_score = sorted_sections["columns"][0][1] if sorted_sections["columns"] else 0
+            if best_dozen_score > best_column_score:
+                trending_dozen = sorted_sections["dozens"][0][0]
+            elif best_column_score > best_dozen_score:
+                trending_column = sorted_sections["columns"][0][0]
+            else:
+                trending_dozen = sorted_sections["dozens"][0][0]
+                trending_column = sorted_sections["columns"][0][0]
+            trending_even_money = sorted_sections["even_money"][0][0] if sorted_sections["even_money"] else None
+            second_dozen = sorted_sections["dozens"][1][0] if len(sorted_sections["dozens"]) > 1 else None
+            weakest_dozen = min(state.dozen_scores.items(), key=lambda x: x[1], default=("1st Dozen", 0))[0]
+            double_streets_in_weakest = [(name, state.six_line_scores.get(name, 0)) for name, numbers in SIX_LINES.items() if set(numbers).issubset(DOZENS[weakest_dozen])]
+            if double_streets_in_weakest:
+                top_double_street = max(double_streets_in_weakest, key=lambda x: x[1])[0]
+                for num in SIX_LINES[top_double_street]:
+                    number_highlights[str(num)] = top_color
+
+        elif strategy_name == "3-8-6 Rising Martingale":
+            top_streets = sorted_sections["streets"][:8]
+            for i, (street_name, _) in enumerate(top_streets):
+                numbers = STREETS[street_name]
+                if i < 3:  # Top 3 streets (1st to 3rd)
+                    color = top_color
+                elif i < 6:  # Middle 3 streets (4th to 6th)
+                    color = middle_color
+                else:  # Bottom 2 streets (7th to 8th)
+                    color = lower_color
+                for num in numbers:
+                    number_highlights[str(num)] = color
+            trending_even_money = sorted_sections["even_money"][0][0] if sorted_sections["even_money"] else None
+            trending_dozen = sorted_sections["dozens"][0][0] if sorted_sections["dozens"] else None
+            second_dozen = sorted_sections["dozens"][1][0] if len(sorted_sections["dozens"]) > 1 else None
+
+        elif strategy_name == "1 Dozen +1 Column Strategy":
+            trending_dozen = sorted_sections["dozens"][0][0] if sorted_sections["dozens"] and sorted_sections["dozens"][0][1] > 0 else None
+            trending_column = sorted_sections["columns"][0][0] if sorted_sections["columns"] and sorted_sections["columns"][0][1] > 0 else None
+
+        elif strategy_name == "Top Pick 18 Numbers without Neighbours":
             straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
             straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
             if len(straight_up_df) >= 18:
@@ -583,270 +807,63 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
                 for num in last_6:
                     number_highlights[str(num)] = lower_color
 
-    # Line 3: One below coding full (start of next block)
-        elif strategy_name == "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers":
-            trending_dozen = None
-            second_dozen = None
-            if sorted_sections["dozens"]:
-                dozens_hits = [item for item in sorted_sections["dozens"] if item[1] > 0]
-                if dozens_hits:
-                    trending_dozen = dozens_hits[0][0]
-                    if len(dozens_hits) > 1:
-                        second_dozen = dozens_hits[1][0]
-        trending_even_money = None
-        second_even_money = None
-        third_even_money = None
-        if sorted_sections["even_money"]:
-            even_money_hits = [item for item in sorted_sections["even_money"] if item[1] > 0]
-            if even_money_hits:
-                trending_even_money = even_money_hits[0][0]
-                if len(even_money_hits) > 1:
-                    second_even_money = even_money_hits[1][0]
-                if len(even_money_hits) > 2:
-                    third_even_money = even_money_hits[2][0]
-        straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
-        straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
-        if len(straight_up_df) >= 18:
-            top_18_df = straight_up_df.head(18)
-            top_18_numbers = top_18_df["Number"].tolist()
-            top_6 = top_18_numbers[:6]
-            next_6 = top_18_numbers[6:12]
-            last_6 = top_18_numbers[12:18]
-            for num in top_6:
-                number_highlights[str(num)] = top_color
-            for num in next_6:
-                number_highlights[str(num)] = middle_color
-            for num in last_6:
-                number_highlights[str(num)] = lower_color
+        elif strategy_name == "Best Even Money Bets + Top Pick 18 Numbers":
+            trending_even_money = None
+            second_even_money = None
+            third_even_money = None
+            if sorted_sections["even_money"]:
+                even_money_hits = [item for item in sorted_sections["even_money"] if item[1] > 0]
+                if even_money_hits:
+                    trending_even_money = even_money_hits[0][0]
+                    if len(even_money_hits) > 1:
+                        second_even_money = even_money_hits[1][0]
+                    if len(even_money_hits) > 2:
+                        third_even_money = even_money_hits[2][0]
+            straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+            straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
+            if len(straight_up_df) >= 18:
+                top_18_df = straight_up_df.head(18)
+                top_18_numbers = top_18_df["Number"].tolist()
+                top_6 = top_18_numbers[:6]
+                next_6 = top_18_numbers[6:12]
+                last_6 = top_18_numbers[12:18]
+                for num in top_6:
+                    number_highlights[str(num)] = top_color
+                for num in next_6:
+                    number_highlights[str(num)] = middle_color
+                for num in last_6:
+                    number_highlights[str(num)] = lower_color
 
-    elif strategy_name == "Best Columns + Best Even Money Bets + Top Pick 18 Numbers":
-        trending_column = None
-        second_column = None
-        if sorted_sections["columns"]:
-            columns_hits = [item for item in sorted_sections["columns"] if item[1] > 0]
-            if columns_hits:
-                trending_column = columns_hits[0][0]
-                if len(columns_hits) > 1:
-                    second_column = columns_hits[1][0]
-        trending_even_money = None
-        second_even_money = None
-        third_even_money = None
-        if sorted_sections["even_money"]:
-            even_money_hits = [item for item in sorted_sections["even_money"] if item[1] > 0]
-            if even_money_hits:
-                trending_even_money = even_money_hits[0][0]
-                if len(even_money_hits) > 1:
-                    second_even_money = even_money_hits[1][0]
-                if len(even_money_hits) > 2:
-                    third_even_money = even_money_hits[2][0]
-        straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
-        straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
-        if len(straight_up_df) >= 18:
-            top_18_df = straight_up_df.head(18)
-            top_18_numbers = top_18_df["Number"].tolist()
-            top_6 = top_18_numbers[:6]
-            next_6 = top_18_numbers[6:12]
-            last_6 = top_18_numbers[12:18]
-            for num in top_6:
-                number_highlights[str(num)] = top_color
-            for num in next_6:
-                number_highlights[str(num)] = middle_color
-            for num in last_6:
-                number_highlights[str(num)] = lower_color
-
-    elif strategy_name == "Fibonacci Strategy":
-        best_dozen_score = sorted_sections["dozens"][0][1] if sorted_sections["dozens"] else 0
-        best_column_score = sorted_sections["columns"][0][1] if sorted_sections["columns"] else 0
-        if best_dozen_score > best_column_score:
-            trending_dozen = sorted_sections["dozens"][0][0]
-        elif best_column_score > best_dozen_score:
-            trending_column = sorted_sections["columns"][0][0]
-        else:
-            trending_dozen = sorted_sections["dozens"][0][0]
-            trending_column = sorted_sections["columns"][0][0]
-
-    elif strategy_name == "Best Streets":
-        top_streets = sorted_sections["streets"][:9]
-        for i, (street_name, _) in enumerate(top_streets):
-            numbers = STREETS[street_name]
-            color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
-            for num in numbers:
-                number_highlights[str(num)] = color
-
-    elif strategy_name == "Best Double Streets":
-        top_six_lines = sorted_sections["six_lines"][:9]
-        for i, (six_line_name, _) in enumerate(top_six_lines):
-            numbers = SIX_LINES[six_line_name]
-            color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
-            for num in numbers:
-                number_highlights[str(num)] = color
-
-    elif strategy_name == "Best Corners":
-        top_corners = sorted_sections["corners"][:9]
-        for i, (corner_name, _) in enumerate(top_corners):
-            numbers = CORNERS[corner_name]
-            color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
-            for num in numbers:
-                number_highlights[str(num)] = color
-
-    elif strategy_name == "Best Splits":
-        top_splits = sorted_sections["splits"][:9]
-        for i, (split_name, _) in enumerate(top_splits):
-            numbers = SPLITS[split_name]
-            color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
-            for num in numbers:
-                number_highlights[str(num)] = color
-
-    elif strategy_name == "Best Dozens + Best Streets":
-        trending_dozen = sorted_sections["dozens"][0][0] if sorted_sections["dozens"] else None
-        second_dozen = sorted_sections["dozens"][1][0] if len(sorted_sections["dozens"]) > 1 else None
-        top_streets = sorted_sections["streets"][:9]
-        for i, (street_name, _) in enumerate(top_streets):
-            numbers = STREETS[street_name]
-            color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
-            for num in numbers:
-                number_highlights[str(num)] = color
-
-    elif strategy_name == "Best Columns + Best Streets":
-        trending_column = sorted_sections["columns"][0][0] if sorted_sections["columns"] else None
-        second_column = sorted_sections["columns"][1][0] if len(sorted_sections["columns"]) > 1 else None
-        top_streets = sorted_sections["streets"][:9]
-        for i, (street_name, _) in enumerate(top_streets):
-            numbers = STREETS[street_name]
-            color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
-            for num in numbers:
-                number_highlights[str(num)] = color
-
-    elif strategy_name == "Non-Overlapping Double Street Strategy":
-        non_overlapping_sets = [
-            ["1ST D.STREET – 1, 4", "3RD D.STREET – 7, 10", "5TH D.STREET – 13, 16", "7TH D.STREET – 19, 22", "9TH D.STREET – 25, 28"],
-            ["2ND D.STREET – 4, 7", "4TH D.STREET – 10, 13", "6TH D.STREET – 16, 19", "8TH D.STREET – 22, 25", "10TH D.STREET – 28, 31"]
-        ]
-        set_scores = []
-        for idx, non_overlapping_set in enumerate(non_overlapping_sets):
-            total_score = sum(state.six_line_scores.get(name, 0) for name in non_overlapping_set)
-            set_scores.append((idx, total_score, non_overlapping_set))
-        best_set = max(set_scores, key=lambda x: x[1], default=(0, 0, non_overlapping_sets[0]))
-        best_set_streets = best_set[2]
-        sorted_best_set = sorted(best_set_streets, key=lambda name: state.six_line_scores.get(name, 0), reverse=True)[:9]
-        for i, double_street_name in enumerate(sorted_best_set):
-            numbers = SIX_LINES[double_street_name]
-            color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
-            for num in numbers:
-                number_highlights[str(num)] = color
-
-    elif strategy_name == "Non-Overlapping Corner Strategy":
-        sorted_corners = sorted(state.corner_scores.items(), key=lambda x: x[1], reverse=True)
-        selected_corners = []
-        selected_numbers = set()
-        for corner_name, _ in sorted_corners:
-            if len(selected_corners) >= 9:
-                break
-            corner_numbers = set(CORNERS[corner_name])
-            if not corner_numbers & selected_numbers:
-                selected_corners.append(corner_name)
-                selected_numbers.update(corner_numbers)
-        for i, corner_name in enumerate(selected_corners):
-            numbers = CORNERS[corner_name]
-            color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
-            for num in numbers:
-                number_highlights[str(num)] = color
-
-    elif strategy_name == "Romanowksy Missing Dozen":
-        trending_dozen = sorted_sections["dozens"][0][0] if sorted_sections["dozens"] and sorted_sections["dozens"][0][1] > 0 else None
-        second_dozen = sorted_sections["dozens"][1][0] if len(sorted_sections["dozens"]) > 1 and sorted_sections["dozens"][1][1] > 0 else None
-        weakest_dozen = min(state.dozen_scores.items(), key=lambda x: x[1], default=("1st Dozen", 0))[0]
-        straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
-        straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
-        weak_numbers = [row["Number"] for _, row in straight_up_df.iterrows() if row["Number"] in DOZENS[weakest_dozen]][:8]
-        for num in weak_numbers:
-            number_highlights[str(num)] = top_color
-
-    elif strategy_name == "Fibonacci To Fortune":
-        best_dozen_score = sorted_sections["dozens"][0][1] if sorted_sections["dozens"] else 0
-        best_column_score = sorted_sections["columns"][0][1] if sorted_sections["columns"] else 0
-        if best_dozen_score > best_column_score:
-            trending_dozen = sorted_sections["dozens"][0][0]
-        elif best_column_score > best_dozen_score:
-            trending_column = sorted_sections["columns"][0][0]
-        else:
-            trending_dozen = sorted_sections["dozens"][0][0]
-            trending_column = sorted_sections["columns"][0][0]
-        trending_even_money = sorted_sections["even_money"][0][0] if sorted_sections["even_money"] else None
-        second_dozen = sorted_sections["dozens"][1][0] if len(sorted_sections["dozens"]) > 1 else None
-        weakest_dozen = min(state.dozen_scores.items(), key=lambda x: x[1], default=("1st Dozen", 0))[0]
-        double_streets_in_weakest = [(name, state.six_line_scores.get(name, 0)) for name, numbers in SIX_LINES.items() if set(numbers).issubset(DOZENS[weakest_dozen])]
-        if double_streets_in_weakest:
-            top_double_street = max(double_streets_in_weakest, key=lambda x: x[1])[0]
-            for num in SIX_LINES[top_double_street]:
-                number_highlights[str(num)] = top_color
-
-    elif strategy_name == "3-8-6 Rising Martingale":
-        top_streets = sorted_sections["streets"][:8]
-        for i, (street_name, _) in enumerate(top_streets):
-            numbers = STREETS[street_name]
-            if i < 3:  # Top 3 streets (1st to 3rd)
-                color = top_color
-            elif i < 6:  # Middle 3 streets (4th to 6th)
-                color = middle_color
-            else:  # Bottom 2 streets (7th to 8th)
-                color = lower_color
-            for num in numbers:
-                number_highlights[str(num)] = color
-        trending_even_money = sorted_sections["even_money"][0][0] if sorted_sections["even_money"] else None
-        trending_dozen = sorted_sections["dozens"][0][0] if sorted_sections["dozens"] else None
-        second_dozen = sorted_sections["dozens"][1][0] if len(sorted_sections["dozens"]) > 1 else None
-
-    elif strategy_name == "1 Dozen +1 Column Strategy":
-        trending_dozen = sorted_sections["dozens"][0][0] if sorted_sections["dozens"] and sorted_sections["dozens"][0][1] > 0 else None
-        trending_column = sorted_sections["columns"][0][0] if sorted_sections["columns"] and sorted_sections["columns"][0][1] > 0 else None
-
-    elif strategy_name == "Top Pick 18 Numbers without Neighbours":
-        straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
-        straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
-        if len(straight_up_df) >= 18:
-            top_18_df = straight_up_df.head(18)
-            top_18_numbers = top_18_df["Number"].tolist()
-            top_6 = top_18_numbers[:6]
-            next_6 = top_18_numbers[6:12]
-            last_6 = top_18_numbers[12:18]
-            for num in top_6:
-                number_highlights[str(num)] = top_color
-            for num in next_6:
-                number_highlights[str(num)] = middle_color
-            for num in last_6:
-                number_highlights[str(num)] = lower_color
-
-    elif strategy_name == "Neighbours of Strong Number":
-        sorted_numbers = sorted(state.scores.items(), key=lambda x: (-x[1], x[0]))
-        numbers_hits = [item for item in sorted_numbers if item[1] > 0]
-        if numbers_hits:
-            strong_numbers_count = min(strong_numbers_count, len(numbers_hits))
-            top_numbers = set(item[0] for item in numbers_hits[:strong_numbers_count])
-            selected_numbers = set(top_numbers)
-            neighbors_set = set()
-            for strong_number in top_numbers:
-                current_number = strong_number
-                for _ in range(neighbours_count):
-                    left, _ = current_neighbors.get(current_number, (None, None))
-                    if left is not None:
-                        neighbors_set.add(left)
-                        current_number = left
-                    else:
-                        break
-                current_number = strong_number
-                for _ in range(neighbours_count):
-                    _, right = current_neighbors.get(current_number, (None, None))
-                    if right is not None:
-                        neighbors_set.add(right)
-                        current_number = right
-                    else:
-                        break
-            neighbors_set = neighbors_set - selected_numbers
-            for num in selected_numbers:
-                number_highlights[str(num)] = top_color
-            for num in neighbors_set:
-                number_highlights[str(num)] = middle_color
+        elif strategy_name == "Neighbours of Strong Number":
+            sorted_numbers = sorted(state.scores.items(), key=lambda x: (-x[1], x[0]))
+            numbers_hits = [item for item in sorted_numbers if item[1] > 0]
+            if numbers_hits:
+                strong_numbers_count = min(strong_numbers_count, len(numbers_hits))
+                top_numbers = set(item[0] for item in numbers_hits[:strong_numbers_count])
+                selected_numbers = set(top_numbers)
+                neighbors_set = set()
+                for strong_number in top_numbers:
+                    current_number = strong_number
+                    for _ in range(neighbours_count):
+                        left, _ = current_neighbors.get(current_number, (None, None))
+                        if left is not None:
+                            neighbors_set.add(left)
+                            current_number = left
+                        else:
+                            break
+                    current_number = strong_number
+                    for _ in range(neighbours_count):
+                        _, right = current_neighbors.get(current_number, (None, None))
+                        if right is not None:
+                            neighbors_set.add(right)
+                            current_number = right
+                        else:
+                            break
+                neighbors_set = neighbors_set - selected_numbers
+                for num in selected_numbers:
+                    number_highlights[str(num)] = top_color
+                for num in neighbors_set:
+                    number_highlights[str(num)] = middle_color
 
     return trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color
 
@@ -2461,59 +2478,77 @@ def update_spin_counter():
 def top_numbers_with_neighbours_tiered():
     recommendations = []
     straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
-    straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
 
     if straight_up_df.empty:
         return "<p>Top Numbers with Neighbours (Tiered): No numbers have hit yet.</p>"
 
-    # Take top 8 numbers by score (or fewer if less than 8 have hits)
+    # Start with the HTML table for Strongest Numbers
+    table_html = '<table border="1" style="border-collapse: collapse; text-align: center; font-family: Arial, sans-serif;">'
+    table_html += "<tr><th>Hit</th><th>Left N.</th><th>Right N.</th></tr>"  # Table header
+    for _, row in straight_up_df.iterrows():
+        num = str(row["Number"])
+        left, right = current_neighbors.get(row["Number"], ("", ""))
+        left = str(left) if left is not None else ""
+        right = str(right) if right is not None else ""
+        table_html += f"<tr><td>{num}</td><td>{left}</td><td>{right}</td></tr>"
+    table_html += "</table>"
+
+    # Wrap the table in a div with a heading
+    recommendations.append("<h3>Strongest Numbers:</h3>")
+    recommendations.append(table_html)
+
     num_to_take = min(8, len(straight_up_df))
     top_numbers = straight_up_df["Number"].head(num_to_take).tolist()
 
-    # Collect numbers and their neighbors into groups
+    all_numbers = set()
+    number_scores = {}
+    for num in top_numbers:
+        neighbors = current_neighbors.get(num, (None, None))
+        left, right = neighbors
+        all_numbers.add(num)
+        number_scores[num] = state.scores[num]
+        if left is not None:
+            all_numbers.add(left)
+        if right is not None:
+            all_numbers.add(right)
+
     number_groups = []
     for num in top_numbers:
         left, right = current_neighbors.get(num, (None, None))
-        group = [str(num)]
+        group = [num]
         if left is not None:
-            group.append(str(left))
+            group.append(left)
         if right is not None:
-            group.append(str(right))
+            group.append(right)
         number_groups.append((state.scores[num], group))
 
-    # Sort groups by the score of the main number
     number_groups.sort(key=lambda x: x[0], reverse=True)
-
-    # Flatten into ordered list, up to 24 numbers (8 groups x 3)
     ordered_numbers = []
     for _, group in number_groups:
         ordered_numbers.extend(group)
-    ordered_numbers = ordered_numbers[:24]  # Cap at 24 (8 per tier)
-    
-    # Split into tiers
+
+    ordered_numbers = ordered_numbers[:24]
     top_8 = ordered_numbers[:8]
     next_8 = ordered_numbers[8:16]
     last_8 = ordered_numbers[16:24]
 
-    # Build HTML table matching Strongest Numbers format
-    table_html = '<table border="1" style="border-collapse: collapse; text-align: center; font-family: Arial, sans-serif;">'
-    table_html += "<tr><th>Hit</th><th>Left N.</th><th>Right N.</th><th>Score</th></tr>"
-    for num in top_numbers:
-        score = state.scores[num]
-        left, right = current_neighbors.get(num, ("", ""))
-        left = str(left) if left is not None else ""
-        right = str(right) if right is not None else ""
-        table_html += f"<tr><td>{num}</td><td>{left}</td><td>{right}</td><td>{score}</td></tr>"
-    table_html += "</table>"
+    recommendations.append("<h3>Top Numbers with Neighbours (Tiered):</h3>")
+    recommendations.append("<p><strong>Top Tier (Yellow):</strong></p>")
+    for i, num in enumerate(top_8, 1):
+        score = number_scores.get(num, "Neighbor")
+        recommendations.append(f"<p>{i}. Number {num} (Score: {score})</p>")
 
-    # Add tiered recommendations
-    recommendations.append("<h3>Top Numbers with Neighbours (Tiered)</h3>")
-    recommendations.append(table_html)
-    recommendations.append("<p><strong>Top Tier (Yellow):</strong> " + ", ".join(top_8) + "</p>")
-    recommendations.append("<p><strong>Second Tier (Cyan):</strong> " + (", ".join(next_8) if next_8 else "None") + "</p>")
-    recommendations.append("<p><strong>Third Tier (Green):</strong> " + (", ".join(last_8) if last_8 else "None") + "</p>")
+    recommendations.append("<p><strong>Second Tier (Blue):</strong></p>")
+    for i, num in enumerate(next_8, 1):
+        score = number_scores.get(num, "Neighbor")
+        recommendations.append(f"<p>{i}. Number {num} (Score: {score})</p>")
 
-    return "".join(recommendations)
+    recommendations.append("<p><strong>Third Tier (Green):</strong></p>")
+    for i, num in enumerate(last_8, 1):
+        score = number_scores.get(num, "Neighbor")
+        recommendations.append(f"<p>{i}. Number {num} (Score: {score})</p>")
+
+    return "\n".join(recommendations)
 
 def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
     """Recommend numbers and their neighbors based on hit frequency."""
@@ -2629,35 +2664,6 @@ STRATEGIES = {
     "Top Pick 18 Numbers without Neighbours": {"function": top_pick_18_numbers_without_neighbours, "categories": ["numbers"]},
     "Top Numbers with Neighbours (Tiered)": {"function": top_numbers_with_neighbours_tiered, "categories": ["numbers"]},
     "Neighbours of Strong Number": {"function": neighbours_of_strong_number, "categories": ["neighbours"]}
-}
-STRATEGY_EXPLANATIONS = {
-    "Hot Bet Strategy": "<p><strong>Hot Bet Strategy</strong>: Focuses on the most frequent hits across all betting categories (even money, dozens, columns, streets, corners, splits, and numbers). It highlights the hottest sections to maximize bets on current trends.</p>",
-    "Cold Bet Strategy": "<p><strong>Cold Bet Strategy</strong>: Targets the least-hit sections, betting on numbers and categories that haven’t appeared recently, based on the idea that they’re 'due' to hit.</p>",
-    "Best Even Money Bets": "<p><strong>Best Even Money Bets</strong>: Identifies the top-performing even money bets (Red, Black, Even, Odd, Low, High) with the highest hit counts, ideal for low-risk, high-frequency betting.</p>",
-    "Best Even Money Bets + Top Pick 18 Numbers": "<p><strong>Best Even Money Bets + Top Pick 18 Numbers</strong>: Combines the top 3 even money bets with the 18 most frequent straight-up numbers, split into tiers for broader coverage.</p>",
-    "Best Dozens": "<p><strong>Best Dozens</strong>: Highlights the two dozens (1-12, 13-24, 25-36) with the most hits, offering a balanced approach to medium-risk betting.</p>",
-    "Best Dozens + Top Pick 18 Numbers": "<p><strong>Best Dozens + Top Pick 18 Numbers</strong>: Pairs the top 2 dozens with the 18 most frequent numbers, tiered for priority, blending outside and inside bets.</p>",
-    "Best Columns": "<p><strong>Best Columns</strong>: Selects the two columns (1st, 2nd, 3rd) with the highest hit counts, similar to dozens but based on vertical table layout.</p>",
-    "Best Columns + Top Pick 18 Numbers": "<p><strong>Best Columns + Top Pick 18 Numbers</strong>: Combines the top 2 columns with the 18 most frequent numbers, tiered for strategic betting.</p>",
-    "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers": "<p><strong>Best Dozens + Best Even Money Bets + Top Pick 18 Numbers</strong>: A hybrid strategy mixing the top 2 dozens, top 3 even money bets, and top 18 numbers for comprehensive coverage.</p>",
-    "Best Columns + Best Even Money Bets + Top Pick 18 Numbers": "<p><strong>Best Columns + Best Even Money Bets + Top Pick 18 Numbers</strong>: Merges the top 2 columns, top 3 even money bets, and top 18 numbers for a versatile betting approach.</p>",
-    "Fibonacci Strategy": "<p><strong>Fibonacci Strategy</strong>: Compares the best dozen and column, selecting the one with the highest score (or both if tied), inspired by the Fibonacci betting progression.</p>",
-    "Best Streets": "<p><strong>Best Streets</strong>: Highlights the top streets (3-number rows) by hit count, tiered into top 3, next 3, and lower 3 for precise inside betting.</p>",
-    "Best Double Streets": "<p><strong>Best Double Streets</strong>: Ranks the top double streets (6-number rows) by hits, offering a broader inside bet option.</p>",
-    "Best Corners": "<p><strong>Best Corners</strong>: Identifies the top corners (4-number squares) by hit frequency, ranked for targeted betting.</p>",
-    "Best Splits": "<p><strong>Best Splits</strong>: Lists the top splits (2-number pairs) by hits, ideal for high-payout, specific inside bets.</p>",
-    "Best Dozens + Best Streets": "<p><strong>Best Dozens + Best Streets</strong>: Combines the top 2 dozens with the top 9 streets, tiered for a mix of outside and inside bets.</p>",
-    "Best Columns + Best Streets": "<p><strong>Best Columns + Best Streets</strong>: Pairs the top 2 columns with the top 9 streets, tiered for combined coverage.</p>",
-    "Non-Overlapping Double Street Strategy": "<p><strong>Non-Overlapping Double Street Strategy</strong>: Selects the best set of non-overlapping double streets (5 sets of 6 numbers) with the highest total hits, ranked within the set.</p>",
-    "Non-Overlapping Corner Strategy": "<p><strong>Non-Overlapping Corner Strategy</strong>: Chooses up to 9 non-overlapping corners (4-number groups) with the highest hits, ensuring no number overlap.</p>",
-    "Romanowksy Missing Dozen": "<p><strong>Romanowksy Missing Dozen</strong>: Focuses on the top 2 dozens and highlights the weakest dozen’s strongest numbers or neighbors for a contrarian approach.</p>",
-    "Fibonacci To Fortune": "<p><strong>Fibonacci To Fortune</strong>: Builds on Fibonacci by adding the best even money bet, top 2 columns and dozens, and a double street from the weakest dozen.</p>",
-    "3-8-6 Rising Martingale": "<p><strong>3-8-6 Rising Martingale</strong>: Highlights the top 8 streets in tiers (3-3-2) for a Martingale-inspired progression on inside bets.</p>",
-    "1 Dozen +1 Column Strategy": "<p><strong>1 Dozen +1 Column Strategy</strong>: Selects the single best dozen and column by hit count, covering 24 numbers with potential overlap.</p>",
-    "Top Pick 18 Numbers without Neighbours": "<p><strong>Top Pick 18 Numbers without Neighbours</strong>: Picks the 18 most frequent numbers, tiered into 6-6-6, focusing solely on straight-up bets.</p>",
-    "Top Numbers with Neighbours (Tiered)": "<p><strong>Top Numbers with Neighbours (Tiered)</strong>: Takes the top 8 numbers and includes their neighbors, tiered into 8-8-8 for a neighbor-focused strategy.</p>",
-    "Neighbours of Strong Number": "<p><strong>Neighbours of Strong Number</strong>: Highlights a user-defined number of strongest numbers and their neighbors (left and right), customizable by count.</p>",
-    "None": "<p>No strategy selected. Choose a strategy from the dropdown to see its explanation and recommendations.</p>"
 }
 
 def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
@@ -2848,11 +2854,6 @@ with gr.Blocks() as demo:
                 label="Dynamic Table",
                 value=create_dynamic_table(strategy_name="Best Even Money Bets")  # Initial value with default strategy
             )
-            strategy_explanation = gr.HTML(
-                label="Strategy Explanation",
-                value="<p>Select a strategy to see its explanation here.</p>",
-                elem_classes=["strategy-explanation"]
-            )
         with gr.Column(scale=1):
             gr.Markdown("### Strategy Recommendations")
             strategy_output = gr.HTML(
@@ -2863,14 +2864,14 @@ with gr.Blocks() as demo:
             category_dropdown = gr.Dropdown(
                 label="Select Category",
                 choices=category_choices,
-                value="Even Money Strategies",
+                value="Even Money Strategies",  # Already set correctly
                 allow_custom_value=False,
                 elem_id="select-category"
             )
             strategy_dropdown = gr.Dropdown(
                 label="Select Strategy",
                 choices=strategy_categories["Even Money Strategies"],
-                value="Best Even Money Bets",
+                value="Best Even Money Bets",  # Already set correctly
                 allow_custom_value=False
             )
             reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
@@ -2894,10 +2895,7 @@ with gr.Blocks() as demo:
                 visible=False,
                 elem_classes="long-slider"
             )
-            reset_scores_checkbox = gr.Checkbox(
-                label="Reset Scores on Analysis",
-                value=True
-            )
+            reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
 
     # 8. Row 8: Color Pickers
     with gr.Row():
@@ -3107,15 +3105,6 @@ with gr.Blocks() as demo:
           transform: scale(1.05) !important; /* Slight zoom on hover */
           box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
       }
-      .strategy-explanation {
-          background-color: #f0f8ff !important; /* Light blue background */
-          border: 1px solid #87ceeb !important; /* Soft blue border */
-          padding: 10px !important;
-          border-radius: 5px !important;
-          margin-top: 10px !important;
-          font-size: 14px !important;
-          color: #333 !important;
-      }
     
       /* Last Spins Container */
       .last-spins-container {
@@ -3229,19 +3218,17 @@ with gr.Blocks() as demo:
         outputs=[strategy_dropdown]
     )
 
-    def toggle_neighbours_slider_and_show_explanation(strategy_name):
+    def toggle_neighbours_slider(strategy_name):
         is_visible = strategy_name == "Neighbours of Strong Number"
-        explanation = STRATEGY_EXPLANATIONS.get(strategy_name, "<p>Explanation not available for this strategy.</p>")
         return (
             gr.update(visible=is_visible),
-            gr.update(visible=is_visible),
-            explanation
+            gr.update(visible=is_visible)
         )
 
     strategy_dropdown.change(
-        fn=toggle_neighbours_slider_and_show_explanation,
+        fn=toggle_neighbours_slider,
         inputs=[strategy_dropdown],
-        outputs=[neighbours_count_slider, strong_numbers_count_slider, strategy_explanation]
+        outputs=[neighbours_count_slider, strong_numbers_count_slider]
     ).then(
         fn=show_strategy_recommendations,
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
