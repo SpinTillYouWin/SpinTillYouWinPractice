@@ -2590,6 +2590,7 @@ def update_spin_counter():
 def top_numbers_with_neighbours_tiered():
     recommendations = []
     straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+    straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
 
     if straight_up_df.empty:
         return "<p>Top Numbers with Neighbours (Tiered): No numbers have hit yet.</p>"
