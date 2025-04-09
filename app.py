@@ -3832,7 +3832,7 @@ with gr.Blocks() as demo:
         state.progression = progression
         if progression == "Labouchere":
             try:
-                state.progression_state = [int suffixx.strip()) for x in sequence.split(",")]
+                state.progression_state = [int(x.strip()) for x in sequence.split(",")]
             except ValueError:
                 state.progression_state = [1, 2, 3, 4]
                 return bankroll, base_unit, base_unit, "Invalid sequence, using default [1, 2, 3, 4]", "Active"
@@ -3875,82 +3875,6 @@ with gr.Blocks() as demo:
         fn=toggle_labouchere,
         inputs=[progression_dropdown],
         outputs=[labouchere_sequence]
-    )
-    labouchere_sequence.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    win_button.click(
-        fn=lambda: state.update_progression(True),
-        inputs=[],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    lose_button.click(
-        fn=lambda: state.update_progression(False),
-        inputs=[],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    reset_progression_button.click(
-        fn=lambda: state.reset_progression(),
-        inputs=[],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-
-    # Betting progression event handlers
-    def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence):
-        state.bankroll = bankroll
-        state.initial_bankroll = bankroll
-        state.base_unit = base_unit
-        state.stop_loss = stop_loss
-        state.stop_win = stop_win
-        state.bet_type = bet_type
-        state.progression = progression
-        if progression == "Labouchere":
-            try:
-                state.progression_state = [int(x.strip()) for x in sequence.split(",")]
-            except ValueError:
-                state.progression_state = [1, 2, 3, 4]
-                return bankroll, base_unit, base_unit, "Invalid sequence, using default [1, 2, 3, 4]", "Active"
-        state.reset_progression()
-        return state.bankroll, state.current_bet, state.next_bet, state.message, state.status
-
-    def toggle_labouchere(progression):
-        return gr.update(visible=progression == "Labouchere")
-
-    bankroll_input.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    base_unit_input.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    stop_loss_input.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    stop_win_input.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    bet_type_dropdown.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    progression_dropdown.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    ).then(
-        fn=toggle_labouchere,
-        inputs=progression_dropdown,
-        outputs=labouchere_sequence
     )
     labouchere_sequence.change(
         fn=update_config,
