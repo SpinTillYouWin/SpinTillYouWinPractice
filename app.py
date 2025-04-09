@@ -2883,16 +2883,16 @@ with gr.Blocks() as demo:
                 label="Dynamic Table",
                 value=create_dynamic_table(strategy_name="Best Even Money Bets")  # Initial value with default strategy
             )
+            strategy_explanation = gr.HTML(
+                label="Strategy Explanation",
+                value="<p>Select a strategy to see its explanation here.</p>",
+                elem_classes=["strategy-explanation"]
+            )
         with gr.Column(scale=1):
             gr.Markdown("### Strategy Recommendations")
             strategy_output = gr.HTML(
                 label="Strategy Recommendations",
                 value=show_strategy_recommendations("Best Even Money Bets", 2, 1)  # Initial value with default strategy
-            )
-            strategy_explanation = gr.HTML(
-                label="Strategy Explanation",
-                value="<p>Select a strategy to see its explanation here.</p>",
-                elem_classes=["strategy-explanation"]
             )
         with gr.Column(scale=1, min_width=200):
             category_dropdown = gr.Dropdown(
@@ -2929,7 +2929,7 @@ with gr.Blocks() as demo:
                 visible=False,
                 elem_classes="long-slider"
             )
-            reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
+            reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=
 
     # 8. Row 8: Color Pickers
     with gr.Row():
