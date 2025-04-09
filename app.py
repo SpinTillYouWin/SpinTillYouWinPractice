@@ -1010,19 +1010,22 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     if all(v is None for v in [trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column]) and not number_highlights:
         return "<p>Please analyze some spins first to see highlights on the dynamic table.</p>"
 
-    # Define casino winners if highlighting is enabled
+    # Define casino winners if highlighting is enabled, only for non-zero data
     casino_winners = {"hot_numbers": set(), "cold_numbers": set(), "even_money": set(), "dozens": set(), "columns": set()}
     if state.use_casino_winners:
         casino_winners["hot_numbers"] = set(state.casino_data["hot_numbers"].keys())
         casino_winners["cold_numbers"] = set(state.casino_data["cold_numbers"].keys())
-        casino_winners["even_money"] = {
-            max(state.casino_data["even_odd"], key=state.casino_data["even_odd"].get),
-            max(state.casino_data["red_black"], key=state.casino_data["red_black"].get),
-            max(state.casino_data["low_high"], key=state.casino_data["low_high"].get)
-        }
-        casino_winners["dozens"] = {max(state.casino_data["dozens"], key=state.casino_data["dozens"].get)}
-        casino_winners["columns"] = {max(state.casino_data["columns"], key=state.casino_data["columns"].get)}
-        print(f"Casino Winners Set: Hot={casino_winners['hot_numbers']}, Cold={casino_winners['cold_numbers']}")
+        if any(state.casino_data["even_odd"].values()):
+            casino_winners["even_money"].add(max(state.casino_data["even_odd"], key=state.casino_data["even_odd"].get))
+        if any(state.casino_data["red_black"].values()):
+            casino_winners["even_money"].add(max(state.casino_data["red_black"], key=state.casino_data["red_black"].get))
+        if any(state.casino_data["low_high"].values()):
+            casino_winners["even_money"].add(max(state.casino_data["low_high"], key=state.casino_data["low_high"].get))
+        if any(state.casino_data["dozens"].values()):
+            casino_winners["dozens"] = {max(state.casino_data["dozens"], key=state.casino_data["dozens"].get)}
+        if any(state.casino_data["columns"].values()):
+            casino_winners["columns"] = {max(state.casino_data["columns"], key=state.casino_data["columns"].get)}
+        print(f"Casino Winners Set: Hot={casino_winners['hot_numbers']}, Cold={casino_winners['cold_numbers']}, Even Money={casino_winners['even_money']}, Dozens={casino_winners['dozens']}, Columns={casino_winners['columns']}")
 
     table_layout = [
         ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
@@ -1115,7 +1118,7 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     html += "</table>"
     return html
 
-def update_casino_data(spins_count, even_odd, red_black, low_high, dozens, columns, use_winners):
+def update_casino_data(spins_count, even_percent, odd_percent, red_percent, black_percent, low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent, col1_percent, col2_percent, col3_percent, use_winners):
     """Parse casino data inputs, update state, and generate HTML output."""
     try:
         state.casino_data["spins_count"] = int(spins_count)
@@ -1125,33 +1128,70 @@ def update_casino_data(spins_count, even_odd, red_black, low_high, dozens, colum
         state.casino_data["hot_numbers"] = {}
         state.casino_data["cold_numbers"] = {}
 
-        # Parse Percentage Pairs/Triplets (no 100% check)
-        def parse_percentages(input_str, keys, expected_len, category):
-            if not input_str or not input_str.strip():
-                return {k: 0.0 for k in keys}
-            percentages = [float(p.strip()) for p in input_str.split("vs")]
-            if len(percentages) != expected_len:
-                raise ValueError(f"{category} must have {expected_len} percentages")
-            return dict(zip(keys, percentages))
+        # Parse percentages from dropdowns
+        def parse_percent(value, category, key):
+            try:
+                return float(value) if value != "00" else 0.0
+            except ValueError:
+                raise ValueError(f"Invalid {category} percentage for {key}: {value}")
 
-        state.casino_data["even_odd"] = parse_percentages(even_odd, ["Even", "Odd"], 2, "Even vs Odd")
-        state.casino_data["red_black"] = parse_percentages(red_black, ["Red", "Black"], 2, "Red vs Black")
-        state.casino_data["low_high"] = parse_percentages(low_high, ["Low", "High"], 2, "Low vs High")
-        state.casino_data["dozens"] = parse_percentages(dozens, ["1st Dozen", "2nd Dozen", "3rd Dozen"], 3, "Dozens")
-        state.casino_data["columns"] = parse_percentages(columns, ["1st Column", "2nd Column", "3rd Column"], 3, "Columns")
+        # Even/Odd
+        even_val = parse_percent(even_percent, "Even vs Odd", "Even")
+        odd_val = parse_percent(odd_percent, "Even vs Odd", "Odd")
+        state.casino_data["even_odd"] = {"Even": even_val, "Odd": odd_val}
+        has_even_odd = even_val > 0 or odd_val > 0
+
+        # Red/Black
+        red_val = parse_percent(red_percent, "Red vs Black", "Red")
+        black_val = parse_percent(black_percent, "Red vs Black", "Black")
+        state.casino_data["red_black"] = {"Red": red_val, "Black": black_val}
+        has_red_black = red_val > 0 or black_val > 0
+
+        # Low/High
+        low_val = parse_percent(low_percent, "Low vs High", "Low")
+        high_val = parse_percent(high_percent, "Low vs High", "High")
+        state.casino_data["low_high"] = {"Low": low_val, "High": high_val}
+        has_low_high = low_val > 0 or high_val > 0
+
+        # Dozens
+        d1_val = parse_percent(dozen1_percent, "Dozens", "1st Dozen")
+        d2_val = parse_percent(dozen2_percent, "Dozens", "2nd Dozen")
+        d3_val = parse_percent(dozen3_percent, "Dozens", "3rd Dozen")
+        state.casino_data["dozens"] = {"1st Dozen": d1_val, "2nd Dozen": d2_val, "3rd Dozen": d3_val}
+        has_dozens = d1_val > 0 or d2_val > 0 or d3_val > 0
+
+        # Columns
+        c1_val = parse_percent(col1_percent, "Columns", "1st Column")
+        c2_val = parse_percent(col2_percent, "Columns", "2nd Column")
+        c3_val = parse_percent(col3_percent, "Columns", "3rd Column")
+        state.casino_data["columns"] = {"1st Column": c1_val, "2nd Column": c2_val, "3rd Column": c3_val}
+        has_columns = c1_val > 0 or c2_val > 0 or c3_val > 0
 
         # Generate HTML Output
         output = f"<h4>Casino Data Insights (Last {spins_count} Spins):</h4>"
-        for key, name in [("even_odd", "Even vs Odd"), ("red_black", "Red vs Black"), ("low_high", "Low vs High")]:
-            winner = max(state.casino_data[key], key=state.casino_data[key].get)
-            output += f"<p>{name}: " + " vs ".join(
-                f"<b>{v:.1f}%</b>" if k == winner else f"{v:.1f}%" for k, v in state.casino_data[key].items()
-            ) + f" (Winner: {winner})</p>"
-        for key, name in [("dozens", "Dozens"), ("columns", "Columns")]:
-            winner = max(state.casino_data[key], key=state.casino_data[key].get)
-            output += f"<p>{name}: " + " vs ".join(
-                f"<b>{v:.1f}%</b>" if k == winner else f"{v:.1f}%" for k, v in state.casino_data[key].items()
-            ) + f" (Winner: {winner})</p>"
+        for key, name, has_data in [
+            ("even_odd", "Even vs Odd", has_even_odd),
+            ("red_black", "Red vs Black", has_red_black),
+            ("low_high", "Low vs High", has_low_high)
+        ]:
+            if has_data:
+                winner = max(state.casino_data[key], key=state.casino_data[key].get)
+                output += f"<p>{name}: " + " vs ".join(
+                    f"<b>{v:.1f}%</b>" if k == winner else f"{v:.1f}%" for k, v in state.casino_data[key].items()
+                ) + f" (Winner: {winner})</p>"
+            else:
+                output += f"<p>{name}: Not set</p>"
+        for key, name, has_data in [
+            ("dozens", "Dozens", has_dozens),
+            ("columns", "Columns", has_columns)
+        ]:
+            if has_data:
+                winner = max(state.casino_data[key], key=state.casino_data[key].get)
+                output += f"<p>{name}: " + " vs ".join(
+                    f"<b>{v:.1f}%</b>" if k == winner else f"{v:.1f}%" for k, v in state.casino_data[key].items()
+                ) + f" (Winner: {winner})</p>"
+            else:
+                output += f"<p>{name}: Not set</p>"
         print(f"Generated HTML Output: {output}")
         return output
     except ValueError as e:
@@ -3108,31 +3148,83 @@ with gr.Blocks() as demo:
                     value="100",
                     interactive=True
                 )
-                even_odd_input = gr.Textbox(
-                    label="Even vs Odd % (e.g., 52 vs 48)",
-                    placeholder="Enter as 'Even % vs Odd %'",
-                    interactive=True
-                )
-                red_black_input = gr.Textbox(
-                    label="Red vs Black % (e.g., 49 vs 51)",
-                    placeholder="Enter as 'Red % vs Black %'",
-                    interactive=True
-                )
-                low_high_input = gr.Textbox(
-                    label="Low vs High % (e.g., 47 vs 53)",
-                    placeholder="Enter as 'Low % vs High %'",
-                    interactive=True
-                )
-                dozens_input = gr.Textbox(
-                    label="Dozens % (e.g., 35 vs 33 vs 32)",
-                    placeholder="Enter as '1st % vs 2nd % vs 3rd %'",
-                    interactive=True
-                )
-                columns_input = gr.Textbox(
-                    label="Columns % (e.g., 34 vs 33 vs 33)",
-                    placeholder="Enter as '1st % vs 2nd % vs 3rd %'",
-                    interactive=True
-                )
+                with gr.Row():
+                    even_percent = gr.Dropdown(
+                        label="Even %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    odd_percent = gr.Dropdown(
+                        label="Odd %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                with gr.Row():
+                    red_percent = gr.Dropdown(
+                        label="Red %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    black_percent = gr.Dropdown(
+                        label="Black %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                with gr.Row():
+                    low_percent = gr.Dropdown(
+                        label="Low %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    high_percent = gr.Dropdown(
+                        label="High %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                with gr.Row():
+                    dozen1_percent = gr.Dropdown(
+                        label="1st Dozen %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    dozen2_percent = gr.Dropdown(
+                        label="2nd Dozen %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    dozen3_percent = gr.Dropdown(
+                        label="3rd Dozen %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                with gr.Row():
+                    col1_percent = gr.Dropdown(
+                        label="1st Column %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    col2_percent = gr.Dropdown(
+                        label="2nd Column %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    col3_percent = gr.Dropdown(
+                        label="3rd Column %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
                 use_winners_checkbox = gr.Checkbox(
                     label="Highlight Casino Winners",
                     value=False,
@@ -3682,39 +3774,79 @@ with gr.Blocks() as demo:
     )
 
     # Casino data event handlers
+    inputs_list = [
+        spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
+        low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent,
+        col1_percent, col2_percent, col3_percent, use_winners_checkbox
+    ]
     spins_count_dropdown.change(
         fn=update_casino_data,
-        inputs=[spins_count_dropdown, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        inputs=inputs_list,
         outputs=[casino_data_output]
     )
-    even_odd_input.change(
+    even_percent.change(
         fn=update_casino_data,
-        inputs=[spins_count_dropdown, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        inputs=inputs_list,
         outputs=[casino_data_output]
     )
-    red_black_input.change(
+    odd_percent.change(
         fn=update_casino_data,
-        inputs=[spins_count_dropdown, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        inputs=inputs_list,
         outputs=[casino_data_output]
     )
-    low_high_input.change(
+    red_percent.change(
         fn=update_casino_data,
-        inputs=[spins_count_dropdown, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        inputs=inputs_list,
         outputs=[casino_data_output]
     )
-    dozens_input.change(
+    black_percent.change(
         fn=update_casino_data,
-        inputs=[spins_count_dropdown, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        inputs=inputs_list,
         outputs=[casino_data_output]
     )
-    columns_input.change(
+    low_percent.change(
         fn=update_casino_data,
-        inputs=[spins_count_dropdown, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    high_percent.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    dozen1_percent.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    dozen2_percent.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    dozen3_percent.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    col1_percent.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    col2_percent.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    col3_percent.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
         outputs=[casino_data_output]
     )
     use_winners_checkbox.change(
         fn=update_casino_data,
-        inputs=[spins_count_dropdown, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input, use_winners_checkbox],
+        inputs=inputs_list,
         outputs=[casino_data_output]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
@@ -3722,12 +3854,15 @@ with gr.Blocks() as demo:
         outputs=[dynamic_table_output]
     )
     reset_casino_data_button.click(
-        fn=reset_casino_data,
+        fn=lambda: (
+            "100", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", False,
+            "<p>Casino data reset to defaults.</p>"
+        ),
         inputs=[],
         outputs=[
-            spins_count_dropdown, even_odd_input, red_black_input,
-            low_high_input, dozens_input, columns_input, use_winners_checkbox,
-            casino_data_output
+            spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
+            low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent,
+            col1_percent, col2_percent, col3_percent, use_winners_checkbox, casino_data_output
         ]
     ).then(
         fn=create_dynamic_table,
