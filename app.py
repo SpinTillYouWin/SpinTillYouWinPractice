@@ -106,6 +106,7 @@ class RouletteState:
         self.is_stopped = False
         self.message = f"Progression reset. Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
         self.status = "Active"
+        return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
 
     def update_bankroll(self, won):
         payout = {"Even Money": 1, "Dozens": 2, "Columns": 2, "Straight Bets": 35}[self.bet_type]
@@ -123,14 +124,14 @@ class RouletteState:
 
     def update_progression(self, won):
         if self.is_stopped:
-            return self.current_bet, self.next_bet, self.message, self.status
+            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
         self.update_bankroll(won)
         if self.bankroll < self.current_bet:
             self.is_stopped = True
             self.status = "Stopped: Insufficient bankroll"
             self.message = "Cannot continue: Bankroll too low."
-            return self.current_bet, self.next_bet, self.message, self.status
-
+            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
+    
         if self.progression == "Martingale":
             self.current_bet = self.next_bet
             self.next_bet = self.base_unit if won else self.current_bet * 2
@@ -188,8 +189,8 @@ class RouletteState:
             self.current_bet = self.next_bet
             self.next_bet = max(self.base_unit, self.current_bet - self.base_unit) if won else self.current_bet + self.base_unit
             self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-
-        return self.current_bet, self.next_bet, self.message, self.status
+    
+        return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
 
 # Create an instance of RouletteState (unchanged)
 state = RouletteState()
@@ -3539,7 +3540,10 @@ with gr.Blocks() as demo:
     lose_button.click(fn=lambda: state.update_progression(False), inputs=[], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
     
     # Reset
-    reset_progression_button.click(fn=lambda: (state.reset_progression(), (state.bankroll, state.current_bet, state.next_bet, state.message, state.status)), inputs=[], outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output])
-
+    reset_progression_button.click(
+    fn=lambda: state.reset_progression(),
+    inputs=[],
+    outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+)
 # Launch the interface
 demo.launch()
