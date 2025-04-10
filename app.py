@@ -3604,8 +3604,33 @@ with gr.Blocks() as demo:
     print("CSS Updated")
     
     # Event Handlers
+    def validate_spins_input(spins_input):
+        if not spins_input or not spins_input.strip():
+            return None, "<h4>Last Spins</h4><p>No spins yet.</p>"
+        
+        raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
+        errors = []
+        valid_spins = []
+        
+        for spin in raw_spins:
+            try:
+                num = int(spin)
+                if not (0 <= num <= 36):
+                    errors.append(f"'{spin}' is out of range (0-36)")
+                else:
+                    valid_spins.append(spin)
+            except ValueError:
+                errors.append(f"'{spin}' is not a number")
+        
+        if errors:
+            error_msg = "Invalid inputs:\n- " + "\n- ".join(errors)
+            gr.Warning(error_msg)
+            return spins_input, f"<h4>Last Spins</h4><p>{error_msg}</p>"
+        
+        return ", ".join(valid_spins), format_spins_as_html(", ".join(valid_spins), last_spin_count.value)
+
     spins_textbox.change(
-        fn=lambda x: (x, format_spins_as_html(x, last_spin_count.value)),
+        fn=validate_spins_input,
         inputs=spins_textbox,
         outputs=[spins_display, last_spin_display]
     )
