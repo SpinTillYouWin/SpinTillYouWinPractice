@@ -3440,6 +3440,9 @@ with gr.Blocks() as demo:
       /* Ensure content below header is not overlapped */
       .roulette-table {
           margin-top: 120px !important; /* Match body padding-top */
+          margin-left: auto !important;
+          margin-right: auto !important;
+          max-width: 600px !important; /* Constrain width to fit most screens */
       }
     
       /* Header Styling */
@@ -3478,7 +3481,7 @@ with gr.Blocks() as demo:
       .roulette-button.selected { border: 3px solid yellow !important; opacity: 0.9; }
       .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid white !important; box-sizing: border-box !important; }
       .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
-      .roulette-table { display: flex !important; flex-direction: column !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
+      .roulette-table { display: flex !important; flex-direction: column !important; gap: 0 !important; padding: 0 !important; }
       .table-row { display: flex !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap !important; line-height: 0 !important; }
     
       /* Buttons */
@@ -3526,7 +3529,7 @@ with gr.Blocks() as demo:
           align-items: center !important;
           justify-content: center !important;
           box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important; /* Slightly stronger shadow */
-          transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
+          transition: transform 0.3s ease, box-shadow 0.3s ease !important; /* Smooth hover effect */
       }
       .spin-counter:hover {
           transform: scale(1.05) !important; /* Slight zoom on hover */
@@ -3996,12 +3999,19 @@ with gr.Blocks() as demo:
         transition: width 0.3s ease, height 0.3s ease;
       }
       .video-container.enlarged iframe {
-        width: 560px !important;
-        height: 315px !important;
+        width: 854px !important;
+        height: 480px !important;
       }
       /* Adjust Shepherd modal to accommodate larger video */
       .shepherd-element {
         transition: all 0.3s ease;
+        min-width: 900px !important; /* Ensure popup can fit the enlarged video */
+        max-width: 90vw !important; /* Prevent popup from exceeding viewport width */
+      }
+      .shepherd-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
       }
     </style>
     <script>
@@ -4030,7 +4040,10 @@ with gr.Blocks() as demo:
         console.log('Toggling video size for container:', container);
         container.classList.toggle('enlarged');
         // Force Shepherd to reposition the modal to fit the new size
-        tour.getCurrentStep().updateStepOptions({ popperOptions: tour.getCurrentStep().options.popperOptions });
+        const currentStep = tour.getCurrentStep();
+        if (currentStep) {
+          currentStep.updateStepOptions({ popperOptions: currentStep.options.popperOptions });
+        }
       }
     
       // Reset all videos to default size when moving to a new step
@@ -4052,17 +4065,19 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            const stepElement = document.querySelector('.shepherd-element');
-            const videoContainer = stepElement.querySelector('.video-container');
-            if (videoContainer) {
-              videoContainer.addEventListener('click', function(event) {
-                event.stopPropagation(); // Prevent Shepherd from capturing the click
-                console.log('Clicked video container in Part 1');
-                toggleVideoSize(this);
-              });
-            } else {
-              console.error('Video container not found in Part 1');
-            }
+            setTimeout(() => {
+              const stepElement = document.querySelector('.shepherd-element');
+              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
+              if (videoContainer) {
+                videoContainer.addEventListener('click', function(event) {
+                  event.stopPropagation();
+                  console.log('Clicked video container in Part 1');
+                  toggleVideoSize(this);
+                });
+              } else {
+                console.error('Video container not found in Part 1');
+              }
+            }, 100); // Delay to ensure DOM is ready
           }
         }
       });
@@ -4080,17 +4095,19 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            const stepElement = document.querySelector('.shepherd-element');
-            const videoContainer = stepElement.querySelector('.video-container');
-            if (videoContainer) {
-              videoContainer.addEventListener('click', function(event) {
-                event.stopPropagation();
-                console.log('Clicked video container in Part 2');
-                toggleVideoSize(this);
-              });
-            } else {
-              console.error('Video container not found in Part 2');
-            }
+            setTimeout(() => {
+              const stepElement = document.querySelector('.shepherd-element');
+              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
+              if (videoContainer) {
+                videoContainer.addEventListener('click', function(event) {
+                  event.stopPropagation();
+                  console.log('Clicked video container in Part 2');
+                  toggleVideoSize(this);
+                });
+              } else {
+                console.error('Video container not found in Part 2');
+              }
+            }, 100);
           }
         }
       });
@@ -4108,17 +4125,19 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            const stepElement = document.querySelector('.shepherd-element');
-            const videoContainer = stepElement.querySelector('.video-container');
-            if (videoContainer) {
-              videoContainer.addEventListener('click', function(event) {
-                event.stopPropagation();
-                console.log('Clicked video container in Part 3');
-                toggleVideoSize(this);
-              });
-            } else {
-              console.error('Video container not found in Part 3');
-            }
+            setTimeout(() => {
+              const stepElement = document.querySelector('.shepherd-element');
+              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
+              if (videoContainer) {
+                videoContainer.addEventListener('click', function(event) {
+                  event.stopPropagation();
+                  console.log('Clicked video container in Part 3');
+                  toggleVideoSize(this);
+                });
+              } else {
+                console.error('Video container not found in Part 3');
+              }
+            }, 100);
           }
         }
       });
@@ -4136,17 +4155,19 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            const stepElement = document.querySelector('.shepherd-element');
-            const videoContainer = stepElement.querySelector('.video-container');
-            if (videoContainer) {
-              videoContainer.addEventListener('click', function(event) {
-                event.stopPropagation();
-                console.log('Clicked video container in Part 4');
-                toggleVideoSize(this);
-              });
-            } else {
-              console.error('Video container not found in Part 4');
-            }
+            setTimeout(() => {
+              const stepElement = document.querySelector('.shepherd-element');
+              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
+              if (videoContainer) {
+                videoContainer.addEventListener('click', function(event) {
+                  event.stopPropagation();
+                  console.log('Clicked video container in Part 4');
+                  toggleVideoSize(this);
+                });
+              } else {
+                console.error('Video container not found in Part 4');
+              }
+            }, 100);
           }
         }
       });
@@ -4164,17 +4185,19 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            const stepElement = document.querySelector('.shepherd-element');
-            const videoContainer = stepElement.querySelector('.video-container');
-            if (videoContainer) {
-              videoContainer.addEventListener('click', function(event) {
-                event.stopPropagation();
-                console.log('Clicked video container in Part 5');
-                toggleVideoSize(this);
-              });
-            } else {
-              console.error('Video container not found in Part 5');
-            }
+            setTimeout(() => {
+              const stepElement = document.querySelector('.shepherd-element');
+              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
+              if (videoContainer) {
+                videoContainer.addEventListener('click', function(event) {
+                  event.stopPropagation();
+                  console.log('Clicked video container in Part 5');
+                  toggleVideoSize(this);
+                });
+              } else {
+                console.error('Video container not found in Part 5');
+              }
+            }, 100);
           }
         }
       });
@@ -4192,17 +4215,19 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            const stepElement = document.querySelector('.shepherd-element');
-            const videoContainer = stepElement.querySelector('.video-container');
-            if (videoContainer) {
-              videoContainer.addEventListener('click', function(event) {
-                event.stopPropagation();
-                console.log('Clicked video container in Part 6');
-                toggleVideoSize(this);
-              });
-            } else {
-              console.error('Video container not found in Part 6');
-            }
+            setTimeout(() => {
+              const stepElement = document.querySelector('.shepherd-element');
+              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
+              if (videoContainer) {
+                videoContainer.addEventListener('click', function(event) {
+                  event.stopPropagation();
+                  console.log('Clicked video container in Part 6');
+                  toggleVideoSize(this);
+                });
+              } else {
+                console.error('Video container not found in Part 6');
+              }
+            }, 100);
           }
         }
       });
@@ -4220,17 +4245,19 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            const stepElement = document.querySelector('.shepherd-element');
-            const videoContainer = stepElement.querySelector('.video-container');
-            if (videoContainer) {
-              videoContainer.addEventListener('click', function(event) {
-                event.stopPropagation();
-                console.log('Clicked video container in Part 7');
-                toggleVideoSize(this);
-              });
-            } else {
-              console.error('Video container not found in Part 7');
-            }
+            setTimeout(() => {
+              const stepElement = document.querySelector('.shepherd-element');
+              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
+              if (videoContainer) {
+                videoContainer.addEventListener('click', function(event) {
+                  event.stopPropagation();
+                  console.log('Clicked video container in Part 7');
+                  toggleVideoSize(this);
+                });
+              } else {
+                console.error('Video container not found in Part 7');
+              }
+            }, 100);
           }
         }
       });
@@ -4248,17 +4275,19 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            const stepElement = document.querySelector('.shepherd-element');
-            const videoContainer = stepElement.querySelector('.video-container');
-            if (videoContainer) {
-              videoContainer.addEventListener('click', function(event) {
-                event.stopPropagation();
-                console.log('Clicked video container in Part 8');
-                toggleVideoSize(this);
-              });
-            } else {
-              console.error('Video container not found in Part 8');
-            }
+            setTimeout(() => {
+              const stepElement = document.querySelector('.shepherd-element');
+              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
+              if (videoContainer) {
+                videoContainer.addEventListener('click', function(event) {
+                  event.stopPropagation();
+                  console.log('Clicked video container in Part 8');
+                  toggleVideoSize(this);
+                });
+              } else {
+                console.error('Video container not found in Part 8');
+              }
+            }, 100);
           }
         }
       });
@@ -4276,17 +4305,19 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            const stepElement = document.querySelector('.shepherd-element');
-            const videoContainer = stepElement.querySelector('.video-container');
-            if (videoContainer) {
-              videoContainer.addEventListener('click', function(event) {
-                event.stopPropagation();
-                console.log('Clicked video container in Part 9');
-                toggleVideoSize(this);
-              });
-            } else {
-              console.error('Video container not found in Part 9');
-            }
+            setTimeout(() => {
+              const stepElement = document.querySelector('.shepherd-element');
+              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
+              if (videoContainer) {
+                videoContainer.addEventListener('click', function(event) {
+                  event.stopPropagation();
+                  console.log('Clicked video container in Part 9');
+                  toggleVideoSize(this);
+                });
+              } else {
+                console.error('Video container not found in Part 9');
+              }
+            }, 100);
           }
         }
       });
@@ -4304,17 +4335,19 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            const stepElement = document.querySelector('.shepherd-element');
-            const videoContainer = stepElement.querySelector('.video-container');
-            if (videoContainer) {
-              videoContainer.addEventListener('click', function(event) {
-                event.stopPropagation();
-                console.log('Clicked video container in Part 10');
-                toggleVideoSize(this);
-              });
-            } else {
-              console.error('Video container not found in Part 10');
-            }
+            setTimeout(() => {
+              const stepElement = document.querySelector('.shepherd-element');
+              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
+              if (videoContainer) {
+                videoContainer.addEventListener('click', function(event) {
+                  event.stopPropagation();
+                  console.log('Clicked video container in Part 10');
+                  toggleVideoSize(this);
+                });
+              } else {
+                console.error('Video container not found in Part 10');
+              }
+            }, 100);
           }
         }
       });
@@ -4332,17 +4365,19 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            const stepElement = document.querySelector('.shepherd-element');
-            const videoContainer = stepElement.querySelector('.video-container');
-            if (videoContainer) {
-              videoContainer.addEventListener('click', function(event) {
-                event.stopPropagation();
-                console.log('Clicked video container in Part 11');
-                toggleVideoSize(this);
-              });
-            } else {
-              console.error('Video container not found in Part 11');
-            }
+            setTimeout(() => {
+              const stepElement = document.querySelector('.shepherd-element');
+              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
+              if (videoContainer) {
+                videoContainer.addEventListener('click', function(event) {
+                  event.stopPropagation();
+                  console.log('Clicked video container in Part 11');
+                  toggleVideoSize(this);
+                });
+              } else {
+                console.error('Video container not found in Part 11');
+              }
+            }, 100);
           }
         }
       });
@@ -4360,17 +4395,19 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            const stepElement = document.querySelector('.shepherd-element');
-            const videoContainer = stepElement.querySelector('.video-container');
-            if (videoContainer) {
-              videoContainer.addEventListener('click', function(event) {
-                event.stopPropagation();
-                console.log('Clicked video container in Part 12');
-                toggleVideoSize(this);
-              });
-            } else {
-              console.error('Video container not found in Part 12');
-            }
+            setTimeout(() => {
+              const stepElement = document.querySelector('.shepherd-element');
+              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
+              if (videoContainer) {
+                videoContainer.addEventListener('click', function(event) {
+                  event.stopPropagation();
+                  console.log('Clicked video container in Part 12');
+                  toggleVideoSize(this);
+                });
+              } else {
+                console.error('Video container not found in Part 12');
+              }
+            }, 100);
           }
         }
       });
@@ -4388,17 +4425,19 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            const stepElement = document.querySelector('.shepherd-element');
-            const videoContainer = stepElement.querySelector('.video-container');
-            if (videoContainer) {
-              videoContainer.addEventListener('click', function(event) {
-                event.stopPropagation();
-                console.log('Clicked video container in Part 13');
-                toggleVideoSize(this);
-              });
-            } else {
-              console.error('Video container not found in Part 13');
-            }
+            setTimeout(() => {
+              const stepElement = document.querySelector('.shepherd-element');
+              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
+              if (videoContainer) {
+                videoContainer.addEventListener('click', function(event) {
+                  event.stopPropagation();
+                  console.log('Clicked video container in Part 13');
+                  toggleVideoSize(this);
+                });
+              } else {
+                console.error('Video container not found in Part 13');
+              }
+            }, 100);
           }
         }
       });
@@ -4415,17 +4454,19 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            const stepElement = document.querySelector('.shepherd-element');
-            const videoContainer = stepElement.querySelector('.video-container');
-            if (videoContainer) {
-              videoContainer.addEventListener('click', function(event) {
-                event.stopPropagation();
-                console.log('Clicked video container in Part 14');
-                toggleVideoSize(this);
-              });
-            } else {
-              console.error('Video container not found in Part 14');
-            }
+            setTimeout(() => {
+              const stepElement = document.querySelector('.shepherd-element');
+              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
+              if (videoContainer) {
+                videoContainer.addEventListener('click', function(event) {
+                  event.stopPropagation();
+                  console.log('Clicked video container in Part 14');
+                  toggleVideoSize(this);
+                });
+              } else {
+                console.error('Video container not found in Part 14');
+              }
+            }, 100);
           }
         }
       });
