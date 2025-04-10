@@ -3104,12 +3104,12 @@ with gr.Blocks() as demo:
             last_spin_display
             last_spin_count
 
-        # 4. Row 4: Spin Controls
+    # 4. Row 4: Spin Controls
     with gr.Row():
         with gr.Column(scale=2):
             clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
         with gr.Column(scale=1):
-            undo_button = gr.Button("Undo Spins", elem_classes=["action-button"])
+            undo_button = gr.Button("Undo Spins", elem_classes=["action-button"], elem_id="undo-spins-btn")
         with gr.Column(scale=1):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
     
@@ -3973,7 +3973,7 @@ with gr.Blocks() as demo:
         },
         useModalOverlay: true
       });
-
+    
       // Part 1: Your Roulette Adventure Begins!
       tour.addStep({
         id: 'part1',
@@ -3985,7 +3985,7 @@ with gr.Blocks() as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Part 2: Spin the Wheel, Start the Thrill!
       tour.addStep({
         id: 'part2',
@@ -3998,7 +3998,7 @@ with gr.Blocks() as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Part 3: Peek at Your Spin Streak!
       tour.addStep({
         id: 'part3',
@@ -4011,20 +4011,20 @@ with gr.Blocks() as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Part 4: Master Your Spin Moves!
       tour.addStep({
         id: 'part4',
         title: 'Master Your Spin Moves!',
         text: 'Take charge of your spins! Clear the display, undo oopsies, or toss in random spins to play around.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/xG8z1S4HJK4" frameborder="0" allowfullscreen></iframe>',
-        attachTo: { element: '.action-button:contains("Undo Spins")', on: 'bottom' },
+        attachTo: { element: '#undo-spins-btn', on: 'bottom' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Next', action: tour.next },
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Part 5: Jot Spins, Count Wins!
       tour.addStep({
         id: 'part5',
@@ -4037,7 +4037,7 @@ with gr.Blocks() as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Part 6: Analyze and Reset Like a Pro!
       tour.addStep({
         id: 'part6',
@@ -4050,7 +4050,7 @@ with gr.Blocks() as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Part 7: Light Up Your Lucky Spots!
       tour.addStep({
         id: 'part7',
@@ -4063,7 +4063,7 @@ with gr.Blocks() as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Part 8: Bet Smart, Track the Art!
       tour.addStep({
         id: 'part8',
@@ -4076,7 +4076,7 @@ with gr.Blocks() as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Part 9: Paint Your Winning Hue!
       tour.addStep({
         id: 'part9',
@@ -4089,7 +4089,7 @@ with gr.Blocks() as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Part 10: Decode the Color Clue!
       tour.addStep({
         id: 'part10',
@@ -4102,7 +4102,7 @@ with gr.Blocks() as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Part 11: Unleash the Spin Secrets!
       tour.addStep({
         id: 'part11',
@@ -4115,7 +4115,7 @@ with gr.Blocks() as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Part 12: Save Your Spin Glory!
       tour.addStep({
         id: 'part12',
@@ -4128,7 +4128,7 @@ with gr.Blocks() as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Part 13: Pick Your Strategy Groove!
       tour.addStep({
         id: 'part13',
@@ -4141,7 +4141,7 @@ with gr.Blocks() as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Part 14: Boost Wins with Casino Intel!
       tour.addStep({
         id: 'part14',
@@ -4153,7 +4153,7 @@ with gr.Blocks() as demo:
           { text: 'Finish', action: tour.complete }
         ]
       });
-
+    
       function startTour() {
         tour.start();
       }
