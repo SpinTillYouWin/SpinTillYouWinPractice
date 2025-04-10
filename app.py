@@ -2766,7 +2766,8 @@ def best_columns_even_money_and_top_18():
         recommendations.append(f"{i}. Number {num} (Score: {score})")
 
     return "\n".join(recommendations)
-def dozens_streak_breaker_strategy(num_spins_to_check):
+    # Lines 3440-3490 (Fixed Section with Correct Indentation)
+    def dozens_streak_breaker_strategy(num_spins_to_check):
         """Analyze the last N spins for Dozen patterns and recommend betting against streaks."""
         recommendations = []
         
@@ -2777,12 +2778,12 @@ def dozens_streak_breaker_strategy(num_spins_to_check):
                 return "Error: Number of spins to check must be at least 1."
         except (ValueError, TypeError):
             return "Error: Invalid number of spins to check. Please use a positive integer."
-
+    
         # Get the last N spins
         recent_spins = state.last_spins[-num_spins_to_check:] if len(state.last_spins) >= num_spins_to_check else state.last_spins
         if not recent_spins:
             return "Dozens Streak Breaker Strategy: No spins recorded yet."
-
+    
         # Map each spin to its Dozen
         dozen_pattern = []
         for spin in recent_spins:
@@ -2798,11 +2799,11 @@ def dozens_streak_breaker_strategy(num_spins_to_check):
                         break
                 if not found:
                     dozen_pattern.append("Not in Dozen")
-
+    
         # Display the pattern
         recommendations.append(f"Last {len(recent_spins)} Dozens Pattern:")
         recommendations.append(", ".join(dozen_pattern))
-
+    
         # Check for a streak (all spins in the same Dozen, excluding "Not in Dozen")
         unique_dozens = set(dozen_pattern) - {"Not in Dozen"}
         if len(unique_dozens) == 1:
@@ -2814,16 +2815,17 @@ def dozens_streak_breaker_strategy(num_spins_to_check):
         else:
             recommendations.append("\nNo Streak Detected: Dozens are mixed.")
             recommendations.append("Recommendation: No clear betting strategy based on streak.")
-
+    
         return "\n".join(recommendations)
-
+    
+    
     def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, dozens_streak_spins, *args):
         try:
             print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
             print(f"show_strategy_recommendations: even_money_scores = {dict(state.even_money_scores)}")
             print(f"show_strategy_recommendations: any_scores = {any(state.scores.values())}, any_even_money = {any(state.even_money_scores.values())}")
             print(f"show_strategy_recommendations: strategy_name = {strategy_name}, neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}, dozens_streak_spins = {dozens_streak_spins}, args = {args}")
-
+    
             if strategy_name == "None":
                 return "<p>No strategy selected. Please choose a strategy to see recommendations.</p>"
             
@@ -2832,10 +2834,10 @@ def dozens_streak_breaker_strategy(num_spins_to_check):
                 if strategy_name == "Best Even Money Bets":
                     return "<p>No spins yet. Default Even Money Bets to consider:<br>1. Red<br>2. Black<br>3. Even</p>"
                 return "<p>Please analyze some spins first to generate scores.</p>"
-
+    
             strategy_info = STRATEGIES[strategy_name]
             strategy_func = strategy_info["function"]
-
+    
             if strategy_name == "Neighbours of Strong Number":
                 try:
                     neighbours_count = int(neighbours_count)
@@ -2856,9 +2858,9 @@ def dozens_streak_breaker_strategy(num_spins_to_check):
                 recommendations = strategy_func(num_spins_to_check)
             else:
                 recommendations = strategy_func()
-
+    
             print(f"show_strategy_recommendations: Strategy {strategy_name} output = {recommendations}")
-
+    
             # If the output is already HTML, return it as is
             if strategy_name == "Top Numbers with Neighbours (Tiered)":
                 return recommendations
@@ -2870,10 +2872,10 @@ def dozens_streak_breaker_strategy(num_spins_to_check):
         except Exception as e:
             print(f"show_strategy_recommendations: Error: {str(e)}")
             return f"<p>Error generating strategy recommendations: {str(e)}</p>"
-
+    
+    
     def clear_outputs():
         return "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
-
             
 def create_color_code_table():
     html = '''
