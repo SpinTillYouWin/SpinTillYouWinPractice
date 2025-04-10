@@ -363,10 +363,6 @@ def add_spin(number, current_spins, num_to_show):
     new_spins_str = ", ".join(new_spins)
     print(f"add_spin: new_spins='{new_spins_str}'")
     return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter()
-    except ValueError:
-        return current_spins, current_spins, f"Error: '{number}' is not a valid number. Please enter a whole number between 0 and 36.", update_spin_counter()
-    except Exception as e:
-        return current_spins, current_spins, f"Unexpected error: {str(e)}. Please try again or contact support.", update_spin_counter()
 
 # Function to clear spins
 def clear_spins():
