@@ -4027,6 +4027,7 @@ with gr.Blocks() as demo:
     
       // Function to toggle video size
       function toggleVideoSize(container) {
+        console.log('Toggling video size for container:', container);
         container.classList.toggle('enlarged');
         // Force Shepherd to reposition the modal to fit the new size
         tour.getCurrentStep().updateStepOptions({ popperOptions: tour.getCurrentStep().options.popperOptions });
@@ -4051,9 +4052,17 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            document.querySelector('#part1 .video-container').addEventListener('click', function() {
-              toggleVideoSize(this);
-            });
+            const stepElement = document.querySelector('.shepherd-element');
+            const videoContainer = stepElement.querySelector('.video-container');
+            if (videoContainer) {
+              videoContainer.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent Shepherd from capturing the click
+                console.log('Clicked video container in Part 1');
+                toggleVideoSize(this);
+              });
+            } else {
+              console.error('Video container not found in Part 1');
+            }
           }
         }
       });
@@ -4063,7 +4072,7 @@ with gr.Blocks() as demo:
         id: 'part2',
         title: 'Spin the Wheel, Start the Thrill!',
         text: 'Meet your roulette table—just click any number to log a spin! They’ll stack up below, ready for action.<br><div class="video-container"><iframe width="280" height="158" src="https://www.youtube.com/embed/ja454kZwndo?rel=0&fs=0" frameborder="0"></iframe></div>',
-        attachTo: { element: '.roulette-table', on: 'right' },
+        attachTo: { element: '.roulette-table', on: 'left' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Next', action: tour.next },
@@ -4071,9 +4080,17 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            document.querySelector('#part2 .video-container').addEventListener('click', function() {
-              toggleVideoSize(this);
-            });
+            const stepElement = document.querySelector('.shepherd-element');
+            const videoContainer = stepElement.querySelector('.video-container');
+            if (videoContainer) {
+              videoContainer.addEventListener('click', function(event) {
+                event.stopPropagation();
+                console.log('Clicked video container in Part 2');
+                toggleVideoSize(this);
+              });
+            } else {
+              console.error('Video container not found in Part 2');
+            }
           }
         }
       });
@@ -4091,9 +4108,17 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            document.querySelector('#part3 .video-container').addEventListener('click', function() {
-              toggleVideoSize(this);
-            });
+            const stepElement = document.querySelector('.shepherd-element');
+            const videoContainer = stepElement.querySelector('.video-container');
+            if (videoContainer) {
+              videoContainer.addEventListener('click', function(event) {
+                event.stopPropagation();
+                console.log('Clicked video container in Part 3');
+                toggleVideoSize(this);
+              });
+            } else {
+              console.error('Video container not found in Part 3');
+            }
           }
         }
       });
@@ -4111,9 +4136,17 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            document.querySelector('#part4 .video-container').addEventListener('click', function() {
-              toggleVideoSize(this);
-            });
+            const stepElement = document.querySelector('.shepherd-element');
+            const videoContainer = stepElement.querySelector('.video-container');
+            if (videoContainer) {
+              videoContainer.addEventListener('click', function(event) {
+                event.stopPropagation();
+                console.log('Clicked video container in Part 4');
+                toggleVideoSize(this);
+              });
+            } else {
+              console.error('Video container not found in Part 4');
+            }
           }
         }
       });
@@ -4131,9 +4164,17 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            document.querySelector('#part5 .video-container').addEventListener('click', function() {
-              toggleVideoSize(this);
-            });
+            const stepElement = document.querySelector('.shepherd-element');
+            const videoContainer = stepElement.querySelector('.video-container');
+            if (videoContainer) {
+              videoContainer.addEventListener('click', function(event) {
+                event.stopPropagation();
+                console.log('Clicked video container in Part 5');
+                toggleVideoSize(this);
+              });
+            } else {
+              console.error('Video container not found in Part 5');
+            }
           }
         }
       });
@@ -4151,9 +4192,17 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            document.querySelector('#part6 .video-container').addEventListener('click', function() {
-              toggleVideoSize(this);
-            });
+            const stepElement = document.querySelector('.shepherd-element');
+            const videoContainer = stepElement.querySelector('.video-container');
+            if (videoContainer) {
+              videoContainer.addEventListener('click', function(event) {
+                event.stopPropagation();
+                console.log('Clicked video container in Part 6');
+                toggleVideoSize(this);
+              });
+            } else {
+              console.error('Video container not found in Part 6');
+            }
           }
         }
       });
@@ -4171,9 +4220,17 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            document.querySelector('#part7 .video-container').addEventListener('click', function() {
-              toggleVideoSize(this);
-            });
+            const stepElement = document.querySelector('.shepherd-element');
+            const videoContainer = stepElement.querySelector('.video-container');
+            if (videoContainer) {
+              videoContainer.addEventListener('click', function(event) {
+                event.stopPropagation();
+                console.log('Clicked video container in Part 7');
+                toggleVideoSize(this);
+              });
+            } else {
+              console.error('Video container not found in Part 7');
+            }
           }
         }
       });
@@ -4191,9 +4248,17 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            document.querySelector('#part8 .video-container').addEventListener('click', function() {
-              toggleVideoSize(this);
-            });
+            const stepElement = document.querySelector('.shepherd-element');
+            const videoContainer = stepElement.querySelector('.video-container');
+            if (videoContainer) {
+              videoContainer.addEventListener('click', function(event) {
+                event.stopPropagation();
+                console.log('Clicked video container in Part 8');
+                toggleVideoSize(this);
+              });
+            } else {
+              console.error('Video container not found in Part 8');
+            }
           }
         }
       });
@@ -4211,9 +4276,17 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            document.querySelector('#part9 .video-container').addEventListener('click', function() {
-              toggleVideoSize(this);
-            });
+            const stepElement = document.querySelector('.shepherd-element');
+            const videoContainer = stepElement.querySelector('.video-container');
+            if (videoContainer) {
+              videoContainer.addEventListener('click', function(event) {
+                event.stopPropagation();
+                console.log('Clicked video container in Part 9');
+                toggleVideoSize(this);
+              });
+            } else {
+              console.error('Video container not found in Part 9');
+            }
           }
         }
       });
@@ -4231,9 +4304,17 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            document.querySelector('#part10 .video-container').addEventListener('click', function() {
-              toggleVideoSize(this);
-            });
+            const stepElement = document.querySelector('.shepherd-element');
+            const videoContainer = stepElement.querySelector('.video-container');
+            if (videoContainer) {
+              videoContainer.addEventListener('click', function(event) {
+                event.stopPropagation();
+                console.log('Clicked video container in Part 10');
+                toggleVideoSize(this);
+              });
+            } else {
+              console.error('Video container not found in Part 10');
+            }
           }
         }
       });
@@ -4251,9 +4332,17 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            document.querySelector('#part11 .video-container').addEventListener('click', function() {
-              toggleVideoSize(this);
-            });
+            const stepElement = document.querySelector('.shepherd-element');
+            const videoContainer = stepElement.querySelector('.video-container');
+            if (videoContainer) {
+              videoContainer.addEventListener('click', function(event) {
+                event.stopPropagation();
+                console.log('Clicked video container in Part 11');
+                toggleVideoSize(this);
+              });
+            } else {
+              console.error('Video container not found in Part 11');
+            }
           }
         }
       });
@@ -4271,9 +4360,17 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            document.querySelector('#part12 .video-container').addEventListener('click', function() {
-              toggleVideoSize(this);
-            });
+            const stepElement = document.querySelector('.shepherd-element');
+            const videoContainer = stepElement.querySelector('.video-container');
+            if (videoContainer) {
+              videoContainer.addEventListener('click', function(event) {
+                event.stopPropagation();
+                console.log('Clicked video container in Part 12');
+                toggleVideoSize(this);
+              });
+            } else {
+              console.error('Video container not found in Part 12');
+            }
           }
         }
       });
@@ -4291,9 +4388,17 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            document.querySelector('#part13 .video-container').addEventListener('click', function() {
-              toggleVideoSize(this);
-            });
+            const stepElement = document.querySelector('.shepherd-element');
+            const videoContainer = stepElement.querySelector('.video-container');
+            if (videoContainer) {
+              videoContainer.addEventListener('click', function(event) {
+                event.stopPropagation();
+                console.log('Clicked video container in Part 13');
+                toggleVideoSize(this);
+              });
+            } else {
+              console.error('Video container not found in Part 13');
+            }
           }
         }
       });
@@ -4310,9 +4415,17 @@ with gr.Blocks() as demo:
         ],
         when: {
           show: () => {
-            document.querySelector('#part14 .video-container').addEventListener('click', function() {
-              toggleVideoSize(this);
-            });
+            const stepElement = document.querySelector('.shepherd-element');
+            const videoContainer = stepElement.querySelector('.video-container');
+            if (videoContainer) {
+              videoContainer.addEventListener('click', function(event) {
+                event.stopPropagation();
+                console.log('Clicked video container in Part 14');
+                toggleVideoSize(this);
+              });
+            } else {
+              console.error('Video container not found in Part 14');
+            }
           }
         }
       });
