@@ -4080,7 +4080,7 @@ with gr.Blocks() as demo:
       tour.addStep({
         id: 'part8',
         title: 'Bet Smart, Track the Art!',
-        text: 'Track your bets here! Set your bankroll and style, then hit "Win" or "Lose" to watch your strategy play out.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o" frameborder="0" allowfullscreen></iframe>',
+        text: 'Track your bets here! Set your bankroll and style, then hit "Win" or "Lose" to watch your strategy play out.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '.betting-progression', on: 'top' },
         buttons: [
           { text: 'Back', action: tour.back },
@@ -4093,7 +4093,7 @@ with gr.Blocks() as demo:
       tour.addStep({
         id: 'part9',
         title: 'Paint Your Winning Hue!',
-        text: 'Make your table pop with these colors! Tweak top, middle, and lower tiers, or reset to keep it classic.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8" frameborder="0" allowfullscreen></iframe>',
+        text: 'Make your table pop with these colors! Tweak top, middle, and lower tiers, or reset to keep it classic.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '#top-color-picker', on: 'left' },
         buttons: [
           { text: 'Back', action: tour.back },
@@ -4106,7 +4106,7 @@ with gr.Blocks() as demo:
       tour.addStep({
         id: 'part10',
         title: 'Decode the Color Clue!',
-        text: 'Confused by colors? Pop this open—it’s your quick guide to what each shade means on the table!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/PGBEoOOh9Gk" frameborder="0" allowfullscreen></iframe>',
+        text: 'Confused by colors? Pop this open—it’s your quick guide to what each shade means on the table!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/PGBEoOOh9Gk" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '#color-code-key', on: 'top' },
         buttons: [
           { text: 'Back', action: tour.back },
@@ -4119,7 +4119,7 @@ with gr.Blocks() as demo:
       tour.addStep({
         id: 'part11',
         title: 'Unleash the Spin Secrets!',
-        text: 'This is your deep dive! "Spin Logic Reactor 🧠" breaks down each spin—like what hits Even or Red. "Strongest Numbers Tables" ranks your top numbers with their neighbors, and "Aggregated Scores" spills all the stats, from Even Money to Dozens—pure gold after analyzing!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/MpcuwWnMdrg" frameborder="0" allowfullscreen></iframe>',
+        text: 'This is your deep dive! "Spin Logic Reactor 🧠" breaks down each spin—like what hits Even or Red. "Strongest Numbers Tables" ranks your top numbers with their neighbors, and "Aggregated Scores" spills all the stats, from Even Money to Dozens—pure gold after analyzing!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/MpcuwWnMdrg" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '#spin-analysis', on: 'top' },
         buttons: [
           { text: 'Back', action: tour.back },
@@ -4132,7 +4132,7 @@ with gr.Blocks() as demo:
       tour.addStep({
         id: 'part12',
         title: 'Save Your Spin Glory!',
-        text: 'Save your work or load a past session here—jump right back in whenever you want. You’re ready to roll!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pHLEa2I0jjE" frameborder="0" allowfullscreen></iframe>',
+        text: 'Save your work or load a past session here—jump right back in whenever you want. You’re ready to roll!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pHLEa2I0jjE" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '#save-session-btn', on: 'top' },
         buttons: [
           { text: 'Back', action: tour.back },
@@ -4145,7 +4145,7 @@ with gr.Blocks() as demo:
       tour.addStep({
         id: 'part13',
         title: 'Pick Your Strategy Groove!',
-        text: 'Find your flow here! Choose a category like "Even Money" or "Dozens," then a strategy—think "Best Even Money Bets" or "Best Dozens." More on these gems later!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iuGEltUVbqc" frameborder="0" allowfullscreen></iframe>',
+        text: 'Find your flow here! Choose a category like "Even Money" or "Dozens," then a strategy—think "Best Even Money Bets" or "Best Dozens." More on these gems later!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iuGEltUVbqc" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '#select-category', on: 'left' },
         buttons: [
           { text: 'Back', action: tour.back },
@@ -4158,7 +4158,7 @@ with gr.Blocks() as demo:
       tour.addStep({
         id: 'part14',
         title: 'Boost Wins with Casino Intel!',
-        text: 'Got casino stats? Drop them here! Set percentages for Even/Odd, Red/Black, or Dozens—watch the table highlight the hot picks instantly.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss" frameborder="0" allowfullscreen></iframe>',
+        text: 'Got casino stats? Drop them here! Set percentages for Even/Odd, Red/Black, or Dozens—watch the table highlight the hot picks instantly.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '#casino-data-insights', on: 'top' },
         buttons: [
           { text: 'Back', action: tour.back },
