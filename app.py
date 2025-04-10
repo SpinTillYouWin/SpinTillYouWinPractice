@@ -3557,7 +3557,7 @@ with gr.Blocks() as demo:
                 )
                 dozen_tracker_follow_up_spins_dropdown = gr.Dropdown(
                     label="Follow-Up Spins to Track (Y)",
-                    choices=["3", "4", "5"],
+                    choices=["3", "4", "5", "6", "7", "8", "9", "10"],
                     value="5",
                     interactive=True
                 )
