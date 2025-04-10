@@ -140,109 +140,88 @@ class RouletteState:
         else:
             self.status_color = "white"  # Neutral when active
 
-def update_progression(self, won):
-    if self.is_stopped:
-        return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
-    self.update_bankroll(won)
-    if self.bankroll < self.current_bet:
-        self.is_stopped = True
-        self.status = "Stopped: Insufficient bankroll"
-        self.status_color = "red"  # Red for insufficient bankroll
-        self.message = "Cannot continue: Bankroll too low."
-        return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+    def update_progression(self, won):
+        if self.is_stopped:
+            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+        self.update_bankroll(won)
+        if self.bankroll < self.current_bet:
+            self.is_stopped = True
+            self.status = "Stopped: Insufficient bankroll"
+            self.status_color = "red"  # Red for insufficient bankroll
+            self.message = "Cannot continue: Bankroll too low."
+            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
     
-    # Define the S.T.Y.W: Victory Vortex sequence
-    victory_vortex_sequence = [1, 8, 11, 16, 24, 35, 52, 78, 116, 174, 260, 390, 584, 876, 1313, 1969]
-
-    if self.progression == "Martingale":
-        self.current_bet = self.next_bet
-        self.next_bet = self.base_unit if won else self.current_bet * 2
-        self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-    elif self.progression == "Fibonacci":
-        fib = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
-        if self.progression_state is None:
-            self.progression_state = 0
-        self.current_bet = self.next_bet
-        if won:
-            self.progression_state = max(0, self.progression_state - 2)
-            self.next_bet = fib[self.progression_state] * self.base_unit
-            self.message = f"Win! Move back to {self.next_bet}"
-        else:
-            self.progression_state = min(len(fib) - 1, self.progression_state + 1)
-            self.next_bet = fib[self.progression_state] * self.base_unit
-            self.message = f"Loss! Next Fibonacci bet: {self.next_bet}"
-    elif self.progression == "S.T.Y.W: Victory Vortex":
-        if self.progression_state is None:
-            self.progression_state = 0  # Index in the sequence
-        self.current_bet = self.next_bet
-        if won:
-            # For Dozens (2:1 payout), step back two positions or reset
-            self.progression_state = max(0, self.progression_state - 2)
-            self.next_bet = victory_vortex_sequence[self.progression_state] * self.base_unit
-            self.message = f"Win! Step back to {self.next_bet}"
-        else:
-            # On loss, move to the next bet in the sequence
-            self.progression_state = min(len(victory_vortex_sequence) - 1, self.progression_state + 1)
-            self.next_bet = victory_vortex_sequence[self.progression_state] * self.base_unit
-            self.message = f"Loss! Next Victory Vortex bet: {self.next_bet}"
-    elif self.progression == "Triple Martingale":
-        self.current_bet = self.next_bet
-        self.next_bet = self.base_unit if won else self.current_bet * 3
-        self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-    elif self.progression == "Oscar’s Grind":
-        self.current_bet = self.next_bet
-        profit = self.bankroll - self.initial_bankroll
-        if won and profit > 0:
-            self.next_bet = self.base_unit
-            self.message = f"Win! Profit achieved, reset to {self.next_bet}"
-        elif won:
-            self.next_bet = self.current_bet + self.base_unit
-            self.message = f"Win! Increase to {self.next_bet}"
-        else:
-            self.next_bet = self.current_bet
-            self.message = f"Loss! Keep bet at {self.next_bet}"
-    elif self.progression == "Labouchere":
-        if self.progression_state is None:
-            self.progression_state = [1, 2, 3, 4]  # Default, updated by UI
-        self.current_bet = self.next_bet
-        if won and len(self.progression_state) > 1:
-            self.progression_state.pop(0)
-            self.progression_state.pop(-1)
-            self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit if len(self.progression_state) > 1 else self.progression_state[0] * self.base_unit if self.progression_state else self.base_unit
-            self.message = f"Win! Next bet: {self.next_bet} (Sequence: {self.progression_state})"
-        elif won:
-            self.next_bet = self.base_unit
-            self.message = f"Win! Sequence complete, reset to {self.next_bet}"
-        else:
-            self.progression_state.append(self.current_bet // self.base_unit)
-            self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit
-            self.message = f"Loss! Next bet: {self.next_bet} (Sequence: {self.progression_state})"
-    elif self.progression == "Ladder":
-        self.current_bet = self.next_bet
-        self.next_bet = self.base_unit if won else self.current_bet + self.base_unit
-        self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-    elif self.progression == "D’Alembert":
-        self.current_bet = self.next_bet
-        self.next_bet = max(self.base_unit, self.current_bet - self.base_unit) if won else self.current_bet + self.base_unit
-        self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-    elif self.progression == "Double After a Win":
-        self.current_bet = self.next_bet
-        self.next_bet = self.current_bet * 2 if won else self.base_unit
-        self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-    elif self.progression == "Double After a Win":
-        self.current_bet = self.next_bet
-        self.next_bet = self.current_bet * 2 if won else self.base_unit
-        self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-    elif self.progression == "+1 Win / -1 Loss":
-        self.current_bet = self.next_bet
-        self.next_bet = self.current_bet + self.base_unit if won else max(self.base_unit, self.current_bet - self.base_unit)
-        self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-    elif self.progression == "+2 Win / -1 Loss":
-        self.current_bet = self.next_bet
-        self.next_bet = self.current_bet + (2 * self.base_unit) if won else max(self.base_unit, self.current_bet - self.base_unit)
-        self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+        if self.progression == "Martingale":
+            self.current_bet = self.next_bet
+            self.next_bet = self.base_unit if won else self.current_bet * 2
+            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+        elif self.progression == "Fibonacci":
+            fib = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
+            if self.progression_state is None:
+                self.progression_state = 0
+            self.current_bet = self.next_bet
+            if won:
+                self.progression_state = max(0, self.progression_state - 2)
+                self.next_bet = fib[self.progression_state] * self.base_unit
+                self.message = f"Win! Move back to {self.next_bet}"
+            else:
+                self.progression_state = min(len(fib) - 1, self.progression_state + 1)
+                self.next_bet = fib[self.progression_state] * self.base_unit
+                self.message = f"Loss! Next Fibonacci bet: {self.next_bet}"
+        elif self.progression == "Triple Martingale":
+            self.current_bet = self.next_bet
+            self.next_bet = self.base_unit if won else self.current_bet * 3
+            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+        elif self.progression == "Oscar’s Grind":
+            self.current_bet = self.next_bet
+            profit = self.bankroll - self.initial_bankroll
+            if won and profit > 0:
+                self.next_bet = self.base_unit
+                self.message = f"Win! Profit achieved, reset to {self.next_bet}"
+            elif won:
+                self.next_bet = self.current_bet + self.base_unit
+                self.message = f"Win! Increase to {self.next_bet}"
+            else:
+                self.next_bet = self.current_bet
+                self.message = f"Loss! Keep bet at {self.next_bet}"
+        elif self.progression == "Labouchere":
+            if self.progression_state is None:
+                self.progression_state = [1, 2, 3, 4]  # Default, updated by UI
+            self.current_bet = self.next_bet
+            if won and len(self.progression_state) > 1:
+                self.progression_state.pop(0)
+                self.progression_state.pop(-1)
+                self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit if len(self.progression_state) > 1 else self.progression_state[0] * self.base_unit if self.progression_state else self.base_unit
+                self.message = f"Win! Next bet: {self.next_bet} (Sequence: {self.progression_state})"
+            elif won:
+                self.next_bet = self.base_unit
+                self.message = f"Win! Sequence complete, reset to {self.next_bet}"
+            else:
+                self.progression_state.append(self.current_bet // self.base_unit)
+                self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit
+                self.message = f"Loss! Next bet: {self.next_bet} (Sequence: {self.progression_state})"
+        elif self.progression == "Ladder":
+            self.current_bet = self.next_bet
+            self.next_bet = self.base_unit if won else self.current_bet + self.base_unit
+            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+        elif self.progression == "D’Alembert":
+            self.current_bet = self.next_bet
+            self.next_bet = max(self.base_unit, self.current_bet - self.base_unit) if won else self.current_bet + self.base_unit
+            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+        elif self.progression == "Double After a Win":
+            self.current_bet = self.next_bet
+            self.next_bet = self.current_bet * 2 if won else self.base_unit
+            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+        elif self.progression == "+1 Win / -1 Loss":
+            self.current_bet = self.next_bet
+            self.next_bet = self.current_bet + self.base_unit if won else max(self.base_unit, self.current_bet - self.base_unit)
+            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+        elif self.progression == "+2 Win / -1 Loss":
+            self.current_bet = self.next_bet
+            self.next_bet = self.current_bet + (2 * self.base_unit) if won else max(self.base_unit, self.current_bet - self.base_unit)
+            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
     
-    return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+        return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
 
 # Create an instance of RouletteState (unchanged)
 state = RouletteState()
@@ -3613,14 +3592,10 @@ with gr.Blocks() as demo:
                     value="Even Money"
                 )
                 progression_dropdown = gr.Dropdown(
-                label="Progression",
-                choices=[
-                    "Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere",
-                    "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss",
-                    "S.T.Y.W: Victory Vortex"  # Add this line
-                ],
-                value="Martingale"
-            )
+                    label="Progression",
+                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss"],
+                    value="Martingale"
+                )
                 labouchere_sequence = gr.Textbox(
                     label="Labouchere Sequence (comma-separated)",
                     value="1, 2, 3, 4",
@@ -3733,16 +3708,15 @@ with gr.Blocks() as demo:
         
     # CSS and Event Handlers
     gr.HTML("""
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css">
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
     <style>
       /* General Layout */
       .gr-row { margin: 0 !important; padding: 5px 0 !important; }
-      .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
+      .gr-column { margin: 0 !important; padding: 5px !important; }
       .gr-box { border-radius: 5px !important; }
     
-      /* Header */
+      /* Ensure Header Stays at the Top */
       #header-row {
           position: fixed !important;
           top: 0 !important;
@@ -3750,112 +3724,158 @@ with gr.Blocks() as demo:
           right: 0 !important;
           z-index: 1000 !important;
           background-color: white !important;
-          padding: 10px !important;
+          padding: 10px 0 !important;
           margin: 0 !important;
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
           flex-wrap: wrap !important;
       }
-      body { padding-top: 120px !important; }
-      .header-title { text-align: center !important; font-size: clamp(1.5em, 5vw, 2.5em) !important; margin-bottom: 5px !important; color: #333 !important; }
+    
+      /* Add padding to the body to account for the fixed header */
+      body {
+          padding-top: 120px !important; /* Increased to account for taller header */
+      }
+    
+      /* Ensure content below header is not overlapped */
+      .roulette-table {
+          margin-top: 120px !important; /* Match body padding-top */
+      }
+    
+      /* Header Styling */
+      .header-title { text-align: center !important; font-size: 2.5em !important; margin-bottom: 5px !important; color: #333 !important; }
+    
+      /* Fix Selected Spins Label Cutoff */
+      #selected-spins-row {
+          width: 100% !important;
+          max-width: none !important;
+          overflow: visible !important;
+      }
+        #selected-spins label {
+            white-space: normal !important;
+            width: 100% !important;
+            height: auto !important;
+            overflow: visible !important;
+            display: block !important;
+            background-color: #87CEEB;
+            color: black;
+            padding: 10px 5px !important; /* Increased top/bottom padding */
+            border-radius: 3px;
+            line-height: 1.5em !important; /* Increased for better spacing */
+            font-size: 14px !important; /* Reduced font size */
+            margin-top: 5px !important; /* Added to shift text downward */
+        }
+      #selected-spins {
+          width: 100% !important;
+          min-width: 800px !important;
+      }
     
       /* Roulette Table */
-      .roulette-table { margin-top: 120px !important; display: flex !important; flex-direction: column !important; gap: 0 !important; width: 100% !important; }
-      .table-row { display: flex !important; gap: 0 !important; flex-wrap: nowrap !important; width: 100% !important; }
-      .roulette-button {
-          margin: 0 !important;
-          padding: 0 !important;
-          width: clamp(25px, 7vw, 40px) !important;
-          height: clamp(25px, 7vw, 40px) !important;
-          font-size: clamp(10px, 3vw, 14px) !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          border: 1px solid white !important;
-          box-sizing: border-box !important;
-      }
-      .roulette-button.green { background-color: green !important; color: white !important; }
-      .roulette-button.red { background-color: red !important; color: white !important; }
-      .roulette-button.black { background-color: black !important; color: white !important; }
+      .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+      .roulette-button.red { background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+      .roulette-button.black { background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
       .roulette-button:hover { opacity: 0.8; }
-      .roulette-button.selected { border: 2px solid yellow !important; }
-      .empty-button { width: clamp(25px, 7vw, 40px) !important; height: clamp(25px, 7vw, 40px) !important; border: 1px solid white !important; }
+      .roulette-button.selected { border: 3px solid yellow !important; opacity: 0.9; }
+      .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid white !important; box-sizing: border-box !important; }
+      .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
+      .roulette-table { display: flex !important; flex-direction: column !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
+      .table-row { display: flex !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap !important; line-height: 0 !important; }
     
-      /* Dynamic Table */
-      #dynamic-table-heading + div table {
-          width: 100% !important;
-          max-width: 100% !important;
-          font-size: clamp(10px, 2.5vw, 14px) !important;
-      }
-      #dynamic-table-heading + div td, #dynamic-table-heading + div th {
-          padding: clamp(2px, 1vw, 5px) !important;
-          min-width: clamp(20px, 5vw, 40px) !important;
-      }
-    
-      /* Last Spins */
-      .last-spins-container { width: 100% !important; padding: 10px !important; background-color: #f5f5f5 !important; border-radius: 5px !important; overflow-x: auto !important; }
-      .last-spins-container div { display: flex !important; flex-wrap: wrap !important; gap: 5px !important; }
-    
-      /* Inputs and Buttons */
-      #selected-spins { width: 100% !important; }
-      #selected-spins label { font-size: clamp(12px, 3vw, 14px) !important; padding: 5px !important; background-color: #87CEEB; color: black; border-radius: 3px; white-space: normal !important; }
-      .action-button { width: 100% !important; padding: clamp(5px, 1.5vw, 10px) !important; font-size: clamp(12px, 3vw, 14px) !important; }
-      .green-btn { background-color: #28a745 !important; color: white !important; }
-      .green-btn:hover { background-color: #218838 !important; }
-      .clear-spins-btn { background-color: #ff4444 !important; color: white !important; }
-      .clear-spins-btn:hover { background-color: #cc0000 !important; }
-    
-      /* Spin Counter */
-      .spin-counter { font-size: clamp(14px, 3.5vw, 16px) !important; padding: clamp(5px, 1.5vw, 8px) !important; width: 100% !important; text-align: center !important; background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; color: #ffffff !important; border-radius: 8px !important; }
+      /* Buttons */
+      button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
+      button.clear-spins-btn:hover { background-color: #cc0000 !important; }
+      button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
+      button.generate-spins-btn:hover { background-color: #0056b3 !important; }
+      .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; width: 100% !important; box-sizing: border-box !important; }
+      button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
+      button.green-btn:hover { background-color: #218838 !important; }
+      /* Ensure columns have appropriate spacing */
+      .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
     
       /* Compact Components */
       .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
       .long-slider .gr-box { width: 100% !important; }
+      /* Target the Accordion and its children */
       .gr-accordion { background-color: #ffffff !important; }
       .gr-accordion * { background-color: #ffffff !important; }
+      .gr-accordion .gr-column { background-color: #ffffff !important; }
+      .gr-accordion .gr-row { background-color: #ffffff !important; }
     
       /* Section Labels */
+      #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
       #spin-analysis label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
       #strongest-numbers-table label { background-color: #E6E6FA !important; color: black !important; padding: 5px; border-radius: 3px; }
       #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
       #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
       #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
-    
+      
       /* Scrollable Tables */
       .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
     
-      /* Responsive Adjustments */
-      @media (max-width: 600px) {
-          .gr-row { flex-direction: column !important; }
-          .roulette-table { padding: 0 !important; }
-          .table-row { justify-content: center !important; }
-          .action-button { margin: 5px 0 !important; }
-          #dynamic-table-heading + div table { font-size: 10px !important; }
-          .scrollable-table { max-height: 200px !important; }
-          .gr-textbox { font-size: 12px !important; }
+      /* Spin Counter Styling */
+      .spin-counter {
+          font-size: 16px !important;
+          font-weight: bold !important;
+          color: #ffffff !important;
+          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
+          padding: 8px 12px !important;
+          border: 2px solid #3498DB !important; /* Darker blue border */
+          border-radius: 8px !important;
+          margin-top: 0 !important; /* Align with textbox */
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important; /* Slightly stronger shadow */
+          transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
+      }
+      .spin-counter:hover {
+          transform: scale(1.05) !important; /* Slight zoom on hover */
+          box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
       }
     
-      /* Dropdowns */
+      /* Last Spins Container */
+      .last-spins-container {
+          background-color: #f5f5f5 !important; /* Light gray background */
+          border: 1px solid #d3d3d3 !important; /* Subtle gray border */
+          padding: 10px !important;
+          border-radius: 5px !important;
+          margin-top: 10px !important;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; /* Very light shadow */
+      }
+    
+      /* Responsive Design */
+      @media (max-width: 600px) {
+          .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
+          td, th { padding: 5px; font-size: 12px; }
+          .gr-textbox { font-size: 12px; }
+          .scrollable-table { max-height: 200px; }
+          .long-slider { width: 100% !important; }
+          .header-title { font-size: 1.8em !important; }
+      }
+    
       #strongest-numbers-dropdown select {
           -webkit-appearance: menulist !important;
           -moz-appearance: menulist !important;
           appearance: menulist !important;
       }
       #strategy-dropdown select {
-          font-size: 14px; padding: 5px; background-color: #f9f9f9; border: 1px solid #ccc; border-radius: 3px;
+          font-size: 14px;
+          padding: 5px;
+          background-color: #f9f9f9;
+          border: 1px solid #ccc;
+          border-radius: 3px;
       }
       #strategy-dropdown select option:checked {
-          font-weight: bold; background-color: #e0e0ff; color: #000;
+          font-weight: bold;
+          background-color: #e0e0ff; /* Light blue to indicate selection */
+          color: #000;
       }
-    
-      /* Betting Progression */
       .betting-progression .gr-textbox { width: 100%; margin: 5px 0; }
       .betting-progression .gr-button { width: 100px; margin: 5px; }
       .betting-progression .gr-row { display: flex; flex-wrap: wrap; gap: 10px; }
     
       /* Shepherd.js Tweaks */
-      .shepherd-modal-overlay-container { opacity: 0.5; z-index: 999; }
+      .shepherd-modal-overlay-container { opacity: 0.5; z-index: 999; } /* Ensure overlay is below fullscreen */
       .shepherd-button { background-color: #007bff; color: white; padding: 5px 10px; border-radius: 3px; }
       .shepherd-button:hover { background-color: #0056b3; }
     </style>
