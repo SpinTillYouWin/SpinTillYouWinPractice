@@ -3704,7 +3704,180 @@ with gr.Blocks() as demo:
             load_input = gr.File(label="Upload Session")
         save_output = gr.File(label="Download Session")
 
+    # 12. Row 12: Feedback and Strategy Submission
+    with gr.Accordion("Feedback & Strategy Submission", open=False, elem_id="feedback-section"):
+        gr.Markdown("### Share Your Feedback and Strategy Ideas")
+        gr.Markdown(
+            "We value your input! Use this form to provide feedback about the app or submit a new strategy for us to test. "
+            "If you’d like a response, please include your email address (your email will remain private and secure)."
+        )
+        with gr.Row():
+            with gr.Column(scale=1):
+                feedback_textbox = gr.Textbox(
+                    label="Your Feedback",
+                    placeholder="Tell us what you think about the app (e.g., what you like, what could be improved).",
+                    lines=5,
+                    interactive=True,
+                    elem_id="feedback-textbox"
+                )
+                strategy_category_dropdown = gr.Dropdown(
+                    label="Strategy Category",
+                    choices=category_choices[1:],  # Exclude "None"
+                    value="Even Money Strategies",
+                    interactive=True,
+                    elem_id="strategy-category-dropdown"
+                )
+                strategy_name_textbox = gr.Textbox(
+                    label="Strategy Name",
+                    placeholder="Give your strategy a unique name (e.g., 'My Custom Dozen Strategy').",
+                    interactive=True,
+                    elem_id="strategy-name-textbox"
+                )
+                strategy_description_textbox = gr.Textbox(
+                    label="Strategy Description",
+                    placeholder="Describe how your strategy works. Include:\n- What data it uses (e.g., Dozen scores, spin history)\n- How it highlights numbers/sections on the table\n- Any betting recommendations",
+                    lines=5,
+                    interactive=True,
+                    elem_id="strategy-description-textbox"
+                )
+                strategy_inputs_textbox = gr.Textbox(
+                    label="Additional Inputs (Optional)",
+                    placeholder="If your strategy requires user inputs (e.g., sliders, dropdowns), describe them here (e.g., 'A slider to select past spins from 5 to 20').",
+                    lines=3,
+                    interactive=True,
+                    elem_id="strategy-inputs-textbox"
+                )
+                user_email_textbox = gr.Textbox(
+                    label="Your Email (Optional)",
+                    placeholder="Enter your email if you'd like a response (your email will remain private).",
+                    interactive=True,
+                    elem_id="user-email-textbox"
+                )
+                submit_button = gr.Button("Submit Feedback", elem_classes=["action-button"], elem_id="submit-feedback-button")
+                submission_output = gr.HTML(
+                    label="Submission Status",
+                    value="<p>Fill out the form and click 'Submit Feedback' to send your feedback or strategy.</p>",
+                    elem_id="submission-output"
+                )
 
+    # Add JavaScript for Formspree submission
+    gr.HTML("""
+    <script>
+      // Function to submit the feedback form to Formspree
+      async function submitFeedback() {
+        console.log("submitFeedback: Function called");
+
+        // Collect form data
+        const feedback = document.querySelector("#feedback-textbox textarea")?.value || "";
+        const category = document.querySelector("#strategy-category-dropdown select")?.value || "";
+        const strategyName = document.querySelector("#strategy-name-textbox input")?.value || "";
+        const strategyDescription = document.querySelector("#strategy-description-textbox textarea")?.value || "";
+        const strategyInputs = document.querySelector("#strategy-inputs-textbox textarea")?.value || "";
+        const userEmail = document.querySelector("#user-email-textbox input")?.value || "";
+
+        console.log("submitFeedback: Form data collected:", {
+          feedback: feedback,
+          category: category,
+          strategyName: strategyName,
+          strategyDescription: strategyDescription,
+          strategyInputs: strategyInputs,
+          userEmail: userEmail
+        });
+
+        // Validate that at least feedback or strategy name/description is provided
+        if (!feedback && !strategyName && !strategyDescription) {
+          console.log("submitFeedback: Validation failed - No feedback or strategy provided");
+          document.querySelector("#submission-output").innerHTML = "<p style='color: red; font-weight: bold;'>Please provide either feedback or a strategy name and description.</p>";
+          return;
+        }
+
+        // Prepare data for submission
+        const formData = new FormData();
+        formData.append("feedback", feedback);
+        formData.append("category", category);
+        formData.append("strategy_name", strategyName);
+        formData.append("strategy_description", strategyDescription);
+        formData.append("strategy_inputs", strategyInputs);
+        formData.append("email", userEmail);
+
+        // Submit to Formspree
+        try {
+          console.log("submitFeedback: Submitting to Formspree...");
+          const response = await fetch("https://formspree.io/f/mnnpllqq", {
+            method: "POST",
+            body: formData,
+            headers: {
+              "Accept": "application/json"
+            }
+          });
+
+          console.log("submitFeedback: Response received:", response);
+          const result = await response.json();
+          console.log("submitFeedback: Result:", result);
+
+          if (response.ok) {
+            document.querySelector("#submission-output").innerHTML = "<p style='color: green; font-weight: bold;'>Thank you! Your feedback/strategy has been submitted successfully.</p>";
+          } else {
+            document.querySelector("#submission-output").innerHTML = "<p style='color: red; font-weight: bold;'>Error submitting form: " + (result.error || "Unknown error") + "</p>";
+          }
+        } catch (error) {
+          console.error("submitFeedback: Error submitting form:", error);
+          document.querySelector("#submission-output").innerHTML = "<p style='color: red; font-weight: bold;'>Error submitting form: " + error.message + "</p>";
+        }
+      }
+
+      // Function to attach the submit listener with retry logic
+      function attachSubmitListener(attempt = 1, maxAttempts = 10) {
+        const submitButton = document.querySelector("#submit-feedback-button");
+        if (submitButton) {
+          console.log("attachSubmitListener: Submit button found on attempt", attempt);
+          submitButton.addEventListener("click", (event) => {
+            event.preventDefault();  // Prevent any default Gradio behavior
+            console.log("attachSubmitListener: Submit button clicked");
+            submitFeedback();
+          });
+          // Also attach to the inner button element if Gradio wraps it
+          const innerButton = submitButton.querySelector("button");
+          if (innerButton) {
+            console.log("attachSubmitListener: Inner button found, attaching event listener");
+            innerButton.addEventListener("click", (event) => {
+              event.preventDefault();
+              console.log("attachSubmitListener: Inner button clicked");
+              submitFeedback();
+            });
+          }
+        } else if (attempt < maxAttempts) {
+          console.log("attachSubmitListener: Submit button not found on attempt", attempt, "- retrying in 1 second...");
+          setTimeout(() => attachSubmitListener(attempt + 1, maxAttempts), 1000);
+        } else {
+          console.error("attachSubmitListener: Submit button not found after", maxAttempts, "attempts");
+          document.querySelector("#submission-output").innerHTML = "<p style='color: red; font-weight: bold;'>Error: Submit button not found. Please try refreshing the page.</p>";
+        }
+      }
+
+      // Start attaching the listener when the DOM is loaded
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log("DOMContentLoaded: DOM fully loaded, starting to attach event listener");
+        attachSubmitListener();
+      });
+
+      // Fallback: Retry attaching the listener after a delay in case DOMContentLoaded doesn't fire
+      console.log("Setting fallback timeout to attach listener after 3 seconds");
+      setTimeout(() => attachSubmitListener(), 3000);
+
+      // Additional fallback: Use a MutationObserver to detect when the button is added to the DOM
+      const observer = new MutationObserver((mutations, observer) => {
+        const submitButton = document.querySelector("#submit-feedback-button");
+        if (submitButton) {
+          console.log("MutationObserver: Submit button detected via DOM change");
+          attachSubmitListener();
+          observer.disconnect();  // Stop observing once the button is found
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+      console.log("MutationObserver: Started observing DOM for submit button");
+    </script>
+    """)
         
     # CSS and Event Handlers
     gr.HTML("""
