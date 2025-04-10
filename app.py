@@ -409,7 +409,7 @@ def load_session(file, strategy_name, neighbours_count, strong_numbers_count, *c
         })
         state.use_casino_winners = session_data.get("use_casino_winners", False)
 
-        new_spins = ", ".join(state.last_spins) if state.last_spins else ""
+        new_spins = ", ".join(state.last_spins)
         spin_analysis_output = f"Session loaded successfully with {len(state.last_spins)} spins."
         
         # Compute UI outputs
@@ -2754,15 +2754,6 @@ def update_spin_counter():
     """Return the current number of spins as formatted HTML with inline styling."""
     spin_count = len(state.last_spins)
     return f'<span style="font-size: 16px;">Total Spins: {spin_count}</span>'
-
-def sync_spins_with_state(spins_text):
-    """Sync state.last_spins with the spins_textbox content."""
-    if not spins_text or not spins_text.strip():
-        state.last_spins = []
-    else:
-        spins = [spin.strip() for spin in spins_text.split(",") if spin.strip()]
-        state.last_spins = spins
-    return spins_text, format_spins_as_html(spins_text, last_spin_count.value), update_spin_counter()
     
 def top_numbers_with_neighbours_tiered():
     recommendations = []
@@ -3419,31 +3410,6 @@ with gr.Blocks() as demo:
     gr.HTML("""
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css">
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
-    <script>
-    // Debounce function to prevent multiple rapid clicks
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-    
-    // Apply debounce to button click events
-    document.addEventListener('DOMContentLoaded', function() {
-        const buttons = document.querySelectorAll('.gr-button');
-        buttons.forEach(button => {
-            const originalClick = button.onclick;
-            if (originalClick) {
-                button.onclick = debounce(originalClick, 300); // 300ms debounce
-            }
-        });
-    });
-    </script>
     <style>
       /* General Layout */
       .gr-row { margin: 0 !important; padding: 5px 0 !important; }
@@ -3609,7 +3575,7 @@ with gr.Blocks() as demo:
       .betting-progression .gr-row { display: flex; flex-wrap: wrap; gap: 10px; }
     
       /* Shepherd.js Tweaks */
-      .shepherd-modal-overlay-container { opacity: 0.5; z-index: 999; }
+      .shepherd-modal-overlay-container { opacity: 0.5; z-index: 999; } /* Ensure overlay is below fullscreen */
       .shepherd-button { background-color: #007bff; color: white; padding: 5px 10px; border-radius: 3px; }
       .shepherd-button:hover { background-color: #0056b3; }
     </style>
@@ -3756,7 +3722,7 @@ with gr.Blocks() as demo:
 
     undo_button.click(
         fn=undo_last_spin,
-        inputs=[gr.State(value=1), strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+        inputs=[spins_display, gr.State(value=1), strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
         outputs=[
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
