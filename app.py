@@ -93,6 +93,7 @@ class RouletteState:
         self.is_stopped = False
         self.message = f"Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
         self.status = "Active"
+        self.status_color = "white"  # Default color for active status
 
     def reset(self):
         # Existing reset logic
@@ -131,19 +132,24 @@ class RouletteState:
         if profit <= self.stop_loss:
             self.is_stopped = True
             self.status = f"Stopped: Hit Stop Loss of {self.stop_loss}"
+            self.status_color = "red"  # Red for stop loss
         elif profit >= self.stop_win:
             self.is_stopped = True
             self.status = f"Stopped: Hit Stop Win of {self.stop_win}"
+            self.status_color = "green"  # Green for stop win
+        else:
+            self.status_color = "white"  # Neutral when active
 
     def update_progression(self, won):
         if self.is_stopped:
-            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
+            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
         self.update_bankroll(won)
         if self.bankroll < self.current_bet:
             self.is_stopped = True
             self.status = "Stopped: Insufficient bankroll"
+            self.status_color = "red"  # Red for insufficient bankroll
             self.message = "Cannot continue: Bankroll too low."
-            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
+            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
     
         if self.progression == "Martingale":
             self.current_bet = self.next_bet
@@ -202,8 +208,20 @@ class RouletteState:
             self.current_bet = self.next_bet
             self.next_bet = max(self.base_unit, self.current_bet - self.base_unit) if won else self.current_bet + self.base_unit
             self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+        elif self.progression == "Double After a Win":
+            self.current_bet = self.next_bet
+            self.next_bet = self.current_bet * 2 if won else self.base_unit
+            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+        elif self.progression == "+1 Win / -1 Loss":
+            self.current_bet = self.next_bet
+            self.next_bet = self.current_bet + self.base_unit if won else max(self.base_unit, self.current_bet - self.base_unit)
+            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+        elif self.progression == "+2 Win / -1 Loss":
+            self.current_bet = self.next_bet
+            self.next_bet = self.current_bet + (2 * self.base_unit) if won else max(self.base_unit, self.current_bet - self.base_unit)
+            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
     
-        return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
+        return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
 
 # Create an instance of RouletteState (unchanged)
 state = RouletteState()
@@ -3299,7 +3317,7 @@ with gr.Blocks() as demo:
             reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
 
     # Betting Progression Tracker (New Row)
-    with gr.Row():
+with gr.Row():
         with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
             with gr.Row():
                 bankroll_input = gr.Number(label="Bankroll", value=1000)
@@ -3314,7 +3332,7 @@ with gr.Blocks() as demo:
                 )
                 progression_dropdown = gr.Dropdown(
                     label="Progression",
-                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert"],
+                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss"],
                     value="Martingale"
                 )
                 labouchere_sequence = gr.Textbox(
@@ -3332,7 +3350,7 @@ with gr.Blocks() as demo:
                 next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
             with gr.Row():
                 message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
-                status_output = gr.Textbox(label="Status", value="Active", interactive=False)
+                status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
 
     # 8. Row 8: Color Pickers
     with gr.Row():
@@ -3943,7 +3961,7 @@ with gr.Blocks() as demo:
     )
 
     # Betting progression event handlers
-    def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence):
+def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence):
         state.bankroll = bankroll
         state.initial_bankroll = bankroll
         state.base_unit = base_unit
@@ -3956,13 +3974,10 @@ with gr.Blocks() as demo:
                 state.progression_state = [int(x.strip()) for x in sequence.split(",")]
             except ValueError:
                 state.progression_state = [1, 2, 3, 4]
-                return bankroll, base_unit, base_unit, "Invalid sequence, using default [1, 2, 3, 4]", "Active"
+                return bankroll, base_unit, base_unit, "Invalid sequence, using default [1, 2, 3, 4]", '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>'
         state.reset_progression()
-        return state.bankroll, state.current_bet, state.next_bet, state.message, state.status
+        return state.bankroll, state.current_bet, state.next_bet, state.message, f'<div style="background-color: {state.status_color}; padding: 5px; border-radius: 3px;">{state.status}</div>'
 
-    def toggle_labouchere(progression):
-        return gr.update(visible=progression == "Labouchere")
-    
     bankroll_input.change(
         fn=update_config,
         inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
