@@ -3970,7 +3970,18 @@ with gr.Blocks() as demo:
         defaultStepOptions: {
           cancelIcon: { enabled: true },
           scrollTo: { behavior: 'smooth', block: 'center' },
+          scrollToHandler: (element) => {
+            setTimeout(() => {
+              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100); // Add a 100ms delay to ensure iframe renders
+          },
           classes: 'shepherd-theme-arrows',
+          popperOptions: {
+            modifiers: [
+              { name: 'offset', options: { offset: [0, 10] } }, // Add some offset from the target
+              { name: 'preventOverflow', options: { padding: 10 } }, // Prevent overflow issues
+            ]
+          }
         },
         useModalOverlay: true
       });
