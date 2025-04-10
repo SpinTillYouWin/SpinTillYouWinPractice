@@ -3132,7 +3132,7 @@ with gr.Blocks() as demo:
     # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
     with gr.Row():
         with gr.Column(scale=3):
-            gr.Markdown("### Dynamic Roulette Table")
+            gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
             dynamic_table_output = gr.HTML(
                 label="Dynamic Table",
                 value=create_dynamic_table(strategy_name="Best Even Money Bets")
@@ -3143,7 +3143,7 @@ with gr.Blocks() as demo:
                 label="Strategy Recommendations",
                 value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
             )
-            with gr.Accordion("Casino Data Insights", open=False):
+            with gr.Accordion("Casino Data Insights", open=False, elem_id="casino-data-insights"):
                 spins_count_dropdown = gr.Dropdown(
                     label="Past Spins Count",
                     choices=["30", "50", "100", "200", "300", "500"],
@@ -3318,7 +3318,8 @@ with gr.Blocks() as demo:
         top_color_picker = gr.ColorPicker(
             label="Top Tier Color",
             value="rgba(255, 255, 0, 0.5)",
-            interactive=True
+            interactive=True,
+            elem_id="top-color-picker"
         )
         middle_color_picker = gr.ColorPicker(
             label="Middle Tier Color",
@@ -3333,7 +3334,7 @@ with gr.Blocks() as demo:
         reset_colors_button = gr.Button("Reset Colors", elem_classes=["action-button"])
 
     # 9. Row 9: Color Code Key (Collapsible)
-    with gr.Accordion("Color Code Key", open=False):
+    with gr.Accordion("Color Code Key", open=False, elem_id="color-code-key"):
         color_code_output = gr.HTML(label="Color Code Key")
 
     # 10. Row 10: Analysis Outputs (Collapsible)
@@ -3401,7 +3402,7 @@ with gr.Blocks() as demo:
     # 11. Row 11: Save/Load Session (Collapsible)
     with gr.Accordion("Save/Load Session", open=False):
         with gr.Row():
-            save_button = gr.Button("Save Session")
+            save_button = gr.Button("Save Session", elem_id="save-session-btn")
             load_input = gr.File(label="Upload Session")
         save_output = gr.File(label="Download Session")
 
@@ -4056,7 +4057,7 @@ with gr.Blocks() as demo:
         id: 'part7',
         title: 'Light Up Your Lucky Spots!',
         text: 'Your dynamic table lights up here! It shows off the hottest spots based on your spins—pure eye candy!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/zT9d06sn07E" frameborder="0" allowfullscreen></iframe>',
-        attachTo: { element: 'h3:contains("Dynamic Roulette Table")', on: 'bottom' },
+        attachTo: { element: '#dynamic-table-heading', on: 'bottom' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Next', action: tour.next },
@@ -4082,7 +4083,7 @@ with gr.Blocks() as demo:
         id: 'part9',
         title: 'Paint Your Winning Hue!',
         text: 'Make your table pop with these colors! Tweak top, middle, and lower tiers, or reset to keep it classic.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8" frameborder="0" allowfullscreen></iframe>',
-        attachTo: { element: '.gr-colorpicker:first', on: 'left' },
+        attachTo: { element: '#top-color-picker', on: 'left' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Next', action: tour.next },
@@ -4095,7 +4096,7 @@ with gr.Blocks() as demo:
         id: 'part10',
         title: 'Decode the Color Clue!',
         text: 'Confused by colors? Pop this open—it’s your quick guide to what each shade means on the table!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/PGBEoOOh9Gk" frameborder="0" allowfullscreen></iframe>',
-        attachTo: { element: 'h3:contains("Color Code Key")', on: 'top' },
+        attachTo: { element: '#color-code-key', on: 'top' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Next', action: tour.next },
@@ -4121,7 +4122,7 @@ with gr.Blocks() as demo:
         id: 'part12',
         title: 'Save Your Spin Glory!',
         text: 'Save your work or load a past session here—jump right back in whenever you want. You’re ready to roll!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pHLEa2I0jjE" frameborder="0" allowfullscreen></iframe>',
-        attachTo: { element: '.gr-button:contains("Save Session")', on: 'top' },
+        attachTo: { element: '#save-session-btn', on: 'top' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Next', action: tour.next },
@@ -4147,7 +4148,7 @@ with gr.Blocks() as demo:
         id: 'part14',
         title: 'Boost Wins with Casino Intel!',
         text: 'Got casino stats? Drop them here! Set percentages for Even/Odd, Red/Black, or Dozens—watch the table highlight the hot picks instantly.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss" frameborder="0" allowfullscreen></iframe>',
-        attachTo: { element: 'h3:contains("Casino Data Insights")', on: 'top' },
+        attachTo: { element: '#casino-data-insights', on: 'top' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Finish', action: tour.complete }
