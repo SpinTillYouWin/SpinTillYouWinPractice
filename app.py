@@ -527,11 +527,11 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
     trending_dozen = second_dozen = trending_column = second_column = None
     number_highlights = {}
 
-    # Use custom colors passed as arguments, with fallbacks
+    # Set colors based on strategy, prioritizing Cold Bet Strategy colors over picker values
     if strategy_name == "Cold Bet Strategy":
-        top_color = top_color if top_color else "#D3D3D3"  # Light Gray (Cold Top)
-        middle_color = middle_color if middle_color else "#DDA0DD"  # Plum (Cold Middle)
-        lower_color = lower_color if lower_color else "#E0FFFF"  # Light Cyan (Cold Lower)
+        top_color = "#D3D3D3"  # Light Gray (Cold Top)
+        middle_color = "#DDA0DD"  # Plum (Cold Middle)
+        lower_color = "#E0FFFF"  # Light Cyan (Cold Lower)
     else:
         top_color = top_color if top_color else "rgba(255, 255, 0, 0.5)"  # Yellow default
         middle_color = middle_color if middle_color else "rgba(0, 255, 255, 0.5)"  # Cyan default
@@ -2710,27 +2710,27 @@ def create_color_code_table():
             <tbody>
                 <tr>
                     <td style="padding: 8px; background-color: rgba(255, 255, 0, 0.5); text-align: center;">Yellow (Top Tier)</td>
-                    <td style="padding: 8px;">Indicates the hottest or top-ranked numbers/sections (e.g., top 3 or top 6 in most strategies).</td>
+                    <td style="padding: 8px;">Indicates the hottest or top-ranked numbers/sections (e.g., top 3 or top 6 in most strategies). Can be changed via color pickers.</td>
                 </tr>
                 <tr>
                     <td style="padding: 8px; background-color: rgba(0, 255, 255, 0.5); text-align: center;">Cyan (Middle Tier)</td>
-                    <td style="padding: 8px;">Represents the second tier of trending numbers/sections (e.g., ranks 4-6 or secondary picks).</td>
+                    <td style="padding: 8px;">Represents the second tier of trending numbers/sections (e.g., ranks 4-6 or secondary picks). Can be changed via color pickers.</td>
                 </tr>
                 <tr>
                     <td style="padding: 8px; background-color: rgba(0, 255, 0, 0.5); text-align: center;">Green (Lower Tier)</td>
-                    <td style="padding: 8px;">Marks the third tier of strong numbers/sections (e.g., ranks 7-9 or lower priority).</td>
+                    <td style="padding: 8px;">Marks the third tier of strong numbers/sections (e.g., ranks 7-9 or lower priority). Can be changed via color pickers.</td>
                 </tr>
                 <tr>
                     <td style="padding: 8px; background-color: #D3D3D3; text-align: center;">Light Gray (Cold Top)</td>
-                    <td style="padding: 8px;">Used in Cold Bet Strategy for the coldest top-tier sections (least hits).</td>
+                    <td style="padding: 8px;">Used in Cold Bet Strategy for the coldest top-tier sections (least hits). Fixed for this strategy.</td>
                 </tr>
                 <tr>
                     <td style="padding: 8px; background-color: #DDA0DD; text-align: center;">Plum (Cold Middle)</td>
-                    <td style="padding: 8px;">Used in Cold Bet Strategy for middle-tier cold sections.</td>
+                    <td style="padding: 8px;">Used in Cold Bet Strategy for middle-tier cold sections. Fixed for this strategy.</td>
                 </tr>
                 <tr>
                     <td style="padding: 8px; background-color: #E0FFFF; text-align: center;">Light Cyan (Cold Lower)</td>
-                    <td style="padding: 8px;">Used in Cold Bet Strategy for lower-tier cold sections.</td>
+                    <td style="padding: 8px;">Used in Cold Bet Strategy for lower-tier cold sections. Fixed for this strategy.</td>
                 </tr>
                 <tr>
                     <td style="padding: 8px; background-color: red; color: white; text-align: center;">Red</td>
