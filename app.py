@@ -3641,7 +3641,11 @@ with gr.Blocks() as demo:
                 )
                 progression_dropdown = gr.Dropdown(
                     label="Progression",
-                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss", "S.T.Y.W: Victory Vortex"  # Add the new progression here],
+                    choices=[
+                        "Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere",
+                        "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss",
+                        "S.T.Y.W: Victory Vortex"  # Add the new progression here
+                    ],
                     value="Martingale"
                 )
                 labouchere_sequence = gr.Textbox(
