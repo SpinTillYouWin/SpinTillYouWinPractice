@@ -3717,37 +3717,43 @@ with gr.Blocks() as demo:
                     label="Your Feedback",
                     placeholder="Tell us what you think about the app (e.g., what you like, what could be improved).",
                     lines=5,
-                    interactive=True
+                    interactive=True,
+                    elem_id="feedback-textbox"
                 )
                 strategy_category_dropdown = gr.Dropdown(
                     label="Strategy Category",
                     choices=category_choices[1:],  # Exclude "None"
                     value="Even Money Strategies",
-                    interactive=True
+                    interactive=True,
+                    elem_id="strategy-category-dropdown"
                 )
                 strategy_name_textbox = gr.Textbox(
                     label="Strategy Name",
                     placeholder="Give your strategy a unique name (e.g., 'My Custom Dozen Strategy').",
-                    interactive=True
+                    interactive=True,
+                    elem_id="strategy-name-textbox"
                 )
                 strategy_description_textbox = gr.Textbox(
                     label="Strategy Description",
                     placeholder="Describe how your strategy works. Include:\n- What data it uses (e.g., Dozen scores, spin history)\n- How it highlights numbers/sections on the table\n- Any betting recommendations",
                     lines=5,
-                    interactive=True
+                    interactive=True,
+                    elem_id="strategy-description-textbox"
                 )
                 strategy_inputs_textbox = gr.Textbox(
                     label="Additional Inputs (Optional)",
                     placeholder="If your strategy requires user inputs (e.g., sliders, dropdowns), describe them here (e.g., 'A slider to select past spins from 5 to 20').",
                     lines=3,
-                    interactive=True
+                    interactive=True,
+                    elem_id="strategy-inputs-textbox"
                 )
                 user_email_textbox = gr.Textbox(
                     label="Your Email (Optional)",
                     placeholder="Enter your email if you'd like a response (your email will remain private).",
-                    interactive=True
+                    interactive=True,
+                    elem_id="user-email-textbox"
                 )
-                submit_button = gr.Button("Submit Feedback", elem_classes=["action-button"])
+                submit_button = gr.Button("Submit Feedback", elem_classes=["action-button"], elem_id="submit-feedback-button")
                 submission_output = gr.HTML(
                     label="Submission Status",
                     value="<p>Fill out the form and click 'Submit Feedback' to send your feedback or strategy.</p>",
@@ -3758,13 +3764,24 @@ with gr.Blocks() as demo:
     gr.HTML("""
     <script>
       async function submitFeedback() {
+        console.log("submitFeedback function called");
+
         // Collect form data
-        const feedback = document.querySelector("textarea[placeholder*='Tell us what you think']").value;
-        const category = document.querySelector("select").value;  // Adjusted selector for category dropdown
-        const strategyName = document.querySelector("input[placeholder*='Give your strategy']").value;
-        const strategyDescription = document.querySelector("textarea[placeholder*='Describe how your strategy']").value;
-        const strategyInputs = document.querySelector("textarea[placeholder*='If your strategy requires']").value;
-        const userEmail = document.querySelector("input[placeholder*='Enter your email']").value;
+        const feedback = document.querySelector("#feedback-textbox textarea").value;
+        const category = document.querySelector("#strategy-category-dropdown select").value;
+        const strategyName = document.querySelector("#strategy-name-textbox input").value;
+        const strategyDescription = document.querySelector("#strategy-description-textbox textarea").value;
+        const strategyInputs = document.querySelector("#strategy-inputs-textbox textarea").value;
+        const userEmail = document.querySelector("#user-email-textbox input").value;
+
+        console.log("Form data collected:", {
+          feedback: feedback,
+          category: category,
+          strategyName: strategyName,
+          strategyDescription: strategyDescription,
+          strategyInputs: strategyInputs,
+          userEmail: userEmail
+        });
 
         // Prepare data for submission
         const formData = new FormData();
@@ -3777,6 +3794,7 @@ with gr.Blocks() as demo:
 
         // Submit to Formspree
         try {
+          console.log("Submitting to Formspree...");
           const response = await fetch("https://formspree.io/f/mnnpllqq", {
             method: "POST",
             body: formData,
@@ -3785,22 +3803,33 @@ with gr.Blocks() as demo:
             }
           });
 
+          console.log("Response received:", response);
           const result = await response.json();
+          console.log("Result:", result);
+
           if (response.ok) {
             document.querySelector("#submission-output").innerHTML = "<p style='color: green; font-weight: bold;'>Thank you! Your feedback/strategy has been submitted successfully.</p>";
           } else {
             document.querySelector("#submission-output").innerHTML = "<p style='color: red; font-weight: bold;'>Error submitting form: " + result.error + "</p>";
           }
         } catch (error) {
+          console.error("Error submitting form:", error);
           document.querySelector("#submission-output").innerHTML = "<p style='color: red; font-weight: bold;'>Error submitting form: " + error.message + "</p>";
         }
       }
 
       // Attach the submit function to the button
       document.addEventListener("DOMContentLoaded", () => {
-        const submitButton = document.querySelector("button.gr-button.action-button");
+        console.log("DOM fully loaded, attaching event listener to submit button");
+        const submitButton = document.querySelector("#submit-feedback-button");
         if (submitButton) {
-          submitButton.addEventListener("click", submitFeedback);
+          console.log("Submit button found, attaching event listener");
+          submitButton.addEventListener("click", (event) => {
+            event.preventDefault();  // Prevent Gradio's default behavior
+            submitFeedback();
+          });
+        } else {
+          console.error("Submit button not found");
         }
       });
     </script>
