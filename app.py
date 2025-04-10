@@ -557,7 +557,6 @@ def calculate_trending_sections():
         "splits": sorted(state.split_scores.items(), key=lambda x: x[1], reverse=True)
     }
 
-# Lines 1590-1700 (Updated apply_strategy_highlights)
 def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_count, sorted_sections, top_color=None, middle_color=None, lower_color=None):
     """Apply highlights based on the selected strategy with custom colors."""
     if sorted_sections is None:
@@ -1012,37 +1011,6 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
                 for num in last_6:
                     number_highlights[str(num)] = lower_color
 
-        elif strategy_name == "Dozens Streak Breaker Strategy":
-            # Get the last N spins and check for a streak
-            recent_spins = state.last_spins[-neighbours_count:] if len(state.last_spins) >= neighbours_count else state.last_spins
-            dozen_pattern = []
-            for spin in recent_spins:
-                spin_value = int(spin)
-                if spin_value == 0:
-                    dozen_pattern.append("Not in Dozen")
-                else:
-                    found = False
-                    for name, numbers in DOZENS.items():
-                        if spin_value in numbers:
-                            dozen_pattern.append(name)
-                            found = True
-                            break
-                    if not found:
-                        dozen_pattern.append("Not in Dozen")
-
-            # Check for a streak (all spins in the same Dozen, excluding "Not in Dozen")
-            unique_dozens = set(dozen_pattern) - {"Not in Dozen"}
-            if len(unique_dozens) == 1:
-                streaking_dozen = unique_dozens.pop()
-                # Highlight the other two Dozens for betting
-                other_dozens = [name for name in DOZENS.keys() if name != streaking_dozen]
-                trending_dozen = other_dozens[0]  # Primary recommendation (top_color)
-                second_dozen = other_dozens[1]    # Secondary recommendation (middle_color)
-            else:
-                # No streak, so no specific recommendation for highlighting
-                trending_dozen = None
-                second_dozen = None
-
         elif strategy_name == "Neighbours of Strong Number":
             sorted_numbers = sorted(state.scores.items(), key=lambda x: (-x[1], x[0]))
             numbers_hits = [item for item in sorted_numbers if item[1] > 0]
@@ -1295,9 +1263,9 @@ def reset_casino_data():
         False,  # use_winners_checkbox
         "<p>Casino data reset to defaults.</p>"  # casino_data_output
     )
-# Lines 1540-1560 (Updated create_dynamic_table with Logging)
-def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozens_streak_spins=3, top_color=None, middle_color=None, lower_color=None):
-    print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozens_streak_spins: {dozens_streak_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
+
+def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, top_color=None, middle_color=None, lower_color=None):
+    print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
     print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
     sorted_sections = calculate_trending_sections()
     
@@ -1315,9 +1283,7 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
         middle_color = middle_color if middle_color else "rgba(0, 255, 255, 0.5)"
         lower_color = lower_color if lower_color else "rgba(0, 255, 0, 0.5)"
     else:
-        print(f"Before apply_strategy_highlights: top_color={top_color}, middle_color={middle_color}, lower_color={lower_color}")
-        trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color = apply_strategy_highlights(strategy_name, neighbours_count if strategy_name != "Dozens Streak Breaker Strategy" else dozens_streak_spins, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
-        print(f"After apply_strategy_highlights: top_color={top_color}, middle_color={middle_color}, lower_color={lower_color}")
+        trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color = apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
     
     # If still no highlights and no sorted_sections, provide a default message
     if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
@@ -1355,9 +1321,9 @@ def get_strongest_numbers_with_neighbors(num_count):
 
 # Function to analyze spins
 # Continuing from analyze_spins function
-def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, strong_numbers_count, dozens_streak_spins, *checkbox_args):
+def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *checkbox_args):
     try:
-        print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}, strong_numbers_count={strong_numbers_count}, dozens_streak_spins={dozens_streak_spins}")
+        print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}")
         if not spins_input or not spins_input.strip():
             print("analyze_spins: No spins input provided.")
             return "Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", ""
@@ -1504,10 +1470,10 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, st
         strongest_numbers_output = get_strongest_numbers_with_neighbors(3)
         print(f"analyze_spins: strongest_numbers_output='{strongest_numbers_output}'")
 
-        dynamic_table_html = create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count, dozens_streak_spins)
+        dynamic_table_html = create_dynamic_table(strategy_name, neighbours_count)
         print(f"analyze_spins: dynamic_table_html generated")
 
-        strategy_output = show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, dozens_streak_spins, *checkbox_args)
+        strategy_output = show_strategy_recommendations(strategy_name, neighbours_count, *checkbox_args)
         print(f"analyze_spins: Strategy output = {strategy_output}")
 
         return (spin_analysis_output, even_money_output, dozens_output, columns_output,
@@ -2768,65 +2734,7 @@ def best_columns_even_money_and_top_18():
         recommendations.append(f"{i}. Number {num} (Score: {score})")
 
     return "\n".join(recommendations)
-       
-    def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, dozens_streak_spins, *args):
-        try:
-            print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
-            print(f"show_strategy_recommendations: even_money_scores = {dict(state.even_money_scores)}")
-            print(f"show_strategy_recommendations: any_scores = {any(state.scores.values())}, any_even_money = {any(state.even_money_scores.values())}")
-            print(f"show_strategy_recommendations: strategy_name = {strategy_name}, neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}, dozens_streak_spins = {dozens_streak_spins}, args = {args}")
-    
-            if strategy_name == "None":
-                return "<p>No strategy selected. Please choose a strategy to see recommendations.</p>"
-            
-            # If no spins yet, provide a default for "Best Even Money Bets"
-            if not any(state.scores.values()) and not any(state.even_money_scores.values()):
-                if strategy_name == "Best Even Money Bets":
-                    return "<p>No spins yet. Default Even Money Bets to consider:<br>1. Red<br>2. Black<br>3. Even</p>"
-                return "<p>Please analyze some spins first to generate scores.</p>"
-    
-            strategy_info = STRATEGIES[strategy_name]
-            strategy_func = strategy_info["function"]
-    
-            if strategy_name == "Neighbours of Strong Number":
-                try:
-                    neighbours_count = int(neighbours_count)
-                    strong_numbers_count = int(strong_numbers_count)
-                    print(f"show_strategy_recommendations: Using neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}")
-                except (ValueError, TypeError) as e:
-                    print(f"show_strategy_recommendations: Error converting inputs: {str(e)}, defaulting to 2 and 1.")
-                    neighbours_count = 2
-                    strong_numbers_count = 1
-                recommendations = strategy_func(neighbours_count, strong_numbers_count)
-            elif strategy_name == "Dozens Streak Breaker Strategy":
-                try:
-                    num_spins_to_check = int(dozens_streak_spins)
-                    print(f"show_strategy_recommendations: Using num_spins_to_check = {num_spins_to_check}")
-                except (ValueError, TypeError) as e:
-                    print(f"show_strategy_recommendations: Error converting dozens_streak_spins: {str(e)}, defaulting to 3.")
-                    num_spins_to_check = 3
-                recommendations = strategy_func(num_spins_to_check)
-            else:
-                recommendations = strategy_func()
-    
-            print(f"show_strategy_recommendations: Strategy {strategy_name} output = {recommendations}")
-    
-            # If the output is already HTML, return it as is
-            if strategy_name == "Top Numbers with Neighbours (Tiered)":
-                return recommendations
-            # Otherwise, convert plain text to HTML
-            else:
-                lines = recommendations.split("\n")
-                html_lines = [f"<p>{line}</p>" for line in lines if line.strip()]
-                return "".join(html_lines)
-        except Exception as e:
-            print(f"show_strategy_recommendations: Error: {str(e)}")
-            return f"<p>Error generating strategy recommendations: {str(e)}</p>"
-    
-    
-    def clear_outputs():
-        return "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
-            
+
 def create_color_code_table():
     html = '''
     <div style="margin-top: 20px;">
@@ -3049,58 +2957,6 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
         print(f"neighbours_of_strong_number: Unexpected error: {str(e)}")
         return f"Error in Neighbours of Strong Number: Unexpected issue - {str(e)}. Please try again or contact support."
 
-# Lines 3440-3490 (Moved and Fixed Section with Correct Indentation)
-def dozens_streak_breaker_strategy(num_spins_to_check):
-    """Analyze the last N spins for Dozen patterns and recommend betting against streaks."""
-    recommendations = []
-    
-    # Validate input
-    try:
-        num_spins_to_check = int(num_spins_to_check)
-        if num_spins_to_check < 1:
-            return "Error: Number of spins to check must be at least 1."
-    except (ValueError, TypeError):
-        return "Error: Invalid number of spins to check. Please use a positive integer."
-
-    # Get the last N spins
-    recent_spins = state.last_spins[-num_spins_to_check:] if len(state.last_spins) >= num_spins_to_check else state.last_spins
-    if not recent_spins:
-        return "Dozens Streak Breaker Strategy: No spins recorded yet."
-
-    # Map each spin to its Dozen
-    dozen_pattern = []
-    for spin in recent_spins:
-        spin_value = int(spin)
-        if spin_value == 0:
-            dozen_pattern.append("Not in Dozen")
-        else:
-            found = False
-            for name, numbers in DOZENS.items():
-                if spin_value in numbers:
-                    dozen_pattern.append(name)
-                    found = True
-                    break
-            if not found:
-                dozen_pattern.append("Not in Dozen")
-
-    # Display the pattern
-    recommendations.append(f"Last {len(recent_spins)} Dozens Pattern:")
-    recommendations.append(", ".join(dozen_pattern))
-
-    # Check for a streak (all spins in the same Dozen, excluding "Not in Dozen")
-    unique_dozens = set(dozen_pattern) - {"Not in Dozen"}
-    if len(unique_dozens) == 1:
-        streaking_dozen = unique_dozens.pop()
-        # Recommend betting on the other two Dozens
-        other_dozens = [name for name in DOZENS.keys() if name != streaking_dozen]
-        recommendations.append(f"\nStreak Detected: All in {streaking_dozen}")
-        recommendations.append(f"Recommendation: Bet on {other_dozens[0]} and {other_dozens[1]}")
-    else:
-        recommendations.append("\nNo Streak Detected: Dozens are mixed.")
-        recommendations.append("Recommendation: No clear betting strategy based on streak.")
-
-    return "\n".join(recommendations)
- 
 STRATEGIES = {
     "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
     "Cold Bet Strategy": {"function": cold_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
@@ -3127,8 +2983,7 @@ STRATEGIES = {
     "1 Dozen +1 Column Strategy": {"function": one_dozen_one_column_strategy, "categories": ["dozens", "columns"]},
     "Top Pick 18 Numbers without Neighbours": {"function": top_pick_18_numbers_without_neighbours, "categories": ["numbers"]},
     "Top Numbers with Neighbours (Tiered)": {"function": top_numbers_with_neighbours_tiered, "categories": ["numbers"]},
-    "Neighbours of Strong Number": {"function": neighbours_of_strong_number, "categories": ["neighbours"]},
-    "Dozens Streak Breaker Strategy": {"function": dozens_streak_breaker_strategy, "categories": ["dozens"]}
+    "Neighbours of Strong Number": {"function": neighbours_of_strong_number, "categories": ["neighbours"]}
 }
 
 def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
@@ -3227,7 +3082,7 @@ with gr.Blocks() as demo:
     strategy_categories = {
         "Trends": ["Cold Bet Strategy", "Hot Bet Strategy", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"],
         "Even Money Strategies": ["Best Even Money Bets", "Best Even Money Bets + Top Pick 18 Numbers", "Fibonacci To Fortune"],
-        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Top Pick 18 Numbers", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen", "Dozens Streak Breaker Strategy"],
+        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Top Pick 18 Numbers", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],
         "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Streets"],
         "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
         "Double Street Strategies": ["Best Double Streets", "Non-Overlapping Double Street Strategy"],
@@ -3459,14 +3314,6 @@ with gr.Blocks() as demo:
                 visible=False,
                 elem_classes="long-slider"
             )
-            dozens_streak_spins_dropdown = gr.Dropdown(
-                label="Spins to Check for Dozen Streak",
-                choices=["3", "4", "5", "6"],
-                value="3",
-                interactive=True,
-                visible=False,
-                elem_classes="long-slider"
-            )
             reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
 
 # Betting Progression Tracker (New Row)
@@ -3529,16 +3376,6 @@ with gr.Blocks() as demo:
     with gr.Accordion("Color Code Key", open=False, elem_id="color-code-key"):
         color_code_output = gr.HTML(label="Color Code Key")
 
-    # Initialize color pickers on load
-    demo.load(
-        fn=reset_colors,
-        inputs=[],
-        outputs=[top_color_picker, middle_color_picker, lower_color_picker]
-    ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    )
     # 10. Row 10: Analysis Outputs (Collapsible)
     with gr.Accordion("Spin Logic Reactor 🧠", open=False, elem_id="spin-analysis"):
         spin_analysis_output = gr.Textbox(
@@ -3892,21 +3729,19 @@ with gr.Blocks() as demo:
     )
 
     def toggle_neighbours_slider(strategy_name):
-        is_neighbours_visible = strategy_name == "Neighbours of Strong Number"
-        is_dozens_streak_visible = strategy_name == "Dozens Streak Breaker Strategy"
+        is_visible = strategy_name == "Neighbours of Strong Number"
         return (
-            gr.update(visible=is_neighbours_visible),
-            gr.update(visible=is_neighbours_visible),
-            gr.update(visible=is_dozens_streak_visible)
+            gr.update(visible=is_visible),
+            gr.update(visible=is_visible)
         )
 
     strategy_dropdown.change(
         fn=toggle_neighbours_slider,
         inputs=[strategy_dropdown],
-        outputs=[neighbours_count_slider, strong_numbers_count_slider, dozens_streak_spins_dropdown]
+        outputs=[neighbours_count_slider, strong_numbers_count_slider]
     ).then(
         fn=show_strategy_recommendations,
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozens_streak_spins_dropdown],
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
         outputs=[strategy_output]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: (print(f"Updating Dynamic Table with Strategy: {strategy}, Neighbours Count: {neighbours_count}, Strong Numbers Count: {strong_numbers_count}, Colors: {top_color}, {middle_color}, {lower_color}"), create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color))[-1],
@@ -3914,10 +3749,9 @@ with gr.Blocks() as demo:
         outputs=[dynamic_table_output]
     )
 
-    # Lines 4845-4860 (Updated analyze_button.click)
     analyze_button.click(
         fn=analyze_spins,
-        inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozens_streak_spins_dropdown],
+        inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
         outputs=[
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
@@ -3925,8 +3759,8 @@ with gr.Blocks() as demo:
             dynamic_table_output, strategy_output
         ]
     ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, dozens_streak_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozens_streak_spins, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozens_streak_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     ).then(
         fn=create_color_code_table,
@@ -3999,9 +3833,9 @@ with gr.Blocks() as demo:
     )
 
     reset_colors_button.click(
-    fn=reset_colors,
-    inputs=[],
-    outputs=[top_color_picker, middle_color_picker, lower_color_picker]
+        fn=reset_colors,
+        inputs=[],
+        outputs=[top_color_picker, middle_color_picker, lower_color_picker]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
