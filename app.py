@@ -3704,7 +3704,107 @@ with gr.Blocks() as demo:
             load_input = gr.File(label="Upload Session")
         save_output = gr.File(label="Download Session")
 
+    # 12. Row 12: Feedback and Strategy Submission
+    with gr.Accordion("Feedback & Strategy Submission", open=False, elem_id="feedback-section"):
+        gr.Markdown("### Share Your Feedback and Strategy Ideas")
+        gr.Markdown(
+            "We value your input! Use this form to provide feedback about the app or submit a new strategy for us to test. "
+            "If you’d like a response, please include your email address (your email will remain private and secure)."
+        )
+        with gr.Row():
+            with gr.Column(scale=1):
+                feedback_textbox = gr.Textbox(
+                    label="Your Feedback",
+                    placeholder="Tell us what you think about the app (e.g., what you like, what could be improved).",
+                    lines=5,
+                    interactive=True
+                )
+                strategy_category_dropdown = gr.Dropdown(
+                    label="Strategy Category",
+                    choices=category_choices[1:],  # Exclude "None"
+                    value="Even Money Strategies",
+                    interactive=True
+                )
+                strategy_name_textbox = gr.Textbox(
+                    label="Strategy Name",
+                    placeholder="Give your strategy a unique name (e.g., 'My Custom Dozen Strategy').",
+                    interactive=True
+                )
+                strategy_description_textbox = gr.Textbox(
+                    label="Strategy Description",
+                    placeholder="Describe how your strategy works. Include:\n- What data it uses (e.g., Dozen scores, spin history)\n- How it highlights numbers/sections on the table\n- Any betting recommendations",
+                    lines=5,
+                    interactive=True
+                )
+                strategy_inputs_textbox = gr.Textbox(
+                    label="Additional Inputs (Optional)",
+                    placeholder="If your strategy requires user inputs (e.g., sliders, dropdowns), describe them here (e.g., 'A slider to select past spins from 5 to 20').",
+                    lines=3,
+                    interactive=True
+                )
+                user_email_textbox = gr.Textbox(
+                    label="Your Email (Optional)",
+                    placeholder="Enter your email if you'd like a response (your email will remain private).",
+                    interactive=True
+                )
+                submit_button = gr.Button("Submit Feedback", elem_classes=["action-button"])
+                submission_output = gr.HTML(
+                    label="Submission Status",
+                    value="<p>Fill out the form and click 'Submit Feedback' to send your feedback or strategy.</p>",
+                    elem_id="submission-output"
+                )
 
+    # Add JavaScript for Formspree submission
+    gr.HTML("""
+    <script>
+      async function submitFeedback() {
+        // Collect form data
+        const feedback = document.querySelector("textarea[placeholder*='Tell us what you think']").value;
+        const category = document.querySelector("select").value;  // Adjusted selector for category dropdown
+        const strategyName = document.querySelector("input[placeholder*='Give your strategy']").value;
+        const strategyDescription = document.querySelector("textarea[placeholder*='Describe how your strategy']").value;
+        const strategyInputs = document.querySelector("textarea[placeholder*='If your strategy requires']").value;
+        const userEmail = document.querySelector("input[placeholder*='Enter your email']").value;
+
+        // Prepare data for submission
+        const formData = new FormData();
+        formData.append("feedback", feedback);
+        formData.append("category", category);
+        formData.append("strategy_name", strategyName);
+        formData.append("strategy_description", strategyDescription);
+        formData.append("strategy_inputs", strategyInputs);
+        formData.append("email", userEmail);
+
+        // Submit to Formspree
+        try {
+          const response = await fetch("https://formspree.io/f/mnnpllqq", {
+            method: "POST",
+            body: formData,
+            headers: {
+              "Accept": "application/json"
+            }
+          });
+
+          const result = await response.json();
+          if (response.ok) {
+            document.querySelector("#submission-output").innerHTML = "<p style='color: green; font-weight: bold;'>Thank you! Your feedback/strategy has been submitted successfully.</p>";
+          } else {
+            document.querySelector("#submission-output").innerHTML = "<p style='color: red; font-weight: bold;'>Error submitting form: " + result.error + "</p>";
+          }
+        } catch (error) {
+          document.querySelector("#submission-output").innerHTML = "<p style='color: red; font-weight: bold;'>Error submitting form: " + error.message + "</p>";
+        }
+      }
+
+      // Attach the submit function to the button
+      document.addEventListener("DOMContentLoaded", () => {
+        const submitButton = document.querySelector("button.gr-button.action-button");
+        if (submitButton) {
+          submitButton.addEventListener("click", submitFeedback);
+        }
+      });
+    </script>
+    """)
         
     # CSS and Event Handlers
     gr.HTML("""
