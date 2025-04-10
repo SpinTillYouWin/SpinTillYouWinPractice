@@ -3735,65 +3735,46 @@ with gr.Blocks() as demo:
       body { padding-top: 120px !important; }
       .header-title { text-align: center !important; font-size: clamp(1.5em, 5vw, 2.5em) !important; margin-bottom: 5px !important; color: #333 !important; }
     
-      /* Roulette Table ("Clicky Table") */
-      .roulette-table { margin-top: 120px !important; display: flex !important; flex-direction: column !important; gap: 2px !important; width: 100% !important; padding: 0 5px !important; box-sizing: border-box !important; }
-      .table-row { display: flex !important; gap: 2px !important; flex-wrap: wrap !important; width: 100% !important; justify-content: center !important; }
+      /* Roulette Table */
+      .roulette-table { margin-top: 120px !important; display: flex !important; flex-direction: column !important; gap: 0 !important; width: 100% !important; }
+      .table-row { display: flex !important; gap: 0 !important; flex-wrap: nowrap !important; width: 100% !important; }
       .roulette-button {
           margin: 0 !important;
           padding: 0 !important;
-          width: clamp(20px, 6.5vw, 40px) !important;
-          height: clamp(20px, 6.5vw, 40px) !important;
-          font-size: clamp(10px, 2.5vw, 14px) !important;
+          width: clamp(25px, 7vw, 40px) !important;
+          height: clamp(25px, 7vw, 40px) !important;
+          font-size: clamp(10px, 3vw, 14px) !important;
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
           border: 1px solid white !important;
           box-sizing: border-box !important;
-          flex: 0 0 auto !important;
       }
       .roulette-button.green { background-color: green !important; color: white !important; }
       .roulette-button.red { background-color: red !important; color: white !important; }
       .roulette-button.black { background-color: black !important; color: white !important; }
       .roulette-button:hover { opacity: 0.8; }
       .roulette-button.selected { border: 2px solid yellow !important; }
-      .empty-button { width: clamp(20px, 6.5vw, 40px) !important; height: clamp(20px, 6.5vw, 40px) !important; border: 1px solid white !important; visibility: hidden !important; }
+      .empty-button { width: clamp(25px, 7vw, 40px) !important; height: clamp(25px, 7vw, 40px) !important; border: 1px solid white !important; }
     
       /* Dynamic Table */
       #dynamic-table-heading + div table {
           width: 100% !important;
-          font-size: clamp(9px, 2.2vw, 14px) !important;
-          table-layout: auto !important;
-          overflow-x: auto !important;
-          display: block !important;
+          max-width: 100% !important;
+          font-size: clamp(10px, 2.5vw, 14px) !important;
       }
       #dynamic-table-heading + div td, #dynamic-table-heading + div th {
-          padding: clamp(2px, 0.8vw, 5px) !important;
-          min-width: clamp(15px, 4vw, 40px) !important;
-          word-wrap: break-word !important;
+          padding: clamp(2px, 1vw, 5px) !important;
+          min-width: clamp(20px, 5vw, 40px) !important;
       }
-      #dynamic-table-heading + div { overflow-x: auto !important; width: 100% !important; }
     
       /* Last Spins */
       .last-spins-container { width: 100% !important; padding: 10px !important; background-color: #f5f5f5 !important; border-radius: 5px !important; overflow-x: auto !important; }
       .last-spins-container div { display: flex !important; flex-wrap: wrap !important; gap: 5px !important; }
     
-      /* Selected Spins Textbox */
-      #selected-spins-row { width: 100% !important; display: flex !important; flex-wrap: wrap !important; gap: 10px !important; }
-      #selected-spins { width: 100% !important; flex: 1 1 100% !important; box-sizing: border-box !important; }
-      #selected-spins label {
-          font-size: clamp(12px, 3vw, 14px) !important;
-          padding: 5px !important;
-          background-color: #87CEEB !important;
-          color: black !important;
-          border-radius: 3px !important;
-          width: 100% !important;
-          white-space: normal !important;
-          overflow-wrap: break-word !important;
-          line-height: 1.4em !important;
-          box-sizing: border-box !important;
-      }
-    
       /* Inputs and Buttons */
+      #selected-spins { width: 100% !important; }
+      #selected-spins label { font-size: clamp(12px, 3vw, 14px) !important; padding: 5px !important; background-color: #87CEEB; color: black; border-radius: 3px; white-space: normal !important; }
       .action-button { width: 100% !important; padding: clamp(5px, 1.5vw, 10px) !important; font-size: clamp(12px, 3vw, 14px) !important; }
       .green-btn { background-color: #28a745 !important; color: white !important; }
       .green-btn:hover { background-color: #218838 !important; }
@@ -3823,9 +3804,9 @@ with gr.Blocks() as demo:
       @media (max-width: 600px) {
           .gr-row { flex-direction: column !important; }
           .roulette-table { padding: 0 !important; }
-          .table-row { gap: 1px !important; }
+          .table-row { justify-content: center !important; }
           .action-button { margin: 5px 0 !important; }
-          #dynamic-table-heading + div table { font-size: 9px !important; }
+          #dynamic-table-heading + div table { font-size: 10px !important; }
           .scrollable-table { max-height: 200px !important; }
           .gr-textbox { font-size: 12px !important; }
       }
