@@ -3143,7 +3143,7 @@ with gr.Blocks() as demo:
                 label="Strategy Recommendations",
                 value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
             )
-            with gr.Accordion("Casino Data Insights", open=False, elem_id="casino-data-insights"):
+            with gr.Accordion("Casino Data Insights", open=True, elem_id="casino-data-insights"):
                 spins_count_dropdown = gr.Dropdown(
                     label="Past Spins Count",
                     choices=["30", "50", "100", "200", "300", "500"],
@@ -3400,7 +3400,7 @@ with gr.Blocks() as demo:
                     sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
     # 11. Row 11: Save/Load Session (Collapsible)
-    with gr.Accordion("Save/Load Session", open=False):
+    with gr.Accordion("Save/Load Session", open=True):
         with gr.Row():
             save_button = gr.Button("Save Session", elem_id="save-session-btn")
             load_input = gr.File(label="Upload Session")
