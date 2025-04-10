@@ -2999,17 +2999,20 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
         print(f"neighbours_of_strong_number: Unexpected error: {str(e)}")
         return f"Error in Neighbours of Strong Number: Unexpected issue - {str(e)}. Please try again or contact support."
 
-def dozen_tracker(num_spins_to_check):
-    """Track and display the history of Dozen hits for the last N spins."""
+def dozen_tracker(num_spins_to_check, consecutive_hits_threshold):
+    """Track and display the history of Dozen hits for the last N spins, with alerts for consecutive hits."""
     recommendations = []
     
-    # Validate input
+    # Validate inputs
     try:
         num_spins_to_check = int(num_spins_to_check)
+        consecutive_hits_threshold = int(consecutive_hits_threshold)
         if num_spins_to_check < 1:
             return "Error: Number of spins to check must be at least 1.", "<p>Error: Number of spins to check must be at least 1.</p>"
+        if consecutive_hits_threshold < 1:
+            return "Error: Consecutive hits threshold must be at least 1.", "<p>Error: Consecutive hits threshold must be at least 1.</p>"
     except (ValueError, TypeError):
-        return "Error: Invalid number of spins to check. Please use a positive integer.", "<p>Error: Invalid number of spins to check. Please use a positive integer.</p>"
+        return "Error: Invalid inputs. Please use positive integers.", "<p>Error: Invalid inputs. Please use positive integers.</p>"
 
     # Get the last N spins
     recent_spins = state.last_spins[-num_spins_to_check:] if len(state.last_spins) >= num_spins_to_check else state.last_spins
@@ -3036,9 +3039,33 @@ def dozen_tracker(num_spins_to_check):
                 dozen_pattern.append("Not in Dozen")
                 dozen_counts["Not in Dozen"] += 1
 
+    # Detect consecutive Dozen hits
+    current_streak = 1
+    current_dozen = None
+    max_streak = 1
+    max_streak_dozen = None
+    for i in range(len(dozen_pattern)):
+        dozen = dozen_pattern[i]
+        if dozen == "Not in Dozen":  # 0 breaks the streak
+            current_streak = 1
+            current_dozen = None
+            continue
+        if current_dozen is None or dozen != current_dozen:
+            current_dozen = dozen
+            current_streak = 1
+        else:
+            current_streak += 1
+            if current_streak >= consecutive_hits_threshold:
+                gr.Warning(f"Alert: {current_dozen} has hit {current_streak} times consecutively!")
+            if current_streak > max_streak:
+                max_streak = current_streak
+                max_streak_dozen = current_dozen
+
     # Text summary
     recommendations.append(f"Dozen Tracker (Last {len(recent_spins)} Spins):")
     recommendations.append("Dozen History: " + ", ".join(dozen_pattern))
+    if max_streak >= consecutive_hits_threshold:
+        recommendations.append(f"\nAlert: {max_streak_dozen} hit {max_streak} times consecutively!")
     recommendations.append("\nSummary of Dozen Hits:")
     for name, count in dozen_counts.items():
         recommendations.append(f"{name}: {count} hits")
@@ -3055,6 +3082,8 @@ def dozen_tracker(num_spins_to_check):
         }.get(dozen, "#808080")
         html_output += f'<span style="background-color: {color}; color: white; padding: 2px 5px; border-radius: 3px; display: inline-block;">{dozen}</span>'
     html_output += '</div>'
+    if max_streak >= consecutive_hits_threshold:
+        html_output += f'<p style="color: red; font-weight: bold;">Alert: {max_streak_dozen} hit {max_streak} times consecutively!</p>'
     html_output += '<h4>Summary of Dozen Hits:</h4>'
     html_output += '<ul style="list-style-type: none; padding-left: 0;">'
     for name, count in dozen_counts.items():
@@ -3432,6 +3461,12 @@ with gr.Blocks() as demo:
                     value="5",
                     interactive=True
                 )
+                dozen_tracker_consecutive_hits_dropdown = gr.Dropdown(
+                    label="Alert on Consecutive Dozen Hits",
+                    choices=["3", "4", "5"],
+                    value="3",
+                    interactive=True
+                )
                 dozen_tracker_output = gr.HTML(
                     label="Dozen Tracker",
                     value="<p>Select the number of spins to track and analyze spins to see the Dozen history.</p>"
@@ -3746,6 +3781,7 @@ with gr.Blocks() as demo:
 
     # Lines 4888-4920 (Updated Section with `toggle_labouchere` and Fixed Indentation)
     # Lines 4888-4920 (Updated Section with `toggle_labouchere` and Fixed Indentation)
+    # Lines 4888-4920 (Updated Section with `toggle_labouchere` and Fixed Indentation)
     def toggle_labouchere(progression):
         return gr.update(visible=progression == "Labouchere")
 
@@ -3815,7 +3851,7 @@ with gr.Blocks() as demo:
         ]
     ).then(
         fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown],
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown],
         outputs=[gr.State(), dozen_tracker_output]
     )
 
@@ -3896,7 +3932,7 @@ with gr.Blocks() as demo:
         outputs=[color_code_output]
     ).then(
         fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown],
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown],
         outputs=[gr.State(), dozen_tracker_output]
     )
 
@@ -3928,7 +3964,7 @@ with gr.Blocks() as demo:
         outputs=[color_code_output]
     ).then(
         fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown],
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown],
         outputs=[gr.State(), dozen_tracker_output]
     )
 
@@ -3948,7 +3984,7 @@ with gr.Blocks() as demo:
         outputs=[dynamic_table_output]
     ).then(
         fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown],
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown],
         outputs=[gr.State(), dozen_tracker_output]
     )
 
@@ -4009,7 +4045,18 @@ with gr.Blocks() as demo:
     # Dozen Tracker Event Handler
     dozen_tracker_spins_dropdown.change(
         fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown],
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown],
+        outputs=[gr.State(), dozen_tracker_output]
+    ).then(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+
+    # Dozen Tracker Consecutive Hits Event Handler
+    dozen_tracker_consecutive_hits_dropdown.change(
+        fn=dozen_tracker,
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown],
         outputs=[gr.State(), dozen_tracker_output]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
