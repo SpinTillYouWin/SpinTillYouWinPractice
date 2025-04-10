@@ -140,117 +140,109 @@ class RouletteState:
         else:
             self.status_color = "white"  # Neutral when active
 
-    def update_progression(self, won):
-        if self.is_stopped:
-            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
-        self.update_bankroll(won)
-        if self.bankroll < self.current_bet:
-            self.is_stopped = True
-            self.status = "Stopped: Insufficient bankroll"
-            self.status_color = "red"  # Red for insufficient bankroll
-            self.message = "Cannot continue: Bankroll too low."
-            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
-        
-        # Inside the RouletteState class, modify the update_progression method
 def update_progression(self, won):
-        if self.is_stopped:
-            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
-        self.update_bankroll(won)
-        if self.bankroll < self.current_bet:
-            self.is_stopped = True
-            self.status = "Stopped: Insufficient bankroll"
-            self.status_color = "red"  # Red for insufficient bankroll
-            self.message = "Cannot continue: Bankroll too low."
-            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
-    
-        # Define the S.T.Y.W: Victory Vortex sequence
-        victory_vortex_sequence = [1, 8, 11, 16, 24, 35, 52, 78, 116, 174, 260, 390, 584, 876, 1313, 1969]
-
-        if self.progression == "Martingale":
-            self.current_bet = self.next_bet
-            self.next_bet = self.base_unit if won else self.current_bet * 2
-            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-        elif self.progression == "Fibonacci":
-            fib = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
-            if self.progression_state is None:
-                self.progression_state = 0
-            self.current_bet = self.next_bet
-            if won:
-                self.progression_state = max(0, self.progression_state - 2)
-                self.next_bet = fib[self.progression_state] * self.base_unit
-                self.message = f"Win! Move back to {self.next_bet}"
-            else:
-                self.progression_state = min(len(fib) - 1, self.progression_state + 1)
-                self.next_bet = fib[self.progression_state] * self.base_unit
-                self.message = f"Loss! Next Fibonacci bet: {self.next_bet}"
-        elif self.progression == "S.T.Y.W: Victory Vortex":
-            if self.progression_state is None:
-                self.progression_state = 0  # Index in the sequence
-            self.current_bet = self.next_bet
-            if won:
-                # For Dozens (2:1 payout), reset to base unit or step back slightly
-                self.progression_state = max(0, self.progression_state - 2)
-                self.next_bet = victory_vortex_sequence[self.progression_state] * self.base_unit
-                self.message = f"Win! Step back to {self.next_bet}"
-            else:
-                # On loss, move to the next bet in the sequence
-                self.progression_state = min(len(victory_vortex_sequence) - 1, self.progression_state + 1)
-                self.next_bet = victory_vortex_sequence[self.progression_state] * self.base_unit
-                self.message = f"Loss! Next Victory Vortex bet: {self.next_bet}"
-        elif self.progression == "Triple Martingale":
-            self.current_bet = self.next_bet
-            self.next_bet = self.base_unit if won else self.current_bet * 3
-            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-        elif self.progression == "Oscar’s Grind":
-            self.current_bet = self.next_bet
-            profit = self.bankroll - self.initial_bankroll
-            if won and profit > 0:
-                self.next_bet = self.base_unit
-                self.message = f"Win! Profit achieved, reset to {self.next_bet}"
-            elif won:
-                self.next_bet = self.current_bet + self.base_unit
-                self.message = f"Win! Increase to {self.next_bet}"
-            else:
-                self.next_bet = self.current_bet
-                self.message = f"Loss! Keep bet at {self.next_bet}"
-        elif self.progression == "Labouchere":
-            if self.progression_state is None:
-                self.progression_state = [1, 2, 3, 4]  # Default, updated by UI
-            self.current_bet = self.next_bet
-            if won and len(self.progression_state) > 1:
-                self.progression_state.pop(0)
-                self.progression_state.pop(-1)
-                self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit if len(self.progression_state) > 1 else self.progression_state[0] * self.base_unit if self.progression_state else self.base_unit
-                self.message = f"Win! Next bet: {self.next_bet} (Sequence: {self.progression_state})"
-            elif won:
-                self.next_bet = self.base_unit
-                self.message = f"Win! Sequence complete, reset to {self.next_bet}"
-            else:
-                self.progression_state.append(self.current_bet // self.base_unit)
-                self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit
-                self.message = f"Loss! Next bet: {self.next_bet} (Sequence: {self.progression_state})"
-        elif self.progression == "Ladder":
-            self.current_bet = self.next_bet
-            self.next_bet = self.base_unit if won else self.current_bet + self.base_unit
-            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-        elif self.progression == "D’Alembert":
-            self.current_bet = self.next_bet
-            self.next_bet = max(self.base_unit, self.current_bet - self.base_unit) if won else self.current_bet + self.base_unit
-            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-        elif self.progression == "Double After a Win":
-            self.current_bet = self.next_bet
-            self.next_bet = self.current_bet * 2 if won else self.base_unit
-            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-        elif self.progression == "+1 Win / -1 Loss":
-            self.current_bet = self.next_bet
-            self.next_bet = self.current_bet + self.base_unit if won else max(self.base_unit, self.current_bet - self.base_unit)
-            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-        elif self.progression == "+2 Win / -1 Loss":
-            self.current_bet = self.next_bet
-            self.next_bet = self.current_bet + (2 * self.base_unit) if won else max(self.base_unit, self.current_bet - self.base_unit)
-            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-    
+    if self.is_stopped:
         return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+    self.update_bankroll(won)
+    if self.bankroll < self.current_bet:
+        self.is_stopped = True
+        self.status = "Stopped: Insufficient bankroll"
+        self.status_color = "red"  # Red for insufficient bankroll
+        self.message = "Cannot continue: Bankroll too low."
+        return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+    
+    # Define the S.T.Y.W: Victory Vortex sequence
+    victory_vortex_sequence = [1, 8, 11, 16, 24, 35, 52, 78, 116, 174, 260, 390, 584, 876, 1313, 1969]
+
+    if self.progression == "Martingale":
+        self.current_bet = self.next_bet
+        self.next_bet = self.base_unit if won else self.current_bet * 2
+        self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+    elif self.progression == "Fibonacci":
+        fib = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
+        if self.progression_state is None:
+            self.progression_state = 0
+        self.current_bet = self.next_bet
+        if won:
+            self.progression_state = max(0, self.progression_state - 2)
+            self.next_bet = fib[self.progression_state] * self.base_unit
+            self.message = f"Win! Move back to {self.next_bet}"
+        else:
+            self.progression_state = min(len(fib) - 1, self.progression_state + 1)
+            self.next_bet = fib[self.progression_state] * self.base_unit
+            self.message = f"Loss! Next Fibonacci bet: {self.next_bet}"
+    elif self.progression == "S.T.Y.W: Victory Vortex":
+        if self.progression_state is None:
+            self.progression_state = 0  # Index in the sequence
+        self.current_bet = self.next_bet
+        if won:
+            # For Dozens (2:1 payout), step back two positions or reset
+            self.progression_state = max(0, self.progression_state - 2)
+            self.next_bet = victory_vortex_sequence[self.progression_state] * self.base_unit
+            self.message = f"Win! Step back to {self.next_bet}"
+        else:
+            # On loss, move to the next bet in the sequence
+            self.progression_state = min(len(victory_vortex_sequence) - 1, self.progression_state + 1)
+            self.next_bet = victory_vortex_sequence[self.progression_state] * self.base_unit
+            self.message = f"Loss! Next Victory Vortex bet: {self.next_bet}"
+    elif self.progression == "Triple Martingale":
+        self.current_bet = self.next_bet
+        self.next_bet = self.base_unit if won else self.current_bet * 3
+        self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+    elif self.progression == "Oscar’s Grind":
+        self.current_bet = self.next_bet
+        profit = self.bankroll - self.initial_bankroll
+        if won and profit > 0:
+            self.next_bet = self.base_unit
+            self.message = f"Win! Profit achieved, reset to {self.next_bet}"
+        elif won:
+            self.next_bet = self.current_bet + self.base_unit
+            self.message = f"Win! Increase to {self.next_bet}"
+        else:
+            self.next_bet = self.current_bet
+            self.message = f"Loss! Keep bet at {self.next_bet}"
+    elif self.progression == "Labouchere":
+        if self.progression_state is None:
+            self.progression_state = [1, 2, 3, 4]  # Default, updated by UI
+        self.current_bet = self.next_bet
+        if won and len(self.progression_state) > 1:
+            self.progression_state.pop(0)
+            self.progression_state.pop(-1)
+            self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit if len(self.progression_state) > 1 else self.progression_state[0] * self.base_unit if self.progression_state else self.base_unit
+            self.message = f"Win! Next bet: {self.next_bet} (Sequence: {self.progression_state})"
+        elif won:
+            self.next_bet = self.base_unit
+            self.message = f"Win! Sequence complete, reset to {self.next_bet}"
+        else:
+            self.progression_state.append(self.current_bet // self.base_unit)
+            self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit
+            self.message = f"Loss! Next bet: {self.next_bet} (Sequence: {self.progression_state})"
+    elif self.progression == "Ladder":
+        self.current_bet = self.next_bet
+        self.next_bet = self.base_unit if won else self.current_bet + self.base_unit
+        self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+    elif self.progression == "D’Alembert":
+        self.current_bet = self.next_bet
+        self.next_bet = max(self.base_unit, self.current_bet - self.base_unit) if won else self.current_bet + self.base_unit
+        self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+    elif self.progression == "Double After a Win":
+        self.current_bet = self.next_bet
+        self.next_bet = self.current_bet * 2 if won else self.base_unit
+        self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+    elif self.progression == "Double After a Win":
+        self.current_bet = self.next_bet
+        self.next_bet = self.current_bet * 2 if won else self.base_unit
+        self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+    elif self.progression == "+1 Win / -1 Loss":
+        self.current_bet = self.next_bet
+        self.next_bet = self.current_bet + self.base_unit if won else max(self.base_unit, self.current_bet - self.base_unit)
+        self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+    elif self.progression == "+2 Win / -1 Loss":
+        self.current_bet = self.next_bet
+        self.next_bet = self.current_bet + (2 * self.base_unit) if won else max(self.base_unit, self.current_bet - self.base_unit)
+        self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+    
+    return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
 
 # Create an instance of RouletteState (unchanged)
 state = RouletteState()
@@ -3621,14 +3613,14 @@ with gr.Blocks() as demo:
                     value="Even Money"
                 )
                 progression_dropdown = gr.Dropdown(
-                    label="Progression",
-                    choices=[
-                        "Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere",
-                        "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss",
-                        "S.T.Y.W: Victory Vortex"  # Add the new progression here
-                    ],
-                    value="Martingale"
-                )
+                label="Progression",
+                choices=[
+                    "Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere",
+                    "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss",
+                    "S.T.Y.W: Victory Vortex"  # Add this line
+                ],
+                value="Martingale"
+            )
                 labouchere_sequence = gr.Textbox(
                     label="Labouchere Sequence (comma-separated)",
                     value="1, 2, 3, 4",
