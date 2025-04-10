@@ -114,13 +114,21 @@ class RouletteState:
         # self.reset_progression()
 
     def reset_progression(self):
+        self.bankroll = self.initial_bankroll  # Reset to default (1000 unless changed)
         self.current_bet = self.base_unit
         self.next_bet = self.base_unit
         self.progression_state = None
         self.is_stopped = False
-        self.message = f"Progression reset. Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
         self.status = "Active"
-        return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
+        self.status_color = "white"  # Explicitly set to white for Active
+        self.message = f"Progression reset. Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
+        return (
+            self.bankroll,
+            self.current_bet,
+            self.next_bet,
+            self.message,
+            f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
+        )
 
     def update_bankroll(self, won):
         payout = {"Even Money": 1, "Dozens": 2, "Columns": 2, "Straight Bets": 35}[self.bet_type]
@@ -3363,7 +3371,18 @@ with gr.Blocks() as demo:
                         btn.click(
                             fn=add_spin,
                             inputs=[gr.State(value=num), spins_display, last_spin_count],
-                            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter]
+                            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, bet_type_dropdown, progression_dropdown]
+                        ).then(
+                            fn=lambda spins, num_to_show, bet_type, progression: (
+                                spins,
+                                spins,
+                                format_spins_as_html(spins, num_to_show),
+                                update_spin_counter(),
+                                gr.update(value=bet_type, interactive=True),  # Refresh interactivity
+                                gr.update(value=progression, interactive=True)  # Refresh interactivity
+                            ),
+                            inputs=[spins_display, last_spin_count, bet_type_dropdown, progression_dropdown],
+                            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, bet_type_dropdown, progression_dropdown]
                         )
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
@@ -3606,17 +3625,17 @@ with gr.Blocks() as demo:
                 bet_type_dropdown = gr.Dropdown(
                     label="Bet Type",
                     choices=["Even Money", "Dozens", "Columns", "Straight Bets"],
-                    value="Even Money"
+                    value="Even Money",
+                    interactive=True  # Ensure it stays interactive
                 )
                 progression_dropdown = gr.Dropdown(
                     label="Progression",
-                    choices=["Martingale", "Fibonacci", "S.T.Y.W: Victory Vortex", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss"],
-                    value="Martingale"
-                )
-                labouchere_sequence = gr.Textbox(
-                    label="Labouchere Sequence (comma-separated)",
-                    value="1, 2, 3, 4",
-                    visible=False
+                    choices=[
+                        "Martingale", "Fibonacci", "S.T.Y.W: Victory Vortex", "Triple Martingale", "Oscar’s Grind", 
+                        "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss"
+                    ],
+                    value="Martingale",
+                    interactive=True  # Ensure it stays interactive
                 )
             with gr.Row():
                 win_button = gr.Button("Win")
@@ -4031,23 +4050,23 @@ with gr.Blocks() as demo:
         outputs=[dynamic_table_output]
     )
 
-    analyze_button.click(
+     analyze_button.click(
         fn=analyze_spins,
         inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
         outputs=[
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-            dynamic_table_output, strategy_output
+            dynamic_table_output, strategy_output, bet_type_dropdown, progression_dropdown
         ]
     ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    ).then(
-        fn=create_color_code_table,
-        inputs=[],
-        outputs=[color_code_output]
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, bet_type, progression: (
+            create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            gr.update(value=bet_type, interactive=True),  # Refresh interactivity
+            gr.update(value=progression, interactive=True)  # Refresh interactivity
+        ),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker, bet_type_dropdown, progression_dropdown],
+        outputs=[dynamic_table_output, bet_type_dropdown, progression_dropdown]
     ).then(
         fn=dozen_tracker,
         inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
