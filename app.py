@@ -3318,39 +3318,39 @@ with gr.Blocks() as demo:
 
     # Betting Progression Tracker (New Row)
     with gr.Row():
-        with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
-            with gr.Row():
-                bankroll_input = gr.Number(label="Bankroll", value=1000)
-                base_unit_input = gr.Number(label="Base Unit", value=10)
-                stop_loss_input = gr.Number(label="Stop Loss", value=-500)
-                stop_win_input = gr.Number(label="Stop Win", value=200)
-            with gr.Row():
-                bet_type_dropdown = gr.Dropdown(
-                    label="Bet Type",
-                    choices=["Even Money", "Dozens", "Columns", "Straight Bets"],
-                    value="Even Money"
-                )
-                progression_dropdown = gr.Dropdown(
-                    label="Progression",
-                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss"],
-                    value="Martingale"
-                )
-                labouchere_sequence = gr.Textbox(
-                    label="Labouchere Sequence (comma-separated)",
-                    value="1, 2, 3, 4",
-                    visible=False
-                )
-            with gr.Row():
-                win_button = gr.Button("Win")
-                lose_button = gr.Button("Lose")
-                reset_progression_button = gr.Button("Reset Progression")
-            with gr.Row():
-                bankroll_output = gr.Textbox(label="Current Bankroll", value="1000", interactive=False)
-                current_bet_output = gr.Textbox(label="Current Bet", value="10", interactive=False)
-                next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
-            with gr.Row():
-                message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
-                status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
+            with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
+                with gr.Row():
+                    bankroll_input = gr.Number(label="Bankroll", value=1000)
+                    base_unit_input = gr.Number(label="Base Unit", value=10)
+                    stop_loss_input = gr.Number(label="Stop Loss", value=-500)
+                    stop_win_input = gr.Number(label="Stop Win", value=200)
+                with gr.Row():
+                    bet_type_dropdown = gr.Dropdown(
+                        label="Bet Type",
+                        choices=["Even Money", "Dozens", "Columns", "Straight Bets"],
+                        value="Even Money"
+                    )
+                    progression_dropdown = gr.Dropdown(
+                        label="Progression",
+                        choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss"],
+                        value="Martingale"
+                    )
+                    labouchere_sequence = gr.Textbox(
+                        label="Labouchere Sequence (comma-separated)",
+                        value="1, 2, 3, 4",
+                        visible=False
+                    )
+                with gr.Row():
+                    win_button = gr.Button("Win")
+                    lose_button = gr.Button("Lose")
+                    reset_progression_button = gr.Button("Reset Progression")
+                with gr.Row():
+                    bankroll_output = gr.Textbox(label="Current Bankroll", value="1000", interactive=False)
+                    current_bet_output = gr.Textbox(label="Current Bet", value="10", interactive=False)
+                    next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
+                with gr.Row():
+                    message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
+                    status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
 
     # 8. Row 8: Color Pickers
     with gr.Row():
