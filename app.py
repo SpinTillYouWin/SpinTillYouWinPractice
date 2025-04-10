@@ -285,17 +285,19 @@ def add_spin(number, current_spins, num_to_show):
         return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter()
     
     new_spins = spins.copy()  # Track new spins for this call
+    errors = []  # Collect all errors
+    
     for num_str in numbers:
         try:
             num = int(num_str)
             if not (0 <= num <= 36):
-                gr.Warning(f"Out of Range: '{num_str}' is not between 0 and 36. Please use a valid roulette number.")
-                return current_spins, current_spins, f"<h4>Last Spins</h4><p>Error: '{num_str}' is out of range (0-36).</p>", update_spin_counter()
+                errors.append(f"'{num_str}' is out of range (0-36)")
+                continue
             
             # Record the spin's effects for undoing
             action = {"spin": num, "increments": {}}
 
-            # Update scores and track increments (similar to analyze_spins)
+            # Update scores and track increments
             for name, numbers in EVEN_MONEY.items():
                 if num in numbers:
                     state.even_money_scores[name] += 1
@@ -349,21 +351,25 @@ def add_spin(number, current_spins, num_to_show):
             new_spins.append(str(num))
             state.selected_numbers.add(num)
             state.last_spins.append(str(num))
-            state.spin_history.append(action)  # Record the action for undoing
+            state.spin_history.append(action)
         
         except ValueError:
-            gr.Warning(f"Invalid Input: '{num_str}' is not a number. Please enter whole numbers between 0 and 36.")
-            return current_spins, current_spins, f"<h4>Last Spins</h4><p>Error: Invalid input '{num_str}' - use numbers 0-36.</p>", update_spin_counter()
+            errors.append(f"'{num_str}' is not a number")
+            continue
         except Exception as e:
-            gr.Warning(f"Unexpected Error: {str(e)}. Please try again or contact support.")
+            errors.append(f"Unexpected error with '{num_str}': {str(e)}")
             print(f"add_spin: Unexpected error - {str(e)}")
-            return current_spins, current_spins, f"<h4>Last Spins</h4><p>Unexpected error: {str(e)}. Try again or report this.</p>", update_spin_counter()
+            continue
 
-    # Join with consistent spacing
     new_spins_str = ", ".join(new_spins)
+    if errors:
+        error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
+        gr.Warning(error_msg)
+        print(f"add_spin: Errors encountered - {error_msg}")
+        return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter()
+    
     print(f"add_spin: new_spins='{new_spins_str}'")
     return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter()
-
 # Function to clear spins
 def clear_spins():
     state.selected_numbers.clear()
