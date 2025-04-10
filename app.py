@@ -3620,8 +3620,11 @@ with gr.Blocks() as demo:
     </style>
     """)
     print("CSS Updated")
-    
-    # Event Handlers
+
+    # Lines 4888-4920 (Updated Section with `toggle_labouchere` and Fixed Indentation)
+    def toggle_labouchere(progression):
+        return gr.update(visible=progression == "Labouchere")
+
     def validate_spins_input(spins_input):
         if not spins_input or not spins_input.strip():
             return None, "<h4>Last Spins</h4><p>No spins yet.</p>"
@@ -3961,7 +3964,7 @@ with gr.Blocks() as demo:
     )
 
     # Betting progression event handlers
-def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence):
+    def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence):
         state.bankroll = bankroll
         state.initial_bankroll = bankroll
         state.base_unit = base_unit
@@ -4032,7 +4035,7 @@ def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progressio
         inputs=[],
         outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
     )
-    
+
     # Add the Shepherd.js tour script here
     gr.HTML("""
     <script>
@@ -4043,7 +4046,7 @@ def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progressio
           classes: 'shepherd-theme-arrows',
         },
         useModalOverlay: true
-      });
+      })
     
       // Part 1: Your Roulette Adventure Begins!
       tour.addStep({
