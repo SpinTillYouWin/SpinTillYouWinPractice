@@ -2766,59 +2766,7 @@ def best_columns_even_money_and_top_18():
         recommendations.append(f"{i}. Number {num} (Score: {score})")
 
     return "\n".join(recommendations)
-    # Lines 3440-3490 (Fixed Section with Correct Indentation)
-    def dozens_streak_breaker_strategy(num_spins_to_check):
-        """Analyze the last N spins for Dozen patterns and recommend betting against streaks."""
-        recommendations = []
-        
-        # Validate input
-        try:
-            num_spins_to_check = int(num_spins_to_check)
-            if num_spins_to_check < 1:
-                return "Error: Number of spins to check must be at least 1."
-        except (ValueError, TypeError):
-            return "Error: Invalid number of spins to check. Please use a positive integer."
-    
-        # Get the last N spins
-        recent_spins = state.last_spins[-num_spins_to_check:] if len(state.last_spins) >= num_spins_to_check else state.last_spins
-        if not recent_spins:
-            return "Dozens Streak Breaker Strategy: No spins recorded yet."
-    
-        # Map each spin to its Dozen
-        dozen_pattern = []
-        for spin in recent_spins:
-            spin_value = int(spin)
-            if spin_value == 0:
-                dozen_pattern.append("Not in Dozen")
-            else:
-                found = False
-                for name, numbers in DOZENS.items():
-                    if spin_value in numbers:
-                        dozen_pattern.append(name)
-                        found = True
-                        break
-                if not found:
-                    dozen_pattern.append("Not in Dozen")
-    
-        # Display the pattern
-        recommendations.append(f"Last {len(recent_spins)} Dozens Pattern:")
-        recommendations.append(", ".join(dozen_pattern))
-    
-        # Check for a streak (all spins in the same Dozen, excluding "Not in Dozen")
-        unique_dozens = set(dozen_pattern) - {"Not in Dozen"}
-        if len(unique_dozens) == 1:
-            streaking_dozen = unique_dozens.pop()
-            # Recommend betting on the other two Dozens
-            other_dozens = [name for name in DOZENS.keys() if name != streaking_dozen]
-            recommendations.append(f"\nStreak Detected: All in {streaking_dozen}")
-            recommendations.append(f"Recommendation: Bet on {other_dozens[0]} and {other_dozens[1]}")
-        else:
-            recommendations.append("\nNo Streak Detected: Dozens are mixed.")
-            recommendations.append("Recommendation: No clear betting strategy based on streak.")
-    
-        return "\n".join(recommendations)
-    
-    
+       
     def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, dozens_streak_spins, *args):
         try:
             print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
@@ -3099,6 +3047,58 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
         print(f"neighbours_of_strong_number: Unexpected error: {str(e)}")
         return f"Error in Neighbours of Strong Number: Unexpected issue - {str(e)}. Please try again or contact support."
 
+# Lines 3440-3490 (Moved and Fixed Section with Correct Indentation)
+def dozens_streak_breaker_strategy(num_spins_to_check):
+    """Analyze the last N spins for Dozen patterns and recommend betting against streaks."""
+    recommendations = []
+    
+    # Validate input
+    try:
+        num_spins_to_check = int(num_spins_to_check)
+        if num_spins_to_check < 1:
+            return "Error: Number of spins to check must be at least 1."
+    except (ValueError, TypeError):
+        return "Error: Invalid number of spins to check. Please use a positive integer."
+
+    # Get the last N spins
+    recent_spins = state.last_spins[-num_spins_to_check:] if len(state.last_spins) >= num_spins_to_check else state.last_spins
+    if not recent_spins:
+        return "Dozens Streak Breaker Strategy: No spins recorded yet."
+
+    # Map each spin to its Dozen
+    dozen_pattern = []
+    for spin in recent_spins:
+        spin_value = int(spin)
+        if spin_value == 0:
+            dozen_pattern.append("Not in Dozen")
+        else:
+            found = False
+            for name, numbers in DOZENS.items():
+                if spin_value in numbers:
+                    dozen_pattern.append(name)
+                    found = True
+                    break
+            if not found:
+                dozen_pattern.append("Not in Dozen")
+
+    # Display the pattern
+    recommendations.append(f"Last {len(recent_spins)} Dozens Pattern:")
+    recommendations.append(", ".join(dozen_pattern))
+
+    # Check for a streak (all spins in the same Dozen, excluding "Not in Dozen")
+    unique_dozens = set(dozen_pattern) - {"Not in Dozen"}
+    if len(unique_dozens) == 1:
+        streaking_dozen = unique_dozens.pop()
+        # Recommend betting on the other two Dozens
+        other_dozens = [name for name in DOZENS.keys() if name != streaking_dozen]
+        recommendations.append(f"\nStreak Detected: All in {streaking_dozen}")
+        recommendations.append(f"Recommendation: Bet on {other_dozens[0]} and {other_dozens[1]}")
+    else:
+        recommendations.append("\nNo Streak Detected: Dozens are mixed.")
+        recommendations.append("Recommendation: No clear betting strategy based on streak.")
+
+    return "\n".join(recommendations)
+ 
 STRATEGIES = {
     "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
     "Cold Bet Strategy": {"function": cold_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
