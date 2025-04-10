@@ -150,6 +150,9 @@ class RouletteState:
             self.status_color = "red"  # Red for insufficient bankroll
             self.message = "Cannot continue: Bankroll too low."
             return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+        
+        # Define the S.T.Y.W: Victory Vortex sequence
+        victory_vortex_sequence = [1, 8, 11, 16, 24, 35, 52, 78, 116, 174, 260, 390, 584, 876, 1313, 1969]
     
         if self.progression == "Martingale":
             self.current_bet = self.next_bet
@@ -168,6 +171,20 @@ class RouletteState:
                 self.progression_state = min(len(fib) - 1, self.progression_state + 1)
                 self.next_bet = fib[self.progression_state] * self.base_unit
                 self.message = f"Loss! Next Fibonacci bet: {self.next_bet}"
+        elif self.progression == "S.T.Y.W: Victory Vortex":
+            if self.progression_state is None:
+                self.progression_state = 0  # Index in the sequence
+            self.current_bet = self.next_bet
+            if won:
+                # For Dozens (2:1 payout), step back two positions or reset
+                self.progression_state = max(0, self.progression_state - 2)
+                self.next_bet = victory_vortex_sequence[self.progression_state] * self.base_unit
+                self.message = f"Win! Step back to {self.next_bet}"
+            else:
+                # On loss, move to the next bet in the sequence
+                self.progression_state = min(len(victory_vortex_sequence) - 1, self.progression_state + 1)
+                self.next_bet = victory_vortex_sequence[self.progression_state] * self.base_unit
+                self.message = f"Loss! Next Victory Vortex bet: {self.next_bet}"
         elif self.progression == "Triple Martingale":
             self.current_bet = self.next_bet
             self.next_bet = self.base_unit if won else self.current_bet * 3
@@ -220,7 +237,7 @@ class RouletteState:
             self.current_bet = self.next_bet
             self.next_bet = self.current_bet + (2 * self.base_unit) if won else max(self.base_unit, self.current_bet - self.base_unit)
             self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-    
+        
         return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
 
 # Create an instance of RouletteState (unchanged)
@@ -3593,7 +3610,7 @@ with gr.Blocks() as demo:
                 )
                 progression_dropdown = gr.Dropdown(
                     label="Progression",
-                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss"],
+                    choices=["Martingale", "Fibonacci", "S.T.Y.W: Victory Vortex", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss"],
                     value="Martingale"
                 )
                 labouchere_sequence = gr.Textbox(
