@@ -1295,7 +1295,7 @@ def reset_casino_data():
         False,  # use_winners_checkbox
         "<p>Casino data reset to defaults.</p>"  # casino_data_output
     )
-
+# Lines 1540-1560 (Updated create_dynamic_table with Logging)
 def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozens_streak_spins=3, top_color=None, middle_color=None, lower_color=None):
     print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozens_streak_spins: {dozens_streak_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
     print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
@@ -1315,7 +1315,9 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
         middle_color = middle_color if middle_color else "rgba(0, 255, 255, 0.5)"
         lower_color = lower_color if lower_color else "rgba(0, 255, 0, 0.5)"
     else:
+        print(f"Before apply_strategy_highlights: top_color={top_color}, middle_color={middle_color}, lower_color={lower_color}")
         trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color = apply_strategy_highlights(strategy_name, neighbours_count if strategy_name != "Dozens Streak Breaker Strategy" else dozens_streak_spins, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
+        print(f"After apply_strategy_highlights: top_color={top_color}, middle_color={middle_color}, lower_color={lower_color}")
     
     # If still no highlights and no sorted_sections, provide a default message
     if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
@@ -1353,9 +1355,9 @@ def get_strongest_numbers_with_neighbors(num_count):
 
 # Function to analyze spins
 # Continuing from analyze_spins function
-def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *checkbox_args):
+def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, strong_numbers_count, dozens_streak_spins, *checkbox_args):
     try:
-        print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}")
+        print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}, strong_numbers_count={strong_numbers_count}, dozens_streak_spins={dozens_streak_spins}")
         if not spins_input or not spins_input.strip():
             print("analyze_spins: No spins input provided.")
             return "Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", ""
@@ -1502,10 +1504,10 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
         strongest_numbers_output = get_strongest_numbers_with_neighbors(3)
         print(f"analyze_spins: strongest_numbers_output='{strongest_numbers_output}'")
 
-        dynamic_table_html = create_dynamic_table(strategy_name, neighbours_count)
+        dynamic_table_html = create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count, dozens_streak_spins)
         print(f"analyze_spins: dynamic_table_html generated")
 
-        strategy_output = show_strategy_recommendations(strategy_name, neighbours_count, *checkbox_args)
+        strategy_output = show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, dozens_streak_spins, *checkbox_args)
         print(f"analyze_spins: Strategy output = {strategy_output}")
 
         return (spin_analysis_output, even_money_output, dozens_output, columns_output,
@@ -3527,6 +3529,16 @@ with gr.Blocks() as demo:
     with gr.Accordion("Color Code Key", open=False, elem_id="color-code-key"):
         color_code_output = gr.HTML(label="Color Code Key")
 
+    # Initialize color pickers on load
+    demo.load(
+        fn=reset_colors,
+        inputs=[],
+        outputs=[top_color_picker, middle_color_picker, lower_color_picker]
+    ).then(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
     # 10. Row 10: Analysis Outputs (Collapsible)
     with gr.Accordion("Spin Logic Reactor 🧠", open=False, elem_id="spin-analysis"):
         spin_analysis_output = gr.Textbox(
@@ -3902,9 +3914,10 @@ with gr.Blocks() as demo:
         outputs=[dynamic_table_output]
     )
 
+    # Lines 4845-4860 (Updated analyze_button.click)
     analyze_button.click(
         fn=analyze_spins,
-        inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+        inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozens_streak_spins_dropdown],
         outputs=[
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
@@ -3912,8 +3925,8 @@ with gr.Blocks() as demo:
             dynamic_table_output, strategy_output
         ]
     ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozens_streak_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozens_streak_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozens_streak_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     ).then(
         fn=create_color_code_table,
@@ -3986,9 +3999,9 @@ with gr.Blocks() as demo:
     )
 
     reset_colors_button.click(
-        fn=reset_colors,
-        inputs=[],
-        outputs=[top_color_picker, middle_color_picker, lower_color_picker]
+    fn=reset_colors,
+    inputs=[],
+    outputs=[top_color_picker, middle_color_picker, lower_color_picker]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
