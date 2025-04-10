@@ -3588,6 +3588,15 @@ with gr.Blocks() as demo:
         inputs=spins_textbox,
         outputs=[spins_display, last_spin_display]
     )
+    spins_display.change(
+        fn=update_spin_counter,
+        inputs=[],
+        outputs=[spin_counter]
+    ).then(
+        fn=format_spins_as_html,
+        inputs=[spins_display, last_spin_count],
+        outputs=[last_spin_display]
+    )
 
     clear_spins_button.click(
         fn=clear_spins,
