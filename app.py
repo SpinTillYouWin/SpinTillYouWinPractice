@@ -3763,18 +3763,19 @@ with gr.Blocks() as demo:
     # Add JavaScript for Formspree submission
     gr.HTML("""
     <script>
+      // Function to submit the feedback form to Formspree
       async function submitFeedback() {
-        console.log("submitFeedback function called");
+        console.log("submitFeedback: Function called");
 
         // Collect form data
-        const feedback = document.querySelector("#feedback-textbox textarea").value;
-        const category = document.querySelector("#strategy-category-dropdown select").value;
-        const strategyName = document.querySelector("#strategy-name-textbox input").value;
-        const strategyDescription = document.querySelector("#strategy-description-textbox textarea").value;
-        const strategyInputs = document.querySelector("#strategy-inputs-textbox textarea").value;
-        const userEmail = document.querySelector("#user-email-textbox input").value;
+        const feedback = document.querySelector("#feedback-textbox textarea")?.value || "";
+        const category = document.querySelector("#strategy-category-dropdown select")?.value || "";
+        const strategyName = document.querySelector("#strategy-name-textbox input")?.value || "";
+        const strategyDescription = document.querySelector("#strategy-description-textbox textarea")?.value || "";
+        const strategyInputs = document.querySelector("#strategy-inputs-textbox textarea")?.value || "";
+        const userEmail = document.querySelector("#user-email-textbox input")?.value || "";
 
-        console.log("Form data collected:", {
+        console.log("submitFeedback: Form data collected:", {
           feedback: feedback,
           category: category,
           strategyName: strategyName,
@@ -3782,6 +3783,13 @@ with gr.Blocks() as demo:
           strategyInputs: strategyInputs,
           userEmail: userEmail
         });
+
+        // Validate that at least feedback or strategy name/description is provided
+        if (!feedback && !strategyName && !strategyDescription) {
+          console.log("submitFeedback: Validation failed - No feedback or strategy provided");
+          document.querySelector("#submission-output").innerHTML = "<p style='color: red; font-weight: bold;'>Please provide either feedback or a strategy name and description.</p>";
+          return;
+        }
 
         // Prepare data for submission
         const formData = new FormData();
@@ -3794,7 +3802,7 @@ with gr.Blocks() as demo:
 
         // Submit to Formspree
         try {
-          console.log("Submitting to Formspree...");
+          console.log("submitFeedback: Submitting to Formspree...");
           const response = await fetch("https://formspree.io/f/mnnpllqq", {
             method: "POST",
             body: formData,
@@ -3803,44 +3811,71 @@ with gr.Blocks() as demo:
             }
           });
 
-          console.log("Response received:", response);
+          console.log("submitFeedback: Response received:", response);
           const result = await response.json();
-          console.log("Result:", result);
+          console.log("submitFeedback: Result:", result);
 
           if (response.ok) {
             document.querySelector("#submission-output").innerHTML = "<p style='color: green; font-weight: bold;'>Thank you! Your feedback/strategy has been submitted successfully.</p>";
           } else {
-            document.querySelector("#submission-output").innerHTML = "<p style='color: red; font-weight: bold;'>Error submitting form: " + result.error + "</p>";
+            document.querySelector("#submission-output").innerHTML = "<p style='color: red; font-weight: bold;'>Error submitting form: " + (result.error || "Unknown error") + "</p>";
           }
         } catch (error) {
-          console.error("Error submitting form:", error);
+          console.error("submitFeedback: Error submitting form:", error);
           document.querySelector("#submission-output").innerHTML = "<p style='color: red; font-weight: bold;'>Error submitting form: " + error.message + "</p>";
         }
       }
 
-      // Attach the submit function to the button with retry logic
-      function attachSubmitListener() {
+      // Function to attach the submit listener with retry logic
+      function attachSubmitListener(attempt = 1, maxAttempts = 10) {
         const submitButton = document.querySelector("#submit-feedback-button");
         if (submitButton) {
-          console.log("Submit button found, attaching event listener");
+          console.log("attachSubmitListener: Submit button found on attempt", attempt);
           submitButton.addEventListener("click", (event) => {
             event.preventDefault();  // Prevent any default Gradio behavior
+            console.log("attachSubmitListener: Submit button clicked");
             submitFeedback();
           });
+          // Also attach to the inner button element if Gradio wraps it
+          const innerButton = submitButton.querySelector("button");
+          if (innerButton) {
+            console.log("attachSubmitListener: Inner button found, attaching event listener");
+            innerButton.addEventListener("click", (event) => {
+              event.preventDefault();
+              console.log("attachSubmitListener: Inner button clicked");
+              submitFeedback();
+            });
+          }
+        } else if (attempt < maxAttempts) {
+          console.log("attachSubmitListener: Submit button not found on attempt", attempt, "- retrying in 1 second...");
+          setTimeout(() => attachSubmitListener(attempt + 1, maxAttempts), 1000);
         } else {
-          console.log("Submit button not found, retrying in 1 second...");
-          setTimeout(attachSubmitListener, 1000);  // Retry after 1 second
+          console.error("attachSubmitListener: Submit button not found after", maxAttempts, "attempts");
+          document.querySelector("#submission-output").innerHTML = "<p style='color: red; font-weight: bold;'>Error: Submit button not found. Please try refreshing the page.</p>";
         }
       }
 
       // Start attaching the listener when the DOM is loaded
       document.addEventListener("DOMContentLoaded", () => {
-        console.log("DOM fully loaded, starting to attach event listener");
+        console.log("DOMContentLoaded: DOM fully loaded, starting to attach event listener");
         attachSubmitListener();
       });
 
       // Fallback: Retry attaching the listener after a delay in case DOMContentLoaded doesn't fire
-      setTimeout(attachSubmitListener, 3000);
+      console.log("Setting fallback timeout to attach listener after 3 seconds");
+      setTimeout(() => attachSubmitListener(), 3000);
+
+      // Additional fallback: Use a MutationObserver to detect when the button is added to the DOM
+      const observer = new MutationObserver((mutations, observer) => {
+        const submitButton = document.querySelector("#submit-feedback-button");
+        if (submitButton) {
+          console.log("MutationObserver: Submit button detected via DOM change");
+          attachSubmitListener();
+          observer.disconnect();  // Stop observing once the button is found
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+      console.log("MutationObserver: Started observing DOM for submit button");
     </script>
     """)
         
