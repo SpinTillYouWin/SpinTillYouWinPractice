@@ -4050,7 +4050,7 @@ with gr.Blocks() as demo:
         outputs=[dynamic_table_output]
     )
 
-     analyze_button.click(
+    analyze_button.click(
         fn=analyze_spins,
         inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
         outputs=[
@@ -4067,6 +4067,10 @@ with gr.Blocks() as demo:
         ),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker, bet_type_dropdown, progression_dropdown],
         outputs=[dynamic_table_output, bet_type_dropdown, progression_dropdown]
+    ).then(
+        fn=create_color_code_table,
+        inputs=[],
+        outputs=[color_code_output]
     ).then(
         fn=dozen_tracker,
         inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
