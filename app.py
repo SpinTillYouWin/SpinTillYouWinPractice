@@ -3817,23 +3817,20 @@ with gr.Blocks() as demo:
           document.querySelector("#submission-output").innerHTML = "<p style='color: red; font-weight: bold;'>Error submitting form: " + error.message + "</p>";
         }
       }
-
-      // Attach the submit function to the button
-      document.addEventListener("DOMContentLoaded", () => {
-        console.log("DOM fully loaded, attaching event listener to submit button");
-        const submitButton = document.querySelector("#submit-feedback-button");
-        if (submitButton) {
-          console.log("Submit button found, attaching event listener");
-          submitButton.addEventListener("click", (event) => {
-            event.preventDefault();  // Prevent Gradio's default behavior
-            submitFeedback();
-          });
-        } else {
-          console.error("Submit button not found");
-        }
-      });
     </script>
     """)
+
+    # Add Python callback for the submit button
+    def trigger_submit_feedback():
+        # This function triggers the JavaScript submitFeedback function
+        return gr.update(value="<p>Submitting...</p>", elem_id="submission-output")
+
+    submit_button.click(
+        fn=trigger_submit_feedback,
+        inputs=[],
+        outputs=[submission_output],
+        _js="submitFeedback"
+    )
         
     # CSS and Event Handlers
     gr.HTML("""
