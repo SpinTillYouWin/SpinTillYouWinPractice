@@ -3817,20 +3817,32 @@ with gr.Blocks() as demo:
           document.querySelector("#submission-output").innerHTML = "<p style='color: red; font-weight: bold;'>Error submitting form: " + error.message + "</p>";
         }
       }
+
+      // Attach the submit function to the button with retry logic
+      function attachSubmitListener() {
+        const submitButton = document.querySelector("#submit-feedback-button");
+        if (submitButton) {
+          console.log("Submit button found, attaching event listener");
+          submitButton.addEventListener("click", (event) => {
+            event.preventDefault();  // Prevent any default Gradio behavior
+            submitFeedback();
+          });
+        } else {
+          console.log("Submit button not found, retrying in 1 second...");
+          setTimeout(attachSubmitListener, 1000);  // Retry after 1 second
+        }
+      }
+
+      // Start attaching the listener when the DOM is loaded
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log("DOM fully loaded, starting to attach event listener");
+        attachSubmitListener();
+      });
+
+      // Fallback: Retry attaching the listener after a delay in case DOMContentLoaded doesn't fire
+      setTimeout(attachSubmitListener, 3000);
     </script>
     """)
-
-    # Add Python callback for the submit button
-    def trigger_submit_feedback():
-        # This function triggers the JavaScript submitFeedback function
-        return gr.update(value="<p>Submitting...</p>", elem_id="submission-output")
-
-    submit_button.click(
-        fn=trigger_submit_feedback,
-        inputs=[],
-        outputs=[submission_output],
-        _js="submitFeedback"
-    )
         
     # CSS and Event Handlers
     gr.HTML("""
