@@ -3143,7 +3143,7 @@ with gr.Blocks() as demo:
                 label="Strategy Recommendations",
                 value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
             )
-            with gr.Accordion("Casino Data Insights", open=True, elem_id="casino-data-insights"):
+            with gr.Accordion("Casino Data Insights", open=False, elem_id="casino-data-insights"):
                 spins_count_dropdown = gr.Dropdown(
                     label="Past Spins Count",
                     choices=["30", "50", "100", "200", "300", "500"],
