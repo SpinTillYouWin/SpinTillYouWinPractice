@@ -3317,7 +3317,7 @@ with gr.Blocks() as demo:
             reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
 
     # Betting Progression Tracker (New Row)
-with gr.Row():
+    with gr.Row():
         with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
             with gr.Row():
                 bankroll_input = gr.Number(label="Bankroll", value=1000)
