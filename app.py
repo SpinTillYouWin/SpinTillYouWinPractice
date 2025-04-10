@@ -3400,7 +3400,7 @@ with gr.Blocks() as demo:
                     sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
     # 11. Row 11: Save/Load Session (Collapsible)
-    with gr.Accordion("Save/Load Session", open=True):
+    with gr.Accordion("Save/Load Session", open=False):
         with gr.Row():
             save_button = gr.Button("Save Session", elem_id="save-session-btn")
             load_input = gr.File(label="Upload Session")
