@@ -1042,6 +1042,26 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
                 for num in neighbors_set:
                     number_highlights[str(num)] = middle_color
 
+    # Dozen Tracker Logic (When No Strategy is Selected)
+    if strategy_name == "None":
+        # Use the same logic as dozen_tracker to determine Dozen frequencies
+        recent_spins = state.last_spins[-neighbours_count:] if len(state.last_spins) >= neighbours_count else state.last_spins
+        dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
+        for spin in recent_spins:
+            spin_value = int(spin)
+            if spin_value != 0:  # Exclude 0 from Dozen counts for highlighting
+                for name, numbers in DOZENS.items():
+                    if spin_value in numbers:
+                        dozen_counts[name] += 1
+                        break
+        # Sort Dozens by frequency
+        sorted_dozens = sorted(dozen_counts.items(), key=lambda x: x[1], reverse=True)
+        # Assign trending_dozen and second_dozen based on frequency
+        if sorted_dozens[0][1] > 0:
+            trending_dozen = sorted_dozens[0][0]
+        if sorted_dozens[1][1] > 0:
+            second_dozen = sorted_dozens[1][0]
+
     return trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color
 
 def render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color):
@@ -1264,8 +1284,8 @@ def reset_casino_data():
         "<p>Casino data reset to defaults.</p>"  # casino_data_output
     )
 
-def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, top_color=None, middle_color=None, lower_color=None):
-    print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
+def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
+    print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
     print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
     sorted_sections = calculate_trending_sections()
     
@@ -1283,7 +1303,13 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
         middle_color = middle_color if middle_color else "rgba(0, 255, 255, 0.5)"
         lower_color = lower_color if lower_color else "rgba(0, 255, 0, 0.5)"
     else:
-        trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color = apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
+        trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color = apply_strategy_highlights(strategy_name, int(dozen_tracker_spins) if strategy_name == "None" else neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
+    
+    # If still no highlights and no sorted_sections, provide a default message
+    if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
+        return "<p>No spins yet. Select a strategy to see default highlights.</p>"
+    
+    return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)
     
     # If still no highlights and no sorted_sections, provide a default message
     if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
@@ -2749,11 +2775,11 @@ def create_color_code_table():
             <tbody>
                 <tr>
                     <td style="padding: 8px; background-color: rgba(255, 255, 0, 0.5); text-align: center;">Yellow (Top Tier)</td>
-                    <td style="padding: 8px;">Indicates the hottest or top-ranked numbers/sections (e.g., top 3 or top 6 in most strategies). Can be changed via color pickers.</td>
+                    <td style="padding: 8px;">Indicates the hottest or top-ranked numbers/sections (e.g., top 3 or top 6 in most strategies). For Dozen Tracker, this highlights the most frequent Dozen when no strategy is selected. Can be changed via color pickers.</td>
                 </tr>
                 <tr>
                     <td style="padding: 8px; background-color: rgba(0, 255, 255, 0.5); text-align: center;">Cyan (Middle Tier)</td>
-                    <td style="padding: 8px;">Represents the second tier of trending numbers/sections (e.g., ranks 4-6 or secondary picks). Can be changed via color pickers.</td>
+                    <td style="padding: 8px;">Represents the second tier of trending numbers/sections (e.g., ranks 4-6 or secondary picks). For Dozen Tracker, this highlights the second most frequent Dozen when no strategy is selected. Can be changed via color pickers.</td>
                 </tr>
                 <tr>
                     <td style="padding: 8px; background-color: rgba(0, 255, 0, 0.5); text-align: center;">Green (Lower Tier)</td>
@@ -2782,6 +2808,22 @@ def create_color_code_table():
                 <tr>
                     <td style="padding: 8px; background-color: green; color: white; text-align: center;">Green</td>
                     <td style="padding: 8px;">Default color for zero (0) on the roulette table.</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; background-color: #FF6347; color: white; text-align: center;">Tomato Red</td>
+                    <td style="padding: 8px;">Used in Dozen Tracker to represent the 1st Dozen.</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; background-color: #4682B4; color: white; text-align: center;">Steel Blue</td>
+                    <td style="padding: 8px;">Used in Dozen Tracker to represent the 2nd Dozen.</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; background-color: #32CD32; color: white; text-align: center;">Lime Green</td>
+                    <td style="padding: 8px;">Used in Dozen Tracker to represent the 3rd Dozen.</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; background-color: #808080; color: white; text-align: center;">Gray</td>
+                    <td style="padding: 8px;">Used in Dozen Tracker to represent spins not in any Dozen (i.e., 0).</td>
                 </tr>
             </tbody>
         </table>
@@ -2956,6 +2998,70 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
     except Exception as e:
         print(f"neighbours_of_strong_number: Unexpected error: {str(e)}")
         return f"Error in Neighbours of Strong Number: Unexpected issue - {str(e)}. Please try again or contact support."
+
+def dozen_tracker(num_spins_to_check):
+    """Track and display the history of Dozen hits for the last N spins."""
+    recommendations = []
+    
+    # Validate input
+    try:
+        num_spins_to_check = int(num_spins_to_check)
+        if num_spins_to_check < 1:
+            return "Error: Number of spins to check must be at least 1.", "<p>Error: Number of spins to check must be at least 1.</p>"
+    except (ValueError, TypeError):
+        return "Error: Invalid number of spins to check. Please use a positive integer.", "<p>Error: Invalid number of spins to check. Please use a positive integer.</p>"
+
+    # Get the last N spins
+    recent_spins = state.last_spins[-num_spins_to_check:] if len(state.last_spins) >= num_spins_to_check else state.last_spins
+    if not recent_spins:
+        return "Dozen Tracker: No spins recorded yet.", "<p>Dozen Tracker: No spins recorded yet.</p>"
+
+    # Map each spin to its Dozen
+    dozen_pattern = []
+    dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0, "Not in Dozen": 0}
+    for spin in recent_spins:
+        spin_value = int(spin)
+        if spin_value == 0:
+            dozen_pattern.append("Not in Dozen")
+            dozen_counts["Not in Dozen"] += 1
+        else:
+            found = False
+            for name, numbers in DOZENS.items():
+                if spin_value in numbers:
+                    dozen_pattern.append(name)
+                    dozen_counts[name] += 1
+                    found = True
+                    break
+            if not found:
+                dozen_pattern.append("Not in Dozen")
+                dozen_counts["Not in Dozen"] += 1
+
+    # Text summary
+    recommendations.append(f"Dozen Tracker (Last {len(recent_spins)} Spins):")
+    recommendations.append("Dozen History: " + ", ".join(dozen_pattern))
+    recommendations.append("\nSummary of Dozen Hits:")
+    for name, count in dozen_counts.items():
+        recommendations.append(f"{name}: {count} hits")
+
+    # HTML representation for display
+    html_output = f'<h4>Dozen Tracker (Last {len(recent_spins)} Spins):</h4>'
+    html_output += '<div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;">'
+    for dozen in dozen_pattern:
+        color = {
+            "1st Dozen": "#FF6347",  # Tomato red
+            "2nd Dozen": "#4682B4",  # Steel blue
+            "3rd Dozen": "#32CD32",  # Lime green
+            "Not in Dozen": "#808080"  # Gray for 0
+        }.get(dozen, "#808080")
+        html_output += f'<span style="background-color: {color}; color: white; padding: 2px 5px; border-radius: 3px; display: inline-block;">{dozen}</span>'
+    html_output += '</div>'
+    html_output += '<h4>Summary of Dozen Hits:</h4>'
+    html_output += '<ul style="list-style-type: none; padding-left: 0;">'
+    for name, count in dozen_counts.items():
+        html_output += f'<li>{name}: {count} hits</li>'
+    html_output += '</ul>'
+
+    return "\n".join(recommendations), html_output
 
 STRATEGIES = {
     "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
@@ -3444,7 +3550,20 @@ with gr.Blocks() as demo:
             save_button = gr.Button("Save Session", elem_id="save-session-btn")
             load_input = gr.File(label="Upload Session")
         save_output = gr.File(label="Download Session")
+    # 12. Row 12: Dozen Tracker (Collapsible)
+    with gr.Accordion("Dozen Tracker", open=False, elem_id="dozen-tracker"):
+        dozen_tracker_spins_dropdown = gr.Dropdown(
+            label="Number of Spins to Track",
+            choices=["3", "4", "5", "6", "10", "15", "20"],
+            value="5",
+            interactive=True
+        )
+        dozen_tracker_output = gr.HTML(
+            label="Dozen Tracker",
+            value="<p>Select the number of spins to track and analyze spins to see the Dozen history.</p>"
+        )
 
+        
     # CSS and Event Handlers
     gr.HTML("""
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css">
@@ -3622,6 +3741,7 @@ with gr.Blocks() as demo:
     print("CSS Updated")
 
     # Lines 4888-4920 (Updated Section with `toggle_labouchere` and Fixed Indentation)
+    # Lines 4888-4920 (Updated Section with `toggle_labouchere` and Fixed Indentation)
     def toggle_labouchere(progression):
         return gr.update(visible=progression == "Labouchere")
 
@@ -3689,6 +3809,10 @@ with gr.Blocks() as demo:
             sides_output, straight_up_html, top_18_html, strongest_numbers_output,
             dynamic_table_output, strategy_output, color_code_output
         ]
+    ).then(
+        fn=dozen_tracker,
+        inputs=[dozen_tracker_spins_dropdown],
+        outputs=[gr.State(), dozen_tracker_output]
     )
 
     generate_spins_button.click(
@@ -3744,8 +3868,8 @@ with gr.Blocks() as demo:
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
         outputs=[strategy_output]
     ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: (print(f"Updating Dynamic Table with Strategy: {strategy}, Neighbours Count: {neighbours_count}, Strong Numbers Count: {strong_numbers_count}, Colors: {top_color}, {middle_color}, {lower_color}"), create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color))[-1],
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: (print(f"Updating Dynamic Table with Strategy: {strategy}, Neighbours Count: {neighbours_count}, Strong Numbers Count: {strong_numbers_count}, Dozen Tracker Spins: {dozen_tracker_spins}, Colors: {top_color}, {middle_color}, {lower_color}"), create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color))[-1],
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     )
 
@@ -3759,13 +3883,17 @@ with gr.Blocks() as demo:
             dynamic_table_output, strategy_output
         ]
     ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     ).then(
         fn=create_color_code_table,
         inputs=[],
         outputs=[color_code_output]
+    ).then(
+        fn=dozen_tracker,
+        inputs=[dozen_tracker_spins_dropdown],
+        outputs=[gr.State(), dozen_tracker_output]
     )
 
     save_button.click(
@@ -3783,8 +3911,8 @@ with gr.Blocks() as demo:
             straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_output, strategy_output
         ]
     ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     ).then(
         fn=format_spins_as_html,
@@ -3794,6 +3922,10 @@ with gr.Blocks() as demo:
         fn=create_color_code_table,
         inputs=[],
         outputs=[color_code_output]
+    ).then(
+        fn=dozen_tracker,
+        inputs=[dozen_tracker_spins_dropdown],
+        outputs=[gr.State(), dozen_tracker_output]
     )
 
     undo_button.click(
@@ -3807,14 +3939,18 @@ with gr.Blocks() as demo:
             color_code_output, spin_counter
         ]
     ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
+    ).then(
+        fn=dozen_tracker,
+        inputs=[dozen_tracker_spins_dropdown],
+        outputs=[gr.State(), dozen_tracker_output]
     )
 
     neighbours_count_slider.change(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     ).then(
         fn=show_strategy_recommendations,
@@ -3823,8 +3959,8 @@ with gr.Blocks() as demo:
     )
 
     strong_numbers_count_slider.change(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     ).then(
         fn=show_strategy_recommendations,
@@ -3837,8 +3973,8 @@ with gr.Blocks() as demo:
         inputs=[],
         outputs=[top_color_picker, middle_color_picker, lower_color_picker]
     ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     )
 
@@ -3849,20 +3985,31 @@ with gr.Blocks() as demo:
     )
 
     top_color_picker.change(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     )
 
     middle_color_picker.change(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     )
 
     lower_color_picker.change(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+
+    # Dozen Tracker Event Handler
+    dozen_tracker_spins_dropdown.change(
+        fn=dozen_tracker,
+        inputs=[dozen_tracker_spins_dropdown],
+        outputs=[gr.State(), dozen_tracker_output]
+    ).then(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     )
 
@@ -3942,8 +4089,8 @@ with gr.Blocks() as demo:
         inputs=inputs_list,
         outputs=[casino_data_output]
     ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     )
     reset_casino_data_button.click(
@@ -3959,7 +4106,7 @@ with gr.Blocks() as demo:
         ]
     ).then(
         fn=create_dynamic_table,
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     )
 
