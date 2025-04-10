@@ -2999,25 +2999,32 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
         print(f"neighbours_of_strong_number: Unexpected error: {str(e)}")
         return f"Error in Neighbours of Strong Number: Unexpected issue - {str(e)}. Please try again or contact support."
 
-def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled):
-    """Track and display the history of Dozen hits for the last N spins, with optional alerts for consecutive hits."""
+def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled, sequence_length, follow_up_spins, sequence_alert_enabled):
+    """Track and display the history of Dozen hits for the last N spins, with optional alerts for consecutive hits and sequence matching."""
     recommendations = []
+    sequence_recommendations = []
     
     # Validate inputs
     try:
         num_spins_to_check = int(num_spins_to_check)
         consecutive_hits_threshold = int(consecutive_hits_threshold)
+        sequence_length = int(sequence_length)
+        follow_up_spins = int(follow_up_spins)
         if num_spins_to_check < 1:
-            return "Error: Number of spins to check must be at least 1.", "<p>Error: Number of spins to check must be at least 1.</p>"
+            return "Error: Number of spins to check must be at least 1.", "<p>Error: Number of spins to check must be at least 1.</p>", "<p>Error: Number of spins to check must be at least 1.</p>"
         if consecutive_hits_threshold < 1:
-            return "Error: Consecutive hits threshold must be at least 1.", "<p>Error: Consecutive hits threshold must be at least 1.</p>"
+            return "Error: Consecutive hits threshold must be at least 1.", "<p>Error: Consecutive hits threshold must be at least 1.</p>", "<p>Error: Consecutive hits threshold must be at least 1.</p>"
+        if sequence_length < 1:
+            return "Error: Sequence length must be at least 1.", "<p>Error: Sequence length must be at least 1.</p>", "<p>Error: Sequence length must be at least 1.</p>"
+        if follow_up_spins < 1:
+            return "Error: Follow-up spins must be at least 1.", "<p>Error: Follow-up spins must be at least 1.</p>", "<p>Error: Follow-up spins must be at least 1.</p>"
     except (ValueError, TypeError):
-        return "Error: Invalid inputs. Please use positive integers.", "<p>Error: Invalid inputs. Please use positive integers.</p>"
+        return "Error: Invalid inputs. Please use positive integers.", "<p>Error: Invalid inputs. Please use positive integers.</p>", "<p>Error: Invalid inputs. Please use positive integers.</p>"
 
     # Get the last N spins
     recent_spins = state.last_spins[-num_spins_to_check:] if len(state.last_spins) >= num_spins_to_check else state.last_spins
     if not recent_spins:
-        return "Dozen Tracker: No spins recorded yet.", "<p>Dozen Tracker: No spins recorded yet.</p>"
+        return "Dozen Tracker: No spins recorded yet.", "<p>Dozen Tracker: No spins recorded yet.</p>", "<p>Dozen Tracker: No spins recorded yet.</p>"
 
     # Map each spin to its Dozen
     dozen_pattern = []
@@ -3062,7 +3069,53 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled)
                     max_streak = current_streak
                     max_streak_dozen = current_dozen
 
-    # Text summary
+    # Detect sequence matches (only if sequence alert is enabled)
+    sequence_matches = []
+    sequence_follow_ups = []
+    if sequence_alert_enabled and len(dozen_pattern) >= sequence_length:
+        # Collect all sequences of length X
+        sequences = []
+        for i in range(len(dozen_pattern) - sequence_length + 1):
+            seq = tuple(dozen_pattern[i:i + sequence_length])
+            sequences.append((i, seq))
+
+        # Find matching sequences
+        for i in range(len(sequences)):
+            for j in range(i + 1, len(sequences)):
+                if sequences[i][1] == sequences[j][1]:
+                    start_idx = sequences[j][0]
+                    sequence_matches.append((start_idx, sequences[j][1]))
+                    # Get the next Y spins after the first occurrence
+                    first_start_idx = sequences[i][0]
+                    follow_up_start = first_start_idx + sequence_length
+                    follow_up_end = follow_up_start + follow_up_spins
+                    if follow_up_end <= len(dozen_pattern):
+                        follow_up = dozen_pattern[follow_up_start:follow_up_end]
+                        sequence_follow_ups.append((start_idx, sequences[j][1], follow_up))
+
+        # If a match is found, provide betting recommendations
+        if sequence_matches:
+            latest_match = max(sequence_matches, key=lambda x: x[0])  # Latest match by start index
+            latest_start_idx, matched_sequence = latest_match
+            # Find the follow-up spins for the first occurrence of this sequence
+            first_occurrence = min((seq for seq in sequences if seq[1] == matched_sequence), key=lambda x: x[0])[0]
+            follow_up_start = first_occurrence + sequence_length
+            follow_up_end = follow_up_start + follow_up_spins
+            if follow_up_end <= len(dozen_pattern):
+                follow_up = dozen_pattern[follow_up_start:follow_up_end]
+                gr.Warning(f"Alert: Sequence {', '.join(matched_sequence)} has repeated at spins {latest_start_idx + 1} to {latest_start_idx + sequence_length}!")
+                sequence_recommendations.append(f"Alert: Sequence {', '.join(matched_sequence)} has repeated at spins {latest_start_idx + 1} to {latest_start_idx + sequence_length}!")
+                sequence_recommendations.append(f"Previous follow-up spins (next {follow_up_spins}): {', '.join(follow_up)}")
+                sequence_recommendations.append("Betting Recommendations (Bet Against Historical Follow-Ups):")
+                all_dozens = ["1st Dozen", "2nd Dozen", "3rd Dozen"]
+                for idx, dozen in enumerate(follow_up):
+                    if dozen == "Not in Dozen":
+                        sequence_recommendations.append(f"Spin {idx + 1}: 0 (Not in Dozen) - No bet recommendation.")
+                    else:
+                        dozens_to_bet = [d for d in all_dozens if d != dozen]
+                        sequence_recommendations.append(f"Spin {idx + 1}: Bet against {dozen} - Bet on {', '.join(dozens_to_bet)}")
+
+    # Text summary for Dozen Tracker
     recommendations.append(f"Dozen Tracker (Last {len(recent_spins)} Spins):")
     recommendations.append("Dozen History: " + ", ".join(dozen_pattern))
     if alert_enabled and max_streak >= consecutive_hits_threshold:
@@ -3071,7 +3124,7 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled)
     for name, count in dozen_counts.items():
         recommendations.append(f"{name}: {count} hits")
 
-    # HTML representation for display
+    # HTML representation for Dozen Tracker
     html_output = f'<h4>Dozen Tracker (Last {len(recent_spins)} Spins):</h4>'
     html_output += '<div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;">'
     for dozen in dozen_pattern:
@@ -3091,7 +3144,30 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled)
         html_output += f'<li>{name}: {count} hits</li>'
     html_output += '</ul>'
 
-    return "\n".join(recommendations), html_output
+    # HTML representation for Sequence Matching
+    sequence_html_output = "<h4>Sequence Matching Results:</h4>"
+    if not sequence_alert_enabled:
+        sequence_html_output += "<p>Sequence matching is disabled. Enable it to see results.</p>"
+    elif len(dozen_pattern) < sequence_length:
+        sequence_html_output += f"<p>Not enough spins to match a sequence of length {sequence_length}.</p>"
+    elif not sequence_matches:
+        sequence_html_output += "<p>No sequence matches found yet.</p>"
+    else:
+        sequence_html_output += "<ul style='list-style-type: none; padding-left: 0;'>"
+        for start_idx, seq in sequence_matches:
+            sequence_html_output += f"<li>Match found at spins {start_idx + 1} to {start_idx + sequence_length}: {', '.join(seq)}</li>"
+        sequence_html_output += "</ul>"
+        if sequence_recommendations:
+            sequence_html_output += "<h4>Latest Match Details:</h4>"
+            sequence_html_output += "<ul style='list-style-type: none; padding-left: 0;'>"
+            for rec in sequence_recommendations:
+                if "Alert:" in rec:
+                    sequence_html_output += f"<li style='color: red; font-weight: bold;'>{rec}</li>"
+                else:
+                    sequence_html_output += f"<li>{rec}</li>"
+            sequence_html_output += "</ul>"
+
+    return "\n".join(recommendations), html_output, sequence_html_output
 
 STRATEGIES = {
     "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
@@ -3473,9 +3549,30 @@ with gr.Blocks() as demo:
                     value=False,
                     interactive=True
                 )
+                dozen_tracker_sequence_length_dropdown = gr.Dropdown(
+                    label="Sequence Length to Match (X)",
+                    choices=["3", "4", "5"],
+                    value="4",
+                    interactive=True
+                )
+                dozen_tracker_follow_up_spins_dropdown = gr.Dropdown(
+                    label="Follow-Up Spins to Track (Y)",
+                    choices=["3", "4", "5"],
+                    value="5",
+                    interactive=True
+                )
+                dozen_tracker_sequence_alert_checkbox = gr.Checkbox(
+                    label="Enable Sequence Matching Alert",
+                    value=False,
+                    interactive=True
+                )
                 dozen_tracker_output = gr.HTML(
                     label="Dozen Tracker",
                     value="<p>Select the number of spins to track and analyze spins to see the Dozen history.</p>"
+                )
+                dozen_tracker_sequence_output = gr.HTML(
+                    label="Sequence Matching Results",
+                    value="<p>Enable sequence matching to see results here.</p>"
                 )
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
@@ -3786,9 +3883,6 @@ with gr.Blocks() as demo:
     print("CSS Updated")
 
     # Lines 4888-4920 (Updated Section with `toggle_labouchere` and Fixed Indentation)
-    # Lines 4888-4920 (Updated Section with `toggle_labouchere` and Fixed Indentation)
-    # Lines 4888-4920 (Updated Section with `toggle_labouchere` and Fixed Indentation)
-    # Lines 4888-4920 (Updated Section with `toggle_labouchere` and Fixed Indentation)
     def toggle_labouchere(progression):
         return gr.update(visible=progression == "Labouchere")
 
@@ -3858,8 +3952,8 @@ with gr.Blocks() as demo:
         ]
     ).then(
         fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox],
-        outputs=[gr.State(), dozen_tracker_output]
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
     )
 
     generate_spins_button.click(
@@ -3939,8 +4033,8 @@ with gr.Blocks() as demo:
         outputs=[color_code_output]
     ).then(
         fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox],
-        outputs=[gr.State(), dozen_tracker_output]
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
     )
 
     save_button.click(
@@ -3971,8 +4065,8 @@ with gr.Blocks() as demo:
         outputs=[color_code_output]
     ).then(
         fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox],
-        outputs=[gr.State(), dozen_tracker_output]
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
     )
 
     undo_button.click(
@@ -3991,8 +4085,8 @@ with gr.Blocks() as demo:
         outputs=[dynamic_table_output]
     ).then(
         fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox],
-        outputs=[gr.State(), dozen_tracker_output]
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
     )
 
     neighbours_count_slider.change(
@@ -4052,8 +4146,8 @@ with gr.Blocks() as demo:
     # Dozen Tracker Event Handler
     dozen_tracker_spins_dropdown.change(
         fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox],
-        outputs=[gr.State(), dozen_tracker_output]
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
@@ -4063,8 +4157,8 @@ with gr.Blocks() as demo:
     # Dozen Tracker Consecutive Hits Event Handler
     dozen_tracker_consecutive_hits_dropdown.change(
         fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox],
-        outputs=[gr.State(), dozen_tracker_output]
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
@@ -4074,8 +4168,41 @@ with gr.Blocks() as demo:
     # Dozen Tracker Alert Checkbox Event Handler
     dozen_tracker_alert_checkbox.change(
         fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox],
-        outputs=[gr.State(), dozen_tracker_output]
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+    ).then(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+
+    # Dozen Tracker Sequence Length Event Handler
+    dozen_tracker_sequence_length_dropdown.change(
+        fn=dozen_tracker,
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+    ).then(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+
+    # Dozen Tracker Follow-Up Spins Event Handler
+    dozen_tracker_follow_up_spins_dropdown.change(
+        fn=dozen_tracker,
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+    ).then(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+
+    # Dozen Tracker Sequence Alert Checkbox Event Handler
+    dozen_tracker_sequence_alert_checkbox.change(
+        fn=dozen_tracker,
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
