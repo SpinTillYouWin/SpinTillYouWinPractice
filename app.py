@@ -3440,9 +3440,6 @@ with gr.Blocks() as demo:
       /* Ensure content below header is not overlapped */
       .roulette-table {
           margin-top: 120px !important; /* Match body padding-top */
-          margin-left: auto !important;
-          margin-right: auto !important;
-          max-width: 600px !important; /* Constrain width to fit most screens */
       }
     
       /* Header Styling */
@@ -3481,7 +3478,7 @@ with gr.Blocks() as demo:
       .roulette-button.selected { border: 3px solid yellow !important; opacity: 0.9; }
       .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid white !important; box-sizing: border-box !important; }
       .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
-      .roulette-table { display: flex !important; flex-direction: column !important; gap: 0 !important; padding: 0 !important; }
+      .roulette-table { display: flex !important; flex-direction: column !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
       .table-row { display: flex !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap !important; line-height: 0 !important; }
     
       /* Buttons */
@@ -3529,7 +3526,7 @@ with gr.Blocks() as demo:
           align-items: center !important;
           justify-content: center !important;
           box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important; /* Slightly stronger shadow */
-          transition: transform 0.3s ease, box-shadow 0.3s ease !important; /* Smooth hover effect */
+          transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
       }
       .spin-counter:hover {
           transform: scale(1.05) !important; /* Slight zoom on hover */
@@ -3578,9 +3575,27 @@ with gr.Blocks() as demo:
       .betting-progression .gr-row { display: flex; flex-wrap: wrap; gap: 10px; }
     
       /* Shepherd.js Tweaks */
-      .shepherd-modal-overlay-container { opacity: 0.5; }
+      .shepherd-modal-overlay-container { opacity: 0.5; z-index: 999; } /* Ensure overlay is below fullscreen */
       .shepherd-button { background-color: #007bff; color: white; padding: 5px 10px; border-radius: 3px; }
       .shepherd-button:hover { background-color: #0056b3; }
+      /* Ensure YouTube iframe can go fullscreen */
+      .shepherd-element iframe {
+          position: relative;
+          z-index: 1001 !important; /* Above modal overlay */
+      }
+      .shepherd-element:-webkit-full-screen iframe,
+      .shepherd-element:-moz-full-screen iframe,
+      .shepherd-element:fullscreen iframe {
+          z-index: 1002 !important; /* Ensure iframe stays above everything in fullscreen */
+          width: 100% !important;
+          height: 100% !important;
+      }
+      /* Prevent fixed header from blocking fullscreen */
+      #header-row:-webkit-full-screen,
+      #header-row:-moz-full-screen,
+      #header-row:fullscreen {
+          display: none !important; /* Hide header in fullscreen */
+      }
     </style>
     """)
     print("CSS Updated")
@@ -4014,461 +4029,195 @@ with gr.Blocks() as demo:
         align-items: center;
       }
     </style>
+    gr.HTML("""
     <script>
       const tour = new Shepherd.Tour({
         defaultStepOptions: {
           cancelIcon: { enabled: true },
           scrollTo: { behavior: 'smooth', block: 'center' },
-          scrollToHandler: (element) => {
-            setTimeout(() => {
-              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
-          },
           classes: 'shepherd-theme-arrows',
-          popperOptions: {
-            modifiers: [
-              { name: 'offset', options: { offset: [0, 10] } },
-              { name: 'preventOverflow', options: { padding: 10 } }
-            ]
-          }
         },
         useModalOverlay: true
-      });
-    
-      // Function to toggle video size
-      function toggleVideoSize(container) {
-        console.log('Toggling video size for container:', container);
-        container.classList.toggle('enlarged');
-        // Force Shepherd to reposition the modal to fit the new size
-        const currentStep = tour.getCurrentStep();
-        if (currentStep) {
-          currentStep.updateStepOptions({ popperOptions: currentStep.options.popperOptions });
-        }
-      }
-    
-      // Reset all videos to default size when moving to a new step
-      tour.on('show', () => {
-        document.querySelectorAll('.video-container').forEach(container => {
-          container.classList.remove('enlarged');
-        });
       });
     
       // Part 1: Your Roulette Adventure Begins!
       tour.addStep({
         id: 'part1',
         title: 'Your Roulette Adventure Begins!',
-        text: 'Hey there! This is your Roulette Spin Analyzer—your go-to for cracking European Roulette.<br><div class="video-container"><iframe width="280" height="158" src="https://www.youtube.com/embed/H7TLQr1HnY0?rel=0&fs=0" frameborder="0"></iframe></div>',
+        text: 'Hey there! This is your Roulette Spin Analyzer—your go-to for cracking European Roulette.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/H7TLQr1HnY0" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '#header-row', on: 'bottom' },
         buttons: [
           { text: 'Next', action: tour.next },
           { text: 'Skip', action: tour.cancel }
-        ],
-        when: {
-          show: () => {
-            setTimeout(() => {
-              const stepElement = document.querySelector('.shepherd-element');
-              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
-              if (videoContainer) {
-                videoContainer.addEventListener('click', function(event) {
-                  event.stopPropagation();
-                  console.log('Clicked video container in Part 1');
-                  toggleVideoSize(this);
-                });
-              } else {
-                console.error('Video container not found in Part 1');
-              }
-            }, 100); // Delay to ensure DOM is ready
-          }
-        }
+        ]
       });
     
       // Part 2: Spin the Wheel, Start the Thrill!
       tour.addStep({
         id: 'part2',
         title: 'Spin the Wheel, Start the Thrill!',
-        text: 'Meet your roulette table—just click any number to log a spin! They’ll stack up below, ready for action.<br><div class="video-container"><iframe width="280" height="158" src="https://www.youtube.com/embed/ja454kZwndo?rel=0&fs=0" frameborder="0"></iframe></div>',
-        attachTo: { element: '.roulette-table', on: 'left' },
+        text: 'Meet your roulette table—just click any number to log a spin! They’ll stack up below, ready for action.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ja454kZwndo" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
+        attachTo: { element: '.roulette-table', on: 'right' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Next', action: tour.next },
           { text: 'Skip', action: tour.cancel }
-        ],
-        when: {
-          show: () => {
-            setTimeout(() => {
-              const stepElement = document.querySelector('.shepherd-element');
-              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
-              if (videoContainer) {
-                videoContainer.addEventListener('click', function(event) {
-                  event.stopPropagation();
-                  console.log('Clicked video container in Part 2');
-                  toggleVideoSize(this);
-                });
-              } else {
-                console.error('Video container not found in Part 2');
-              }
-            }, 100);
-          }
-        }
+        ]
       });
     
       // Part 3: Peek at Your Spin Streak!
       tour.addStep({
         id: 'part3',
         title: 'Peek at Your Spin Streak!',
-        text: 'See your latest spins here! Slide this to pick how many show up—keep it tight or go big.<br><div class="video-container"><iframe width="280" height="158" src="https://www.youtube.com/embed/a9brOFMy9sA?rel=0&fs=0" frameborder="0"></iframe></div>',
+        text: 'See your latest spins here! Slide this to pick how many show up—keep it tight or go big.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/a9brOFMy9sA" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '.last-spins-container', on: 'bottom' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Next', action: tour.next },
           { text: 'Skip', action: tour.cancel }
-        ],
-        when: {
-          show: () => {
-            setTimeout(() => {
-              const stepElement = document.querySelector('.shepherd-element');
-              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
-              if (videoContainer) {
-                videoContainer.addEventListener('click', function(event) {
-                  event.stopPropagation();
-                  console.log('Clicked video container in Part 3');
-                  toggleVideoSize(this);
-                });
-              } else {
-                console.error('Video container not found in Part 3');
-              }
-            }, 100);
-          }
-        }
+        ]
       });
     
       // Part 4: Master Your Spin Moves!
       tour.addStep({
         id: 'part4',
         title: 'Master Your Spin Moves!',
-        text: 'Take charge of your spins! Clear the display, undo oopsies, or toss in random spins to play around.<br><div class="video-container"><iframe width="280" height="158" src="https://www.youtube.com/embed/xG8z1S4HJK4?rel=0&fs=0" frameborder="0"></iframe></div>',
+        text: 'Take charge of your spins! Clear the display, undo oopsies, or toss in random spins to play around.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/xG8z1S4HJK4" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '#undo-spins-btn', on: 'bottom' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Next', action: tour.next },
           { text: 'Skip', action: tour.cancel }
-        ],
-        when: {
-          show: () => {
-            setTimeout(() => {
-              const stepElement = document.querySelector('.shepherd-element');
-              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
-              if (videoContainer) {
-                videoContainer.addEventListener('click', function(event) {
-                  event.stopPropagation();
-                  console.log('Clicked video container in Part 4');
-                  toggleVideoSize(this);
-                });
-              } else {
-                console.error('Video container not found in Part 4');
-              }
-            }, 100);
-          }
-        }
+        ]
       });
     
       // Part 5: Jot Spins, Count Wins!
       tour.addStep({
         id: 'part5',
         title: 'Jot Spins, Count Wins!',
-        text: 'Type spins here with commas if you want. The counter tracks your total—stay in the know!<br><div class="video-container"><iframe width="280" height="158" src="https://www.youtube.com/embed/2-k1EyKUM8U?rel=0&fs=0" frameborder="0"></iframe></div>',
+        text: 'Type spins here with commas if you want. The counter tracks your total—stay in the know!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/2-k1EyKUM8U" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '#selected-spins', on: 'bottom' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Next', action: tour.next },
           { text: 'Skip', action: tour.cancel }
-        ],
-        when: {
-          show: () => {
-            setTimeout(() => {
-              const stepElement = document.querySelector('.shepherd-element');
-              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
-              if (videoContainer) {
-                videoContainer.addEventListener('click', function(event) {
-                  event.stopPropagation();
-                  console.log('Clicked video container in Part 5');
-                  toggleVideoSize(this);
-                });
-              } else {
-                console.error('Video container not found in Part 5');
-              }
-            }, 100);
-          }
-        }
+        ]
       });
     
       // Part 6: Analyze and Reset Like a Pro!
       tour.addStep({
         id: 'part6',
         title: 'Analyze and Reset Like a Pro!',
-        text: 'Click "Analyze Spins" to see the magic happen—stats galore! "Clear Spins" or "Clear All" wipes it clean for a fresh go.<br><div class="video-container"><iframe width="280" height="158" src="https://www.youtube.com/embed/8plHP2RIR3o?rel=0&fs=0" frameborder="0"></iframe></div>',
+        text: 'Click "Analyze Spins" to see the magic happen—stats galore! "Clear Spins" or "Clear All" wipes it clean for a fresh go.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/8plHP2RIR3o" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '.green-btn', on: 'bottom' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Next', action: tour.next },
           { text: 'Skip', action: tour.cancel }
-        ],
-        when: {
-          show: () => {
-            setTimeout(() => {
-              const stepElement = document.querySelector('.shepherd-element');
-              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
-              if (videoContainer) {
-                videoContainer.addEventListener('click', function(event) {
-                  event.stopPropagation();
-                  console.log('Clicked video container in Part 6');
-                  toggleVideoSize(this);
-                });
-              } else {
-                console.error('Video container not found in Part 6');
-              }
-            }, 100);
-          }
-        }
+        ]
       });
     
       // Part 7: Light Up Your Lucky Spots!
       tour.addStep({
         id: 'part7',
         title: 'Light Up Your Lucky Spots!',
-        text: 'Your dynamic table lights up here! It shows off the hottest spots based on your spins—pure eye candy!<br><div class="video-container"><iframe width="280" height="158" src="https://www.youtube.com/embed/zT9d06sn07E?rel=0&fs=0" frameborder="0"></iframe></div>',
+        text: 'Your dynamic table lights up here! It shows off the hottest spots based on your spins—pure eye candy!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/zT9d06sn07E" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '#dynamic-table-heading', on: 'bottom' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Next', action: tour.next },
           { text: 'Skip', action: tour.cancel }
-        ],
-        when: {
-          show: () => {
-            setTimeout(() => {
-              const stepElement = document.querySelector('.shepherd-element');
-              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
-              if (videoContainer) {
-                videoContainer.addEventListener('click', function(event) {
-                  event.stopPropagation();
-                  console.log('Clicked video container in Part 7');
-                  toggleVideoSize(this);
-                });
-              } else {
-                console.error('Video container not found in Part 7');
-              }
-            }, 100);
-          }
-        }
+        ]
       });
     
       // Part 8: Bet Smart, Track the Art!
       tour.addStep({
         id: 'part8',
         title: 'Bet Smart, Track the Art!',
-        text: 'Track your bets here! Set your bankroll and style, then hit "Win" or "Lose" to watch your strategy play out.<br><div class="video-container"><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?rel=0&fs=0" frameborder="0"></iframe></div>',
+        text: 'Track your bets here! Set your bankroll and style, then hit "Win" or "Lose" to watch your strategy play out.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '.betting-progression', on: 'top' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Next', action: tour.next },
           { text: 'Skip', action: tour.cancel }
-        ],
-        when: {
-          show: () => {
-            setTimeout(() => {
-              const stepElement = document.querySelector('.shepherd-element');
-              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
-              if (videoContainer) {
-                videoContainer.addEventListener('click', function(event) {
-                  event.stopPropagation();
-                  console.log('Clicked video container in Part 8');
-                  toggleVideoSize(this);
-                });
-              } else {
-                console.error('Video container not found in Part 8');
-              }
-            }, 100);
-          }
-        }
+        ]
       });
     
       // Part 9: Paint Your Winning Hue!
       tour.addStep({
         id: 'part9',
         title: 'Paint Your Winning Hue!',
-        text: 'Make your table pop with these colors! Tweak top, middle, and lower tiers, or reset to keep it classic.<br><div class="video-container"><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8?rel=0&fs=0" frameborder="0"></iframe></div>',
+        text: 'Make your table pop with these colors! Tweak top, middle, and lower tiers, or reset to keep it classic.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '#top-color-picker', on: 'left' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Next', action: tour.next },
           { text: 'Skip', action: tour.cancel }
-        ],
-        when: {
-          show: () => {
-            setTimeout(() => {
-              const stepElement = document.querySelector('.shepherd-element');
-              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
-              if (videoContainer) {
-                videoContainer.addEventListener('click', function(event) {
-                  event.stopPropagation();
-                  console.log('Clicked video container in Part 9');
-                  toggleVideoSize(this);
-                });
-              } else {
-                console.error('Video container not found in Part 9');
-              }
-            }, 100);
-          }
-        }
+        ]
       });
     
       // Part 10: Decode the Color Clue!
       tour.addStep({
         id: 'part10',
         title: 'Decode the Color Clue!',
-        text: 'Confused by colors? Pop this open—it’s your quick guide to what each shade means on the table!<br><div class="video-container"><iframe width="280" height="158" src="https://www.youtube.com/embed/PGBEoOOh9Gk?rel=0&fs=0" frameborder="0"></iframe></div>',
+        text: 'Confused by colors? Pop this open—it’s your quick guide to what each shade means on the table!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/PGBEoOOh9Gk" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '#color-code-key', on: 'top' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Next', action: tour.next },
           { text: 'Skip', action: tour.cancel }
-        ],
-        when: {
-          show: () => {
-            setTimeout(() => {
-              const stepElement = document.querySelector('.shepherd-element');
-              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
-              if (videoContainer) {
-                videoContainer.addEventListener('click', function(event) {
-                  event.stopPropagation();
-                  console.log('Clicked video container in Part 10');
-                  toggleVideoSize(this);
-                });
-              } else {
-                console.error('Video container not found in Part 10');
-              }
-            }, 100);
-          }
-        }
+        ]
       });
     
       // Part 11: Unleash the Spin Secrets!
       tour.addStep({
         id: 'part11',
         title: 'Unleash the Spin Secrets!',
-        text: 'This is your deep dive! "Spin Logic Reactor 🧠" breaks down each spin—like what hits Even or Red. "Strongest Numbers Tables" ranks your top numbers with their neighbors, and "Aggregated Scores" spills all the stats, from Even Money to Dozens—pure gold after analyzing!<br><div class="video-container"><iframe width="280" height="158" src="https://www.youtube.com/embed/MpcuwWnMdrg?rel=0&fs=0" frameborder="0"></iframe></div>',
+        text: 'This is your deep dive! "Spin Logic Reactor 🧠" breaks down each spin—like what hits Even or Red. "Strongest Numbers Tables" ranks your top numbers with their neighbors, and "Aggregated Scores" spills all the stats, from Even Money to Dozens—pure gold after analyzing!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/MpcuwWnMdrg" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '#spin-analysis', on: 'top' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Next', action: tour.next },
           { text: 'Skip', action: tour.cancel }
-        ],
-        when: {
-          show: () => {
-            setTimeout(() => {
-              const stepElement = document.querySelector('.shepherd-element');
-              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
-              if (videoContainer) {
-                videoContainer.addEventListener('click', function(event) {
-                  event.stopPropagation();
-                  console.log('Clicked video container in Part 11');
-                  toggleVideoSize(this);
-                });
-              } else {
-                console.error('Video container not found in Part 11');
-              }
-            }, 100);
-          }
-        }
+        ]
       });
     
       // Part 12: Save Your Spin Glory!
       tour.addStep({
         id: 'part12',
         title: 'Save Your Spin Glory!',
-        text: 'Save your work or load a past session here—jump right back in whenever you want. You’re ready to roll!<br><div class="video-container"><iframe width="280" height="158" src="https://www.youtube.com/embed/pHLEa2I0jjE?rel=0&fs=0" frameborder="0"></iframe></div>',
+        text: 'Save your work or load a past session here—jump right back in whenever you want. You’re ready to roll!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pHLEa2I0jjE" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '#save-session-btn', on: 'top' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Next', action: tour.next },
           { text: 'Skip', action: tour.cancel }
-        ],
-        when: {
-          show: () => {
-            setTimeout(() => {
-              const stepElement = document.querySelector('.shepherd-element');
-              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
-              if (videoContainer) {
-                videoContainer.addEventListener('click', function(event) {
-                  event.stopPropagation();
-                  console.log('Clicked video container in Part 12');
-                  toggleVideoSize(this);
-                });
-              } else {
-                console.error('Video container not found in Part 12');
-              }
-            }, 100);
-          }
-        }
+        ]
       });
     
       // Part 13: Pick Your Strategy Groove!
       tour.addStep({
         id: 'part13',
         title: 'Pick Your Strategy Groove!',
-        text: 'Find your flow here! Choose a category like "Even Money" or "Dozens," then a strategy—think "Best Even Money Bets" or "Best Dozens." More on these gems later!<br><div class="video-container"><iframe width="280" height="158" src="https://www.youtube.com/embed/iuGEltUVbqc?rel=0&fs=0" frameborder="0"></iframe></div>',
+        text: 'Find your flow here! Choose a category like "Even Money" or "Dozens," then a strategy—think "Best Even Money Bets" or "Best Dozens." More on these gems later!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iuGEltUVbqc" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '#select-category', on: 'left' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Next', action: tour.next },
           { text: 'Skip', action: tour.cancel }
-        ],
-        when: {
-          show: () => {
-            setTimeout(() => {
-              const stepElement = document.querySelector('.shepherd-element');
-              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
-              if (videoContainer) {
-                videoContainer.addEventListener('click', function(event) {
-                  event.stopPropagation();
-                  console.log('Clicked video container in Part 13');
-                  toggleVideoSize(this);
-                });
-              } else {
-                console.error('Video container not found in Part 13');
-              }
-            }, 100);
-          }
-        }
+        ]
       });
     
       // Part 14: Boost Wins with Casino Intel!
       tour.addStep({
         id: 'part14',
         title: 'Boost Wins with Casino Intel!',
-        text: 'Got casino stats? Drop them here! Set percentages for Even/Odd, Red/Black, or Dozens—watch the table highlight the hot picks instantly.<br><div class="video-container"><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?rel=0&fs=0" frameborder="0"></iframe></div>',
+        text: 'Got casino stats? Drop them here! Set percentages for Even/Odd, Red/Black, or Dozens—watch the table highlight the hot picks instantly.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss" frameborder="0" allow="fullscreen" allowfullscreen></iframe>',
         attachTo: { element: '#casino-data-insights', on: 'top' },
         buttons: [
           { text: 'Back', action: tour.back },
           { text: 'Finish', action: tour.complete }
-        ],
-        when: {
-          show: () => {
-            setTimeout(() => {
-              const stepElement = document.querySelector('.shepherd-element');
-              const videoContainer = stepElement ? stepElement.querySelector('.video-container') : null;
-              if (videoContainer) {
-                videoContainer.addEventListener('click', function(event) {
-                  event.stopPropagation();
-                  console.log('Clicked video container in Part 14');
-                  toggleVideoSize(this);
-                });
-              } else {
-                console.error('Video container not found in Part 14');
-              }
-            }, 100);
-          }
-        }
+        ]
       });
     
       function startTour() {
