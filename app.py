@@ -3422,7 +3422,24 @@ with gr.Blocks() as demo:
             )
             reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
 
-# Betting Progression Tracker (New Row)
+    # 7.1. Row 7.1: Dozen Tracker (Moved to Follow Dynamic Roulette Table)
+    with gr.Row():
+        with gr.Column(scale=3):
+            with gr.Accordion("Dozen Tracker", open=False, elem_id="dozen-tracker"):
+                dozen_tracker_spins_dropdown = gr.Dropdown(
+                    label="Number of Spins to Track",
+                    choices=["3", "4", "5", "6", "10", "15", "20"],
+                    value="5",
+                    interactive=True
+                )
+                dozen_tracker_output = gr.HTML(
+                    label="Dozen Tracker",
+                    value="<p>Select the number of spins to track and analyze spins to see the Dozen history.</p>"
+                )
+        with gr.Column(scale=2):
+            pass  # Empty column to maintain layout balance
+
+    # 8. Row 8: Betting Progression Tracker (Renumbered)
     with gr.Row():
         with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
             with gr.Row():
@@ -3458,7 +3475,7 @@ with gr.Blocks() as demo:
                 message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
                 status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
 
-    # 8. Row 8: Color Pickers
+    # 9. Row 9: Color Pickers
     with gr.Row():
         top_color_picker = gr.ColorPicker(
             label="Top Tier Color",
@@ -3478,11 +3495,11 @@ with gr.Blocks() as demo:
         )
         reset_colors_button = gr.Button("Reset Colors", elem_classes=["action-button"])
 
-    # 9. Row 9: Color Code Key (Collapsible)
+    # 10. Row 10: Color Code Key (Collapsible)
     with gr.Accordion("Color Code Key", open=False, elem_id="color-code-key"):
         color_code_output = gr.HTML(label="Color Code Key")
 
-    # 10. Row 10: Analysis Outputs (Collapsible)
+    # 11. Row 11: Analysis Outputs (Collapsible)
     with gr.Accordion("Spin Logic Reactor 🧠", open=False, elem_id="spin-analysis"):
         spin_analysis_output = gr.Textbox(
             label="",
@@ -3544,24 +3561,13 @@ with gr.Blocks() as demo:
                 with gr.Accordion("Sides of Zero", open=True):
                     sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
-    # 11. Row 11: Save/Load Session (Collapsible)
+    # 12. Row 12: Save/Load Session (Collapsible)
     with gr.Accordion("Save/Load Session", open=False):
         with gr.Row():
             save_button = gr.Button("Save Session", elem_id="save-session-btn")
             load_input = gr.File(label="Upload Session")
         save_output = gr.File(label="Download Session")
-    # 12. Row 12: Dozen Tracker (Collapsible)
-    with gr.Accordion("Dozen Tracker", open=False, elem_id="dozen-tracker"):
-        dozen_tracker_spins_dropdown = gr.Dropdown(
-            label="Number of Spins to Track",
-            choices=["3", "4", "5", "6", "10", "15", "20"],
-            value="5",
-            interactive=True
-        )
-        dozen_tracker_output = gr.HTML(
-            label="Dozen Tracker",
-            value="<p>Select the number of spins to track and analyze spins to see the Dozen history.</p>"
-        )
+
 
         
     # CSS and Event Handlers
