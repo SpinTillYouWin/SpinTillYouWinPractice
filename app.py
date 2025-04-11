@@ -3219,6 +3219,50 @@ STRATEGIES = {
     "Neighbours of Strong Number": {"function": neighbours_of_strong_number, "categories": ["neighbours"]}
 }
 
+
+# Updated lines (new STRATEGY_DICTIONARY)
+STRATEGY_DICTIONARY = {
+    "Dozen Strategies": {
+        "Fibonacci Strategy": {
+            "title": "Victory Vortex",
+            "video_link": "https://youtu.be/aKGA_csI9lY?si=i06jPSC3pYUWKq_P",
+            "description": (
+                "Victory Vortex is a dozen bet progression system designed for long-game resilience, smarter risk, and higher return potential. "
+                "It follows the same core principle as the Fibonacci system—move one step forward on a loss and reset to the base bet after a win—but it uses a more efficient and cost-effective bet sequence.\n\n"
+                "Instead of the steep Fibonacci progression that totals $20,664 over 16 phases, Victory Vortex only requires a total bankroll of $5,907. "
+                "That’s $14,757 less—making it 71.41% cheaper—while maintaining the same structure and simplicity.\n\n"
+                "Why This Works Better Than Fibonacci:\n"
+                "- Smarter Scaling: Early phase bets are smaller, which means you profit more when your risk is lowest.\n"
+                "- Lower Risk Exposure: Less aggressive jumps in bet amounts help preserve your bankroll in the long run.\n"
+                "- Same Logic: Just like Fibonacci, move forward after a loss, reset after a win.\n"
+                "- More Efficient Recovery: The progression is designed to cover previous losses and still deliver profit.\n"
+                "- Greater Net Potential: Dozen bets pay 2:1, so winning at any point still yields a return greater than the total risk taken up to that point.\n\n"
+                "Disclaimer: This strategy is designed for educational and entertainment purposes only. There is no guaranteed way to beat roulette, and all gambling carries risk. "
+                "Always gamble responsibly and only with money you can afford to lose."
+            ),
+            "betting_progression": (
+                "Bet Progression Table:\n"
+                "1st Bet   - $1.00\n"
+                "2nd Bet   - $8.00\n"
+                "3rd Bet   - $11.00\n"
+                "4th Bet   - $16.00\n"
+                "5th Bet   - $24.00\n"
+                "6th Bet   - $35.00\n"
+                "7th Bet   - $52.00\n"
+                "8th Bet   - $78.00\n"
+                "9th Bet   - $116.00\n"
+                "10th Bet  - $174.00\n"
+                "11th Bet  - $260.00\n"
+                "12th Bet  - $390.00\n"
+                "13th Bet  - $584.00\n"
+                "14th Bet  - $876.00\n"
+                "15th Bet  - $1,313.00\n"
+                "16th Bet  - $1,969.00"
+            )
+        }
+    }
+}
+
 def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
     try:
         print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
@@ -3280,7 +3324,17 @@ def reset_colors():
 def clear_last_spins_display():
     """Clear the Last Spins HTML display without affecting spins data."""
     return "<h4>Last Spins</h4><p>Display cleared. Add spins to see them here.</p>", update_spin_counter()
-
+# Updated lines (new function)
+def display_strategy_details(category, strategy):
+    """Display strategy details from STRATEGY_DICTIONARY."""
+    if category not in STRATEGY_DICTIONARY or strategy not in STRATEGY_DICTIONARY[category]:
+        return "<p>Strategy details not found. Select a valid category and strategy.</p>"
+    details = STRATEGY_DICTIONARY[category][strategy]
+    html = f"<h3><a href='{details['video_link']}' target='_blank'>{details['title']}</a></h3>"
+    html += f"<p>{details['description'].replace('\n', '<br>')}</p>"
+    html += f"<h4>Betting Progression:</h4><p>{details['betting_progression'].replace('\n', '<br>')}</p>"
+    return html
+    
 # Build the Gradio interface
 with gr.Blocks() as demo:
     # Define state and components used across sections at the top
@@ -3725,7 +3779,25 @@ with gr.Blocks() as demo:
             load_input = gr.File(label="Upload Session")
         save_output = gr.File(label="Download Session")
 
-
+    # Updated lines (new Strategy Dictionary accordion)
+    # 12. Strategy Dictionary (Collapsible)
+    with gr.Accordion("Strategy Dictionary", open=False, elem_id="strategy-dictionary"):
+        strategy_dict_category_dropdown = gr.Dropdown(
+            label="Strategy Category",
+            choices=["My Top Strategies"] + sorted([cat for cat in strategy_categories.keys() if cat != "None"]),
+            value="Dozen Strategies",
+            allow_custom_value=False
+        )
+        strategy_dict_strategy_dropdown = gr.Dropdown(
+            label="Strategy",
+            choices=strategy_categories["Dozen Strategies"],
+            value="Fibonacci Strategy",
+            allow_custom_value=False
+        )
+        strategy_dict_output = gr.HTML(
+            label="Strategy Details",
+            value="<p>Select a category and strategy to view details.</p>"
+        )
         
     # CSS and Event Handlers
     gr.HTML("""
@@ -3961,6 +4033,18 @@ with gr.Blocks() as demo:
         fn=format_spins_as_html,
         inputs=[spins_display, last_spin_count],
         outputs=[last_spin_display]
+    )
+    # Updated lines (new event handlers)
+    # Strategy Dictionary event handlers
+    strategy_dict_category_dropdown.change(
+        fn=lambda category: gr.update(choices=strategy_categories[category] if category != "My Top Strategies" else ["Fibonacci Strategy"], value=strategy_categories[category][0] if category != "My Top Strategies" else "Fibonacci Strategy"),
+        inputs=[strategy_dict_category_dropdown],
+        outputs=[strategy_dict_strategy_dropdown]
+    )
+    strategy_dict_strategy_dropdown.change(
+        fn=display_strategy_details,
+        inputs=[strategy_dict_category_dropdown, strategy_dict_strategy_dropdown],
+        outputs=[strategy_dict_output]
     )
 
     clear_spins_button.click(
