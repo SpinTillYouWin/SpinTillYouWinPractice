@@ -140,16 +140,16 @@ class RouletteState:
         else:
             self.status_color = "white"  # Neutral when active
 
-def update_progression(self, won):
+update_progression(self, won):
         if self.is_stopped:
-            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+            return self.bankroll, self.current_bet, self.next_bet, self.message, f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
         self.update_bankroll(won)
         if self.bankroll < self.current_bet:
             self.is_stopped = True
             self.status = "Stopped: Insufficient bankroll"
             self.status_color = "red"  # Red for insufficient bankroll
             self.message = "Cannot continue: Bankroll too low."
-            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+            return self.bankroll, self.current_bet, self.next_bet, self.message, f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
         
         # Define the S.T.Y.W: Victory Vortex sequence
         victory_vortex_sequence = [1, 8, 11, 16, 24, 35, 52, 78, 116, 174, 260, 390, 584, 876, 1313, 1969]
@@ -239,7 +239,7 @@ def update_progression(self, won):
             self.next_bet = self.current_bet + (2 * self.base_unit) if won else max(self.base_unit, self.current_bet - self.base_unit)
             self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
         
-        return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+        return self.bankroll, self.current_bet, self.next_bet, self.message, f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
 
 # Create an instance of RouletteState (unchanged)
 state = RouletteState()
