@@ -3021,6 +3021,13 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
     except (ValueError, TypeError):
         return "Error: Invalid inputs. Please use positive integers.", "<p>Error: Invalid inputs. Please use positive integers.</p>", "<p>Error: Invalid inputs. Please use positive integers.</p>"
 
+    # Add print statement here to debug the number of spins being tracked
+    recent_spins = state.last_spins[-num_spins_to_check:] if len(state.last_spins) >= num_spins_to_check else state.last_spins
+    print(f"dozen_tracker: Tracking {num_spins_to_check} spins, recent_spins length = {len(recent_spins)}")
+    
+    if not recent_spins:
+        return "Dozen Tracker: No spins recorded yet.", "<p>Dozen Tracker: No spins recorded yet.</p>", "<p>Dozen Tracker: No spins recorded yet.</p>"
+    
     # Get the last N spins
     recent_spins = state.last_spins[-num_spins_to_check:] if len(state.last_spins) >= num_spins_to_check else state.last_spins
     if not recent_spins:
@@ -3534,7 +3541,7 @@ with gr.Blocks() as demo:
             with gr.Accordion("Dozen Tracker", open=False, elem_id="dozen-tracker"):
                 dozen_tracker_spins_dropdown = gr.Dropdown(
                     label="Number of Spins to Track",
-                    choices=["3", "4", "5", "6", "10", "15", "20"],
+                    choices=["3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
                     value="5",
                     interactive=True
                 )
