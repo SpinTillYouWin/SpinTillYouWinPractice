@@ -3372,6 +3372,14 @@ with gr.Blocks() as demo:
                             fn=add_spin,
                             inputs=[gr.State(value=num), spins_display, last_spin_count],
                             outputs=[spins_display, spins_textbox, last_spin_display, spin_counter]
+                        ).then(
+                            fn=show_strategy_recommendations,
+                            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+                            outputs=[strategy_output]
+                        ).then(
+                            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+                            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+                            outputs=[dynamic_table_output]
                         )
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
@@ -4005,6 +4013,14 @@ with gr.Blocks() as demo:
         fn=format_spins_as_html,
         inputs=[spins_display, last_spin_count],
         outputs=[last_spin_display]
+    ).then(
+        fn=show_strategy_recommendations,
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+        outputs=[strategy_output]
+    ).then(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
     )
 
     last_spin_count.change(
