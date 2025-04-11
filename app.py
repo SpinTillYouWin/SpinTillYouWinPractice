@@ -65,6 +65,7 @@ class RouletteState:
         self.selected_numbers = set()
         self.last_spins = []
         self.spin_history = []  # Tracks each spin's effects for undoing
+        self.tracked_phases = set()  # Set to store tracked phase indices for Fibonacci Strategy
 
         # Casino data storage
         self.casino_data = {
@@ -1933,9 +1934,12 @@ def fibonacci_strategy():
         vv_value = victory_vortex_sequence[i] if i < len(victory_vortex_sequence) else "N/A"
         fib_8_value = fib_8_sequence[i] if i < len(fib_8_sequence) else "N/A"
         phase_cell = f'{phase} <button onclick="toggleTrack({i})" style="padding: 0 5px; font-size: 10px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer;">Track</button>'
-        html_output += f"<tr id='phase-row-{i}'><td style='padding: 2px;'>{phase_cell}</td><td style='padding: 2px;'>{fib_value}</td><td style='padding: 2px;'>{vv_value}</td><td style='padding: 2px;'>{fib_8_value}</td></tr>"
+        # Add "tracked" class if this phase is in state.tracked_phases
+        row_class = ' class="tracked"' if i in state.tracked_phases else ''
+        html_output += f"<tr id='phase-row-{i}'{row_class}><td style='padding: 2px;'>{phase_cell}</td><td style='padding: 2px;'>{fib_value}</td><td style='padding: 2px;'>{vv_value}</td><td style='padding: 2px;'>{fib_8_value}</td></tr>"
     html_output += "</table>"
 
+# Lines after (context from fibonacci_strategy)
     return html_output
 
 def best_streets():
