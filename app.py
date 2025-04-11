@@ -1922,17 +1922,18 @@ def fibonacci_strategy():
     victory_vortex_sequence = [1, 8, 11, 16, 24, 35, 52, 78, 116, 174, 260, 390, 584, 876, 1313, 1969]
     fib_8_sequence = [x * 8 for x in fib_sequence]  # 8-unit base: [8, 8, 16, 24, ..., 7896]
 
-    # Add sequence comparison as compact HTML table
+    # Add sequence comparison as compact HTML table with track buttons
     html_output += "<h4>Fibonacci & Victory Vortex (16 Phases):</h4>"
-    html_output += '<table border="1" style="border-collapse: collapse; text-align: center; font-family: Arial, sans-serif; font-size: 12px; width: 100%; max-width: 300px;">'
+    html_output += '<button onclick="resetTracking()" style="padding: 5px 10px; background-color: #ff4444; color: white; border: none; border-radius: 3px; cursor: pointer; margin-bottom: 5px;">Reset Tracking</button>'
+    html_output += '<table border="1" style="border-collapse: collapse; text-align: center; font-family: Arial, sans-serif; font-size: 12px; width: 100%; max-width: 300px;" id="phase-table">'
     html_output += '<tr><th style="padding: 2px; width: 50px;">Phase</th><th style="padding: 2px; width: 70px;">Fib (1u)</th><th style="padding: 2px; width: 80px;">Vic Vortex</th><th style="padding: 2px; width: 80px;">Fib (8u)</th></tr>'
     for i in range(16):
         phase = i + 1
         fib_value = fib_sequence[i] if i < len(fib_sequence) else "N/A"
         vv_value = victory_vortex_sequence[i] if i < len(victory_vortex_sequence) else "N/A"
         fib_8_value = fib_8_sequence[i] if i < len(fib_8_sequence) else "N/A"
-        phase_cell = f'{phase} <span style="color: green; margin-left: 2px;">✓</span>'
-        html_output += f"<tr><td style='padding: 2px;'>{phase_cell}</td><td style='padding: 2px;'>{fib_value}</td><td style='padding: 2px;'>{vv_value}</td><td style='padding: 2px;'>{fib_8_value}</td></tr>"
+        phase_cell = f'{phase} <button onclick="toggleTrack({i})" style="padding: 0 5px; font-size: 10px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer;">Track</button>'
+        html_output += f"<tr id='phase-row-{i}'><td style='padding: 2px;'>{phase_cell}</td><td style='padding: 2px;'>{fib_value}</td><td style='padding: 2px;'>{vv_value}</td><td style='padding: 2px;'>{fib_8_value}</td></tr>"
     html_output += "</table>"
 
     return html_output
@@ -3852,7 +3853,7 @@ with gr.Blocks() as demo:
           transform: scale(1.05) !important; /* Slight zoom on hover */
           box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
       }
-    
+
       /* Last Spins Container */
       .last-spins-container {
           background-color: #f5f5f5 !important; /* Light gray background */
@@ -3862,7 +3863,7 @@ with gr.Blocks() as demo:
           margin-top: 10px !important;
           box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; /* Very light shadow */
       }
-    
+
       /* Responsive Design */
       @media (max-width: 600px) {
           .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
@@ -3872,7 +3873,23 @@ with gr.Blocks() as demo:
           .long-slider { width: 100% !important; }
           .header-title { font-size: 1.8em !important; }
       }
-    
+
+      /* Scrollable Tables */
+      .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
+
+      /* Tracked Phase Styling */
+      .tracked {
+          background-color: #e0ffe0 !important; /* Light green background */
+          position: relative;
+      }
+      .tracked td:first-child::after {
+          content: "✓";
+          color: green;
+          position: absolute;
+          left: 5px;
+          font-size: 12px;
+      }
+
       #strongest-numbers-dropdown select {
           -webkit-appearance: menulist !important;
           -moz-appearance: menulist !important;
