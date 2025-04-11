@@ -1920,21 +1920,19 @@ def fibonacci_strategy():
     # Define sequences for 16 phases
     fib_sequence = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987]  # 1-unit base
     victory_vortex_sequence = [1, 8, 11, 16, 24, 35, 52, 78, 116, 174, 260, 390, 584, 876, 1313, 1969]
-    # Fibonacci (8) sequence: Standard Fibonacci scaled by 8-unit base
-    fib_8_sequence = [x * 8 for x in fib_sequence]  # [8, 8, 16, 24, 40, 64, 104, 168, 272, 440, 712, 1152, 1864, 3016, 4880, 7896]
+    fib_8_sequence = [x * 8 for x in fib_sequence]  # 8-unit base: [8, 8, 16, 24, ..., 7896]
 
-    # Add sequence comparison as HTML with checkmarks in Phase column
-    html_output += "<h4>Fibonacci (1-unit) vs. Victory Vortex vs. Fibonacci (8-unit) (16 Phases):</h4>"
-    html_output += '<table border="1" style="border-collapse: collapse; text-align: center; font-family: Arial, sans-serif;">'
-    html_output += "<tr><th>Phase</th><th>FIBONACCI SEQ (1-unit)</th><th>VICTORY VORTEX</th><th>FIBONACCI (8-unit)</th></tr>"
+    # Add sequence comparison as compact HTML table
+    html_output += "<h4>Fibonacci & Victory Vortex (16 Phases):</h4>"
+    html_output += '<table border="1" style="border-collapse: collapse; text-align: center; font-family: Arial, sans-serif; font-size: 12px; width: 100%; max-width: 300px;">'
+    html_output += '<tr><th style="padding: 2px; width: 50px;">Phase</th><th style="padding: 2px; width: 70px;">Fib (1u)</th><th style="padding: 2px; width: 80px;">Vic Vortex</th><th style="padding: 2px; width: 80px;">Fib (8u)</th></tr>'
     for i in range(16):
         phase = i + 1
         fib_value = fib_sequence[i] if i < len(fib_sequence) else "N/A"
         vv_value = victory_vortex_sequence[i] if i < len(victory_vortex_sequence) else "N/A"
         fib_8_value = fib_8_sequence[i] if i < len(fib_8_sequence) else "N/A"
-        # Add checkmark with phase number
-        phase_cell = f'{phase} <span style="color: green; margin-left: 5px;">✓</span>'
-        html_output += f"<tr><td>{phase_cell}</td><td>{fib_value}</td><td>{vv_value}</td><td>{fib_8_value}</td></tr>"
+        phase_cell = f'{phase} <span style="color: green; margin-left: 2px;">✓</span>'
+        html_output += f"<tr><td style='padding: 2px;'>{phase_cell}</td><td style='padding: 2px;'>{fib_value}</td><td style='padding: 2px;'>{vv_value}</td><td style='padding: 2px;'>{fib_8_value}</td></tr>"
     html_output += "</table>"
 
     return html_output
