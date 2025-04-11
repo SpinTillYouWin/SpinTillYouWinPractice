@@ -4595,7 +4595,7 @@ with gr.Blocks() as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-    
+      
       // Part 14: Boost Wins with Casino Intel!
       tour.addStep({
         id: 'part14',
@@ -4607,10 +4607,44 @@ with gr.Blocks() as demo:
           { text: 'Finish', action: tour.complete }
         ]
       });
-    
-      function startTour() {
-        tour.start();
-      }
+
+      // Ensure DOM is ready before attaching event handlers
+      document.addEventListener('DOMContentLoaded', function() {
+          console.log("DOM fully loaded, attaching phase tracking handlers");
+
+          // Function to toggle tracking for a phase
+          window.toggleTrack = function(index) {
+              console.log(`toggleTrack called for index: ${index}`);
+              const row = document.getElementById(`phase-row-${index}`);
+              if (row) {
+                  if (row.classList.contains("tracked")) {
+                      console.log(`Removing tracked class from phase-row-${index}`);
+                      row.classList.remove("tracked");
+                  } else {
+                      console.log(`Adding tracked class to phase-row-${index}`);
+                      row.classList.add("tracked");
+                  }
+              } else {
+                  console.error(`Row with ID phase-row-${index} not found`);
+              }
+          }
+
+          // Function to reset all tracking
+          window.resetTracking = function() {
+              console.log("resetTracking called");
+              const table = document.getElementById("phase-table");
+              if (table) {
+                  const rows = table.getElementsByTagName("tr");
+                  for (let i = 1; i < rows.length; i++) {
+                      console.log(`Removing tracked class from row ${i}`);
+                      rows[i].classList.remove("tracked");
+                  }
+              } else {
+                  console.error("Table with ID phase-table not found");
+              }
+          }
+      });
+
     </script>
     """)
     
