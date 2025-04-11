@@ -1897,46 +1897,25 @@ def fibonacci_strategy():
 
     if not dozens_hits and not columns_hits:
         recommendations.append("Fibonacci Strategy: No hits in Dozens or Columns yet.")
+        return "\n".join(recommendations)
+
+    best_dozen_score = dozens_hits[0][1] if dozens_hits else 0
+    best_column_score = columns_hits[0][1] if columns_hits else 0
+
+    if best_dozen_score > best_column_score:
+        recommendations.append("Best Category: Dozens")
+        recommendations.append(f"Best Dozen: {dozens_hits[0][0]} (Score: {dozens_hits[0][1]})")
+    elif best_column_score > best_dozen_score:
+        recommendations.append("Best Category: Columns")
+        recommendations.append(f"Best Column: {columns_hits[0][0]} (Score: {columns_hits[0][1]})")
     else:
-        best_dozen_score = dozens_hits[0][1] if dozens_hits else 0
-        best_column_score = columns_hits[0][1] if columns_hits else 0
-
-        if best_dozen_score > best_column_score:
-            recommendations.append("Best Category: Dozens")
+        recommendations.append(f"Best Category (Tied): Dozens and Columns (Score: {best_dozen_score})")
+        if dozens_hits:
             recommendations.append(f"Best Dozen: {dozens_hits[0][0]} (Score: {dozens_hits[0][1]})")
-        elif best_column_score > best_dozen_score:
-            recommendations.append("Best Category: Columns")
+        if columns_hits:
             recommendations.append(f"Best Column: {columns_hits[0][0]} (Score: {columns_hits[0][1]})")
-        else:
-            recommendations.append(f"Best Category (Tied): Dozens and Columns (Score: {best_dozen_score})")
-            if dozens_hits:
-                recommendations.append(f"Best Dozen: {dozens_hits[0][0]} (Score: {dozens_hits[0][1]})")
-            if columns_hits:
-                recommendations.append(f"Best Column: {columns_hits[0][0]} (Score: {columns_hits[0][1]})")
 
-    # Convert initial recommendations to HTML
-    html_output = "".join(f"<p>{line}</p>" for line in recommendations if line.strip())
-
-    # Define sequences for 16 phases
-    fib_sequence = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987]  # 1-unit base
-    victory_vortex_sequence = [1, 8, 11, 16, 24, 35, 52, 78, 116, 174, 260, 390, 584, 876, 1313, 1969]
-    fib_8_sequence = [x * 8 for x in fib_sequence]  # 8-unit base: [8, 8, 16, 24, ..., 7896]
-
-    # Add sequence comparison as compact HTML table with track buttons
-    html_output += "<h4>Fibonacci & Victory Vortex (16 Phases):</h4>"
-    html_output += '<button onclick="resetTracking()" style="padding: 5px 10px; background-color: #ff4444; color: white; border: none; border-radius: 3px; cursor: pointer; margin-bottom: 5px;">Reset Tracking</button>'
-    html_output += '<table border="1" style="border-collapse: collapse; text-align: center; font-family: Arial, sans-serif; font-size: 12px; width: 100%; max-width: 300px;" id="phase-table">'
-    html_output += '<tr><th style="padding: 2px; width: 50px;">Phase</th><th style="padding: 2px; width: 70px;">Fib (1u)</th><th style="padding: 2px; width: 80px;">Vic Vortex</th><th style="padding: 2px; width: 80px;">Fib (8u)</th></tr>'
-    for i in range(16):
-        phase = i + 1
-        fib_value = fib_sequence[i] if i < len(fib_sequence) else "N/A"
-        vv_value = victory_vortex_sequence[i] if i < len(victory_vortex_sequence) else "N/A"
-        fib_8_value = fib_8_sequence[i] if i < len(fib_8_sequence) else "N/A"
-        phase_cell = f'{phase} <button onclick="toggleTrack({i})" style="padding: 0 5px; font-size: 10px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer;">Track</button>'
-        html_output += f"<tr id='phase-row-{i}'><td style='padding: 2px;'>{phase_cell}</td><td style='padding: 2px;'>{fib_value}</td><td style='padding: 2px;'>{vv_value}</td><td style='padding: 2px;'>{fib_8_value}</td></tr>"
-    html_output += "</table>"
-
-    return html_output
+    return "\n".join(recommendations)
 
 def best_streets():
     recommendations = []
@@ -3555,7 +3534,7 @@ with gr.Blocks() as demo:
             with gr.Accordion("Dozen Tracker", open=False, elem_id="dozen-tracker"):
                 dozen_tracker_spins_dropdown = gr.Dropdown(
                     label="Number of Spins to Track",
-                    choices=["3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
+                    choices=["3", "4", "5", "6", "10", "15", "20"],
                     value="5",
                     interactive=True
                 )
@@ -3853,7 +3832,7 @@ with gr.Blocks() as demo:
           transform: scale(1.05) !important; /* Slight zoom on hover */
           box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
       }
-
+    
       /* Last Spins Container */
       .last-spins-container {
           background-color: #f5f5f5 !important; /* Light gray background */
@@ -3863,7 +3842,7 @@ with gr.Blocks() as demo:
           margin-top: 10px !important;
           box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; /* Very light shadow */
       }
-
+    
       /* Responsive Design */
       @media (max-width: 600px) {
           .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
@@ -3873,23 +3852,7 @@ with gr.Blocks() as demo:
           .long-slider { width: 100% !important; }
           .header-title { font-size: 1.8em !important; }
       }
-
-      /* Scrollable Tables */
-      .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
-
-      /* Tracked Phase Styling */
-      .tracked {
-          background-color: #e0ffe0 !important; /* Light green background */
-          position: relative;
-      }
-      .tracked td:first-child::after {
-          content: "✓";
-          color: green;
-          position: absolute;
-          left: 5px;
-          font-size: 12px;
-      }
-
+    
       #strongest-numbers-dropdown select {
           -webkit-appearance: menulist !important;
           -moz-appearance: menulist !important;
@@ -4595,7 +4558,7 @@ with gr.Blocks() as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-      
+    
       // Part 14: Boost Wins with Casino Intel!
       tour.addStep({
         id: 'part14',
@@ -4607,44 +4570,10 @@ with gr.Blocks() as demo:
           { text: 'Finish', action: tour.complete }
         ]
       });
-
-      // Ensure DOM is ready before attaching event handlers
-      document.addEventListener('DOMContentLoaded', function() {
-          console.log("DOM fully loaded, attaching phase tracking handlers");
-
-          // Function to toggle tracking for a phase
-          window.toggleTrack = function(index) {
-              console.log(`toggleTrack called for index: ${index}`);
-              const row = document.getElementById(`phase-row-${index}`);
-              if (row) {
-                  if (row.classList.contains("tracked")) {
-                      console.log(`Removing tracked class from phase-row-${index}`);
-                      row.classList.remove("tracked");
-                  } else {
-                      console.log(`Adding tracked class to phase-row-${index}`);
-                      row.classList.add("tracked");
-                  }
-              } else {
-                  console.error(`Row with ID phase-row-${index} not found`);
-              }
-          }
-
-          // Function to reset all tracking
-          window.resetTracking = function() {
-              console.log("resetTracking called");
-              const table = document.getElementById("phase-table");
-              if (table) {
-                  const rows = table.getElementsByTagName("tr");
-                  for (let i = 1; i < rows.length; i++) {
-                      console.log(`Removing tracked class from row ${i}`);
-                      rows[i].classList.remove("tracked");
-                  }
-              } else {
-                  console.error("Table with ID phase-table not found");
-              }
-          }
-      });
-
+    
+      function startTour() {
+        tour.start();
+      }
     </script>
     """)
     
