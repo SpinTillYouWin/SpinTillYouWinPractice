@@ -4398,13 +4398,44 @@ with gr.Blocks() as demo:
     useModalOverlay: true
   });
 
-  // Helper function to ensure accordion is open
+  // Helper function to force-open accordion with better Gradio compatibility
   function ensureAccordionOpen(accordionId) {
-    const accordion = document.querySelector(accordionId);
-    if (accordion && !accordion.classList.contains('gr-accordion-open')) {
-      accordion.click(); // Simulate click to open if Gradio supports it
-      console.log(`Opened accordion: ${accordionId}`);
-    }
+    return new Promise(resolve => {
+      const accordion = document.querySelector(accordionId);
+      if (!accordion) {
+        console.error(`Accordion ${accordionId} not found in DOM`);
+        resolve(); // Proceed anyway to avoid hanging
+        return;
+      }
+      const header = accordion.querySelector('div'); // Gradio accordion header
+      const content = accordion.nextElementSibling || accordion.querySelector('.gr-box');
+      if (content && window.getComputedStyle(content).display === 'none') {
+        console.log(`Opening accordion: ${accordionId}`);
+        header.click(); // Trigger click on header
+        setTimeout(() => {
+          if (window.getComputedStyle(content).display === 'none') {
+            content.style.display = 'block'; // Force open if click fails
+            console.log(`Force-opened accordion: ${accordionId}`);
+          }
+          resolve();
+        }, 500); // Increased delay for Gradio rendering
+      } else {
+        console.log(`Accordion ${accordionId} already open`);
+        resolve();
+      }
+    });
+  }
+
+  // Error handler wrapper for tour steps
+  function withErrorHandling(stepFn) {
+    return function() {
+      try {
+        return stepFn.apply(this, arguments);
+      } catch (e) {
+        console.error(`Tour step error: ${e.message}`, e);
+        tour.next(); // Skip to next step on error
+      }
+    };
   }
 
   // Part 1: Your Roulette Adventure Begins!
@@ -4414,7 +4445,7 @@ with gr.Blocks() as demo:
     text: 'Hey there! This is your Roulette Spin Analyzer—your go-to for cracking European Roulette.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/H7TLQr1HnY0?fs=0" frameborder="0"></iframe>',
     attachTo: { element: '#header-row', on: 'bottom' },
     buttons: [
-      { text: 'Next', action: () => { console.log('Moving from Part 1 to 2'); tour.next(); } },
+      { text: 'Next', action: withErrorHandling(() => { console.log('Moving from Part 1 to 2'); tour.next(); }) },
       { text: 'Skip', action: tour.cancel }
     ]
   });
@@ -4427,7 +4458,7 @@ with gr.Blocks() as demo:
     attachTo: { element: '.roulette-table', on: 'right' },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Next', action: () => { console.log('Moving from Part 2 to 3'); tour.next(); } },
+      { text: 'Next', action: withErrorHandling(() => { console.log('Moving from Part 2 to 3'); tour.next(); }) },
       { text: 'Skip', action: tour.cancel }
     ]
   });
@@ -4440,7 +4471,7 @@ with gr.Blocks() as demo:
     attachTo: { element: '.last-spins-container', on: 'bottom' },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Next', action: () => { console.log('Moving from Part 3 to 4'); tour.next(); } },
+      { text: 'Next', action: withErrorHandling(() => { console.log('Moving from Part 3 to 4'); tour.next(); }) },
       { text: 'Skip', action: tour.cancel }
     ]
   });
@@ -4453,7 +4484,7 @@ with gr.Blocks() as demo:
     attachTo: { element: '#undo-spins-btn', on: 'bottom' },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Next', action: () => { console.log('Moving from Part 4 to 5'); tour.next(); } },
+      { text: 'Next', action: withErrorHandling(() => { console.log('Moving from Part 4 to 5'); tour.next(); }) },
       { text: 'Skip', action: tour.cancel }
     ]
   });
@@ -4466,7 +4497,7 @@ with gr.Blocks() as demo:
     attachTo: { element: '#selected-spins', on: 'bottom' },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Next', action: () => { console.log('Moving from Part 5 to 6'); tour.next(); } },
+      { text: 'Next', action: withErrorHandling(() => { console.log('Moving from Part 5 to 6'); tour.next(); }) },
       { text: 'Skip', action: tour.cancel }
     ]
   });
@@ -4479,7 +4510,7 @@ with gr.Blocks() as demo:
     attachTo: { element: '.green-btn', on: 'bottom' },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Next', action: () => { console.log('Moving from Part 6 to 7'); tour.next(); } },
+      { text: 'Next', action: withErrorHandling(() => { console.log('Moving from Part 6 to 7'); tour.next(); }) },
       { text: 'Skip', action: tour.cancel }
     ]
   });
@@ -4492,7 +4523,7 @@ with gr.Blocks() as demo:
     attachTo: { element: '#dynamic-table-heading', on: 'bottom' },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Next', action: () => { console.log('Moving from Part 7 to 8'); tour.next(); } },
+      { text: 'Next', action: withErrorHandling(() => { console.log('Moving from Part 7 to 8'); tour.next(); }) },
       { text: 'Skip', action: tour.cancel }
     ]
   });
@@ -4504,15 +4535,11 @@ with gr.Blocks() as demo:
     text: 'Track your bets here! Set your bankroll and style, then hit "Win" or "Lose" to watch your strategy play out.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?fs=0" frameborder="0"></iframe>',
     attachTo: { element: '.betting-progression', on: 'top' },
     beforeShowPromise: function() {
-      return new Promise(resolve => {
-        console.log('Ensuring Betting Progression accordion is visible');
-        ensureAccordionOpen('.betting-progression');
-        setTimeout(resolve, 300); // Delay to allow accordion to open
-      });
+      return ensureAccordionOpen('.betting-progression');
     },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Next', action: () => { console.log('Moving from Part 8 to 9'); tour.next(); } },
+      { text: 'Next', action: withErrorHandling(() => { console.log('Moving from Part 8 to 9'); tour.next(); }) },
       { text: 'Skip', action: tour.cancel }
     ]
   });
@@ -4525,14 +4552,20 @@ with gr.Blocks() as demo:
     attachTo: { element: '#top-color-picker', on: 'left' },
     beforeShowPromise: function() {
       return new Promise(resolve => {
-        console.log('Ensuring Color Code Key accordion is open for Part 9');
-        ensureAccordionOpen('#color-code-key');
-        setTimeout(resolve, 300); // Delay to ensure DOM update
+        ensureAccordionOpen('#color-code-key').then(() => {
+          const target = document.querySelector('#top-color-picker');
+          if (!target) {
+            console.warn('Part 9 target #top-color-picker not found, using fallback');
+            resolve({ element: '#color-code-key', on: 'top' });
+          } else {
+            resolve();
+          }
+        });
       });
     },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Next', action: () => { console.log('Moving from Part 9 to 10'); tour.next(); } },
+      { text: 'Next', action: withErrorHandling(() => { console.log('Moving from Part 9 to 10'); tour.next(); }) },
       { text: 'Skip', action: tour.cancel }
     ]
   });
@@ -4544,15 +4577,11 @@ with gr.Blocks() as demo:
     text: 'Confused by colors? Pop this open—it’s your quick guide to what each shade means on the table!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/PGBEoOOh9Gk?fs=0" frameborder="0"></iframe>',
     attachTo: { element: '#color-code-key', on: 'top' },
     beforeShowPromise: function() {
-      return new Promise(resolve => {
-        console.log('Ensuring Color Code Key accordion remains open for Part 10');
-        ensureAccordionOpen('#color-code-key');
-        setTimeout(resolve, 300);
-      });
+      return ensureAccordionOpen('#color-code-key');
     },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Next', action: () => { console.log('Moving from Part 10 to 11'); tour.next(); } },
+      { text: 'Next', action: withErrorHandling(() => { console.log('Moving from Part 10 to 11'); tour.next(); }) },
       { text: 'Skip', action: tour.cancel }
     ]
   });
@@ -4564,15 +4593,11 @@ with gr.Blocks() as demo:
     text: 'This is your deep dive! "Spin Logic Reactor 🧠" breaks down each spin—like what hits Even or Red. "Strongest Numbers Tables" ranks your top numbers with their neighbors, and "Aggregated Scores" spills all the stats, from Even Money to Dozens—pure gold after analyzing!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/MpcuwWnMdrg?fs=0" frameborder="0"></iframe>',
     attachTo: { element: '#spin-analysis', on: 'top' },
     beforeShowPromise: function() {
-      return new Promise(resolve => {
-        console.log('Ensuring Spin Logic Reactor accordion is open for Part 11');
-        ensureAccordionOpen('#spin-analysis');
-        setTimeout(resolve, 300);
-      });
+      return ensureAccordionOpen('#spin-analysis');
     },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Next', action: () => { console.log('Moving from Part 11 to 12'); tour.next(); } },
+      { text: 'Next', action: withErrorHandling(() => { console.log('Moving from Part 11 to 12'); tour.next(); }) },
       { text: 'Skip', action: tour.cancel }
     ]
   });
@@ -4584,15 +4609,11 @@ with gr.Blocks() as demo:
     text: 'Save your work or load a past session here—jump right back in whenever you want. You’re ready to roll!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pHLEa2I0jjE?fs=0" frameborder="0"></iframe>',
     attachTo: { element: '#save-session-btn', on: 'top' },
     beforeShowPromise: function() {
-      return new Promise(resolve => {
-        console.log('Ensuring Save/Load Session accordion is open for Part 12');
-        ensureAccordionOpen('#save-load-session'); // Note: Ensure this ID matches your accordion
-        setTimeout(resolve, 300);
-      });
+      return ensureAccordionOpen('#save-load-session');
     },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Next', action: () => { console.log('Moving from Part 12 to 13'); tour.next(); } },
+      { text: 'Next', action: withErrorHandling(() => { console.log('Moving from Part 12 to 13'); tour.next(); }) },
       { text: 'Skip', action: tour.cancel }
     ]
   });
@@ -4605,7 +4626,7 @@ with gr.Blocks() as demo:
     attachTo: { element: '#select-category', on: 'left' },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Next', action: () => { console.log('Moving from Part 13 to 14'); tour.next(); } },
+      { text: 'Next', action: withErrorHandling(() => { console.log('Moving from Part 13 to 14'); tour.next(); }) },
       { text: 'Skip', action: tour.cancel }
     ]
   });
@@ -4617,15 +4638,11 @@ with gr.Blocks() as demo:
     text: 'Got casino stats? Drop them here! Set percentages for Even/Odd, Red/Black, or Dozens—watch the table highlight the hot picks instantly.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
     attachTo: { element: '#casino-data-insights', on: 'top' },
     beforeShowPromise: function() {
-      return new Promise(resolve => {
-        console.log('Ensuring Casino Data Insights accordion is open for Part 14');
-        ensureAccordionOpen('#casino-data-insights');
-        setTimeout(resolve, 300);
-      });
+      return ensureAccordionOpen('#casino-data-insights');
     },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Finish', action: () => { console.log('Tour completed'); tour.complete(); } }
+      { text: 'Finish', action: withErrorHandling(() => { console.log('Tour completed'); tour.complete(); }) }
     ]
   });
 
@@ -4637,10 +4654,9 @@ with gr.Blocks() as demo:
       } else {
         console.error('Header row not found, tour aborted.');
       }
-    }, 500); // Delay to ensure DOM is ready
+    }, 500);
   }
 
-  // Log DOM readiness
   document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM Loaded, #header-row exists:", !!document.querySelector("#header-row"));
   });
