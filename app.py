@@ -4406,25 +4406,37 @@ with gr.Blocks() as demo:
     };
   }
 
-  // Force accordion open with direct DOM manipulation
+  // Force accordion open with direct DOM manipulation and fallback
   function forceAccordionOpen(accordionId) {
     console.log(`Checking accordion: ${accordionId}`);
-    const accordion = document.querySelector(accordionId);
-    if (!accordion) {
-      console.error(`Accordion ${accordionId} not found`);
-      return;
-    }
-    const content = accordion.querySelector('.gr-box') || accordion.nextElementSibling;
-    if (content && window.getComputedStyle(content).display === 'none') {
-      console.log(`Forcing ${accordionId} open`);
-      content.style.display = 'block';
-      accordion.setAttribute('open', ''); // Mark as open
-    } else {
-      console.log(`${accordionId} already open or no content found`);
-    }
+    return new Promise(resolve => {
+      const accordion = document.querySelector(accordionId);
+      if (!accordion) {
+        console.error(`Accordion ${accordionId} not found`);
+        resolve();
+        return;
+      }
+      const content = accordion.querySelector('.gr-box') || accordion.nextElementSibling;
+      if (content && window.getComputedStyle(content).display === 'none') {
+        console.log(`Forcing ${accordionId} open`);
+        content.style.display = 'block';
+        accordion.setAttribute('open', '');
+        // Fallback: Ensure visibility
+        setTimeout(() => {
+          if (window.getComputedStyle(content).display === 'none') {
+            console.warn(`Fallback: Forcing visibility for ${accordionId}`);
+            content.style.display = 'block';
+          }
+          resolve();
+        }, 500);
+      } else {
+        console.log(`${accordionId} already open or no content found`);
+        resolve();
+      }
+    });
   }
 
-  // Part 1–7 (Condensed for brevity, assumed working)
+  // Part 1–7 (Condensed, assumed working)
   tour.addStep({
     id: 'part1',
     title: 'Your Roulette Adventure Begins!',
@@ -4515,51 +4527,104 @@ with gr.Blocks() as demo:
     text: 'Track bets!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?fs=0" frameborder="0"></iframe>',
     attachTo: { element: '.betting-progression', on: 'top' },
     beforeShowPromise: function() {
-      return new Promise(resolve => {
-        console.log('Before showing Part 8');
-        forceAccordionOpen('.betting-progression');
-        setTimeout(resolve, 500);
-      });
+      return forceAccordionOpen('.betting-progression');
     },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Next', action: () => {
-        console.log('Attempting move from Part 8 to Part 9');
-        try {
-          tour.next();
-        } catch (e) {
-          console.error('Error moving to Part 9:', e);
-          tour.show('part9', true); // Force show Part 9
-        }
-      } },
+      { text: 'Next', action: logStep('Part 8', 'Part 9') },
       { text: 'Skip', action: tour.cancel }
     ]
   });
 
-  // Part 9: Paint Your Winning Hue! (Test Endpoint)
+  // Part 9: Paint Your Winning Hue! (Attached to #color-code-key)
   tour.addStep({
     id: 'part9',
     title: 'Paint Your Winning Hue!',
-    text: 'Color pickers!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8?fs=0" frameborder="0"></iframe>',
-    attachTo: { element: '#top-color-picker', on: 'left' },
+    text: 'Make your table pop with these colors!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#color-code-key', on: 'top' },
     beforeShowPromise: function() {
-      return new Promise(resolve => {
-        console.log('Before showing Part 9');
-        forceAccordionOpen('#color-code-key');
-        setTimeout(() => {
-          const target = document.querySelector('#top-color-picker');
-          if (!target) {
-            console.warn('Part 9: #top-color-picker not found, falling back to #header-row');
-            this.update({ attachTo: { element: '#header-row', on: 'bottom' } });
-          }
-          resolve();
-        }, 500);
-      });
+      return forceAccordionOpen('#color-code-key');
     },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Finish', action: () => { console.log('Tour finished at Part 9'); tour.complete(); } },
+      { text: 'Next', action: logStep('Part 9', 'Part 10') },
       { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Part 10: Decode the Color Clue!
+  tour.addStep({
+    id: 'part10',
+    title: 'Decode the Color Clue!',
+    text: 'Confused by colors?<br><iframe width="280" height="158" src="https://www.youtube.com/embed/PGBEoOOh9Gk?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#color-code-key', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#color-code-key');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 10', 'Part 11') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Part 11: Unleash the Spin Secrets!
+  tour.addStep({
+    id: 'part11',
+    title: 'Unleash the Spin Secrets!',
+    text: 'Deep dive!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/MpcuwWnMdrg?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#spin-analysis', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#spin-analysis');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 11', 'Part 12') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Part 12: Save Your Spin Glory!
+  tour.addStep({
+    id: 'part12',
+    title: 'Save Your Spin Glory!',
+    text: 'Save/load here!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pHLEa2I0jjE?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#save-session-btn', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#save-load-session');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 12', 'Part 13') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Part 13: Pick Your Strategy Groove!
+  tour.addStep({
+    id: 'part13',
+    title: 'Pick Your Strategy Groove!',
+    text: 'Choose your flow!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iuGEltUVbqc?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#select-category', on: 'left' },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 13', 'Part 14') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Part 14: Boost Wins with Casino Intel!
+  tour.addStep({
+    id: 'part14',
+    title: 'Boost Wins with Casino Intel!',
+    text: 'Add casino stats!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#casino-data-insights', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#casino-data-insights');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Finish', action: () => { console.log('Tour completed'); tour.complete(); } }
     ]
   });
 
