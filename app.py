@@ -1897,25 +1897,42 @@ def fibonacci_strategy():
 
     if not dozens_hits and not columns_hits:
         recommendations.append("Fibonacci Strategy: No hits in Dozens or Columns yet.")
-        return "\n".join(recommendations)
-
-    best_dozen_score = dozens_hits[0][1] if dozens_hits else 0
-    best_column_score = columns_hits[0][1] if columns_hits else 0
-
-    if best_dozen_score > best_column_score:
-        recommendations.append("Best Category: Dozens")
-        recommendations.append(f"Best Dozen: {dozens_hits[0][0]} (Score: {dozens_hits[0][1]})")
-    elif best_column_score > best_dozen_score:
-        recommendations.append("Best Category: Columns")
-        recommendations.append(f"Best Column: {columns_hits[0][0]} (Score: {columns_hits[0][1]})")
     else:
-        recommendations.append(f"Best Category (Tied): Dozens and Columns (Score: {best_dozen_score})")
-        if dozens_hits:
-            recommendations.append(f"Best Dozen: {dozens_hits[0][0]} (Score: {dozens_hits[0][1]})")
-        if columns_hits:
-            recommendations.append(f"Best Column: {columns_hits[0][0]} (Score: {columns_hits[0][1]})")
+        best_dozen_score = dozens_hits[0][1] if dozens_hits else 0
+        best_column_score = columns_hits[0][1] if columns_hits else 0
 
-    return "\n".join(recommendations)
+        if best_dozen_score > best_column_score:
+            recommendations.append("Best Category: Dozens")
+            recommendations.append(f"Best Dozen: {dozens_hits[0][0]} (Score: {dozens_hits[0][1]})")
+        elif best_column_score > best_dozen_score:
+            recommendations.append("Best Category: Columns")
+            recommendations.append(f"Best Column: {columns_hits[0][0]} (Score: {columns_hits[0][1]})")
+        else:
+            recommendations.append(f"Best Category (Tied): Dozens and Columns (Score: {best_dozen_score})")
+            if dozens_hits:
+                recommendations.append(f"Best Dozen: {dozens_hits[0][0]} (Score: {dozens_hits[0][1]})")
+            if columns_hits:
+                recommendations.append(f"Best Column: {columns_hits[0][0]} (Score: {columns_hits[0][1]})")
+
+    # Convert initial recommendations to HTML
+    html_output = "".join(f"<p>{line}</p>" for line in recommendations if line.strip())
+
+    # Define sequences for 16 phases
+    fib_sequence = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987]
+    victory_vortex_sequence = [1, 8, 11, 16, 24, 35, 52, 78, 116, 174, 260, 390, 584, 876, 1313, 1969]
+
+    # Add sequence comparison as HTML
+    html_output += "<h4>Fibonacci vs. Victory Vortex (16 Phases):</h4>"
+    html_output += '<table border="1" style="border-collapse: collapse; text-align: center; font-family: Arial, sans-serif;">'
+    html_output += "<tr><th>Phase</th><th>FIBONACCI SEQ</th><th>VICTORY VORTEX</th></tr>"
+    for i in range(16):
+        phase = i + 1
+        fib_value = fib_sequence[i] if i < len(fib_sequence) else "N/A"
+        vv_value = victory_vortex_sequence[i] if i < len(victory_vortex_sequence) else "N/A"
+        html_output += f"<tr><td>{phase}</td><td>{fib_value}</td><td>{vv_value}</td></tr>"
+    html_output += "</table>"
+
+    return html_output
 
 def best_streets():
     recommendations = []
