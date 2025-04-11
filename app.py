@@ -4406,7 +4406,7 @@ with gr.Blocks() as demo:
     };
   }
 
-  // Force accordion open with direct DOM manipulation and fallback
+  // Force accordion open with direct DOM manipulation and Promise
   function forceAccordionOpen(accordionId) {
     console.log(`Checking accordion: ${accordionId}`);
     return new Promise(resolve => {
@@ -4421,7 +4421,6 @@ with gr.Blocks() as demo:
         console.log(`Forcing ${accordionId} open`);
         content.style.display = 'block';
         accordion.setAttribute('open', '');
-        // Fallback: Ensure visibility
         setTimeout(() => {
           if (window.getComputedStyle(content).display === 'none') {
             console.warn(`Fallback: Forcing visibility for ${accordionId}`);
@@ -4436,7 +4435,7 @@ with gr.Blocks() as demo:
     });
   }
 
-  // Part 1–7 (Condensed, assumed working)
+  // Part 1–7 (Assumed working)
   tour.addStep({
     id: 'part1',
     title: 'Your Roulette Adventure Begins!',
@@ -4536,11 +4535,11 @@ with gr.Blocks() as demo:
     ]
   });
 
-  // Part 9: Paint Your Winning Hue! (Attached to #color-code-key)
+  // Part 9: Paint Your Winning Hue!
   tour.addStep({
     id: 'part9',
     title: 'Paint Your Winning Hue!',
-    text: 'Make your table pop with these colors!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8?fs=0" frameborder="0"></iframe>',
+    text: 'Make your table pop!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8?fs=0" frameborder="0"></iframe>',
     attachTo: { element: '#color-code-key', on: 'top' },
     beforeShowPromise: function() {
       return forceAccordionOpen('#color-code-key');
@@ -4589,7 +4588,7 @@ with gr.Blocks() as demo:
     id: 'part12',
     title: 'Save Your Spin Glory!',
     text: 'Save/load here!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pHLEa2I0jjE?fs=0" frameborder="0"></iframe>',
-    attachTo: { element: '#save-session-btn', on: 'top' },
+    attachTo: { element: '#save-load-session', on: 'top' },
     beforeShowPromise: function() {
       return forceAccordionOpen('#save-load-session');
     },
