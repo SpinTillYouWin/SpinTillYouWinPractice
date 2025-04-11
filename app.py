@@ -112,7 +112,7 @@ class RouletteState:
 
         # Reset betting progression (optional: only if you want full reset to affect progression)
         # self.reset_progression()
-
+    # Line 132 (One line above)
     def reset_progression(self):
         self.current_bet = self.base_unit
         self.next_bet = self.base_unit
@@ -122,25 +122,8 @@ class RouletteState:
         self.status = "Active"
         return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
 
-    def update_bankroll(self, won):
-        payout = {"Even Money": 1, "Dozens": 2, "Columns": 2, "Straight Bets": 35}[self.bet_type]
-        if won:
-            self.bankroll += self.current_bet * payout
-        else:
-            self.bankroll -= self.current_bet
-        profit = self.bankroll - self.initial_bankroll
-        if profit <= self.stop_loss:
-            self.is_stopped = True
-            self.status = f"Stopped: Hit Stop Loss of {self.stop_loss}"
-            self.status_color = "red"  # Red for stop loss
-        elif profit >= self.stop_win:
-            self.is_stopped = True
-            self.status = f"Stopped: Hit Stop Win of {self.stop_win}"
-            self.status_color = "green"  # Green for stop win
-        else:
-            self.status_color = "white"  # Neutral when active
-
-update_progression(self, won):
+    # Lines 133-224 (Corrected update_progression method)
+    def update_progression(self, won):
         if self.is_stopped:
             return self.bankroll, self.current_bet, self.next_bet, self.message, f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
         self.update_bankroll(won)
