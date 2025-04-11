@@ -3287,7 +3287,7 @@ def clear_last_spins_display():
 
 # Build the Gradio interface
 with gr.Blocks() as demo:
-    # Define state and components used across sections at the top
+    # Define state and top-level components
     spins_display = gr.State(value="")
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
@@ -3298,7 +3298,7 @@ with gr.Blocks() as demo:
     last_spin_display = gr.HTML(
         label="Last Spins",
         value="",
-        elem_classes=["last-spins-container"]  # Add styling for Last Spins
+        elem_classes=["last-spins-container"]
     )
     last_spin_count = gr.Slider(
         label="Show Last Spins",
@@ -3310,25 +3310,64 @@ with gr.Blocks() as demo:
         elem_classes="long-slider"
     )
     spin_counter = gr.HTML(
-        value='<span style="font-size: 16px;">Total Spins: 0</span>',  # Restore inline label
+        value='<span style="font-size: 16px;">Total Spins: 0</span>',
         label="Total Spins",
-        elem_classes=["spin-counter"]  # Restore styling class
+        elem_classes=["spin-counter"]
     )
 
-    # Define strategy categories and choices
-    strategy_categories = {
-        "Trends": ["Cold Bet Strategy", "Hot Bet Strategy", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"],
-        "Even Money Strategies": ["Best Even Money Bets", "Best Even Money Bets + Top Pick 18 Numbers", "Fibonacci To Fortune"],
-        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Top Pick 18 Numbers", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],
-        "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Streets"],
-        "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
-        "Double Street Strategies": ["Best Double Streets", "Non-Overlapping Double Street Strategy"],
-        "Corner Strategies": ["Best Corners", "Non-Overlapping Corner Strategy"],
-        "Split Strategies": ["Best Splits"],
-        "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"],
-        "Neighbours Strategies": ["Neighbours of Strong Number"]
-    }
-    category_choices = ["None"] + sorted(strategy_categories.keys())
+    # Define Betting Progression Tracker components (Row 8)
+    bankroll_input = gr.Number(label="Bankroll", value=1000)
+    base_unit_input = gr.Number(label="Base Unit", value=10)
+    stop_loss_input = gr.Number(label="Stop Loss", value=-500)
+    stop_win_input = gr.Number(label="Stop Win", value=200)
+    bet_type_dropdown = gr.Dropdown(
+        label="Bet Type",
+        choices=["Even Money", "Dozens", "Columns", "Straight Bets"],
+        value="Even Money",
+        interactive=True
+    )
+    progression_dropdown = gr.Dropdown(
+        label="Progression",
+        choices=[
+            "Martingale", "Fibonacci", "S.T.Y.W: Victory Vortex", "Triple Martingale", "Oscar’s Grind", 
+            "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss"
+        ],
+        value="Martingale",
+        interactive=True
+    )
+    labouchere_sequence = gr.Textbox(
+        label="Labouchere Sequence (comma-separated)",
+        value="1, 2, 3, 4",
+        visible=False
+    )
+    win_button = gr.Button("Win")
+    lose_button = gr.Button("Lose")
+    reset_progression_button = gr.Button("Reset Progression")
+    bankroll_output = gr.Textbox(label="Current Bankroll", value="1000", interactive=False)
+    current_bet_output = gr.Textbox(label="Current Bet", value="10", interactive=False)
+    next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
+    message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
+    status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
+
+    # Define Color Code Key components (Row 9)
+    top_color_picker = gr.ColorPicker(
+        label="Top Tier Color",
+        value="rgba(255, 255, 0, 0.5)",
+        interactive=True,
+        elem_id="top-color-picker"
+    )
+    middle_color_picker = gr.ColorPicker(
+        label="Middle Tier Color",
+        value="rgba(0, 255, 255, 0.5)",
+        interactive=True
+    )
+    lower_color_picker = gr.ColorPicker(
+        label="Lower Tier Color",
+        value="rgba(0, 255, 0, 0.5)",
+        interactive=True
+    )
+    reset_colors_button = gr.Button("Reset Colors", elem_classes=["action-button"])
+    color_code_output = gr.HTML(label="Color Code Key")
 
     # 1. Row 1: Header
     with gr.Row(elem_id="header-row"):
@@ -3378,8 +3417,8 @@ with gr.Blocks() as demo:
                                 spins,
                                 format_spins_as_html(spins, num_to_show),
                                 update_spin_counter(),
-                                gr.update(value=bet_type, interactive=True),  # Refresh interactivity
-                                gr.update(value=progression, interactive=True)  # Refresh interactivity
+                                gr.update(value=bet_type, interactive=True),
+                                gr.update(value=progression, interactive=True)
                             ),
                             inputs=[spins_display, last_spin_count, bet_type_dropdown, progression_dropdown],
                             outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, bet_type_dropdown, progression_dropdown]
@@ -3399,14 +3438,14 @@ with gr.Blocks() as demo:
             undo_button = gr.Button("Undo Spins", elem_classes=["action-button"], elem_id="undo-spins-btn")
         with gr.Column(scale=1):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
-    
+
     # 5. Row 5: Selected Spins Textbox and Spin Counter
     with gr.Row(elem_id="selected-spins-row"):
         with gr.Column(scale=4, min_width=600):
             spins_textbox
         with gr.Column(scale=1, min_width=200):
-            spin_counter  # Restore side-by-side layout with styling
-    
+            spin_counter
+
     # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
         with gr.Column(scale=2):
@@ -3416,7 +3455,7 @@ with gr.Blocks() as demo:
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
 
-        # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
+    # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
@@ -3617,37 +3656,25 @@ with gr.Blocks() as demo:
     with gr.Row():
         with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
             with gr.Row():
-                bankroll_input = gr.Number(label="Bankroll", value=1000)
-                base_unit_input = gr.Number(label="Base Unit", value=10)
-                stop_loss_input = gr.Number(label="Stop Loss", value=-500)
-                stop_win_input = gr.Number(label="Stop Win", value=200)
+                bankroll_input
+                base_unit_input
+                stop_loss_input
+                stop_win_input
             with gr.Row():
-                bet_type_dropdown = gr.Dropdown(
-                    label="Bet Type",
-                    choices=["Even Money", "Dozens", "Columns", "Straight Bets"],
-                    value="Even Money",
-                    interactive=True  # Ensure it stays interactive
-                )
-                progression_dropdown = gr.Dropdown(
-                    label="Progression",
-                    choices=[
-                        "Martingale", "Fibonacci", "S.T.Y.W: Victory Vortex", "Triple Martingale", "Oscar’s Grind", 
-                        "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss"
-                    ],
-                    value="Martingale",
-                    interactive=True  # Ensure it stays interactive
-                )
+                bet_type_dropdown
+                progression_dropdown
+                labouchere_sequence
             with gr.Row():
-                win_button = gr.Button("Win")
-                lose_button = gr.Button("Lose")
-                reset_progression_button = gr.Button("Reset Progression")
+                win_button
+                lose_button
+                reset_progression_button
             with gr.Row():
-                bankroll_output = gr.Textbox(label="Current Bankroll", value="1000", interactive=False)
-                current_bet_output = gr.Textbox(label="Current Bet", value="10", interactive=False)
-                next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
+                bankroll_output
+                current_bet_output
+                next_bet_output
             with gr.Row():
-                message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
-                status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
+                message_output
+                status_output
 
     # 9. Row 9: Color Code Key (Collapsible, with Color Pickers Inside)
     with gr.Accordion("Color Code Key", open=False, elem_id="color-code-key"):
