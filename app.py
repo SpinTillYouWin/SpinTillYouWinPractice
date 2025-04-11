@@ -3284,10 +3284,36 @@ def reset_colors():
 def clear_last_spins_display():
     """Clear the Last Spins HTML display without affecting spins data."""
     return "<h4>Last Spins</h4><p>Display cleared. Add spins to see them here.</p>", update_spin_counter()
+# Updated lines (new function)
+def update_tracked_phases(action, phase_index):
+    """Update state.tracked_phases based on JavaScript toggle action."""
+    phase_index = int(phase_index)
+    if action == "add" and phase_index not in state.tracked_phases:
+        state.tracked_phases.add(phase_index)
+    elif action == "remove" and phase_index in state.tracked_phases:
+        state.tracked_phases.remove(phase_index)
+    return state.tracked_phases
 
+def clear_last_spins_display():
+    """Clear the Last Spins HTML display without affecting spins data."""
+    return "<h4>Last Spins</h4><p>Display cleared. Add spins to see them here.</p>", update_spin_counter()
+    
 # Build the Gradio interface
 with gr.Blocks() as demo:
     # Define state and components used across sections at the top
+    spins_display = gr.State(value="")
+    spins_textbox = gr.Textbox(
+        label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
+        value="",
+        interactive=True,
+        elem_id="selected-spins"
+    )
+    last_spin_display = gr.HTML(
+        label="Last Spins",
+        value="",
+        elem_classes=["last-spins-container"]  # Add styling for Last Spins
+    )
+    tracked_phases_state = gr.State(value=set())  # Temporary state for JS to update tracked phases
     spins_display = gr.State(value="")
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
@@ -3969,6 +3995,12 @@ with gr.Blocks() as demo:
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     )
+    # Updated lines (new event handler)
+    tracked_phases_state.change(
+        fn=lambda value: update_tracked_phases(value["action"], value["index"]),
+        inputs=[tracked_phases_state],
+        outputs=[tracked_phases_state]
+    )
 
     clear_spins_button.click(
         fn=clear_spins,
@@ -4627,6 +4659,13 @@ with gr.Blocks() as demo:
       document.addEventListener('DOMContentLoaded', function() {
           console.log("DOM fully loaded, attaching phase tracking handlers");
 
+          // Function to update tracked phases via Gradio API
+          function updateTrackedPhases(action, index) {
+              console.log(`updateTrackedPhases called with action: ${action}, index: ${index}`);
+              gradioApp().querySelector('#tracked_phases_state input').value = JSON.stringify({ action: action, index: index });
+              gradioApp().querySelector('#tracked_phases_state input').dispatchEvent(new Event('input'));
+          }
+
           // Function to toggle tracking for a phase
           window.toggleTrack = function(index) {
               console.log(`toggleTrack called for index: ${index}`);
@@ -4635,9 +4674,11 @@ with gr.Blocks() as demo:
                   if (row.classList.contains("tracked")) {
                       console.log(`Removing tracked class from phase-row-${index}`);
                       row.classList.remove("tracked");
+                      updateTrackedPhases("remove", index);
                   } else {
                       console.log(`Adding tracked class to phase-row-${index}`);
                       row.classList.add("tracked");
+                      updateTrackedPhases("add", index);
                   }
               } else {
                   console.error(`Row with ID phase-row-${index} not found`);
@@ -4653,6 +4694,7 @@ with gr.Blocks() as demo:
                   for (let i = 1; i < rows.length; i++) {
                       console.log(`Removing tracked class from row ${i}`);
                       rows[i].classList.remove("tracked");
+                      updateTrackedPhases("remove", i - 1);  // Adjust index to match 0-based phases
                   }
               } else {
                   console.error("Table with ID phase-table not found");
