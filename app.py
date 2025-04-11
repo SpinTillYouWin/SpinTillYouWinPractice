@@ -3555,7 +3555,7 @@ with gr.Blocks() as demo:
             with gr.Accordion("Dozen Tracker", open=False, elem_id="dozen-tracker"):
                 dozen_tracker_spins_dropdown = gr.Dropdown(
                     label="Number of Spins to Track",
-                    choices=["3", "4", "5", "6", "10", "15", "20"],
+                    choices=["3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
                     value="5",
                     interactive=True
                 )
