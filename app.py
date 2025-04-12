@@ -1365,7 +1365,6 @@ def get_strongest_numbers_with_neighbors(num_count):
     return f"Strongest {len(sorted_numbers)} Numbers (Sorted Lowest to Highest): {', '.join(map(str, sorted_numbers))}"
 
 # Function to analyze spins
-# Continuing from analyze_spins function
 def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *checkbox_args):
     try:
         print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}")
@@ -1375,17 +1374,23 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
 
         raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
         spins = []
+        errors = []
 
         for spin in raw_spins:
             try:
                 num = int(spin)
                 if not (0 <= num <= 36):
-                    print(f"analyze_spins: Spin '{spin}' is out of range.")
-                    return f"Error: '{spin}' is out of range. Use numbers between 0 and 36.", "", "", "", "", "", "", "", "", "", "", "", "", ""
+                    errors.append(f"Error: '{spin}' is out of range. Use numbers between 0 and 36.")
+                    continue
                 spins.append(str(num))
             except ValueError:
-                print(f"analyze_spins: Invalid spin '{spin}'.")
-                return f"Error: '{spin}' is not a valid number. Use whole numbers (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", ""
+                errors.append(f"Error: '{spin}' is not a valid number. Use whole numbers (e.g., 5, 12, 0).")
+                continue
+
+        if errors:
+            error_msg = "\n".join(errors)
+            print(f"analyze_spins: Errors found - {error_msg}")
+            return error_msg, "", "", "", "", "", "", "", "", "", "", "", "", ""
 
         if not spins:
             print("analyze_spins: No valid spins found.")
@@ -1395,81 +1400,52 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
             state.reset()
             print("analyze_spins: Scores reset.")
 
+        # Batch update scores
+        action_log = update_scores_batch(spins)
+
+        # Generate spin analysis output
         spin_results = []
-        for spin in spins:
-            hit_sections = []
+        for idx, spin in enumerate(spins):
             spin_value = int(spin)
-            action = {"spin": spin_value, "increments": {}}  # Record this spin's effects
+            hit_sections = []
+            action = action_log[idx]
 
-            # Update scores and track increments
-            for name, numbers in EVEN_MONEY.items():
-                if spin_value in numbers:
+            # Reconstruct hit sections from increments and data
+            for name, increment in action["increments"].get("even_money_scores", {}).items():
+                if increment > 0:
                     hit_sections.append(name)
-                    state.even_money_scores[name] += 1
-                    action["increments"].setdefault("even_money_scores", {})[name] = 1
-
-            for name, numbers in DOZENS.items():
-                if spin_value in numbers:
+            for name, increment in action["increments"].get("dozen_scores", {}).items():
+                if increment > 0:
                     hit_sections.append(name)
-                    state.dozen_scores[name] += 1
-                    action["increments"].setdefault("dozen_scores", {})[name] = 1
-
-            for name, numbers in COLUMNS.items():
-                if spin_value in numbers:
+            for name, increment in action["increments"].get("column_scores", {}).items():
+                if increment > 0:
                     hit_sections.append(name)
-                    state.column_scores[name] += 1
-                    action["increments"].setdefault("column_scores", {})[name] = 1
-
-            for name, numbers in STREETS.items():
-                if spin_value in numbers:
+            for name, increment in action["increments"].get("street_scores", {}).items():
+                if increment > 0:
                     hit_sections.append(name)
-                    state.street_scores[name] += 1
-                    action["increments"].setdefault("street_scores", {})[name] = 1
-
-            for name, numbers in CORNERS.items():
-                if spin_value in numbers:
+            for name, increment in action["increments"].get("corner_scores", {}).items():
+                if increment > 0:
                     hit_sections.append(name)
-                    state.corner_scores[name] += 1
-                    action["increments"].setdefault("corner_scores", {})[name] = 1
-
-            for name, numbers in SIX_LINES.items():
-                if spin_value in numbers:
+            for name, increment in action["increments"].get("six_line_scores", {}).items():
+                if increment > 0:
                     hit_sections.append(name)
-                    state.six_line_scores[name] += 1
-                    action["increments"].setdefault("six_line_scores", {})[name] = 1
-
-            for name, numbers in SPLITS.items():
-                if spin_value in numbers:
+            for name, increment in action["increments"].get("split_scores", {}).items():
+                if increment > 0:
                     hit_sections.append(name)
-                    state.split_scores[name] += 1
-                    action["increments"].setdefault("split_scores", {})[name] = 1
-
-            if spin != "0":
-                state.scores[int(spin)] += 1
+            if spin_value in action["increments"].get("scores", {}):
                 hit_sections.append(f"Straight Up {spin}")
-                action["increments"].setdefault("scores", {})[int(spin)] = 1
-            elif spin == "0":
-                state.scores[0] += 1
-                hit_sections.append(f"Straight Up {spin}")
-                action["increments"]["scores"] = {0: 1}
+            for name, increment in action["increments"].get("side_scores", {}).items():
+                if increment > 0:
+                    hit_sections.append(name)
 
-            if str(spin) in [str(x) for x in current_left_of_zero]:
-                hit_sections.append("Left Side of Zero")
-                state.side_scores["Left Side of Zero"] += 1
-                action["increments"].setdefault("side_scores", {})["Left Side of Zero"] = 1
-            if str(spin) in [str(x) for x in current_right_of_zero]:
-                hit_sections.append("Right Side of Zero")
-                state.side_scores["Right Side of Zero"] += 1
-                action["increments"].setdefault("side_scores", {})["Right Side of Zero"] = 1
-
-            if int(spin) in current_neighbors:
-                left, right = current_neighbors[int(spin)]
+            # Add neighbor information
+            if spin_value in current_neighbors:
+                left, right = current_neighbors[spin_value]
                 hit_sections.append(f"Left Neighbor: {left}")
                 hit_sections.append(f"Right Neighbor: {right}")
 
             spin_results.append(f"Spin {spin} hits: {', '.join(hit_sections)}\nTotal sections hit: {len(hit_sections)}")
-            state.last_spins.append(spin)  # Add to last_spins
-            state.spin_history.append(action)  # Record the action in history
+            state.last_spins.append(spin)  # Update last_spins
 
         spin_analysis_output = "\n".join(spin_results)
         print(f"analyze_spins: spin_analysis_output='{spin_analysis_output}'")
