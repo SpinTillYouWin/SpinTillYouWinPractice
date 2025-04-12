@@ -8,6 +8,13 @@ from roulette_data import (
     NEIGHBORS_EUROPEAN, LEFT_OF_ZERO_EUROPEAN, RIGHT_OF_ZERO_EUROPEAN
 )
 
+# Define wheel sections for Voisins du Zero, Orphelins, Tiers du Cylindre
+WHEEL_SECTIONS = {
+    "Voisins du Zero": [0, 2, 4, 7, 12, 15, 18, 19, 21, 22, 25, 26, 28, 29, 32, 35],
+    "Orphelins": [1, 6, 9, 14, 17, 20, 31, 34],
+    "Tiers du Cylindre": [5, 8, 10, 11, 13, 16, 23, 24, 27, 30, 33, 36]
+}
+
 def validate_roulette_data():
     """Validate that all required constants from roulette_data.py are present and correctly formatted."""
     required_dicts = {
@@ -62,6 +69,7 @@ class RouletteState:
         self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
         self.split_scores = {name: 0 for name in SPLITS.keys()}
         self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
+        self.wheel_section_scores = {name: 0 for name in WHEEL_SECTIONS.keys()}  # Add this line
         self.selected_numbers = set()
         self.last_spins = []
         self.spin_history = []  # Tracks each spin's effects for undoing
@@ -300,7 +308,7 @@ def add_spin(number, current_spins, num_to_show):
     numbers = [n.strip() for n in number.split(",") if n.strip()]
     if not numbers:
         gr.Warning("No valid input provided. Please enter numbers between 0 and 36.")
-        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter()
+        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter(), update_wheel_hits_display()
     
     new_spins = spins.copy()  # Track new spins for this call
     errors = []  # Collect all errors
@@ -358,6 +366,12 @@ def add_spin(number, current_spins, num_to_show):
                 state.scores[0] += 1
                 action["increments"]["scores"] = {0: 1}
 
+            # Update wheel section scores
+            for section_name, section_numbers in WHEEL_SECTIONS.items():
+                if num in section_numbers:
+                    state.wheel_section_scores[section_name] += 1
+                    action["increments"].setdefault("wheel_section_scores", {})[section_name] = 1
+
             if str(num) in [str(x) for x in current_left_of_zero]:
                 state.side_scores["Left Side of Zero"] += 1
                 action["increments"].setdefault("side_scores", {})["Left Side of Zero"] = 1
@@ -384,15 +398,23 @@ def add_spin(number, current_spins, num_to_show):
         error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
         gr.Warning(error_msg)
         print(f"add_spin: Errors encountered - {error_msg}")
-        return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter()
+        return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), update_wheel_hits_display()
     
     print(f"add_spin: new_spins='{new_spins_str}'")
-    return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter()
+    return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter(), update_wheel_hits_display()
+
 # Function to clear spins
 def clear_spins():
     state.selected_numbers.clear()
     state.last_spins = []
     return "", "", "Spins cleared successfully!", "", update_spin_counter()
+
+# Function to clear spins
+def clear_spins():
+    state.selected_numbers.clear()
+    state.last_spins = []
+    state.wheel_section_scores = {name: 0 for name in WHEEL_SECTIONS.keys()}  # Reset wheel section scores
+    return "", "", "Spins cleared successfully!", "", update_spin_counter(), update_wheel_hits_display()
 
 # Function to save the session
 def save_session():
@@ -1516,12 +1538,12 @@ def reset_scores():
 
 def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_count, strong_numbers_count, *checkbox_args):
     if not state.spin_history:
-        return ("No spins to undo.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter())
+        return ("No spins to undo.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), update_wheel_hits_display())
 
     try:
         undo_count = int(undo_count)
         if undo_count <= 0:
-            return ("Please select a positive number of spins to undo.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table())
+            return ("Please select a positive number of spins to undo.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), update_wheel_hits_display())
         undo_count = min(undo_count, len(state.spin_history))  # Don't exceed history length
 
         # Undo the specified number of spins
@@ -1584,12 +1606,13 @@ def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_
         return (spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output, sides_output,
             straight_up_html, top_18_html, strongest_numbers_output, spins_input, spins_input,
-            dynamic_table_html, strategy_output, create_color_code_table(), update_spin_counter())
+            dynamic_table_html, strategy_output, create_color_code_table(), update_spin_counter(), update_wheel_hits_display())
+
     except ValueError:
-        return ("Error: Invalid undo count. Please use a positive number.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table())
+        return ("Error: Invalid undo count. Please use a positive number.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), update_wheel_hits_display())
     except Exception as e:
         print(f"undo_last_spin: Unexpected error: {str(e)}")
-        return (f"Unexpected error during undo: {str(e)}", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table())
+        return (f"Unexpected error during undo: {str(e)}", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), update_wheel_hits_display())
 
 def clear_all():
     state.selected_numbers.clear()
@@ -1607,7 +1630,7 @@ def generate_random_spins(num_spins, current_spins_display, last_spin_count):
     try:
         num_spins = int(num_spins)
         if num_spins <= 0:
-            return current_spins_display, current_spins_display, "Please select a number of spins greater than 0.", update_spin_counter()
+            return current_spins_display, current_spins_display, "Please select a number of spins greater than 0.", update_spin_counter(), update_wheel_hits_display()
 
         new_spins = [str(random.randint(0, 36)) for _ in range(num_spins)]
         if current_spins_display and current_spins_display.strip():
@@ -1618,20 +1641,28 @@ def generate_random_spins(num_spins, current_spins_display, last_spin_count):
 
         # Update state.last_spins
         state.last_spins = updated_spins  # Replace the list entirely
+        # Update wheel_section_scores for the new spins
+        for spin in new_spins:
+            num = int(spin)
+            for section_name, section_numbers in WHEEL_SECTIONS.items():
+                if num in section_numbers:
+                    state.wheel_section_scores[section_name] += 1
+
         spins_text = ", ".join(updated_spins)
         print(f"generate_random_spins: Setting spins_textbox to '{spins_text}'")
-        return spins_text, spins_text, f"Generated {num_spins} random spins: {', '.join(new_spins)}", update_spin_counter()
+        return spins_text, spins_text, f"Generated {num_spins} random spins: {', '.join(new_spins)}", update_spin_counter(), update_wheel_hits_display()
     except ValueError:
         print("generate_random_spins: Invalid number of spins entered.")
-        return current_spins_display, current_spins_display, "Please enter a valid number of spins.", update_spin_counter()
+        return current_spins_display, current_spins_display, "Please enter a valid number of spins.", update_spin_counter(), update_wheel_hits_display()
     except Exception as e:
         print(f"generate_random_spins: Unexpected error: {str(e)}")
-        return current_spins_display, current_spins_display, f"Error generating spins: {str(e)}", update_spin_counter()
+        return current_spins_display, current_spins_display, f"Error generating spins: {str(e)}", update_spin_counter(), update_wheel_hits_display()
 
 # Strategy functions
 def best_even_money_bets():
     recommendations = []
     sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
+    # ... (rest of best_even_money_bets)
     even_money_hits = [item for item in sorted_even_money if item[1] > 0]
     
     if not even_money_hits:
@@ -2835,6 +2866,33 @@ def update_spin_counter():
     """Return the current number of spins as formatted HTML with inline styling."""
     spin_count = len(state.last_spins)
     return f'<span style="font-size: 16px;">Total Spins: {spin_count}</span>'
+
+def update_wheel_hits_display():
+    """Generate HTML to display hit counts for each wheel section as colored bars."""
+    if not any(state.wheel_section_scores.values()):
+        return "<div><h4>Wheel Section Hits:</h4><p>No hits yet.</p></div>"
+
+    section_colors = {
+        "Voisins du Zero": "green",
+        "Orphelins": "gray",
+        "Tiers du Cylindre": "tan"
+    }
+
+    max_hits = max(state.wheel_section_scores.values(), default=1)
+    max_bar_width = 200  # Maximum width of the bar in pixels
+
+    html = '<div><h4>Wheel Section Hits:</h4>'
+    for section, hits in state.wheel_section_scores.items():
+        color = section_colors.get(section, "#000")
+        bar_width = (hits / max_hits) * max_bar_width if max_hits > 0 else 0
+        html += f'''
+        <div style="margin-bottom: 5px;">
+            <span>{section}: {hits}</span>
+            <div style="width: {bar_width}px; height: 15px; background-color: {color}; border-radius: 3px; display: inline-block; margin-left: 10px;"></div>
+        </div>
+        '''
+    html += '</div>'
+    return html
     
 def top_numbers_with_neighbours_tiered():
     recommendations = []
@@ -3360,6 +3418,10 @@ with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column():
             last_spin_display
+            wheel_hits_display = gr.HTML(
+                label="Wheel Section Hits",
+                value="<div><h4>Wheel Section Hits:</h4><p>No hits yet.</p></div>"
+            )
             last_spin_count
 
     # 4. Row 4: Spin Controls
@@ -3936,7 +3998,7 @@ with gr.Blocks() as demo:
     clear_spins_button.click(
         fn=clear_spins,
         inputs=[],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter]
+        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, wheel_hits_display]
     )
 
     clear_all_button.click(
@@ -3966,7 +4028,7 @@ with gr.Blocks() as demo:
     generate_spins_button.click(
         fn=generate_random_spins,
         inputs=[gr.State(value="5"), spins_display, last_spin_count],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter]
+        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, wheel_hits_display]
     ).then(
         fn=format_spins_as_html,
         inputs=[spins_display, last_spin_count],
@@ -4084,7 +4146,7 @@ with gr.Blocks() as demo:
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_html, top_18_html, strongest_numbers_output,
             spins_textbox, spins_display, dynamic_table_output, strategy_output,
-            color_code_output, spin_counter
+            color_code_output, spin_counter, wheel_hits_display
         ]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
