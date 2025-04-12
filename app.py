@@ -3373,10 +3373,15 @@ with gr.Blocks() as demo:
     
     # 5. Row 5: Selected Spins Textbox and Spin Counter
     with gr.Row(elem_id="selected-spins-row"):
+        with gr.Column(scale=1, min_width=200):
+            spin_counter  # Moved to the left
         with gr.Column(scale=4, min_width=600):
             spins_textbox
         with gr.Column(scale=1, min_width=200):
-            spin_counter  # Restore side-by-side layout with styling
+            wheel_placeholder = gr.HTML(
+                value='<img src="https://via.placeholder.com/150" alt="European Wheel Placeholder" style="width: 150px; height: 150px;">',
+                label="European Wheel"
+            )
     
     # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
@@ -3387,7 +3392,7 @@ with gr.Blocks() as demo:
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
 
-        # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
+    # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
