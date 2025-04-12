@@ -260,6 +260,14 @@ colors = {
     "26": "black", "28": "black", "29": "black", "31": "black", "33": "black", "35": "black"
 }
 
+# Define wheel sections for European roulette
+WHEEL_SECTIONS = {
+    "JEU ZERO": [12, 35, 3, 26, 0, 32, 15],
+    "VOISINS": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
+    "ORPHELINS": [1, 20, 14, 31, 9, 17, 34, 6],
+    "TIERS": [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
+}
+
 
 def format_spins_as_html(spins, num_to_show):
     if not spins:
