@@ -4034,7 +4034,7 @@ with gr.Blocks() as demo:
         inputs=spins_textbox,
         outputs=[spins_display, last_spin_display, wheel_layout_output]
     )
-        spins_display.change(
+    spins_display.change(
         fn=update_spin_counter,
         inputs=[],
         outputs=[spin_counter]
