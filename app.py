@@ -2829,16 +2829,32 @@ def create_color_code_table():
                     <td style="padding: 8px;">Used in Cold Bet Strategy for lower-tier cold sections. Fixed for this strategy.</td>
                 </tr>
                 <tr>
+                    <td style="padding: 8px; background-color: green; color: white; text-align: center;">Green</td>
+                    <td style="padding: 8px;">Used in Wheel Section Hits for Voisins du Zero, as the default color for zero (0) on the roulette table, and to represent the zero in the Side Sections visualization.</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; background-color: gray; color: white; text-align: center;">Gray</td>
+                    <td style="padding: 8px;">Used in Wheel Section Hits for Orphelins. Also used in Dozen Tracker to represent spins not in any Dozen (i.e., 0).</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; background-color: tan; color: black; text-align: center;">Tan</td>
+                    <td style="padding: 8px;">Used in Wheel Section Hits for Tiers du Cylindre.</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; background-color: blue; color: white; text-align: center;">Blue</td>
+                    <td style="padding: 8px;">Used in Wheel Section Hits to represent the Left Side of Zero bar in the side sections visualization.</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; background-color: purple; color: white; text-align: center;">Purple</td>
+                    <td style="padding: 8px;">Used in Wheel Section Hits to represent the Right Side of Zero bar in the side sections visualization.</td>
+                </tr>
+                <tr>
                     <td style="padding: 8px; background-color: red; color: white; text-align: center;">Red</td>
                     <td style="padding: 8px;">Default color for red numbers on the roulette table.</td>
                 </tr>
                 <tr>
                     <td style="padding: 8px; background-color: black; color: white; text-align: center;">Black</td>
                     <td style="padding: 8px;">Default color for black numbers on the roulette table.</td>
-                </tr>
-                <tr>
-                    <td style="padding: 8px; background-color: green; color: white; text-align: center;">Green</td>
-                    <td style="padding: 8px;">Default color for zero (0) on the roulette table.</td>
                 </tr>
                 <tr>
                     <td style="padding: 8px; background-color: #FF6347; color: white; text-align: center;">Tomato Red</td>
@@ -2852,10 +2868,6 @@ def create_color_code_table():
                     <td style="padding: 8px; background-color: #32CD32; color: white; text-align: center;">Lime Green</td>
                     <td style="padding: 8px;">Used in Dozen Tracker to represent the 3rd Dozen.</td>
                 </tr>
-                <tr>
-                    <td style="padding: 8px; background-color: #808080; color: white; text-align: center;">Gray</td>
-                    <td style="padding: 8px;">Used in Dozen Tracker to represent spins not in any Dozen (i.e., 0).</td>
-                </tr>
             </tbody>
         </table>
     </div>
@@ -2868,20 +2880,27 @@ def update_spin_counter():
     return f'<span style="font-size: 16px;">Total Spins: {spin_count}</span>'
 
 def update_wheel_hits_display():
-    """Generate HTML to display hit counts for each wheel section as colored bars."""
-    if not any(state.wheel_section_scores.values()):
+    """Generate HTML to display hit counts for wheel sections and a visual layout for left/right sides."""
+    # Check if there are any hits in either wheel sections or side scores
+    if not any(state.wheel_section_scores.values()) and not any(state.side_scores.values()):
         return "<div><h4>Wheel Section Hits:</h4><p>No hits yet.</p></div>"
 
+    # Define colors for each section
     section_colors = {
         "Voisins du Zero": "green",
         "Orphelins": "gray",
-        "Tiers du Cylindre": "tan"
+        "Tiers du Cylindre": "tan",
+        "Left Side of Zero": "blue",
+        "Right Side of Zero": "purple"
     }
 
-    max_hits = max(state.wheel_section_scores.values(), default=1)
+    # Calculate max hits across both wheel sections and side scores for consistent scaling
+    all_scores = list(state.wheel_section_scores.values()) + list(state.side_scores.values())
+    max_hits = max(all_scores, default=1)
     max_bar_width = 200  # Maximum width of the bar in pixels
 
     html = '<div><h4>Wheel Section Hits:</h4>'
+    # Display wheel sections (unchanged)
     for section, hits in state.wheel_section_scores.items():
         color = section_colors.get(section, "#000")
         bar_width = (hits / max_hits) * max_bar_width if max_hits > 0 else 0
@@ -2891,6 +2910,33 @@ def update_wheel_hits_display():
             <div style="width: {bar_width}px; height: 15px; background-color: {color}; border-radius: 3px; display: inline-block; margin-left: 10px;"></div>
         </div>
         '''
+
+    # Add a small header for side sections
+    html += '<h5 style="margin-top: 10px;">Side Sections (Relative to Zero):</h5>'
+    # Calculate bar widths for left and right sides
+    left_hits = state.side_scores["Left Side of Zero"]
+    right_hits = state.side_scores["Right Side of Zero"]
+    max_side_hits = max(left_hits, right_hits, 1)  # Use max of left/right for side bars
+    left_bar_width = (left_hits / max_side_hits) * 100 if max_side_hits > 0 else 0
+    right_bar_width = (right_hits / max_side_hits) * 100 if max_side_hits > 0 else 0
+
+    # Create a flexbox layout for left side, zero, and right side
+    html += '''
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px;">
+        <div style="text-align: center; flex: 1;">
+            <div style="font-size: 14px; margin-bottom: 5px;">Left Side of Zero: ''' + str(left_hits) + '''</div>
+            <div style="width: ''' + str(left_bar_width) + '''px; height: 20px; background-color: blue; border-radius: 3px; margin: 0 auto;"></div>
+        </div>
+        <div style="text-align: center; flex: 0;">
+            <div style="font-size: 14px; margin-bottom: 5px;">Zero</div>
+            <div style="width: 30px; height: 30px; background-color: green; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">0</div>
+        </div>
+        <div style="text-align: center; flex: 1;">
+            <div style="font-size: 14px; margin-bottom: 5px;">Right Side of Zero: ''' + str(right_hits) + '''</div>
+            <div style="width: ''' + str(right_bar_width) + '''px; height: 20px; background-color: purple; border-radius: 3px; margin: 0 auto;"></div>
+        </div>
+    </div>
+    '''
     html += '</div>'
     return html
     
