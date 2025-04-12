@@ -3417,12 +3417,10 @@ with gr.Blocks() as demo:
         with gr.Column(scale=1):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
     
-    # 5. Row 5: Selected Spins Textbox and Spin Counter
+    # 5. Row 5: Selected Spins Textbox
     with gr.Row(elem_id="selected-spins-row"):
         with gr.Column(scale=4, min_width=600):
             spins_textbox
-        with gr.Column(scale=1, min_width=200):
-            spin_counter  # Restore side-by-side layout with styling
     
     # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
