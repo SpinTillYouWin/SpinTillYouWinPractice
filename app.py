@@ -407,26 +407,36 @@ def add_spin(number, current_spins, num_to_show):
         wheel_html = f'''
         <div id="european-wheel-container" style="text-align: center;">
             <svg id="european-wheel" width="150" height="150" viewBox="0 0 100 100">
+                <!-- Wheel Background -->
                 <circle cx="50" cy="50" r="45" fill="#333" stroke="#000" stroke-width="2"/>
-                <path id="voisins-section" d="M50 5 A45 45 0 0 1 95 50 A45 45 0 0 1 50 95 A45 45 0 0 1 5 50 A45 45 0 0 1 50 5 Z" fill="green" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                <!-- Voisins du Zero Section (covering ~46% of the wheel) -->
+                <path id="voisins-section" d="M50 5 A45 45 0 0 1 95 50 A45 45 0 0 1 72 92 A45 45 0 0 1 28 92 A45 45 0 0 1 5 50 A45 45 0 0 1 50 5 Z" fill="green" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                <!-- Tiers du Cylindre Section (covering ~32% of the wheel) -->
+                <path id="tiers-section" d="M72 92 A45 45 0 0 1 28 92 A45 45 0 0 1 5 50 L50 50 Z" fill="tan" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                <!-- Orphelins Section (covering ~22% of the wheel, split into two parts) -->
                 <path id="orphelins-section" d="M50 5 A45 45 0 0 1 95 50 L50 50 Z" fill="gray" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
-                <path id="tiers-section" d="M50 95 A45 45 0 0 1 5 50 L50 50 Z" fill="tan" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                <!-- Center Circle -->
                 <circle cx="50" cy="50" r="10" fill="#000" stroke="#fff" stroke-width="1"/>
                 <text x="50" y="55" font-size="8" fill="#fff" text-anchor="middle">Wheel</text>
             </svg>
-            <script>
-                highlightWheelSection('{last_spin}');
-            </script>
         </div>
+        <script>
+            highlightWheelSection('{last_spin}');
+        </script>
         '''
     else:
         wheel_html = '''
         <div id="european-wheel-container" style="text-align: center;">
             <svg id="european-wheel" width="150" height="150" viewBox="0 0 100 100">
+                <!-- Wheel Background -->
                 <circle cx="50" cy="50" r="45" fill="#333" stroke="#000" stroke-width="2"/>
-                <path id="voisins-section" d="M50 5 A45 45 0 0 1 95 50 A45 45 0 0 1 50 95 A45 45 0 0 1 5 50 A45 45 0 0 1 50 5 Z" fill="green" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                <!-- Voisins du Zero Section (covering ~46% of the wheel) -->
+                <path id="voisins-section" d="M50 5 A45 45 0 0 1 95 50 A45 45 0 0 1 72 92 A45 45 0 0 1 28 92 A45 45 0 0 1 5 50 A45 45 0 0 1 50 5 Z" fill="green" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                <!-- Tiers du Cylindre Section (covering ~32% of the wheel) -->
+                <path id="tiers-section" d="M72 92 A45 45 0 0 1 28 92 A45 45 0 0 1 5 50 L50 50 Z" fill="tan" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                <!-- Orphelins Section (covering ~22% of the wheel, split into two parts) -->
                 <path id="orphelins-section" d="M50 5 A45 45 0 0 1 95 50 L50 50 Z" fill="gray" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
-                <path id="tiers-section" d="M50 95 A45 45 0 0 1 5 50 L50 50 Z" fill="tan" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                <!-- Center Circle -->
                 <circle cx="50" cy="50" r="10" fill="#000" stroke="#fff" stroke-width="1"/>
                 <text x="50" y="55" font-size="8" fill="#fff" text-anchor="middle">Wheel</text>
             </svg>
@@ -3990,7 +4000,12 @@ with gr.Blocks() as demo:
         fn=validate_spins_input,
         inputs=spins_textbox,
         outputs=[spins_display, last_spin_display]
+    ).then(
+        fn=add_spin,
+        inputs=[spins_display, spins_display, last_spin_count],
+        outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, wheel_placeholder]
     )
+    
     spins_display.change(
         fn=update_spin_counter,
         inputs=[],
@@ -4036,9 +4051,9 @@ with gr.Blocks() as demo:
         inputs=[gr.State(value="5"), spins_display, last_spin_count],
         outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter]
     ).then(
-        fn=format_spins_as_html,
-        inputs=[spins_display, last_spin_count],
-        outputs=[last_spin_display]
+        fn=add_spin,
+        inputs=[spins_display, spins_display, last_spin_count],
+        outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, wheel_placeholder]
     )
 
     last_spin_count.change(
@@ -4476,7 +4491,7 @@ with gr.Blocks() as demo:
     // Highlight the section corresponding to the spin
     const wheelSections = {
       "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
-      "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9],
+      "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9, 17, 34, 6],  // Match Python's WHEEL_SECTIONS
       "Tiers du Cylindre": [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
     };
     for (const sectionName in wheelSections) {
