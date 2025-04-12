@@ -226,6 +226,8 @@ class RouletteState:
 # Create an instance of RouletteState and reset it
 state = RouletteState()
 state.reset()  # Ensure state is reset on startup
+print(f"Initial state.side_scores: {state.side_scores}")
+print(f"Initial state.scores[0]: {state.scores[0]}")
 
 # Validate roulette data at startup
 data_errors = validate_roulette_data()
@@ -378,6 +380,8 @@ def add_spin(number, current_spins, num_to_show):
 # Function to clear spins
 def clear_spins():
     state.reset()  # Reset the state
+    print(f"After clear_spins, state.side_scores: {state.side_scores}")
+    print(f"After clear_spins, state.scores[0]: {state.scores[0]}")
     return "", "", "Spins cleared successfully!", update_sides_display(), update_spin_counter()
 
 # Function to save the session
@@ -2835,6 +2839,10 @@ def update_sides_display():
     if not hasattr(state, 'side_scores') or not hasattr(state, 'scores'):
         return "<div><h4>Sides of Zero Hits:</h4><p>Error: State not initialized.</p></div>"
 
+    # Check if there are any spins
+    if not state.last_spins:
+        return "<div><h4>Sides of Zero Hits:</h4><p>No hits yet.</p></div>"
+
     # Check if there are any hits
     if not any(state.side_scores.values()) and state.scores[0] == 0:
         return "<div><h4>Sides of Zero Hits:</h4><p>No hits yet.</p></div>"
@@ -3956,7 +3964,7 @@ with gr.Blocks() as demo:
 
     def validate_spins_input(spins_input):
         if not spins_input or not spins_input.strip():
-            return "", "<h4>Last Spins</h4><p>No spins yet.</p>", update_sides_display()
+            return "", "<h4>Last Spins</h4><p>No spins yet.</p>", update_sides_display(), '<span style="font-size: 16px;">Total Spins: 0</span>'
         
         raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
         errors = []
@@ -3975,15 +3983,15 @@ with gr.Blocks() as demo:
         if errors:
             error_msg = "Invalid inputs:\n- " + "\n- ".join(errors)
             gr.Warning(error_msg)
-            return spins_input, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_sides_display()
+            return spins_input, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_sides_display(), update_spin_counter()
         
         spins_str = ", ".join(valid_spins)
-        return spins_str, format_spins_as_html(spins_str, last_spin_count.value), update_sides_display()
+        return spins_str, format_spins_as_html(spins_str, last_spin_count.value), update_sides_display(), update_spin_counter()
     
     spins_textbox.change(
         fn=validate_spins_input,
         inputs=spins_textbox,
-        outputs=[spins_display, last_spin_display, sides_display]
+        outputs=[spins_display, last_spin_display, sides_display, spin_counter]
     )
     
     # Simplify the spins_display.change event
@@ -4005,6 +4013,10 @@ with gr.Blocks() as demo:
         fn=clear_spins,
         inputs=[],
         outputs=[spins_display, spins_textbox, spin_analysis_output, sides_display, spin_counter]
+    ).then(
+        fn=lambda spins, num_to_show: format_spins_as_html(spins, num_to_show),
+        inputs=[spins_display, last_spin_count],
+        outputs=[last_spin_display]
     )
 
     clear_all_button.click(
@@ -4054,6 +4066,10 @@ with gr.Blocks() as demo:
         fn=update_sides_display,
         inputs=[],
         outputs=[sides_display]
+    ).then(
+        fn=update_spin_counter,
+        inputs=[],
+        outputs=[spin_counter]
     )
 
     def update_strategy_dropdown(category):
