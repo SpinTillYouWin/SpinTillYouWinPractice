@@ -3393,7 +3393,23 @@ with gr.Blocks() as demo:
             spins_textbox
         with gr.Column(scale=1, min_width=200):
             wheel_placeholder = gr.HTML(
-                value='<img src="https://via.placeholder.com/150" alt="European Wheel Placeholder" style="width: 150px; height: 150px;">',
+                value='''
+                <div id="european-wheel-container" style="text-align: center;">
+                    <svg id="european-wheel" width="150" height="150" viewBox="0 0 100 100">
+                        <!-- Wheel Background -->
+                        <circle cx="50" cy="50" r="45" fill="#333" stroke="#000" stroke-width="2"/>
+                        <!-- Voisins du Zero Section -->
+                        <path id="voisins-section" d="M50 5 A45 45 0 0 1 95 50 A45 45 0 0 1 50 95 A45 45 0 0 1 5 50 A45 45 0 0 1 50 5 Z" fill="green" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                        <!-- Orphelins Section -->
+                        <path id="orphelins-section" d="M50 5 A45 45 0 0 1 95 50 L50 50 Z" fill="gray" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                        <!-- Tiers du Cylindre Section -->
+                        <path id="tiers-section" d="M50 95 A45 45 0 0 1 5 50 L50 50 Z" fill="tan" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                        <!-- Center Circle -->
+                        <circle cx="50" cy="50" r="10" fill="#000" stroke="#fff" stroke-width="1"/>
+                        <text x="50" y="55" font-size="8" fill="#fff" text-anchor="middle">Wheel</text>
+                    </svg>
+                </div>
+                ''',
                 label="European Wheel"
             )
     
@@ -4408,6 +4424,40 @@ with gr.Blocks() as demo:
     # Add the Shepherd.js tour script here
     gr.HTML("""
 <script>
+  let lastSpin = null;  // Store the last spin globally
+
+  function highlightWheelSection(spin) {
+    // Reset all sections to default opacity
+    const sections = {
+      "voisins-section": "Voisins du Zero",
+      "orphelins-section": "Orphelins",
+      "tiers-section": "Tiers du Cylindre"
+    };
+    for (const sectionId in sections) {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.setAttribute("fill-opacity", "0.3");
+      }
+    }
+
+    // Highlight the section corresponding to the spin
+    const wheelSections = {
+      "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
+      "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9],
+      "Tiers du Cylindre": [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
+    };
+    for (const sectionName in wheelSections) {
+      if (wheelSections[sectionName].includes(parseInt(spin))) {
+        const sectionId = Object.keys(sections).find(key => sections[key] === sectionName);
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.setAttribute("fill-opacity", "0.8");
+        }
+        break;
+      }
+    }
+  }
+
   const tour = new Shepherd.Tour({
     defaultStepOptions: {
       cancelIcon: { enabled: true },
