@@ -3197,9 +3197,7 @@ STRATEGIES = {
     "Best Double Streets": {"function": best_double_streets, "categories": ["six_lines"]},
     "Best Corners": {
         "function": best_corners,
-        "categories": ["corners"],
-        "video_url": "https://youtu.be/I_F9Wys3Ww0",
-        "video_title": "S.T.Y.W: Zero Jack 2-2-3 Roulette Strategy"
+        "categories": ["corners"]
     },
     "Best Splits": {"function": best_splits, "categories": ["splits"]},
     "Best Dozens + Best Streets": {"function": best_dozens_and_streets, "categories": ["dozens", "streets"]},
