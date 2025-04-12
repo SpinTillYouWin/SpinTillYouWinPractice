@@ -3346,6 +3346,11 @@ with gr.Blocks() as demo:
         label="Total Spins",
         elem_classes=["spin-counter"]  # Restore styling class
     )
+    sides_display = gr.HTML(
+        label="Sides of Zero Hits",
+        value=update_sides_display(),
+        elem_classes=["sides-display"]
+    )
 
     # Define strategy categories and choices
     strategy_categories = {
@@ -3403,17 +3408,13 @@ with gr.Blocks() as demo:
                         btn.click(
                             fn=add_spin,
                             inputs=[gr.State(value=num), spins_display, last_spin_count],
-                            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter]
+                            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_display]
                         ).then(
                             fn=update_sides_display,
                             inputs=[],
                             outputs=[sides_display]
                         )
-        sides_display = gr.HTML(
-            label="Sides of Zero Hits",
-            value=update_sides_display(),
-            elem_classes=["sides-display"]
-        )
+        sides_display  # Display the sides_display component here
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
@@ -4041,7 +4042,7 @@ with gr.Blocks() as demo:
     generate_spins_button.click(
         fn=generate_random_spins,
         inputs=[gr.State(value="5"), spins_display, last_spin_count],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter]
+        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, sides_display]
     ).then(
         fn=format_spins_as_html,
         inputs=[spins_display, last_spin_count],
