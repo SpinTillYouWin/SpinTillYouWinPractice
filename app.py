@@ -3219,73 +3219,77 @@ STRATEGIES = {
 
 def update_strategy_video_links(selected_category):
     if not selected_category or selected_category == "None":
+        print("update_strategy_video_links: No category selected, returning default message.")
         return "<p>Please select a category to see video tutorials.</p>"
     
-    html = f"<h4 style='text-transform: uppercase; margin-bottom: 10px;'>{selected_category}</h4>"
-    html += "<ul style='list-style-type: none; padding-left: 0;'>"
-    strategies = strategy_categories[selected_category]
-    for strategy in strategies:
-        video_url = STRATEGIES[strategy].get("video_url", "")
-        video_title = STRATEGIES[strategy].get("video_title", "Watch Video")
-        if video_url:
-            html += f"""
-            <li style="margin-bottom: 8px;">
-                <a href="{video_url}" target="_blank" class="strategy-video-link">{video_title}</a>
-            </li>
-            """
-        else:
-            html += f"""
-            <li style="margin-bottom: 8px; font-size: 14px; color: #333;">
-                {video_title} (Video not yet available)
-            </li>
-            """
-    html += "</ul>"
-    return html
-def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
+    print(f"update_strategy_video_links: Processing category '{selected_category}'")
+    html_output = ""
     try:
-        print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
-        print(f"show_strategy_recommendations: even_money_scores = {dict(state.even_money_scores)}")
-        print(f"show_strategy_recommendations: any_scores = {any(state.scores.values())}, any_even_money = {any(state.even_money_scores.values())}")
-        print(f"show_strategy_recommendations: strategy_name = {strategy_name}, neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}, args = {args}")
+        html_output = f"<h4 style='text-transform: uppercase; margin-bottom: 10px;'>{selected_category}</h4>"
+        print("update_strategy_video_links: Added category heading to HTML output.")
+        html_output += "<ul style='list-style-type: none; padding-left: 0;'>"
+        print("update_strategy_video_links: Started unordered list.")
 
-        if strategy_name == "None":
-            return "<p>No strategy selected. Please choose a strategy to see recommendations.</p>"
-        
-        # If no spins yet, provide a default for "Best Even Money Bets"
-        if not any(state.scores.values()) and not any(state.even_money_scores.values()):
-            if strategy_name == "Best Even Money Bets":
-                return "<p>No spins yet. Default Even Money Bets to consider:<br>1. Red<br>2. Black<br>3. Even</p>"
-            return "<p>Please analyze some spins first to generate scores.</p>"
-
-        strategy_info = STRATEGIES[strategy_name]
-        strategy_func = strategy_info["function"]
-
-        if strategy_name == "Neighbours of Strong Number":
-            try:
-                neighbours_count = int(neighbours_count)
-                strong_numbers_count = int(strong_numbers_count)
-                print(f"show_strategy_recommendations: Using neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}")
-            except (ValueError, TypeError) as e:
-                print(f"show_strategy_recommendations: Error converting inputs: {str(e)}, defaulting to 2 and 1.")
-                neighbours_count = 2
-                strong_numbers_count = 1
-            recommendations = strategy_func(neighbours_count, strong_numbers_count)
+        strategies = strategy_categories.get(selected_category, [])
+        print(f"update_strategy_video_links: Strategies found: {strategies}")
+        if not strategies:
+            html_output += f"""
+            <li style="margin-bottom: 8px; font-size: 14px; color: #ff0000;">
+                No strategies found for category '{selected_category}'
+            </li>
+            """
+            print("update_strategy_video_links: No strategies found, added error message.")
         else:
-            recommendations = strategy_func()
+            for idx, strategy in enumerate(strategies):
+                print(f"update_strategy_video_links: Processing strategy {idx + 1}/{len(strategies)}: '{strategy}'")
+                if strategy not in STRATEGIES:
+                    print(f"update_strategy_video_links: Strategy '{strategy}' not found in STRATEGIES")
+                    html_output += f"""
+                    <li style="margin-bottom: 8px; font-size: 14px; color: #ff0000;">
+                        Strategy '{strategy}' not found
+                    </li>
+                    """
+                    continue
+                
+                strategy_info = STRATEGIES[strategy]
+                print(f"update_strategy_video_links: Strategy '{strategy}' info: {strategy_info}")
+                
+                video_url = strategy_info.get("video_url", "")
+                video_title = strategy_info.get("video_title", f"Video for {strategy}")
+                escaped_strategy = html.escape(strategy)
+                print(f"update_strategy_video_links: Strategy '{strategy}' - video_url: '{video_url}', video_title: '{video_title}'")
+                
+                try:
+                    if video_url and video_title:
+                        html_entry = f"""
+                        <li style="margin-bottom: 8px;">
+                            <a href="{video_url}" target="_blank" class="strategy-video-link">{video_title}</a>
+                        </li>
+                        """
+                        print(f"update_strategy_video_links: Strategy '{strategy}' has video, adding link: {html_entry.strip()}")
+                    else:
+                        html_entry = f"""
+                        <li style="margin-bottom: 8px; font-size: 14px; color: #333;">
+                            Video for "{escaped_strategy}" not yet available
+                        </li>
+                        """
+                        print(f"update_strategy_video_links: Strategy '{strategy}' has no video, adding default message: {html_entry.strip()}")
+                    
+                    html_output += html_entry
+                except Exception as e:
+                    print(f"update_strategy_video_links: Error constructing HTML for strategy '{strategy}': {str(e)}")
+                    html_output += f"""
+                    <li style="margin-bottom: 8px; font-size: 14px; color: #ff0000;">
+                        Error rendering video entry for '{escaped_strategy}': {str(e)}
+                    </li>
+                    """
 
-        print(f"show_strategy_recommendations: Strategy {strategy_name} output = {recommendations}")
-
-        # If the output is already HTML, return it as is
-        if strategy_name == "Top Numbers with Neighbours (Tiered)":
-            return recommendations
-        # Otherwise, convert plain text to HTML
-        else:
-            lines = recommendations.split("\n")
-            html_lines = [f"<p>{line}</p>" for line in lines if line.strip()]
-            return "".join(html_lines)
+        html_output += "</ul>"
+        print("update_strategy_video_links: Closed unordered list.")
+        return html_output
     except Exception as e:
-        print(f"show_strategy_recommendations: Error: {str(e)}")
-        return f"<p>Error generating strategy recommendations: {str(e)}</p>"
+        print(f"update_strategy_video_links: Unexpected error processing category '{selected_category}': {str(e)}")
+        return f"<p>Error generating video links for category '{selected_category}': {str(e)}</p>"
 
 def clear_outputs():
     return "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
@@ -3341,7 +3345,7 @@ with gr.Blocks() as demo:
         "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Streets"],
         "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
         "Double Street Strategies": ["Best Double Streets", "Non-Overlapping Double Street Strategy"],
-        "Corner Strategies": ["Best Corners", "Non-Overlapping Corner Strategy"],
+        "Corner Strategies": ["Best Corners"],
         "Split Strategies": ["Best Splits"],
         "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"],
         "Neighbours Strategies": ["Neighbours of Strong Number"]
