@@ -396,6 +396,9 @@ def add_spin(number, current_spins, num_to_show):
         state.selected_numbers.add(num)
         state.last_spins.append(str(num))
         state.spin_history.append(action_log.pop(0))
+        # Limit spin history to 100 spins
+        if len(state.spin_history) > 100:
+            state.spin_history.pop(0)
 
     new_spins_str = ", ".join(new_spins)
     if errors:
@@ -1260,7 +1263,7 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
             hit_sections = []
             action = action_log[idx]
 
-            # Reconstruct hit sections from increments and data
+            # Reconstruct hit sections from increments
             for name, increment in action["increments"].get("even_money_scores", {}).items():
                 if increment > 0:
                     hit_sections.append(name)
@@ -1295,7 +1298,11 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
                 hit_sections.append(f"Right Neighbor: {right}")
 
             spin_results.append(f"Spin {spin} hits: {', '.join(hit_sections)}\nTotal sections hit: {len(hit_sections)}")
-            state.last_spins.append(spin)  # Update last_spins
+            state.last_spins.append(spin)
+            state.spin_history.append(action)
+            # Limit spin history to 100 spins
+            if len(state.spin_history) > 100:
+                state.spin_history.pop(0)
 
         spin_analysis_output = "\n".join(spin_results)
         print(f"analyze_spins: spin_analysis_output='{spin_analysis_output}'")
