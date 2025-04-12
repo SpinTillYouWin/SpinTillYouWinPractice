@@ -3195,8 +3195,12 @@ STRATEGIES = {
     "Best Dozens + Best Streets": {"function": best_dozens_and_streets, "categories": ["dozens", "streets"]},
     "Best Columns + Best Streets": {"function": best_columns_and_streets, "categories": ["columns", "streets"]},
     "Non-Overlapping Double Street Strategy": {"function": non_overlapping_double_street_strategy, "categories": ["six_lines"]},
-    "Non-Overlapping Corner Strategy": {"function": non_overlapping_corner_strategy, "categories": ["corners"]},
-    "Romanowksy Missing Dozen": {"function": romanowksy_missing_dozen_strategy, "categories": ["dozens", "numbers"]},
+    "Romanowksy Missing Dozen": {
+        "function": romanowksy_missing_dozen_strategy,
+        "categories": ["dozens", "numbers"],
+        "video_url": "https://youtu.be/YbBtum5WVCk",
+        "video_title": "S.T.Y.W: Romanowsky Missing Dozen Strategy"
+    },
     "Fibonacci To Fortune": {"function": fibonacci_to_fortune_strategy, "categories": ["even_money", "dozens", "columns", "six_lines"]},
     "3-8-6 Rising Martingale": {"function": three_eight_six_rising_martingale, "categories": ["streets"]},
     "1 Dozen +1 Column Strategy": {"function": one_dozen_one_column_strategy, "categories": ["dozens", "columns"]},
@@ -3211,11 +3215,22 @@ def update_strategy_video_links(selected_category):
     
     html = f"<h4 style='text-transform: uppercase; margin-bottom: 10px;'>{selected_category}</h4>"
     html += "<ul style='list-style-type: none; padding-left: 0;'>"
-    html += """
-    <li style="margin-bottom: 8px; font-size: 14px; color: #333;">
-        [Video titles to be added later]
-    </li>
-    """
+    strategies = strategy_categories[selected_category]
+    for strategy in strategies:
+        video_url = STRATEGIES[strategy].get("video_url", "")
+        video_title = STRATEGIES[strategy].get("video_title", "Watch Video")
+        if video_url:
+            html += f"""
+            <li style="margin-bottom: 8px;">
+                <a href="{video_url}" target="_blank" class="strategy-video-link">{video_title}</a>
+            </li>
+            """
+        else:
+            html += f"""
+            <li style="margin-bottom: 8px; font-size: 14px; color: #333;">
+                {video_title} (Video not yet available)
+            </li>
+            """
     html += "</ul>"
     return html
 def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
