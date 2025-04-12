@@ -3191,7 +3191,7 @@ STRATEGIES = {
         "categories": ["columns", "even_money", "numbers", "trends"],
         "video_url": "https://youtu.be/I_F9Wys3Ww0",
         "video_title": "S.T.Y.W: Zero Jack 2-2-3 Roulette Strategy"
-    }
+    },
     "Fibonacci Strategy": {"function": fibonacci_strategy, "categories": ["dozens", "columns"]},
     "Best Streets": {"function": best_streets, "categories": ["streets"]},
     "Best Double Streets": {"function": best_double_streets, "categories": ["six_lines"]},
