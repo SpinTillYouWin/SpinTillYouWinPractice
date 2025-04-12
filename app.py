@@ -3369,6 +3369,7 @@ with gr.Blocks() as demo:
             ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
+    # Existing roulette table code
     with gr.Column(elem_classes="roulette-table"):
         for row in table_layout:
             with gr.Row(elem_classes="table-row"):
@@ -3396,15 +3397,15 @@ with gr.Blocks() as demo:
                             outputs=[level_bars_output]
                         )
     
-    # Add new level bars component here
+    # Add level bars component here
     with gr.Column():
         level_bars_output = gr.HTML(
             label="Hit Counts",
             value="",
             elem_classes=["level-bars-container"]
         )
-
-    # 3. Row 3: Last Spins Display and Show Last Spins Slider
+    
+    # Row 3: Last Spins Display
     with gr.Row():
         with gr.Column():
             last_spin_display
@@ -4170,15 +4171,11 @@ with gr.Blocks() as demo:
     generate_spins_button.click(
         fn=generate_random_spins,
         inputs=[gr.State(value="5"), spins_display, last_spin_count],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, level_bars_output]
+        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter]  # Remove level_bars_output
     ).then(
         fn=format_spins_as_html,
         inputs=[spins_display, last_spin_count],
         outputs=[last_spin_display]
-    ).then(
-        fn=create_level_bars,
-        inputs=[],
-        outputs=[level_bars_output]
     )
 
     neighbours_count_slider.change(
