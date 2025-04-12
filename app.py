@@ -8,6 +8,13 @@ from roulette_data import (
     NEIGHBORS_EUROPEAN, LEFT_OF_ZERO_EUROPEAN, RIGHT_OF_ZERO_EUROPEAN
 )
 
+# Define European wheel sections based on the attached image
+WHEEL_SECTIONS = {
+    "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
+    "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9, 17, 34, 6],  # Note: 17, 34, 6 appear twice in Orphelins as per standard definition
+    "Tiers du Cylindre": [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
+}
+
 def validate_roulette_data():
     """Validate that all required constants from roulette_data.py are present and correctly formatted."""
     required_dicts = {
@@ -62,6 +69,7 @@ class RouletteState:
         self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
         self.split_scores = {name: 0 for name in SPLITS.keys()}
         self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
+        self.wheel_section_scores = {name: 0 for name in WHEEL_SECTIONS.keys()}  # Track hits for wheel sections
         self.selected_numbers = set()
         self.last_spins = []
         self.spin_history = []  # Tracks each spin's effects for undoing
@@ -357,6 +365,12 @@ def add_spin(number, current_spins, num_to_show):
             else:
                 state.scores[0] += 1
                 action["increments"]["scores"] = {0: 1}
+
+            # Update wheel section scores
+            for section_name, section_numbers in WHEEL_SECTIONS.items():
+                if num in section_numbers:
+                    state.wheel_section_scores[section_name] += 1
+                    action["increments"].setdefault("wheel_section_scores", {})[section_name] = 1
 
             if str(num) in [str(x) for x in current_left_of_zero]:
                 state.side_scores["Left Side of Zero"] += 1
