@@ -3342,6 +3342,26 @@ with gr.Blocks() as demo:
         label="Total Spins",
         elem_classes=["spin-counter"]  # Restore styling class
     )
+    wheel_placeholder = gr.HTML(
+        value='''
+        <div id="european-wheel-container" style="text-align: center;">
+            <svg id="european-wheel" width="150" height="150" viewBox="0 0 100 100">
+                <!-- Wheel Background -->
+                <circle cx="50" cy="50" r="45" fill="#333" stroke="#000" stroke-width="2"/>
+                <!-- Voisins du Zero Section -->
+                <path id="voisins-section" d="M50 5 A45 45 0 0 1 95 50 A45 45 0 0 1 50 95 A45 45 0 0 1 5 50 A45 45 0 0 1 50 5 Z" fill="green" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                <!-- Orphelins Section -->
+                <path id="orphelins-section" d="M50 5 A45 45 0 0 1 95 50 L50 50 Z" fill="gray" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                <!-- Tiers du Cylindre Section -->
+                <path id="tiers-section" d="M50 95 A45 45 0 0 1 5 50 L50 50 Z" fill="tan" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                <!-- Center Circle -->
+                <circle cx="50" cy="50" r="10" fill="#000" stroke="#fff" stroke-width="1"/>
+                <text x="50" y="55" font-size="8" fill="#fff" text-anchor="middle">Wheel</text>
+            </svg>
+        </div>
+        ''',
+        label="European Wheel"
+    )
 
     # Define strategy categories and choices
     strategy_categories = {
@@ -3424,26 +3444,7 @@ with gr.Blocks() as demo:
         with gr.Column(scale=4, min_width=600):
             spins_textbox
         with gr.Column(scale=1, min_width=200):
-            wheel_placeholder = gr.HTML(
-                value='''
-                <div id="european-wheel-container" style="text-align: center;">
-                    <svg id="european-wheel" width="150" height="150" viewBox="0 0 100 100">
-                        <!-- Wheel Background -->
-                        <circle cx="50" cy="50" r="45" fill="#333" stroke="#000" stroke-width="2"/>
-                        <!-- Voisins du Zero Section -->
-                        <path id="voisins-section" d="M50 5 A45 45 0 0 1 95 50 A45 45 0 0 1 50 95 A45 45 0 0 1 5 50 A45 45 0 0 1 50 5 Z" fill="green" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
-                        <!-- Orphelins Section -->
-                        <path id="orphelins-section" d="M50 5 A45 45 0 0 1 95 50 L50 50 Z" fill="gray" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
-                        <!-- Tiers du Cylindre Section -->
-                        <path id="tiers-section" d="M50 95 A45 45 0 0 1 5 50 L50 50 Z" fill="tan" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
-                        <!-- Center Circle -->
-                        <circle cx="50" cy="50" r="10" fill="#000" stroke="#fff" stroke-width="1"/>
-                        <text x="50" y="55" font-size="8" fill="#fff" text-anchor="middle">Wheel</text>
-                    </svg>
-                </div>
-                ''',
-                label="European Wheel"
-            )
+            wheel_placeholder  # Reference the already-defined component
     
     # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
