@@ -3431,7 +3431,47 @@ with gr.Blocks() as demo:
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
 
-        # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
+        # 3. Row 3: Last Spins Display and Show Last Spins Slider
+    with gr.Row():
+        with gr.Column():
+            last_spin_display
+            last_spin_count
+
+    # 3.1. Row 3.1: Total Spins and Wheel Layout
+    with gr.Row():
+        with gr.Column(scale=1, min_width=200):
+            spin_counter  # Moved here to the left of the wheel layout
+        with gr.Column(scale=4):
+            gr.Markdown("### Roulette Wheel Layout")
+            wheel_layout_output = gr.HTML(
+                label="Wheel Layout",
+                value=render_wheel_layout("")
+            )
+
+    # 4. Row 4: Spin Controls
+    with gr.Row():
+        with gr.Column(scale=2):
+            clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
+        with gr.Column(scale=1):
+            undo_button = gr.Button("Undo Spins", elem_classes=["action-button"], elem_id="undo-spins-btn")
+        with gr.Column(scale=1):
+            generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
+    
+    # 5. Row 5: Selected Spins Textbox
+    with gr.Row(elem_id="selected-spins-row"):
+        with gr.Column(scale=4, min_width=600):
+            spins_textbox
+    
+    # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
+    with gr.Row():
+        with gr.Column(scale=2):
+            analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
+        with gr.Column(scale=1):
+            clear_spins_button = gr.Button("Clear Spins", elem_classes=["clear-spins-btn", "small-btn"])
+        with gr.Column(scale=1):
+            clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
+
+    # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
@@ -3860,6 +3900,9 @@ with gr.Blocks() as demo:
       #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
       #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
       
+      /* Scrollable Tables */
+      .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
+    
       /* Spin Counter Styling */
       .spin-counter {
           font-size: 16px !important;
@@ -4000,7 +4043,7 @@ with gr.Blocks() as demo:
     """)
     print("CSS Updated")
 
-    # Lines 4888-4920 (Updated Section with `toggle_labouchere` and Fixed Indentation)
+    # Event Handlers
     def toggle_labouchere(progression):
         return gr.update(visible=progression == "Labouchere")
 
@@ -4034,6 +4077,7 @@ with gr.Blocks() as demo:
         inputs=spins_textbox,
         outputs=[spins_display, last_spin_display, wheel_layout_output]
     )
+
     spins_display.change(
         fn=update_spin_counter,
         inputs=[],
@@ -4048,30 +4092,6 @@ with gr.Blocks() as demo:
         fn=clear_spins,
         inputs=[],
         outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, wheel_layout_output]
-    )
-
-    clear_all_button.click(
-        fn=clear_all,
-        inputs=[],
-        outputs=[
-            spins_display, spins_textbox, spin_analysis_output, last_spin_display,
-            even_money_output, dozens_output, columns_output, streets_output,
-            corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output, spin_counter
-        ]
-    ).then(
-        fn=clear_outputs,
-        inputs=[],
-        outputs=[
-            spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output,
-            sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-            dynamic_table_output, strategy_output, color_code_output
-        ]
-    ).then(
-        fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
     )
 
     generate_spins_button.click(
@@ -4177,6 +4197,22 @@ with gr.Blocks() as demo:
             streets_output, corners_output, six_lines_output, splits_output, sides_output,
             straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_output, strategy_output
         ]
+    ).then(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    ).then(
+        fn=format_spins_as_html,
+        inputs=[spins_display, last_spin_count],
+        outputs=[last_spin_display]
+    ).then(
+        fn=create_color_code_table,
+        inputs=[],
+        outputs=[color_code_output]
+    ).then(
+        fn=dozen_tracker,
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
