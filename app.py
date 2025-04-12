@@ -3205,6 +3205,19 @@ STRATEGIES = {
     "Neighbours of Strong Number": {"function": neighbours_of_strong_number, "categories": ["neighbours"]}
 }
 
+def update_strategy_video_links(selected_category):
+    if not selected_category or selected_category == "None":
+        return "<p>Please select a category to see video tutorials.</p>"
+    
+    html = f"<h4 style='text-transform: uppercase; margin-bottom: 10px;'>{selected_category}</h4>"
+    html += "<ul style='list-style-type: none; padding-left: 0;'>"
+    html += """
+    <li style="margin-bottom: 8px; font-size: 14px; color: #333;">
+        [Video titles to be added later]
+    </li>
+    """
+    html += "</ul>"
+    return html
 def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
     try:
         print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
@@ -3988,6 +4001,10 @@ with gr.Blocks() as demo:
         fn=update_strategy_dropdown,
         inputs=category_dropdown,
         outputs=strategy_dropdown
+    ).then(
+        fn=update_strategy_video_links,
+        inputs=[category_dropdown],
+        outputs=[strategy_video_links]
     )
 
     reset_strategy_button.click(
