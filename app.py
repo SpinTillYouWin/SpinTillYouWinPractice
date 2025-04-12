@@ -4136,7 +4136,7 @@ with gr.Blocks() as demo:
         outputs=[dynamic_table_output]
     )
 
-        analyze_button.click(
+    analyze_button.click(
         fn=analyze_spins,
         inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
         outputs=[
