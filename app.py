@@ -2798,16 +2798,24 @@ def create_color_code_table():
                     <td style="padding: 8px;">Used in Cold Bet Strategy for lower-tier cold sections. Fixed for this strategy.</td>
                 </tr>
                 <tr>
+                    <td style="padding: 8px; background-color: green; color: white; text-align: center;">Green</td>
+                    <td style="padding: 8px;">Default color for zero (0) on the roulette table and in the Sides of Zero Hits visualization.</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; background-color: blue; color: white; text-align: center;">Blue</td>
+                    <td style="padding: 8px;">Used in Sides of Zero Hits to represent the Left Side of Zero bar.</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; background-color: purple; color: white; text-align: center;">Purple</td>
+                    <td style="padding: 8px;">Used in Sides of Zero Hits to represent the Right Side of Zero bar.</td>
+                </tr>
+                <tr>
                     <td style="padding: 8px; background-color: red; color: white; text-align: center;">Red</td>
                     <td style="padding: 8px;">Default color for red numbers on the roulette table.</td>
                 </tr>
                 <tr>
                     <td style="padding: 8px; background-color: black; color: white; text-align: center;">Black</td>
                     <td style="padding: 8px;">Default color for black numbers on the roulette table.</td>
-                </tr>
-                <tr>
-                    <td style="padding: 8px; background-color: green; color: white; text-align: center;">Green</td>
-                    <td style="padding: 8px;">Default color for zero (0) on the roulette table.</td>
                 </tr>
                 <tr>
                     <td style="padding: 8px; background-color: #FF6347; color: white; text-align: center;">Tomato Red</td>
@@ -2835,6 +2843,48 @@ def update_spin_counter():
     """Return the current number of spins as formatted HTML with inline styling."""
     spin_count = len(state.last_spins)
     return f'<span style="font-size: 16px;">Total Spins: {spin_count}</span>'
+def update_sides_display():
+    """Generate HTML to display hit counts for Left Side of Zero, Zero, and Right Side of Zero with a visual layout."""
+    # Check if there are any hits
+    if not any(state.side_scores.values()) and state.scores[0] == 0:
+        return "<div><h4>Sides of Zero Hits:</h4><p>No hits yet.</p></div>"
+
+    # Calculate max hits for scaling the bars
+    all_scores = list(state.side_scores.values()) + [state.scores[0]]
+    max_hits = max(all_scores, default=1)
+    max_bar_width = 100  # Maximum width of the bars in pixels
+
+    # Get hit counts
+    left_hits = state.side_scores["Left Side of Zero"]
+    zero_hits = state.scores[0]
+    right_hits = state.side_scores["Right Side of Zero"]
+
+    # Calculate bar widths (for left and right sides only)
+    max_side_hits = max(left_hits, right_hits, 1)  # Use max of left/right for side bars
+    left_bar_width = (left_hits / max_side_hits) * max_bar_width if max_side_hits > 0 else 0
+    right_bar_width = (right_hits / max_side_hits) * max_bar_width if max_side_hits > 0 else 0
+
+    # Generate HTML with flexbox layout
+    html = '''
+    <div style="margin-top: 10px;">
+        <h4>Sides of Zero Hits:</h4>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px;">
+            <div style="text-align: center; flex: 1;">
+                <div style="font-size: 14px; margin-bottom: 5px;">Left Side of Zero: ''' + str(left_hits) + '''</div>
+                <div style="width: ''' + str(left_bar_width) + '''px; height: 20px; background-color: blue; border-radius: 3px; margin: 0 auto;"></div>
+            </div>
+            <div style="text-align: center; flex: 0;">
+                <div style="font-size: 14px; margin-bottom: 5px;">Zero: ''' + str(zero_hits) + '''</div>
+                <div style="width: 30px; height: 30px; background-color: green; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">0</div>
+            </div>
+            <div style="text-align: center; flex: 1;">
+                <div style="font-size: 14px; margin-bottom: 5px;">Right Side of Zero: ''' + str(right_hits) + '''</div>
+                <div style="width: ''' + str(right_bar_width) + '''px; height: 20px; background-color: purple; border-radius: 3px; margin: 0 auto;"></div>
+            </div>
+        </div>
+    </div>
+    '''
+    return html
     
 def top_numbers_with_neighbours_tiered():
     recommendations = []
@@ -3325,7 +3375,7 @@ with gr.Blocks() as demo:
                 '''
             )
 
-    # 2. Row 2: European Roulette Table
+# 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
         table_layout = [
@@ -3354,7 +3404,16 @@ with gr.Blocks() as demo:
                             fn=add_spin,
                             inputs=[gr.State(value=num), spins_display, last_spin_count],
                             outputs=[spins_display, spins_textbox, last_spin_display, spin_counter]
+                        ).then(
+                            fn=update_sides_display,
+                            inputs=[],
+                            outputs=[sides_display]
                         )
+        sides_display = gr.HTML(
+            label="Sides of Zero Hits",
+            value=update_sides_display(),
+            elem_classes=["sides-display"]
+        )
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
@@ -3850,6 +3909,17 @@ with gr.Blocks() as demo:
           box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; /* Very light shadow */
       }
     
+      /* Sides of Zero Display */
+      .sides-display {
+          background-color: #f5f5f5 !important; /* Light gray background */
+          border: 1px solid #d3d3d3 !important; /* Subtle gray border */
+          padding: 10px !important;
+          border-radius: 5px !important;
+          margin-top: 10px !important;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; /* Very light shadow */
+          text-align: center !important;
+      }
+    
       /* Responsive Design */
       @media (max-width: 600px) {
           .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
@@ -3922,6 +3992,10 @@ with gr.Blocks() as demo:
         fn=validate_spins_input,
         inputs=spins_textbox,
         outputs=[spins_display, last_spin_display]
+    ).then(
+        fn=update_sides_display,
+        inputs=[],
+        outputs=[sides_display]
     )
     spins_display.change(
         fn=update_spin_counter,
@@ -3936,7 +4010,7 @@ with gr.Blocks() as demo:
     clear_spins_button.click(
         fn=clear_spins,
         inputs=[],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter]
+        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_display]
     )
 
     clear_all_button.click(
@@ -3946,7 +4020,8 @@ with gr.Blocks() as demo:
             spins_display, spins_textbox, spin_analysis_output, last_spin_display,
             even_money_output, dozens_output, columns_output, streets_output,
             corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output, spin_counter
+            straight_up_html, top_18_html, strongest_numbers_output, spin_counter,
+            sides_display
         ]
     ).then(
         fn=clear_outputs,
@@ -3971,6 +4046,10 @@ with gr.Blocks() as demo:
         fn=format_spins_as_html,
         inputs=[spins_display, last_spin_count],
         outputs=[last_spin_display]
+    ).then(
+        fn=update_sides_display,
+        inputs=[],
+        outputs=[sides_display]
     )
 
     last_spin_count.change(
@@ -4056,7 +4135,8 @@ with gr.Blocks() as demo:
         outputs=[
             spins_display, spins_textbox, spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_output, strategy_output
+            straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_output, strategy_output,
+            sides_display
         ]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -4084,7 +4164,7 @@ with gr.Blocks() as demo:
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_html, top_18_html, strongest_numbers_output,
             spins_textbox, spins_display, dynamic_table_output, strategy_output,
-            color_code_output, spin_counter
+            color_code_output, spin_counter, sides_display
         ]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
