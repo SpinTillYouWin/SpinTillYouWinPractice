@@ -237,20 +237,6 @@ current_neighbors = NEIGHBORS_EUROPEAN
 current_left_of_zero = LEFT_OF_ZERO_EUROPEAN
 current_right_of_zero = RIGHT_OF_ZERO_EUROPEAN
 
-# Global scores dictionaries
-scores = {n: 0 for n in range(37)}
-even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
-dozen_scores = {name: 0 for name in DOZENS.keys()}
-column_scores = {name: 0 for name in COLUMNS.keys()}
-street_scores = {name: 0 for name in STREETS.keys()}
-corner_scores = {name: 0 for name in CORNERS.keys()}
-six_line_scores = {name: 0 for name in SIX_LINES.keys()}
-split_scores = {name: 0 for name in SPLITS.keys()}
-side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
-selected_numbers = set()
-
-last_spins = []
-
 colors = {
     "0": "green",
     "1": "red", "3": "red", "5": "red", "7": "red", "9": "red", "12": "red",
@@ -3333,8 +3319,8 @@ with gr.Blocks() as demo:
     )
     last_spin_display = gr.HTML(
         label="Last Spins",
-        value="",
-        elem_classes=["last-spins-container"]  # Add styling for Last Spins
+        value="<h4>Last Spins</h4><p>No spins yet.</p>",  # Set a valid initial HTML value
+        elem_classes=["last-spins-container"]
     )
     last_spin_count = gr.Slider(
         label="Show Last Spins",
@@ -3346,13 +3332,13 @@ with gr.Blocks() as demo:
         elem_classes="long-slider"
     )
     spin_counter = gr.HTML(
-        value='<span style="font-size: 16px;">Total Spins: 0</span>',  # Restore inline label
+        value='<span style="font-size: 16px;">Total Spins: 0</span>',  # Already correct
         label="Total Spins",
-        elem_classes=["spin-counter"]  # Restore styling class
+        elem_classes=["spin-counter"]
     )
     sides_display = gr.HTML(
         label="Sides of Zero Hits",
-        value=update_sides_display(),
+        value=update_sides_display(),  # This should return "No hits yet" since state is reset
         elem_classes=["sides-display"]
     )
 
@@ -3970,7 +3956,7 @@ with gr.Blocks() as demo:
 
     def validate_spins_input(spins_input):
         if not spins_input or not spins_input.strip():
-            return None, "<h4>Last Spins</h4><p>No spins yet.</p>", update_sides_display()
+            return "", "<h4>Last Spins</h4><p>No spins yet.</p>", update_sides_display()
         
         raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
         errors = []
@@ -3998,19 +3984,21 @@ with gr.Blocks() as demo:
         fn=validate_spins_input,
         inputs=spins_textbox,
         outputs=[spins_display, last_spin_display, sides_display]
-    ).then(
-        fn=update_sides_display,
-        inputs=[],
-        outputs=[sides_display]
     )
+    
+    # Simplify the spins_display.change event
     spins_display.change(
+        fn=lambda spins, num_to_show: format_spins_as_html(spins, num_to_show),
+        inputs=[spins_display, last_spin_count],
+        outputs=[last_spin_display]
+    ).then(
         fn=update_spin_counter,
         inputs=[],
         outputs=[spin_counter]
     ).then(
-        fn=format_spins_as_html,
-        inputs=[spins_display, last_spin_count],
-        outputs=[last_spin_display]
+        fn=update_sides_display,
+        inputs=[],
+        outputs=[sides_display]
     )
 
     clear_spins_button.click(
@@ -4047,7 +4035,7 @@ with gr.Blocks() as demo:
     generate_spins_button.click(
         fn=generate_random_spins,
         inputs=[gr.State(value="5"), spins_display, last_spin_count],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter]
+        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, sides_display]
     ).then(
         fn=format_spins_as_html,
         inputs=[spins_display, last_spin_count],
@@ -4059,7 +4047,7 @@ with gr.Blocks() as demo:
     )
 
     last_spin_count.change(
-        fn=format_spins_as_html,
+        fn=lambda spins, num_to_show: format_spins_as_html(spins, num_to_show),
         inputs=[spins_display, last_spin_count],
         outputs=[last_spin_display]
     ).then(
