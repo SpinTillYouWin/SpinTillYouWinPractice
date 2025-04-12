@@ -2831,6 +2831,41 @@ def create_color_code_table():
     '''
     return html
     
+def create_level_bars():
+    zero_hits = state.scores.get(0, 0)
+    left_hits = state.side_scores.get("Left Side of Zero", 0)
+    right_hits = state.side_scores.get("Right Side of Zero", 0)
+    
+    # Find max hits to scale bars (avoid division by zero)
+    max_hits = max(zero_hits, left_hits, right_hits, 1)
+    bar_width = 200  # Fixed max width in pixels
+    zero_width = (zero_hits / max_hits) * bar_width if max_hits > 0 else 0
+    left_width = (left_hits / max_hits) * bar_width if max_hits > 0 else 0
+    right_width = (right_hits / max_hits) * bar_width if max_hits > 0 else 0
+    
+    html = """
+    <div style="margin-top: 10px; font-family: Arial, sans-serif;">
+        <h4>Hit Counts</h4>
+        <div style="margin-bottom: 10px;">
+            <span style="display: inline-block; width: 120px;">Zero:</span>
+            <div style="display: inline-block; width: {}px; height: 10px; background-color: green;"></div>
+            <span style="margin-left: 10px;">{}</span>
+        </div>
+        <div style="margin-bottom: 10px;">
+            <span style="display: inline-block; width: 120px;">Left Side:</span>
+            <div style="display: inline-block; width: {}px; height: 10px; background-color: blue;"></div>
+            <span style="margin-left: 10px;">{}</span>
+        </div>
+        <div>
+            <span style="display: inline-block; width: 120px;">Right Side:</span>
+            <div style="display: inline-block; width: {}px; height: 10px; background-color: red;"></div>
+            <span style="margin-left: 10px;">{}</span>
+        </div>
+    </div>
+    """.format(zero_width, zero_hits, left_width, left_hits, right_width, right_hits)
+    
+    return html   
+    
 def update_spin_counter():
     """Return the current number of spins as formatted HTML with inline styling."""
     spin_count = len(state.last_spins)
@@ -3326,6 +3361,7 @@ with gr.Blocks() as demo:
             )
 
     # 2. Row 2: European Roulette Table
+    # Existing roulette table code
     with gr.Group():
         gr.Markdown("### European Roulette Table")
         table_layout = [
@@ -3353,8 +3389,20 @@ with gr.Blocks() as demo:
                         btn.click(
                             fn=add_spin,
                             inputs=[gr.State(value=num), spins_display, last_spin_count],
-                            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter]
+                            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, level_bars_output]
+                        ).then(
+                            fn=create_level_bars,
+                            inputs=[],
+                            outputs=[level_bars_output]
                         )
+    
+    # Add new level bars component here
+    with gr.Column():
+        level_bars_output = gr.HTML(
+            label="Hit Counts",
+            value="",
+            elem_classes=["level-bars-container"]
+        )
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
@@ -3848,7 +3896,14 @@ with gr.Blocks() as demo:
           border-radius: 5px !important;
           margin-top: 10px !important;
           box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; /* Very light shadow */
-      }
+        }
+        /* Level Bars Container */
+        .level-bars-container {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
     
       /* Responsive Design */
       @media (max-width: 600px) {
@@ -3922,6 +3977,10 @@ with gr.Blocks() as demo:
         fn=validate_spins_input,
         inputs=spins_textbox,
         outputs=[spins_display, last_spin_display]
+    ).then(
+        fn=create_level_bars,
+        inputs=[],
+        outputs=[level_bars_output]
     )
     spins_display.change(
         fn=update_spin_counter,
@@ -3936,7 +3995,11 @@ with gr.Blocks() as demo:
     clear_spins_button.click(
         fn=clear_spins,
         inputs=[],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter]
+        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, level_bars_output]
+    ).then(
+        fn=create_level_bars,
+        inputs=[],
+        outputs=[level_bars_output]
     )
 
     clear_all_button.click(
@@ -3946,7 +4009,8 @@ with gr.Blocks() as demo:
             spins_display, spins_textbox, spin_analysis_output, last_spin_display,
             even_money_output, dozens_output, columns_output, streets_output,
             corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output, spin_counter
+            straight_up_html, top_18_html, strongest_numbers_output, spin_counter,
+            level_bars_output
         ]
     ).then(
         fn=clear_outputs,
@@ -3958,19 +4022,13 @@ with gr.Blocks() as demo:
             dynamic_table_output, strategy_output, color_code_output
         ]
     ).then(
+        fn=create_level_bars,
+        inputs=[],
+        outputs=[level_bars_output]
+    ).then(
         fn=dozen_tracker,
         inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
         outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-    )
-
-    generate_spins_button.click(
-        fn=generate_random_spins,
-        inputs=[gr.State(value="5"), spins_display, last_spin_count],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter]
-    ).then(
-        fn=format_spins_as_html,
-        inputs=[spins_display, last_spin_count],
-        outputs=[last_spin_display]
     )
 
     last_spin_count.change(
@@ -4028,8 +4086,12 @@ with gr.Blocks() as demo:
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-            dynamic_table_output, strategy_output
+            dynamic_table_output, strategy_output, level_bars_output
         ]
+    ).then(
+        fn=create_level_bars,
+        inputs=[],
+        outputs=[level_bars_output]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
@@ -4056,7 +4118,8 @@ with gr.Blocks() as demo:
         outputs=[
             spins_display, spins_textbox, spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_output, strategy_output
+            straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_output, strategy_output,
+            level_bars_output
         ]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -4071,6 +4134,10 @@ with gr.Blocks() as demo:
         inputs=[],
         outputs=[color_code_output]
     ).then(
+        fn=create_level_bars,
+        inputs=[],
+        outputs=[level_bars_output]
+    ).then(
         fn=dozen_tracker,
         inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
         outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
@@ -4084,8 +4151,12 @@ with gr.Blocks() as demo:
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_html, top_18_html, strongest_numbers_output,
             spins_textbox, spins_display, dynamic_table_output, strategy_output,
-            color_code_output, spin_counter
+            color_code_output, spin_counter, level_bars_output
         ]
+    ).then(
+        fn=create_level_bars,
+        inputs=[],
+        outputs=[level_bars_output]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
@@ -4094,6 +4165,20 @@ with gr.Blocks() as demo:
         fn=dozen_tracker,
         inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
         outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+    )
+
+    generate_spins_button.click(
+        fn=generate_random_spins,
+        inputs=[gr.State(value="5"), spins_display, last_spin_count],
+        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, level_bars_output]
+    ).then(
+        fn=format_spins_as_html,
+        inputs=[spins_display, last_spin_count],
+        outputs=[last_spin_display]
+    ).then(
+        fn=create_level_bars,
+        inputs=[],
+        outputs=[level_bars_output]
     )
 
     neighbours_count_slider.change(
