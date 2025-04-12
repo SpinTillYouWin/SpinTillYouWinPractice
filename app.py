@@ -3186,29 +3186,17 @@ STRATEGIES = {
     "Best Columns": {"function": best_columns, "categories": ["columns"]},
     "Best Columns + Top Pick 18 Numbers": {"function": best_columns_and_top_18, "categories": ["columns", "numbers"]},
     "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers": {"function": best_dozens_even_money_and_top_18, "categories": ["dozens", "even_money", "numbers", "trends"]},
-    "Best Columns + Best Even Money Bets + Top Pick 18 Numbers": {
-        "function": best_columns_even_money_and_top_18,
-        "categories": ["columns", "even_money", "numbers", "trends"],
-        "video_url": "https://youtu.be/I_F9Wys3Ww0",
-        "video_title": "S.T.Y.W: Zero Jack 2-2-3 Roulette Strategy"
-    },
+    "Best Columns + Best Even Money Bets + Top Pick 18 Numbers": {"function": best_columns_even_money_and_top_18, "categories": ["columns", "even_money", "numbers", "trends"]},
     "Fibonacci Strategy": {"function": fibonacci_strategy, "categories": ["dozens", "columns"]},
     "Best Streets": {"function": best_streets, "categories": ["streets"]},
     "Best Double Streets": {"function": best_double_streets, "categories": ["six_lines"]},
-    "Best Corners": {
-        "function": best_corners,
-        "categories": ["corners"]
-    },
+    "Best Corners": {"function": best_corners, "categories": ["corners"]},
     "Best Splits": {"function": best_splits, "categories": ["splits"]},
     "Best Dozens + Best Streets": {"function": best_dozens_and_streets, "categories": ["dozens", "streets"]},
     "Best Columns + Best Streets": {"function": best_columns_and_streets, "categories": ["columns", "streets"]},
     "Non-Overlapping Double Street Strategy": {"function": non_overlapping_double_street_strategy, "categories": ["six_lines"]},
-    "Romanowksy Missing Dozen": {
-        "function": romanowksy_missing_dozen_strategy,
-        "categories": ["dozens", "numbers"],
-        "video_url": "https://youtu.be/YbBtum5WVCk",
-        "video_title": "S.T.Y.W: Romanowsky Missing Dozen Strategy"
-    },
+    "Non-Overlapping Corner Strategy": {"function": non_overlapping_corner_strategy, "categories": ["corners"]},
+    "Romanowksy Missing Dozen": {"function": romanowksy_missing_dozen_strategy, "categories": ["dozens", "numbers"]},
     "Fibonacci To Fortune": {"function": fibonacci_to_fortune_strategy, "categories": ["even_money", "dozens", "columns", "six_lines"]},
     "3-8-6 Rising Martingale": {"function": three_eight_six_rising_martingale, "categories": ["streets"]},
     "1 Dozen +1 Column Strategy": {"function": one_dozen_one_column_strategy, "categories": ["dozens", "columns"]},
@@ -3217,79 +3205,51 @@ STRATEGIES = {
     "Neighbours of Strong Number": {"function": neighbours_of_strong_number, "categories": ["neighbours"]}
 }
 
-def update_strategy_video_links(selected_category):
-    if not selected_category or selected_category == "None":
-        print("update_strategy_video_links: No category selected, returning default message.")
-        return "<p>Please select a category to see video tutorials.</p>"
-    
-    print(f"update_strategy_video_links: Processing category '{selected_category}'")
-    html_output = ""
+def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
     try:
-        html_output = f"<h4 style='text-transform: uppercase; margin-bottom: 10px;'>{selected_category}</h4>"
-        print("update_strategy_video_links: Added category heading to HTML output.")
-        html_output += "<ul style='list-style-type: none; padding-left: 0;'>"
-        print("update_strategy_video_links: Started unordered list.")
+        print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
+        print(f"show_strategy_recommendations: even_money_scores = {dict(state.even_money_scores)}")
+        print(f"show_strategy_recommendations: any_scores = {any(state.scores.values())}, any_even_money = {any(state.even_money_scores.values())}")
+        print(f"show_strategy_recommendations: strategy_name = {strategy_name}, neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}, args = {args}")
 
-        strategies = strategy_categories.get(selected_category, [])
-        print(f"update_strategy_video_links: Strategies found: {strategies}")
-        if not strategies:
-            html_output += f"""
-            <li style="margin-bottom: 8px; font-size: 14px; color: #ff0000;">
-                No strategies found for category '{selected_category}'
-            </li>
-            """
-            print("update_strategy_video_links: No strategies found, added error message.")
+        if strategy_name == "None":
+            return "<p>No strategy selected. Please choose a strategy to see recommendations.</p>"
+        
+        # If no spins yet, provide a default for "Best Even Money Bets"
+        if not any(state.scores.values()) and not any(state.even_money_scores.values()):
+            if strategy_name == "Best Even Money Bets":
+                return "<p>No spins yet. Default Even Money Bets to consider:<br>1. Red<br>2. Black<br>3. Even</p>"
+            return "<p>Please analyze some spins first to generate scores.</p>"
+
+        strategy_info = STRATEGIES[strategy_name]
+        strategy_func = strategy_info["function"]
+
+        if strategy_name == "Neighbours of Strong Number":
+            try:
+                neighbours_count = int(neighbours_count)
+                strong_numbers_count = int(strong_numbers_count)
+                print(f"show_strategy_recommendations: Using neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}")
+            except (ValueError, TypeError) as e:
+                print(f"show_strategy_recommendations: Error converting inputs: {str(e)}, defaulting to 2 and 1.")
+                neighbours_count = 2
+                strong_numbers_count = 1
+            recommendations = strategy_func(neighbours_count, strong_numbers_count)
         else:
-            for idx, strategy in enumerate(strategies):
-                print(f"update_strategy_video_links: Processing strategy {idx + 1}/{len(strategies)}: '{strategy}'")
-                if strategy not in STRATEGIES:
-                    print(f"update_strategy_video_links: Strategy '{strategy}' not found in STRATEGIES")
-                    html_output += f"""
-                    <li style="margin-bottom: 8px; font-size: 14px; color: #ff0000;">
-                        Strategy '{strategy}' not found
-                    </li>
-                    """
-                    continue
-                
-                strategy_info = STRATEGIES[strategy]
-                print(f"update_strategy_video_links: Strategy '{strategy}' info: {strategy_info}")
-                
-                video_url = strategy_info.get("video_url", "")
-                video_title = strategy_info.get("video_title", f"Video for {strategy}")
-                escaped_strategy = html.escape(strategy)
-                print(f"update_strategy_video_links: Strategy '{strategy}' - video_url: '{video_url}', video_title: '{video_title}'")
-                
-                try:
-                    if video_url and video_title:
-                        html_entry = f"""
-                        <li style="margin-bottom: 8px;">
-                            <a href="{video_url}" target="_blank" class="strategy-video-link">{video_title}</a>
-                        </li>
-                        """
-                        print(f"update_strategy_video_links: Strategy '{strategy}' has video, adding link: {html_entry.strip()}")
-                    else:
-                        html_entry = f"""
-                        <li style="margin-bottom: 8px; font-size: 14px; color: #333;">
-                            Video for "{escaped_strategy}" not yet available
-                        </li>
-                        """
-                        print(f"update_strategy_video_links: Strategy '{strategy}' has no video, adding default message: {html_entry.strip()}")
-                    
-                    html_output += html_entry
-                except Exception as e:
-                    print(f"update_strategy_video_links: Error constructing HTML for strategy '{strategy}': {str(e)}")
-                    html_output += f"""
-                    <li style="margin-bottom: 8px; font-size: 14px; color: #ff0000;">
-                        Error rendering video entry for '{escaped_strategy}': {str(e)}
-                    </li>
-                    """
+            recommendations = strategy_func()
 
-        html_output += "</ul>"
-        print("update_strategy_video_links: Closed unordered list.")
-        return html_output
+        print(f"show_strategy_recommendations: Strategy {strategy_name} output = {recommendations}")
+
+        # If the output is already HTML, return it as is
+        if strategy_name == "Top Numbers with Neighbours (Tiered)":
+            return recommendations
+        # Otherwise, convert plain text to HTML
+        else:
+            lines = recommendations.split("\n")
+            html_lines = [f"<p>{line}</p>" for line in lines if line.strip()]
+            return "".join(html_lines)
     except Exception as e:
-        print(f"update_strategy_video_links: Unexpected error processing category '{selected_category}': {str(e)}")
-        return f"<p>Error generating video links for category '{selected_category}': {str(e)}</p>"
+        print(f"show_strategy_recommendations: Error: {str(e)}")
+        return f"<p>Error generating strategy recommendations: {str(e)}</p>"
 
 def clear_outputs():
     return "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
@@ -3345,7 +3305,7 @@ with gr.Blocks() as demo:
         "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Streets"],
         "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
         "Double Street Strategies": ["Best Double Streets", "Non-Overlapping Double Street Strategy"],
-        "Corner Strategies": ["Best Corners"],
+        "Corner Strategies": ["Best Corners", "Non-Overlapping Corner Strategy"],
         "Split Strategies": ["Best Splits"],
         "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"],
         "Neighbours Strategies": ["Neighbours of Strong Number"]
@@ -3440,10 +3400,6 @@ with gr.Blocks() as demo:
             strategy_output = gr.HTML(
                 label="Strategy Recommendations",
                 value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
-            )
-            strategy_video_links = gr.HTML(
-                label="Strategy Video Tutorials",
-                value='<p>Select a category to see video tutorials.</p>'
             )
             with gr.Accordion("Casino Data Insights", open=False, elem_id="casino-data-insights"):
                 spins_count_dropdown = gr.Dropdown(
@@ -4032,10 +3988,6 @@ with gr.Blocks() as demo:
         fn=update_strategy_dropdown,
         inputs=category_dropdown,
         outputs=strategy_dropdown
-    ).then(
-        fn=update_strategy_video_links,
-        inputs=[category_dropdown],
-        outputs=[strategy_video_links]
     )
 
     reset_strategy_button.click(
