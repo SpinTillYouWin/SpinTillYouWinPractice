@@ -1099,6 +1099,11 @@ def update_casino_data(spins_count, even_percent, odd_percent, red_percent, blac
         state.casino_data["columns"] = {"1st Column": c1_val, "2nd Column": c2_val, "3rd Column": c3_val}
         has_columns = c1_val > 0 or c2_val > 0 or c3_val > 0
 
+        # Check for empty data when highlighting is enabled
+        if use_winners and not any([has_even_odd, has_red_black, has_low_high, has_dozens, has_columns]):
+            gr.Warning("Highlight Casino Winners is enabled, but no casino data is provided. Enter percentages to see highlights.")
+            return "<p>Warning: No casino data provided for highlighting. Please enter percentages for Even/Odd, Red/Black, Low/High, Dozens, or Columns.</p>"
+
         # Generate HTML Output
         output = f"<h4>Casino Data Insights (Last {spins_count} Spins):</h4>"
         for key, name, has_data in [
