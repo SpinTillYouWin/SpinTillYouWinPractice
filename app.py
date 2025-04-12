@@ -3860,37 +3860,96 @@ with gr.Blocks() as demo:
       #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
       #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
       
-      /* Scrollable Tables */
-      .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
-    
       /* Spin Counter Styling */
       .spin-counter {
-        font-size: 16px !important;
-        font-weight: bold !important;
-        color: #ffffff !important;
-        background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
-        padding: 8px 12px !important;
-        border: 2px solid #3498DB !important; /* Darker blue border */
-        border-radius: 8px !important;
-        margin-top: 0 !important; /* Align with textbox */
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important; /* Slightly stronger shadow */
-        transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
-    }
-    .spin-counter:hover {
-        transform: scale(1.05) !important; /* Slight zoom on hover */
-        box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
-    }
-    .spin-counter.animate {
-        animation: pop 0.3s ease-in-out !important;
-    }
-    @keyframes pop {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
-    }
+          font-size: 16px !important;
+          font-weight: bold !important;
+          color: #ffffff !important;
+          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
+          padding: 10px 20px !important; /* Increased padding for button-like appearance */
+          border: 2px solid #3498DB !important; /* Darker blue border */
+          border-radius: 10px !important; /* More rounded corners */
+          display: inline-block !important; /* Inline-block for button-like behavior */
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important; /* Slightly stronger shadow */
+          transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
+      }
+      .spin-counter:hover {
+          transform: scale(1.05) !important; /* Slight zoom on hover */
+          box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
+      }
+      .spin-counter.animate {
+          animation: pop 0.3s ease-in-out !important;
+      }
+      @keyframes pop {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+          100% { transform: scale(1); }
+      }
+
+      /* Wheel Layout Styling */
+      .wheel-layout {
+          background-color: #2E8B57 !important; /* Green felt background */
+          border: 2px solid #000 !important;
+          border-radius: 10px !important;
+          padding: 8px !important;
+          margin-top: 10px !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+      }
+      .wheel-sections {
+          display: flex !important;
+          justify-content: space-between !important;
+          width: 100% !important;
+          max-width: 600px !important; /* Limit width for compactness */
+          padding: 4px !important;
+      }
+      .wheel-section {
+          flex: 1 !important;
+          text-align: center !important;
+          border-right: 1px solid #000 !important;
+          padding: 0 4px !important;
+      }
+      .wheel-section:last-child {
+          border-right: none !important;
+      }
+      .wheel-section h5 {
+          color: #fff !important;
+          font-size: 12px !important; /* Smaller font for compactness */
+          margin: 4px 0 !important;
+          text-transform: uppercase !important;
+          font-family: Arial, sans-serif !important;
+      }
+      .hit-count {
+          color: #fff !important;
+          font-size: 10px !important; /* Smaller font for compactness */
+          margin-bottom: 4px !important;
+          font-family: Arial, sans-serif !important;
+      }
+      .wheel-numbers {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          justify-content: center !important;
+          gap: 2px !important; /* Minimal gap for compactness */
+      }
+      .wheel-number {
+          width: 20px !important; /* Small boxes for compactness */
+          height: 20px !important;
+          line-height: 20px !important;
+          text-align: center !important;
+          border-radius: 4px !important;
+          font-size: 10px !important; /* Smaller font for compactness */
+          color: #fff !important;
+          font-weight: bold !important;
+          font-family: Arial, sans-serif !important;
+      }
+      .wheel-number.green { background-color: green !important; }
+      .wheel-number.red { background-color: red !important; }
+      .wheel-number.black { background-color: black !important; }
+      .wheel-number.recent {
+          border: 2px solid yellow !important;
+          box-shadow: 0 0 5px yellow !important; /* Subtle glow for recent spins */
+      }
     
       /* Last Spins Container */
       .last-spins-container {
