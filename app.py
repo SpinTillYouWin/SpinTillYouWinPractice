@@ -3414,6 +3414,10 @@ with gr.Blocks() as demo:
                 label="Strategy Recommendations",
                 value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
             )
+            strategy_video_links = gr.HTML(
+                label="Strategy Video Tutorials",
+                value='<p>Select a category to see video tutorials.</p>'
+            )
             with gr.Accordion("Casino Data Insights", open=False, elem_id="casino-data-insights"):
                 spins_count_dropdown = gr.Dropdown(
                     label="Past Spins Count",
