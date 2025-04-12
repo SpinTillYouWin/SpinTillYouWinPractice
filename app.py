@@ -1165,18 +1165,11 @@ def reset_casino_data():
 def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
     print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
     print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
-
-    # Check cache
-    cache_params = (strategy_name, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color)
-    if state.dynamic_table_cache["params"] == cache_params and state.dynamic_table_cache["output"] is not None:
-        print("Returning cached dynamic table output")
-        return state.dynamic_table_cache["output"]
-
     sorted_sections = calculate_trending_sections()
     
     # If no spins yet, initialize with default even money focus
     if sorted_sections is None and strategy_name == "Best Even Money Bets":
-        trending_even_money = "Red"
+        trending_even_money = "Red"  # Default to "Red" as an example
         second_even_money = "Black"
         third_even_money = "Even"
         trending_dozen = None
@@ -1192,16 +1185,15 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
     
     # If still no highlights and no sorted_sections, provide a default message
     if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
-        output = "<p>No spins yet. Select a strategy to see default highlights.</p>"
-    else:
-        output = render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)
-
-    # Store in cache
-    state.dynamic_table_cache["params"] = cache_params
-    state.dynamic_table_cache["output"] = output
-    print("Updated dynamic table cache")
-
-    return output
+        return "<p>No spins yet. Select a strategy to see default highlights.</p>"
+    
+    return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)
+    
+    # If still no highlights and no sorted_sections, provide a default message
+    if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
+        return "<p>No spins yet. Select a strategy to see default highlights.</p>"
+    
+    return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)
 
 # Function to get strongest numbers with neighbors
 def get_strongest_numbers_with_neighbors(num_count):
