@@ -401,7 +401,39 @@ def add_spin(number, current_spins, num_to_show):
         return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter()
     
     print(f"add_spin: new_spins='{new_spins_str}'")
-    return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter()
+    # Update the last spin for highlighting
+    if new_spins:
+        last_spin = new_spins[-1]
+        wheel_html = f'''
+        <div id="european-wheel-container" style="text-align: center;">
+            <svg id="european-wheel" width="150" height="150" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="#333" stroke="#000" stroke-width="2"/>
+                <path id="voisins-section" d="M50 5 A45 45 0 0 1 95 50 A45 45 0 0 1 50 95 A45 45 0 0 1 5 50 A45 45 0 0 1 50 5 Z" fill="green" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                <path id="orphelins-section" d="M50 5 A45 45 0 0 1 95 50 L50 50 Z" fill="gray" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                <path id="tiers-section" d="M50 95 A45 45 0 0 1 5 50 L50 50 Z" fill="tan" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                <circle cx="50" cy="50" r="10" fill="#000" stroke="#fff" stroke-width="1"/>
+                <text x="50" y="55" font-size="8" fill="#fff" text-anchor="middle">Wheel</text>
+            </svg>
+            <script>
+                highlightWheelSection('{last_spin}');
+            </script>
+        </div>
+        '''
+    else:
+        wheel_html = '''
+        <div id="european-wheel-container" style="text-align: center;">
+            <svg id="european-wheel" width="150" height="150" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="#333" stroke="#000" stroke-width="2"/>
+                <path id="voisins-section" d="M50 5 A45 45 0 0 1 95 50 A45 45 0 0 1 50 95 A45 45 0 0 1 5 50 A45 45 0 0 1 50 5 Z" fill="green" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                <path id="orphelins-section" d="M50 5 A45 45 0 0 1 95 50 L50 50 Z" fill="gray" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                <path id="tiers-section" d="M50 95 A45 45 0 0 1 5 50 L50 50 Z" fill="tan" fill-opacity="0.3" stroke="#fff" stroke-width="1"/>
+                <circle cx="50" cy="50" r="10" fill="#000" stroke="#fff" stroke-width="1"/>
+                <text x="50" y="55" font-size="8" fill="#fff" text-anchor="middle">Wheel</text>
+            </svg>
+        </div>
+        '''
+    return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter(), wheel_html
+    
 # Function to clear spins
 def clear_spins():
     state.selected_numbers.clear()
@@ -3367,7 +3399,7 @@ with gr.Blocks() as demo:
                         btn.click(
                             fn=add_spin,
                             inputs=[gr.State(value=num), spins_display, last_spin_count],
-                            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter]
+                            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, wheel_placeholder]
                         )
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
