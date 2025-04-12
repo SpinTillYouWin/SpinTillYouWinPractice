@@ -2832,9 +2832,9 @@ def create_color_code_table():
     return html
     
 def update_spin_counter():
-    """Return the current number of spins as formatted HTML with inline styling."""
+    """Return the current number of spins as formatted HTML with inline styling and animation trigger."""
     spin_count = len(state.last_spins)
-    return f'<span style="font-size: 16px;">Total Spins: {spin_count}</span>'
+    return f'<span class="spin-counter animate" style="font-size: 16px;">Total Spins: {spin_count}</span>'
     
 def top_numbers_with_neighbours_tiered():
     recommendations = []
@@ -3821,24 +3821,32 @@ with gr.Blocks() as demo:
     
       /* Spin Counter Styling */
       .spin-counter {
-          font-size: 16px !important;
-          font-weight: bold !important;
-          color: #ffffff !important;
-          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
-          padding: 8px 12px !important;
-          border: 2px solid #3498DB !important; /* Darker blue border */
-          border-radius: 8px !important;
-          margin-top: 0 !important; /* Align with textbox */
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important; /* Slightly stronger shadow */
-          transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
-      }
-      .spin-counter:hover {
-          transform: scale(1.05) !important; /* Slight zoom on hover */
-          box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
-      }
+        font-size: 16px !important;
+        font-weight: bold !important;
+        color: #ffffff !important;
+        background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
+        padding: 8px 12px !important;
+        border: 2px solid #3498DB !important; /* Darker blue border */
+        border-radius: 8px !important;
+        margin-top: 0 !important; /* Align with textbox */
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important; /* Slightly stronger shadow */
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
+    }
+    .spin-counter:hover {
+        transform: scale(1.05) !important; /* Slight zoom on hover */
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
+    }
+    .spin-counter.animate {
+        animation: pop 0.3s ease-in-out !important;
+    }
+    @keyframes pop {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
     
       /* Last Spins Container */
       .last-spins-container {
