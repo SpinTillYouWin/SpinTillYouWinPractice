@@ -459,7 +459,7 @@ def load_session(file, strategy_name, neighbours_count, strong_numbers_count, *c
         corners_output = "Corners:\n" + "\n".join(f"{name}: {score}" for name, score in state.corner_scores.items() if score > 0)
         six_lines_output = "Double Streets:\n" + "\n".join(f"{name}: {score}" for name, score in state.six_line_scores.items() if score > 0)
         splits_output = "Splits:\n" + "\n".join(f"{name}: {score}" for name, score in state.split_scores.items() if score > 0)
-        sides_output = update_sides_display()  # Use the new helper function
+        sides_output = "Sides of Zero:\n" + "\n".join(f"{name}: {score}" for name, score in state.side_scores.items())
 
         straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
         straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
@@ -1468,7 +1468,7 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
         print(f"analyze_spins: six_lines_output='{six_lines_output}'")
         splits_output = "Splits:\n" + "\n".join(f"{name}: {score}" for name, score in state.split_scores.items() if score > 0)
         print(f"analyze_spins: splits_output='{splits_output}'")
-        sides_output = update_sides_display()  # Use the new helper function
+        sides_output = "Sides of Zero:\n" + "\n".join(f"{name}: {score}" for name, score in state.side_scores.items())
         print(f"analyze_spins: sides_output='{sides_output}'")
 
         straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
@@ -1553,7 +1553,7 @@ def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_
         corners_output = "Corners:\n" + "\n".join(f"{name}: {score}" for name, score in state.corner_scores.items() if score > 0)
         six_lines_output = "Double Streets:\n" + "\n".join(f"{name}: {score}" for name, score in state.six_line_scores.items() if score > 0)
         splits_output = "Splits:\n" + "\n".join(f"{name}: {score}" for name, score in state.split_scores.items() if score > 0)
-        sides_output = update_sides_display()  # Use the new helper function
+        sides_output = "Sides of Zero:\n" + "\n".join(f"{name}: {score}" for name, score in state.side_scores.items())
 
         straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
         straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
@@ -1595,7 +1595,7 @@ def clear_all():
     state.selected_numbers.clear()
     state.last_spins = []
     state.reset()
-    return "", "", "All spins and scores cleared successfully!", "", "", "", "", "", "", "", update_sides_display(), "", "", "", "", update_spin_counter()
+    return "", "", "All spins and scores cleared successfully!", "", "", "", "", "", "", "", "", "", "", "", "", update_spin_counter()
 
 def reset_strategy_dropdowns():
     default_category = "Even Money Strategies"
@@ -2835,22 +2835,6 @@ def update_spin_counter():
     """Return the current number of spins as formatted HTML with inline styling."""
     spin_count = len(state.last_spins)
     return f'<span style="font-size: 16px;">Total Spins: {spin_count}</span>'
-def update_sides_display():
-    """Generate HTML to display hit counts for Left Side of Zero and Right Side of Zero with the roulette wheel image."""
-    # Get hit counts
-    left_hits = state.side_scores.get("Left Side of Zero", 0)
-    right_hits = state.side_scores.get("Right Side of Zero", 0)
-
-    # Generate HTML with scores and image
-    html = '''
-    <div style="margin-top: 10px;">
-        <h4>Sides of Zero Hits:</h4>
-        <p>Left Side of Zero: {left_hits}</p>
-        <p>Right Side of Zero: {right_hits}</p>
-        <img src="/static/600px-European_Roulette_wheel.png" alt="European Roulette Wheel" style="max-width: 100%; height: auto; margin-top: 10px;">
-    </div>
-    '''.format(left_hits=left_hits, right_hits=right_hits)
-    return html
     
 def top_numbers_with_neighbours_tiered():
     recommendations = []
@@ -3718,7 +3702,7 @@ with gr.Blocks() as demo:
                     splits_output = gr.Textbox(label="Splits", lines=10, max_lines=50)
             with gr.Column():
                 with gr.Accordion("Sides of Zero", open=True):
-                    sides_output = gr.HTML(label="Sides of Zero")
+                    sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
     # 11. Row 11: Save/Load Session (Collapsible, Renumbered)
     with gr.Accordion("Save/Load Session", open=False, elem_id="save-load-session"):
@@ -3969,9 +3953,9 @@ with gr.Blocks() as demo:
         inputs=[],
         outputs=[
             spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output, spins_textbox, spins_display,
-            dynamic_table_output, strategy_output, color_code_output, spin_counter
+            streets_output, corners_output, six_lines_output, splits_output,
+            sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+            dynamic_table_output, strategy_output, color_code_output
         ]
     ).then(
         fn=dozen_tracker,
@@ -4042,8 +4026,9 @@ with gr.Blocks() as demo:
         inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
         outputs=[
             spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_output, strategy_output
+            streets_output, corners_output, six_lines_output, splits_output,
+            sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+            dynamic_table_output, strategy_output
         ]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -4096,9 +4081,10 @@ with gr.Blocks() as demo:
         inputs=[spins_display, gr.State(value=1), strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
         outputs=[
             spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output, spins_textbox, spins_display,
-            dynamic_table_output, strategy_output, color_code_output, spin_counter
+            streets_output, corners_output, six_lines_output, splits_output,
+            sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+            spins_textbox, spins_display, dynamic_table_output, strategy_output,
+            color_code_output, spin_counter
         ]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
