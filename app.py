@@ -2843,6 +2843,44 @@ def update_spin_counter():
     """Return the current number of spins as formatted HTML with inline styling and animation trigger."""
     spin_count = len(state.last_spins)
     return f'<span class="spin-counter animate" style="font-size: 16px;">Total Spins: {spin_count}</span>'
+
+def render_wheel_layout(spins, recent_limit=3, track_limit=7):
+    """Render the roulette wheel layout with sections and hit counts."""
+    if not spins:
+        return '<div class="wheel-layout"><h4>Roulette Wheel Layout</h4><p>No spins yet.</p></div>'
+    
+    spin_list = spins.split(", ") if spins else []
+    recent_spins = spin_list[-recent_limit:] if len(spin_list) >= recent_limit else spin_list
+    tracked_spins = spin_list[-track_limit:] if len(spin_list) >= track_limit else spin_list
+    
+    # Count hits in each section for the last track_limit spins
+    section_hits = {section: 0 for section in WHEEL_SECTIONS}
+    for spin in tracked_spins:
+        num = int(spin)
+        for section, numbers in WHEEL_SECTIONS.items():
+            if num in numbers:
+                section_hits[section] += 1
+    
+    # Start HTML for the wheel layout
+    html = '<div class="wheel-layout">'
+    html += '<div class="wheel-sections">'
+    
+    # Render each section
+    for section, numbers in WHEEL_SECTIONS.items():
+        hit_count = section_hits[section]
+        html += f'<div class="wheel-section">'
+        html += f'<h5>{section}</h5>'
+        html += f'<div class="hit-count">{hit_count}/{track_limit}</div>'
+        html += '<div class="wheel-numbers">'
+        for num in numbers:
+            color = colors.get(str(num), "black")
+            is_recent = str(num) in recent_spins
+            class_name = f"wheel-number {color}" + (" recent" if is_recent else "")
+            html += f'<span class="{class_name}">{num}</span>'
+        html += '</div></div>'
+    
+    html += '</div></div>'
+    return html
     
 def top_numbers_with_neighbours_tiered():
     recommendations = []
