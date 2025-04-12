@@ -160,7 +160,6 @@ class RouletteState:
         self.status_color = "white"  # Default color for active status
 
     def reset(self):
-        # Existing reset logic
         self.scores = {n: 0 for n in range(37)}
         self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
         self.dozen_scores = {name: 0 for name in DOZENS.keys()}
@@ -170,9 +169,9 @@ class RouletteState:
         self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
         self.split_scores = {name: 0 for name in SPLITS.keys()}
         self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
-        self.selected_numbers = set()
+        self.selected_numbers = set(int(s) for s in self.last_spins if s.isdigit())
         self.last_spins = []
-        self.spin_history = []  # Reset history too
+        self.spin_history = []
 
         # Reset betting progression (optional: only if you want full reset to affect progression)
         # self.reset_progression()
@@ -390,6 +389,7 @@ def add_spin(number, current_spins, num_to_show):
 
     # Update state with new spins
     new_spins = spins.copy()
+    state.selected_numbers.clear()  # Clear before rebuilding
     for num_str in valid_spins:
         num = int(num_str)
         new_spins.append(str(num))
@@ -399,6 +399,7 @@ def add_spin(number, current_spins, num_to_show):
         # Limit spin history to 100 spins
         if len(state.spin_history) > 100:
             state.spin_history.pop(0)
+    state.selected_numbers = set(int(s) for s in state.last_spins if s.isdigit())  # Sync with last_spins
 
     new_spins_str = ", ".join(new_spins)
     if errors:
@@ -1258,6 +1259,7 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
 
         # Generate spin analysis output
         spin_results = []
+        state.selected_numbers.clear()  # Clear before rebuilding
         for idx, spin in enumerate(spins):
             spin_value = int(spin)
             hit_sections = []
@@ -1303,6 +1305,7 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
             # Limit spin history to 100 spins
             if len(state.spin_history) > 100:
                 state.spin_history.pop(0)
+        state.selected_numbers = set(int(s) for s in state.last_spins if s.isdigit())  # Sync with last_spins
 
         spin_analysis_output = "\n".join(spin_results)
         print(f"analyze_spins: spin_analysis_output='{spin_analysis_output}'")
