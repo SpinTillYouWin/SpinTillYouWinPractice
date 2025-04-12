@@ -7,7 +7,71 @@ from roulette_data import (
     EVEN_MONEY, DOZENS, COLUMNS, STREETS, CORNERS, SIX_LINES, SPLITS,
     NEIGHBORS_EUROPEAN, LEFT_OF_ZERO_EUROPEAN, RIGHT_OF_ZERO_EUROPEAN
 )
+def update_scores_batch(spins):
+    """Update scores for a batch of spins and return actions for undo."""
+    action_log = []
+    for spin in spins:
+        spin_value = int(spin)
+        action = {"spin": spin_value, "increments": {}}
 
+        # Update even money scores
+        for name, numbers in EVEN_MONEY.items():
+            if spin_value in numbers:
+                state.even_money_scores[name] += 1
+                action["increments"].setdefault("even_money_scores", {})[name] = 1
+
+        # Update dozens scores
+        for name, numbers in DOZENS.items():
+            if spin_value in numbers:
+                state.dozen_scores[name] += 1
+                action["increments"].setdefault("dozen_scores", {})[name] = 1
+
+        # Update columns scores
+        for name, numbers in COLUMNS.items():
+            if spin_value in numbers:
+                state.column_scores[name] += 1
+                action["increments"].setdefault("column_scores", {})[name] = 1
+
+        # Update streets scores
+        for name, numbers in STREETS.items():
+            if spin_value in numbers:
+                state.street_scores[name] += 1
+                action["increments"].setdefault("street_scores", {})[name] = 1
+
+        # Update corners scores
+        for name, numbers in CORNERS.items():
+            if spin_value in numbers:
+                state.corner_scores[name] += 1
+                action["increments"].setdefault("corner_scores", {})[name] = 1
+
+        # Update six lines scores
+        for name, numbers in SIX_LINES.items():
+            if spin_value in numbers:
+                state.six_line_scores[name] += 1
+                action["increments"].setdefault("six_line_scores", {})[name] = 1
+
+        # Update splits scores
+        for name, numbers in SPLITS.items():
+            if spin_value in numbers:
+                state.split_scores[name] += 1
+                action["increments"].setdefault("split_scores", {})[name] = 1
+
+        # Update straight-up scores
+        state.scores[spin_value] += 1
+        action["increments"].setdefault("scores", {})[spin_value] = 1
+
+        # Update side scores
+        if str(spin_value) in [str(x) for x in current_left_of_zero]:
+            state.side_scores["Left Side of Zero"] += 1
+            action["increments"].setdefault("side_scores", {})["Left Side of Zero"] = 1
+        if str(spin_value) in [str(x) for x in current_right_of_zero]:
+            state.side_scores["Right Side of Zero"] += 1
+            action["increments"].setdefault("side_scores", {})["Right Side of Zero"] = 1
+
+        action_log.append(action)
+    return action_log
+
+    
 def validate_roulette_data():
     """Validate that all required constants from roulette_data.py are present and correctly formatted."""
     required_dicts = {
@@ -295,89 +359,43 @@ def add_spin(number, current_spins, num_to_show):
     spins = current_spins.split(", ") if current_spins else []
     if spins == [""]:
         spins = []
-    
+
     # Split input on commas and process each number
     numbers = [n.strip() for n in number.split(",") if n.strip()]
     if not numbers:
         gr.Warning("No valid input provided. Please enter numbers between 0 and 36.")
         return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter()
-    
-    new_spins = spins.copy()  # Track new spins for this call
-    errors = []  # Collect all errors
-    
+
+    errors = []
+    valid_spins = []
     for num_str in numbers:
         try:
             num = int(num_str)
             if not (0 <= num <= 36):
                 errors.append(f"'{num_str}' is out of range (0-36)")
                 continue
-            
-            # Record the spin's effects for undoing
-            action = {"spin": num, "increments": {}}
-
-            # Update scores and track increments
-            for name, numbers in EVEN_MONEY.items():
-                if num in numbers:
-                    state.even_money_scores[name] += 1
-                    action["increments"].setdefault("even_money_scores", {})[name] = 1
-
-            for name, numbers in DOZENS.items():
-                if num in numbers:
-                    state.dozen_scores[name] += 1
-                    action["increments"].setdefault("dozen_scores", {})[name] = 1
-
-            for name, numbers in COLUMNS.items():
-                if num in numbers:
-                    state.column_scores[name] += 1
-                    action["increments"].setdefault("column_scores", {})[name] = 1
-
-            for name, numbers in STREETS.items():
-                if num in numbers:
-                    state.street_scores[name] += 1
-                    action["increments"].setdefault("street_scores", {})[name] = 1
-
-            for name, numbers in CORNERS.items():
-                if num in numbers:
-                    state.corner_scores[name] += 1
-                    action["increments"].setdefault("corner_scores", {})[name] = 1
-
-            for name, numbers in SIX_LINES.items():
-                if num in numbers:
-                    state.six_line_scores[name] += 1
-                    action["increments"].setdefault("six_line_scores", {})[name] = 1
-
-            for name, numbers in SPLITS.items():
-                if num in numbers:
-                    state.split_scores[name] += 1
-                    action["increments"].setdefault("split_scores", {})[name] = 1
-
-            if num_str != "0":
-                state.scores[int(num_str)] += 1
-                action["increments"].setdefault("scores", {})[int(num_str)] = 1
-            else:
-                state.scores[0] += 1
-                action["increments"]["scores"] = {0: 1}
-
-            if str(num) in [str(x) for x in current_left_of_zero]:
-                state.side_scores["Left Side of Zero"] += 1
-                action["increments"].setdefault("side_scores", {})["Left Side of Zero"] = 1
-            if str(num) in [str(x) for x in current_right_of_zero]:
-                state.side_scores["Right Side of Zero"] += 1
-                action["increments"].setdefault("side_scores", {})["Right Side of Zero"] = 1
-
-            # Add the spin to state and new_spins
-            new_spins.append(str(num))
-            state.selected_numbers.add(num)
-            state.last_spins.append(str(num))
-            state.spin_history.append(action)
-        
+            valid_spins.append(num_str)
         except ValueError:
             errors.append(f"'{num_str}' is not a number")
             continue
-        except Exception as e:
-            errors.append(f"Unexpected error with '{num_str}': {str(e)}")
-            print(f"add_spin: Unexpected error - {str(e)}")
-            continue
+
+    if not valid_spins:
+        error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
+        gr.Warning(error_msg)
+        print(f"add_spin: Errors encountered - {error_msg}")
+        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter()
+
+    # Batch update scores
+    action_log = update_scores_batch(valid_spins)
+
+    # Update state with new spins
+    new_spins = spins.copy()
+    for num_str in valid_spins:
+        num = int(num_str)
+        new_spins.append(str(num))
+        state.selected_numbers.add(num)
+        state.last_spins.append(str(num))
+        state.spin_history.append(action_log.pop(0))
 
     new_spins_str = ", ".join(new_spins)
     if errors:
@@ -385,9 +403,10 @@ def add_spin(number, current_spins, num_to_show):
         gr.Warning(error_msg)
         print(f"add_spin: Errors encountered - {error_msg}")
         return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter()
-    
+
     print(f"add_spin: new_spins='{new_spins_str}'")
     return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter()
+    
 # Function to clear spins
 def clear_spins():
     state.selected_numbers.clear()
