@@ -223,8 +223,9 @@ class RouletteState:
     
         return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
 
-# Create an instance of RouletteState (unchanged)
+# Create an instance of RouletteState and reset it
 state = RouletteState()
+state.reset()  # Ensure state is reset on startup
 
 # Validate roulette data at startup
 data_errors = validate_roulette_data()
@@ -390,9 +391,8 @@ def add_spin(number, current_spins, num_to_show):
     return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter()
 # Function to clear spins
 def clear_spins():
-    state.selected_numbers.clear()
-    state.last_spins = []
-    return "", "", "Spins cleared successfully!", "", update_spin_counter()
+    state.reset()  # Reset the state
+    return "", "", "Spins cleared successfully!", update_sides_display(), update_spin_counter()
 
 # Function to save the session
 def save_session():
@@ -2845,6 +2845,10 @@ def update_spin_counter():
     return f'<span style="font-size: 16px;">Total Spins: {spin_count}</span>'
 def update_sides_display():
     """Generate HTML to display hit counts for Left Side of Zero, Zero, and Right Side of Zero with a visual layout."""
+    # Check if state is properly initialized
+    if not hasattr(state, 'side_scores') or not hasattr(state, 'scores'):
+        return "<div><h4>Sides of Zero Hits:</h4><p>Error: State not initialized.</p></div>"
+
     # Check if there are any hits
     if not any(state.side_scores.values()) and state.scores[0] == 0:
         return "<div><h4>Sides of Zero Hits:</h4><p>No hits yet.</p></div>"
@@ -2855,9 +2859,9 @@ def update_sides_display():
     max_bar_width = 100  # Maximum width of the bars in pixels
 
     # Get hit counts
-    left_hits = state.side_scores["Left Side of Zero"]
-    zero_hits = state.scores[0]
-    right_hits = state.side_scores["Right Side of Zero"]
+    left_hits = state.side_scores.get("Left Side of Zero", 0)
+    zero_hits = state.scores.get(0, 0)
+    right_hits = state.side_scores.get("Right Side of Zero", 0)
 
     # Calculate bar widths (for left and right sides only)
     max_side_hits = max(left_hits, right_hits, 1)  # Use max of left/right for side bars
@@ -3966,7 +3970,7 @@ with gr.Blocks() as demo:
 
     def validate_spins_input(spins_input):
         if not spins_input or not spins_input.strip():
-            return None, "<h4>Last Spins</h4><p>No spins yet.</p>"
+            return None, "<h4>Last Spins</h4><p>No spins yet.</p>", update_sides_display()
         
         raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
         errors = []
@@ -3985,14 +3989,15 @@ with gr.Blocks() as demo:
         if errors:
             error_msg = "Invalid inputs:\n- " + "\n- ".join(errors)
             gr.Warning(error_msg)
-            return spins_input, f"<h4>Last Spins</h4><p>{error_msg}</p>"
+            return spins_input, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_sides_display()
         
-        return ", ".join(valid_spins), format_spins_as_html(", ".join(valid_spins), last_spin_count.value)
-
+        spins_str = ", ".join(valid_spins)
+        return spins_str, format_spins_as_html(spins_str, last_spin_count.value), update_sides_display()
+    
     spins_textbox.change(
         fn=validate_spins_input,
         inputs=spins_textbox,
-        outputs=[spins_display, last_spin_display]
+        outputs=[spins_display, last_spin_display, sides_display]
     ).then(
         fn=update_sides_display,
         inputs=[],
@@ -4011,7 +4016,7 @@ with gr.Blocks() as demo:
     clear_spins_button.click(
         fn=clear_spins,
         inputs=[],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_display]
+        outputs=[spins_display, spins_textbox, spin_analysis_output, sides_display, spin_counter]
     )
 
     clear_all_button.click(
@@ -4042,7 +4047,7 @@ with gr.Blocks() as demo:
     generate_spins_button.click(
         fn=generate_random_spins,
         inputs=[gr.State(value="5"), spins_display, last_spin_count],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, sides_display]
+        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter]
     ).then(
         fn=format_spins_as_html,
         inputs=[spins_display, last_spin_count],
@@ -4057,6 +4062,10 @@ with gr.Blocks() as demo:
         fn=format_spins_as_html,
         inputs=[spins_display, last_spin_count],
         outputs=[last_spin_display]
+    ).then(
+        fn=update_sides_display,
+        inputs=[],
+        outputs=[sides_display]
     )
 
     def update_strategy_dropdown(category):
