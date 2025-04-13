@@ -3537,31 +3537,31 @@ with gr.Blocks() as demo:
     with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
         with gr.Row():
             with gr.Column():
-                with gr.Accordion("Even Money Bets", open=True):
+                with gr.Accordion("Even Money Bets", open=False):
                     even_money_output = gr.Textbox(label="Even Money Bets", lines=10, max_lines=50)
             with gr.Column():
-                with gr.Accordion("Dozens", open=True):
+                with gr.Accordion("Dozens", open=False):
                     dozens_output = gr.Textbox(label="Dozens", lines=10, max_lines=50)
         with gr.Row():
             with gr.Column():
-                with gr.Accordion("Columns", open=True):
+                with gr.Accordion("Columns", open=False):
                     columns_output = gr.Textbox(label="Columns", lines=10, max_lines=50)
             with gr.Column():
-                with gr.Accordion("Streets", open=True):
+                with gr.Accordion("Streets", open=False):
                     streets_output = gr.Textbox(label="Streets", lines=10, max_lines=50)
         with gr.Row():
             with gr.Column():
-                with gr.Accordion("Corners", open=True):
+                with gr.Accordion("Corners", open=False):
                     corners_output = gr.Textbox(label="Corners", lines=10, max_lines=50)
             with gr.Column():
-                with gr.Accordion("Double Streets", open=True):
+                with gr.Accordion("Double Streets", open=False):
                     six_lines_output = gr.Textbox(label="Double Streets", lines=10, max_lines=50)
         with gr.Row():
             with gr.Column():
-                with gr.Accordion("Splits", open=True):
+                with gr.Accordion("Splits", open=False):
                     splits_output = gr.Textbox(label="Splits", lines=10, max_lines=50)
             with gr.Column():
-                with gr.Accordion("Sides of Zero", open=True):
+                with gr.Accordion("Sides of Zero", open=False):
                     sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
     # 11. Row 11: Save/Load Session (Collapsible, Renumbered)
