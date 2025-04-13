@@ -403,7 +403,7 @@ def add_spin(number, current_spins, num_to_show):
     numbers = [n.strip() for n in number.split(",") if n.strip()]
     if not numbers:
         gr.Warning("No valid input provided. Please enter numbers between 0 and 36.")
-        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter(), render_sides_of_zero_display()
+        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter()
 
     errors = []
     valid_spins = []
@@ -422,7 +422,7 @@ def add_spin(number, current_spins, num_to_show):
         error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
         gr.Warning(error_msg)
         print(f"add_spin: Errors encountered - {error_msg}")
-        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
+        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter()
 
     # Batch update scores
     action_log = update_scores_batch(valid_spins)
@@ -446,10 +446,10 @@ def add_spin(number, current_spins, num_to_show):
         error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
         gr.Warning(error_msg)
         print(f"add_spin: Errors encountered - {error_msg}")
-        return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
+        return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter()
 
     print(f"add_spin: new_spins='{new_spins_str}'")
-    return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter(), render_sides_of_zero_display()
+    return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter()
     
 # Function to clear spins
 def clear_spins():
@@ -458,7 +458,7 @@ def clear_spins():
     state.spin_history = []  # Clear spin history as well
     state.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}  # Reset side scores
     state.scores = {n: 0 for n in range(37)}  # Reset straight-up scores
-    return "", "", "Spins cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", update_spin_counter(), render_sides_of_zero_display()
+    return "", "", "Spins cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", update_spin_counter()
 
 # Function to save the session
 def save_session():
@@ -3182,26 +3182,6 @@ with gr.Blocks() as demo:
         interactive=True,
         elem_id="selected-spins"
     )
-    sides_of_zero_display = gr.HTML(
-        label="Dealer's Spin Target: Wheel Section Analyzer",
-        value="""
-        <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">
-            <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 10px;">
-                <div class="bar" style="flex-grow: 1; background-color: #3498db; height: 20px; width: 0%; transition: width 0.5s ease; transform-origin: right;" id="left-bar"></div>
-                <span style="width: 100px; text-align: right;" id="left-label">Left Side (0)</span>
-            </div>
-            <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 10px;">
-                <div class="bar" style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: 0%; transition: width 0.5s ease; transform-origin: right;" id="zero-bar"></div>
-                <span style="width: 100px; text-align: right;" id="zero-label">Zero (0)</span>
-            </div>
-            <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 10px;">
-                <div class="bar" style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: 0%; transition: width 0.5s ease; transform-origin: right;" id="right-bar"></div>
-                <span style="width: 100px; text-align: right;" id="right-label">Right Side (0)</span>
-            </div>
-        </div>
-        """,
-        elem_classes=["sides-of-zero-container"]
-    )
     last_spin_display = gr.HTML(
         label="Last Spins",
         value='<h4>Last Spins</h4><p>No spins yet.</p>',
@@ -3222,7 +3202,7 @@ with gr.Blocks() as demo:
         elem_classes=["spin-counter"]
     )
 
-            # 1. Row 1: Header
+    # 1. Row 1: Header
     with gr.Row(elem_id="header-row"):
         with gr.Column(scale=1):
             gr.Markdown(
@@ -3237,8 +3217,7 @@ with gr.Blocks() as demo:
 
     # 1.1 Row: Dealer's Spin Target Bar Display
     with gr.Row():
-        with gr.Accordion("Dealer's Spin Target: Wheel Section Analyzer", open=False, elem_id="dealer-target-display"):
-            sides_of_zero_display  # Reference the existing state component
+        pass  # Removed Dealer's Spin Target section
 
     # 2. Row 2: European Roulette Table
     with gr.Group():
@@ -3734,13 +3713,6 @@ with gr.Blocks() as demo:
           margin: 0 !important;
           padding: 0 !important;
       }
-      
-      /* Buttons */
-      button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
-      button.clear-spins-btn:hover { background-color: #cc0000 !important; }
-      button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
-      button.generate-spins-btn:hover { background-color: #0056b3 !important; }
-      .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; width: 100% !important; box-sizing: border-box !important; }
     
       /* Buttons */
       button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
@@ -3752,6 +3724,7 @@ with gr.Blocks() as demo:
       button.green-btn:hover { background-color: #218838 !important; }
       /* Ensure columns have appropriate spacing */
       .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
+
     
       /* Compact Components */
       .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
@@ -4525,20 +4498,38 @@ with gr.Blocks() as demo:
     text: 'Click numbers!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ja454kZwndo?fs=0" frameborder="0"></iframe>',
     attachTo: { element: '.roulette-table', on: 'right' },
     buttons: [ 
-        { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 7', 'Part 7b') },
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 7', 'Part 8') },
       { text: 'Skip', action: tour.cancel }
     ]
   });
 
   tour.addStep({
-    id: 'part7b',
-    title: 'Track the Zero Zone!',
-    text: 'This section shows the distribution of spins around zero.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/YOUR_VIDEO_ID?fs=0" frameborder="0"></iframe>',
-    attachTo: { element: '#dealer-target-display', on: 'bottom' },
+    id: 'part8',
+    title: 'Bet Smart, Track the Art!',
+    text: 'Track bets!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '.betting-progression', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('.betting-progression');
+    },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 7b', 'Part 8') },
+      { text: 'Next', action: logStep('Part 8', 'Part 9') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  tour.addStep({
+    id: 'part9',
+    title: 'Paint Your Winning Hue!',
+    text: 'Make your table pop!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#color-code-key', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#color-code-key');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 9', 'Part 10') },
       { text: 'Skip', action: tour.cancel }
     ]
   });
