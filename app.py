@@ -325,6 +325,7 @@ colors = {
 
 
 # Lines before (context)
+# Lines before (context)
 def format_spins_as_html(spins, num_to_show):
     if not spins:
         return "<h4>Last Spins</h4><p>No spins yet.</p>"
@@ -366,6 +367,13 @@ def render_sides_of_zero_display():
     
     # Updated section starts here
     return f"""
+    <style>
+        #left-bar:hover, #zero-bar:hover, #right-bar:hover {{
+            filter: brightness(1.2);
+            transform: scale(1.02);
+            transition: filter 0.3s ease, transform 0.3s ease;
+        }}
+    </style>
     <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">
         <div style="display: flex; align-items: center; gap: 10px;">
             <span style="width: 100px;" id="left-label">Left Side ({left_hits})</span>
