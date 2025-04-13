@@ -3222,7 +3222,7 @@ with gr.Blocks() as demo:
         elem_classes=["spin-counter"]
     )
 
-        # 1. Row 1: Header
+            # 1. Row 1: Header
     with gr.Row(elem_id="header-row"):
         with gr.Column(scale=1):
             gr.Markdown(
@@ -3237,12 +3237,7 @@ with gr.Blocks() as demo:
 
     # 1.1 Row: Dealer's Spin Target Bar Display
     with gr.Row():
-        with gr.Accordion(
-            "<span class='accordion-title'>Dealer's Spin Target: Wheel Section Analyzer <span class='chevron' id='dealer-chevron'>▼</span></span>",
-            open=False,
-            elem_id="dealer-target-display",
-            elem_classes=["dealer-accordion"]
-        ):
+        with gr.Accordion("Dealer's Spin Target: Wheel Section Analyzer", open=False, elem_id="dealer-target-display"):
             sides_of_zero_display  # Reference the existing state component
 
     # 2. Row 2: European Roulette Table
@@ -3862,7 +3857,7 @@ with gr.Blocks() as demo:
             margin: 10px 0; /* Ensure spacing around the accordion */
         }
         
-              /* Ensure the accordion content is hidden when collapsed */
+        /* Ensure the accordion content is hidden when collapsed */
       #dealer-target-display:not([open]) .gr-box {
           display: none !important; /* Forcefully hide content when collapsed */
       }
@@ -3870,38 +3865,6 @@ with gr.Blocks() as demo:
       /* Ensure the accordion content is visible when expanded */
       #dealer-target-display[open] .gr-box {
           display: block !important; /* Ensure content is visible when expanded */
-      }
-      
-      /* Style the accordion header and chevron */
-      .dealer-accordion summary {
-          display: flex !important;
-          align-items: center !important;
-          justify-content: space-between !important;
-          padding: 10px !important;
-          cursor: pointer !important;
-          background-color: #f0f8ff !important;
-          transition: background-color 0.3s ease !important;
-      }
-      
-      .dealer-accordion summary:hover {
-          background-color: #e6f0fa !important;
-      }
-      
-      .accordion-title {
-          display: flex !important;
-          align-items: center !important;
-          width: 100% !important;
-      }
-      
-      .chevron {
-          display: inline-block !important;
-          margin-left: 10px !important;
-          transition: transform 0.3s ease !important;
-          font-size: 16px !important;
-      }
-      
-      #dealer-target-display[open] .chevron {
-          transform: rotate(180deg) !important; /* Rotate up when open */
       }
       
       /* Ensure bars and labels are contained */
@@ -4434,15 +4397,23 @@ with gr.Blocks() as demo:
 
     # Add the Shepherd.js tour script here
     gr.HTML("""
-<script>
-  const tour = new Shepherd.Tour({
-    defaultStepOptions: {
-      cancelIcon: { enabled: true },
-      scrollTo: { behavior: 'smooth', block: 'center' },
-      classes: 'shepherd-theme-arrows',
-    },
-    useModalOverlay: true
-  });
+    <script>
+      const tour = new Shepherd.Tour({
+        defaultStepOptions: {
+          cancelIcon: { enabled: true },
+          scrollTo: { behavior: 'smooth', block: 'center' },
+          classes: 'shepherd-theme-arrows',
+        },
+        useModalOverlay: true
+      });
+    
+      // Debug function to log step transitions
+      function logStep(stepId, nextStepId) {
+          return () => {
+              console.log(`Attempting move from ${stepId} to ${nextStepId}`);
+              tour.next();
+          };
+      }
 
   <script>
   // Initialize accordion state for dealer-target-display
