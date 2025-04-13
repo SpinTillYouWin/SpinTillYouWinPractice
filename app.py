@@ -1136,12 +1136,20 @@ def update_casino_data(spins_count, even_percent, odd_percent, red_percent, blac
     except Exception as e:
         return f"<p>Unexpected error parsing casino data: {str(e)}</p>"
 def create_roulette_wheel_svg():
-    """Generate an SVG representation of a European roulette wheel with hit frequency colors."""
+    """Generate an SVG representation of a European roulette wheel with hit frequency colors and betting sections."""
     import math
 
-    # European roulette wheel number sequence (starting with 0, will rotate to place 0 at top)
+    # European roulette wheel number sequence (0 at top/north)
     wheel_numbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26]
     
+    # Define betting sections (based on European wheel sectors)
+    betting_sections = {
+        "Jeu 0": [12, 35, 3, 26, 0, 32, 15],  # Numbers around 0
+        "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],  # Large section around 0
+        "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9],  # Two separate sections
+        "Tiers du Cylindre": [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]  # Opposite Voisins
+    }
+
     # Get hit frequencies from state.scores
     scores = state.scores
     max_hits = max(scores.values()) if scores.values() else 1  # Avoid division by zero
@@ -1149,16 +1157,60 @@ def create_roulette_wheel_svg():
 
     # Wheel dimensions
     radius = 75  # Outer radius of the wheel (150px diameter)
+    inner_radius = 50  # Radius for betting sections
     center_x, center_y = 95, 95  # SVG viewport center (190x190 to fit labels)
     segment_angle = 360 / 37  # Degrees per number
 
     # Start SVG
     svg = f'<svg width="190" height="190" viewBox="0 0 190 190" style="display: block; margin: auto;">'
     
-    # Draw wheel segments
+    # Draw betting sections first (underneath the number segments)
+    section_colors = {
+        "Jeu 0": "#90EE90",  # Light green
+        "Voisins du Zero": "#90EE90",  # Light green
+        "Orphelins": "#F5F5DC",  # Beige
+        "Tiers du Cylindre": "#F5F5DC"  # Beige
+    }
+    for section_name, numbers in betting_sections.items():
+        # Find the indices of the numbers in the wheel sequence
+        indices = [wheel_numbers.index(num) for num in numbers]
+        # Sort indices to determine continuous segments (Orphelins has two parts)
+        indices.sort()
+        # Split into continuous segments (for Orphelins)
+        segments = []
+        current_segment = [indices[0]]
+        for idx in indices[1:]:
+            if idx == current_segment[-1] + 1 or (idx == 0 and current_segment[-1] == 36):
+                current_segment.append(idx)
+            else:
+                segments.append(current_segment)
+                current_segment = [idx]
+        segments.append(current_segment)
+
+        # Draw each continuous segment
+        for segment in segments:
+            start_idx = segment[0]
+            end_idx = segment[-1]
+            # Adjust angles to place 0 at top
+            start_angle = (start_idx * segment_angle) - 90
+            end_angle = ((end_idx + 1) * segment_angle) - 90
+            start_rad = math.radians(start_angle)
+            end_rad = math.radians(end_angle)
+
+            # Calculate coordinates for the arc
+            x1 = center_x + inner_radius * math.cos(start_rad)
+            y1 = center_y - inner_radius * math.sin(start_rad)
+            x2 = center_x + inner_radius * math.cos(end_rad)
+            y2 = center_y - inner_radius * math.sin(end_rad)
+
+            # Draw the arc
+            large_arc = 1 if (end_angle - start_angle) % 360 > 180 else 0
+            path = f"M{center_x},{center_y} L{x1},{y1} A{inner_radius},{inner_radius} 0 {large_arc},1 {x2},{y2} Z"
+            svg += f'<path d="{path}" fill="{section_colors[section_name]}" stroke="black" stroke-width="0.5"/>'
+
+    # Draw wheel segments (over the betting sections)
     for i, num in enumerate(wheel_numbers):
         # Calculate segment angles, adjusting to place 0 at the top
-        # 0 should be at 90 degrees (top), so offset by -90 degrees and account for segment index
         start_angle = (i * segment_angle) - 90  # Shift by -90 to place 0 at top
         end_angle = ((i + 1) * segment_angle) - 90
         start_rad = math.radians(start_angle)
@@ -1207,6 +1259,35 @@ def create_roulette_wheel_svg():
             label_x -= 4
         
         svg += f'<text x="{label_x}" y="{label_y}" font-size="8" font-family="Arial" fill="{base_color}" text-anchor="{text_anchor}" dominant-baseline="middle">{num}</text>'
+
+    # Add betting section labels (inside the wheel)
+    # Jeu 0 (around 0, 32, 15)
+    jeu0_angle = (-90 + 2 * segment_angle)  # Center around 0
+    jeu0_rad = math.radians(jeu0_angle)
+    jeu0_x = center_x + (inner_radius - 15) * math.cos(jeu0_rad)
+    jeu0_y = center_y - (inner_radius - 15) * math.sin(jeu0_rad)
+    svg += f'<text x="{jeu0_x}" y="{jeu0_y}" font-size="6" font-family="Arial" fill="black" text-anchor="middle" dominant-baseline="middle" transform="rotate({-jeu0_angle + 90}, {jeu0_x}, {jeu0_y})">Jeu 0</text>'
+
+    # Voisins du Zero (large section from 22 to 25)
+    voisins_angle = (-90 + 7 * segment_angle)  # Center of the section
+    voisins_rad = math.radians(voisins_angle)
+    voisins_x = center_x + (inner_radius - 10) * math.cos(vois_rad)
+    voisins_y = center_y - (inner_radius - 10) * math.sin(vois_rad)
+    svg += f'<text x="{voisins_x}" y="{voisins_y}" font-size="6" font-family="Arial" fill="black" text-anchor="middle" dominant-baseline="middle" transform="rotate({-voisins_angle + 90}, {voisins_x}, {voisins_y})">Voisins du Zero</text>'
+
+    # Orphelins (split, label near 17-34-6)
+    orphelins_angle1 = (-90 + 16 * segment_angle)  # Near 17
+    orphelins_rad1 = math.radians(orphelins_angle1)
+    orphelins_x1 = center_x + (inner_radius - 10) * math.cos(orphelins_rad1)
+    orphelins_y1 = center_y - (inner_radius - 10) * math.sin(orphelins_rad1)
+    svg += f'<text x="{orphelins_x1}" y="{orphelins_y1}" font-size="6" font-family="Arial" fill="black" text-anchor="middle" dominant-baseline="middle" transform="rotate({-orphelins_angle1 + 90}, {orphelins_x1}, {orphelins_y1})">Orphelins</text>'
+
+    # Tiers du Cylindre (from 27 to 33)
+    tiers_angle = (-90 + 28 * segment_angle)  # Center of the section
+    tiers_rad = math.radians(tiers_angle)
+    tiers_x = center_x + (inner_radius - 10) * math.cos(tiers_rad)
+    tiers_y = center_y - (inner_radius - 10) * math.sin(tiers_rad)
+    svg += f'<text x="{tiers_x}" y="{tiers_y}" font-size="6" font-family="Arial" fill="black" text-anchor="middle" dominant-baseline="middle" transform="rotate({-tiers_angle + 90}, {tiers_x}, {tiers_y})">Tiers du Cylindre</text>'
 
     # Add center circle for aesthetics
     svg += f'<circle cx="{center_x}" cy="{center_y}" r="8" fill="silver" stroke="black" stroke-width="1"/>'
