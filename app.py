@@ -3186,17 +3186,17 @@ with gr.Blocks() as demo:
         label="Dealer's Spin Target: Wheel Section Analyzer",
         value="""
         <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="width: 100px;" id="left-label">Left Side (0)</span>
-                <div style="flex-grow: 1; background-color: #3498db; height: 20px; width: 0%; transition: width 0.5s ease;" id="left-bar"></div>
+            <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 10px;">
+                <div class="bar" style="flex-grow: 1; background-color: #3498db; height: 20px; width: 0%; transition: width 0.5s ease; transform-origin: right;" id="left-bar"></div>
+                <span style="width: 100px; text-align: right;" id="left-label">Left Side (0)</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="width: 100px;" id="zero-label">Zero (0)</span>
-                <div style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: 0%; transition: width 0.5s ease;" id="zero-bar"></div>
+            <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 10px;">
+                <div class="bar" style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: 0%; transition: width 0.5s ease; transform-origin: right;" id="zero-bar"></div>
+                <span style="width: 100px; text-align: right;" id="zero-label">Zero (0)</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="width: 100px;" id="right-label">Right Side (0)</span>
-                <div style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: 0%; transition: width 0.5s ease;" id="right-bar"></div>
+            <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 10px;">
+                <div class="bar" style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: 0%; transition: width 0.5s ease; transform-origin: right;" id="right-bar"></div>
+                <span style="width: 100px; text-align: right;" id="right-label">Right Side (0)</span>
             </div>
         </div>
         """,
@@ -3240,10 +3240,6 @@ with gr.Blocks() as demo:
         with gr.Accordion("Dealer's Spin Target: Wheel Section Analyzer", open=False, elem_id="dealer-target-display"):
             sides_of_zero_display  # Reference the existing state component
         
-
-    # 1.1 Dealer's Spin Target Bar Display
-    with gr.Accordion("Dealer's Spin Target: Wheel Section Analyzer", open=True, elem_id="dealer-target-display"):
-        sides_of_zero_display  # Reference the existing state component
 
     # 2. Row 2: European Roulette Table
     with gr.Group():
@@ -3858,11 +3854,8 @@ with gr.Blocks() as demo:
             background-color: #f0f8ff; /* Light blue background */
             border: 1px solid #4682b4; /* Steel blue border */
             border-radius: 5px;
-            padding: 15px; /* Padding to encompass the bars */
-            margin: 10px auto; /* Center the accordion */
-            width: 100%; /* Ensure full width */
-            max-width: 620px; /* Match the max-width of the bars (600px) plus padding */
-            box-sizing: border-box; /* Include padding in width calculation */
+            padding: 15px; /* Increased padding to fully encompass the bars */
+            margin: 10px 0; /* Ensure spacing around the accordion */
         }
         
         /* Ensure the accordion content is hidden when collapsed */
@@ -3875,13 +3868,13 @@ with gr.Blocks() as demo:
             display: block !important; /* Ensure content is visible when expanded */
         }
         
-        /* Override sides-of-zero-container styling to fit seamlessly inside the accordion */
+        /* Style the sides-of-zero-container to fit seamlessly inside the accordion */
         #dealer-target-display .sides-of-zero-container {
-            background-color: transparent !important; /* Remove the separate background */
-            border: none !important; /* Remove the separate border */
-            padding: 0 !important; /* Remove padding to avoid extra spacing */
-            margin: 0 !important; /* Remove margin to fit snugly inside the accordion */
-            box-shadow: none !important; /* Remove any shadow */
+            background-color: transparent; /* Remove any conflicting background */
+            border: none; /* Remove any conflicting border */
+            padding: 0; /* Remove padding to avoid extra spacing */
+            margin: 0; /* Remove margin to fit snugly inside the accordion */
+            box-shadow: none; /* Remove any conflicting shadow */
         }
         
         /* Ensure the bars and labels are fully contained within the accordion */
