@@ -1139,7 +1139,7 @@ def create_roulette_wheel_svg():
     """Generate an SVG representation of a European roulette wheel with hit frequency colors."""
     import math
 
-    # European roulette wheel number sequence (0 at top/north)
+    # European roulette wheel number sequence (starting with 0, will rotate to place 0 at top)
     wheel_numbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26]
     
     # Get hit frequencies from state.scores
@@ -1148,18 +1148,19 @@ def create_roulette_wheel_svg():
     max_hits = max(max_hits, 1)  # Ensure at least 1 to prevent scaling issues
 
     # Wheel dimensions
-    radius = 100  # Outer radius of the wheel (200px diameter)
-    center_x, center_y = 120, 120  # SVG viewport center (240x240 to fit labels)
+    radius = 75  # Outer radius of the wheel (150px diameter)
+    center_x, center_y = 95, 95  # SVG viewport center (190x190 to fit labels)
     segment_angle = 360 / 37  # Degrees per number
 
     # Start SVG
-    svg = f'<svg width="240" height="240" viewBox="0 0 240 240" style="display: block; margin: auto;">'
+    svg = f'<svg width="190" height="190" viewBox="0 0 190 190" style="display: block; margin: auto;">'
     
     # Draw wheel segments
     for i, num in enumerate(wheel_numbers):
-        # Calculate segment angles
-        start_angle = i * segment_angle
-        end_angle = (i + 1) * segment_angle
+        # Calculate segment angles, adjusting to place 0 at the top
+        # 0 should be at 90 degrees (top), so offset by -90 degrees and account for segment index
+        start_angle = (i * segment_angle) - 90  # Shift by -90 to place 0 at top
+        end_angle = ((i + 1) * segment_angle) - 90
         start_rad = math.radians(start_angle)
         end_rad = math.radians(end_angle)
 
@@ -1169,23 +1170,25 @@ def create_roulette_wheel_svg():
         x2 = center_x + radius * math.cos(end_rad)
         y2 = center_y - radius * math.sin(end_rad)
 
-        # Determine color based on hit frequency (blue = cold, red = hot)
+        # Determine color based on hit frequency (purple = cold, yellow = hot)
         hits = scores.get(num, 0)
         intensity = hits / max_hits  # Normalize to [0, 1]
-        blue = int(255 * (1 - intensity))  # More hits -> less blue
-        red = int(255 * intensity)  # More hits -> more red
-        color = f"rgb({red}, 0, {blue})"
+        # Cold: #DDA0DD (221, 160, 221), Hot: rgba(255, 255, 0, 0.5) -> (255, 255, 0)
+        r = int(221 + (255 - 221) * intensity)  # 221 -> 255
+        g = int(160 + (255 - 160) * intensity)  # 160 -> 255
+        b = int(221 + (0 - 221) * intensity)    # 221 -> 0
+        color = f"rgb({r}, {g}, {b})"
 
         # Base color for number (red, black, green)
         base_color = colors.get(str(num), "black")
 
         # Draw segment (arc path)
-        large_arc = 1 if end_angle - start_angle > 180 else 0
+        large_arc = 1 if (end_angle - start_angle) % 360 > 180 else 0
         path = f"M{center_x},{center_y} L{x1},{y1} A{radius},{radius} 0 {large_arc},1 {x2},{y2} Z"
         svg += f'<path d="{path}" fill="{color}" stroke="black" stroke-width="0.5"/>'
 
         # Add number label (positioned just outside the wheel)
-        label_radius = radius + 15  # Place labels 15px outside
+        label_radius = radius + 10  # Place labels 10px outside
         label_angle = (start_angle + end_angle) / 2
         label_rad = math.radians(label_angle)
         label_x = center_x + label_radius * math.cos(label_rad)
@@ -1193,25 +1196,25 @@ def create_roulette_wheel_svg():
         
         # Adjust text anchor and alignment for readability
         text_anchor = "middle"
-        if 45 < label_angle < 135 or 225 < label_angle < 315:
+        if 45 < (label_angle + 360) % 360 < 135 or 225 < (label_angle + 360) % 360 < 315:
             text_anchor = "middle"
-            label_y += 5 if label_angle < 180 else -5
-        elif label_angle < 45 or label_angle > 315:
+            label_y += 4 if (label_angle + 360) % 360 < 180 else -4
+        elif (label_angle + 360) % 360 < 45 or (label_angle + 360) % 360 > 315:
             text_anchor = "start"
-            label_x += 5
+            label_x += 4
         else:
             text_anchor = "end"
-            label_x -= 5
+            label_x -= 4
         
-        svg += f'<text x="{label_x}" y="{label_y}" font-size="10" font-family="Arial" fill="{base_color}" text-anchor="{text_anchor}" dominant-baseline="middle">{num}</text>'
+        svg += f'<text x="{label_x}" y="{label_y}" font-size="8" font-family="Arial" fill="{base_color}" text-anchor="{text_anchor}" dominant-baseline="middle">{num}</text>'
 
     # Add center circle for aesthetics
-    svg += f'<circle cx="{center_x}" cy="{center_y}" r="10" fill="silver" stroke="black" stroke-width="1"/>'
+    svg += f'<circle cx="{center_x}" cy="{center_y}" r="8" fill="silver" stroke="black" stroke-width="1"/>'
 
     # Close SVG
     svg += '</svg>'
     
-    return f'<div style="text-align: center;"><h4>Roulette Wheel</h4><p>Red = Hot, Blue = Cold</p>{svg}</div>'
+    return f'<div style="text-align: center;"><h4>Roulette Wheel</h4><p>Yellow = Hot, Purple = Cold</p>{svg}</div>'
     
 def reset_casino_data():
     """Reset casino data to defaults and clear UI inputs."""
@@ -3270,7 +3273,7 @@ with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column(scale=2):
             wheel_output
-        with gr.Column(scale=1, min_width=200):
+        with gr.Column(scale=1, min_width=100):  # Reduced min_width for smaller counter
             spin_counter
             
     # 3. Row 3: European Roulette Table
@@ -3694,7 +3697,7 @@ with gr.Blocks() as demo:
     
       /* Ensure content below header is not overlapped */
       .roulette-table {
-          margin-top: 120px !important; /* Match body padding-top */
+          margin-top: 20px !important; /* Reduced since wheel is above */
       }
     
       /* Header Styling */
@@ -3706,20 +3709,20 @@ with gr.Blocks() as demo:
           max-width: none !important;
           overflow: visible !important;
       }
-        #selected-spins label {
-            white-space: normal !important;
-            width: 100% !important;
-            height: auto !important;
-            overflow: visible !important;
-            display: block !important;
-            background-color: #87CEEB;
-            color: black;
-            padding: 10px 5px !important; /* Increased top/bottom padding */
-            border-radius: 3px;
-            line-height: 1.5em !important; /* Increased for better spacing */
-            font-size: 14px !important; /* Reduced font size */
-            margin-top: 5px !important; /* Added to shift text downward */
-        }
+      #selected-spins label {
+          white-space: normal !important;
+          width: 100% !important;
+          height: auto !important;
+          overflow: visible !important;
+          display: block !important;
+          background-color: #87CEEB;
+          color: black;
+          padding: 10px 5px !important;
+          border-radius: 3px;
+          line-height: 1.5em !important;
+          font-size: 14px !important;
+          margin-top: 5px !important;
+      }
       #selected-spins {
           width: 100% !important;
           min-width: 800px !important;
@@ -3769,33 +3772,33 @@ with gr.Blocks() as demo:
     
       /* Spin Counter Styling */
       .spin-counter {
-          font-size: 16px !important;
+          font-size: 14px !important; /* Reduced font size */
           font-weight: bold !important;
           color: #ffffff !important;
-          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
-          padding: 8px 12px !important;
-          border: 2px solid #3498DB !important; /* Darker blue border */
-          border-radius: 8px !important;
-          margin-top: 0 !important; /* Align with textbox */
+          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important;
+          padding: 6px 10px !important; /* Reduced padding */
+          border: 2px solid #3498DB !important;
+          border-radius: 6px !important; /* Smaller border radius */
+          margin-top: 0 !important;
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important; /* Slightly stronger shadow */
-          transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
+          box-shadow: 0 1px 4px rgba(0,0,0,0.2) !important; /* Lighter shadow */
+          transition: transform 0.2s ease, box-shadow 0.2s ease !important;
       }
       .spin-counter:hover {
-          transform: scale(1.05) !important; /* Slight zoom on hover */
-          box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
+          transform: scale(1.05) !important;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
       }
     
       /* Last Spins Container */
       .last-spins-container {
-          background-color: #f5f5f5 !important; /* Light gray background */
-          border: 1px solid #d3d3d3 !important; /* Subtle gray border */
+          background-color: #f5f5f5 !important;
+          border: 1px solid #d3d3d3 !important;
           padding: 10px !important;
           border-radius: 5px !important;
           margin-top: 10px !important;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; /* Very light shadow */
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
       }
     
       /* Responsive Design */
@@ -3806,6 +3809,7 @@ with gr.Blocks() as demo:
           .scrollable-table { max-height: 200px; }
           .long-slider { width: 100% !important; }
           .header-title { font-size: 1.8em !important; }
+          .spin-counter { font-size: 12px !important; padding: 4px 8px !important; }
       }
     
       #strongest-numbers-dropdown select {
@@ -3822,7 +3826,7 @@ with gr.Blocks() as demo:
       }
       #strategy-dropdown select option:checked {
           font-weight: bold;
-          background-color: #e0e0ff; /* Light blue to indicate selection */
+          background-color: #e0e0ff;
           color: #000;
       }
       .betting-progression .gr-textbox { width: 100%; margin: 5px 0; }
@@ -3830,7 +3834,7 @@ with gr.Blocks() as demo:
       .betting-progression .gr-row { display: flex; flex-wrap: wrap; gap: 10px; }
     
       /* Shepherd.js Tweaks */
-      .shepherd-modal-overlay-container { opacity: 0.5; z-index: 999; } /* Ensure overlay is below fullscreen */
+      .shepherd-modal-overlay-container { opacity: 0.5; z-index: 999; }
       .shepherd-button { background-color: #007bff; color: white; padding: 5px 10px; border-radius: 3px; }
       .shepherd-button:hover { background-color: #0056b3; }
     </style>
