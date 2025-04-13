@@ -3183,7 +3183,7 @@ with gr.Blocks() as demo:
         elem_id="selected-spins"
     )
     sides_of_zero_display = gr.HTML(
-        label="Sides of Zero",
+        label="Dealer's Spin Target: Wheel Section Analyzer",
         value="""
         <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">
             <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 10px;">
@@ -3237,7 +3237,8 @@ with gr.Blocks() as demo:
 
     # 1.1 Row: Sides of Zero Bar Display
     with gr.Row():
-        sides_of_zero_display  # Reference the existing state component
+        with gr.Accordion("Dealer's Spin Target: Wheel Section Analyzer", open=True, elem_id="dealer-target-display"):
+            sides_of_zero_display  # Reference the existing state component
 
     # 2. Row 2: European Roulette Table
     with gr.Group():
@@ -3846,6 +3847,13 @@ with gr.Blocks() as demo:
       .shepherd-modal-overlay-container { opacity: 0.5; z-index: 999; } /* Ensure overlay is below fullscreen */
       .shepherd-button { background-color: #007bff; color: white; padding: 5px 10px; border-radius: 3px; }
       .shepherd-button:hover { background-color: #0056b3; }
+
+      /* Dealer Target Display Accordion */
+        #dealer-target-display {
+            background-color: #f0f8ff; /* Light blue background */
+            border: 1px solid #4682b4; /* Steel blue border */
+            border-radius: 5px;
+        }
     </style>
     """)
     print("CSS Updated")
