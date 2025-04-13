@@ -3159,13 +3159,28 @@ with gr.Blocks() as demo:
     )
     sides_of_zero_display = gr.HTML(
         label="Sides of Zero",
-        value="",
+        value="""
+        <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="width: 100px;" id="left-label">Left Side (0)</span>
+                <div style="flex-grow: 1; background-color: #3498db; height: 20px; width: 0%; transition: width 0.5s ease;" id="left-bar"></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="width: 100px;" id="zero-label">Zero (0)</span>
+                <div style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: 0%; transition: width 0.5s ease;" id="zero-bar"></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="width: 100px;" id="right-label">Right Side (0)</span>
+                <div style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: 0%; transition: width 0.5s ease;" id="right-bar"></div>
+            </div>
+        </div>
+        """,
         elem_classes=["sides-of-zero-container"]
     )
     last_spin_display = gr.HTML(
         label="Last Spins",
-        value="",
-        elem_classes=["last-spins-container"]  # Add styling for Last Spins
+        value='<h4>Last Spins</h4><p>No spins yet.</p>',
+        elem_classes=["last-spins-container"]
     )
     last_spin_count = gr.Slider(
         label="Show Last Spins",
@@ -3177,25 +3192,10 @@ with gr.Blocks() as demo:
         elem_classes="long-slider"
     )
     spin_counter = gr.HTML(
-        value='<span style="font-size: 16px;">Total Spins: 0</span>',  # Restore inline label
+        value='<span style="font-size: 16px;">Total Spins: 0</span>',
         label="Total Spins",
-        elem_classes=["spin-counter"]  # Restore styling class
+        elem_classes=["spin-counter"]
     )
-
-    # Define strategy categories and choices
-    strategy_categories = {
-        "Trends": ["Cold Bet Strategy", "Hot Bet Strategy", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"],
-        "Even Money Strategies": ["Best Even Money Bets", "Best Even Money Bets + Top Pick 18 Numbers", "Fibonacci To Fortune"],
-        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Top Pick 18 Numbers", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],
-        "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Streets"],
-        "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
-        "Double Street Strategies": ["Best Double Streets", "Non-Overlapping Double Street Strategy"],
-        "Corner Strategies": ["Best Corners", "Non-Overlapping Corner Strategy"],
-        "Split Strategies": ["Best Splits"],
-        "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"],
-        "Neighbours Strategies": ["Neighbours of Strong Number"]
-    }
-    category_choices = ["None"] + sorted(strategy_categories.keys())
 
     # 1. Row 1: Header
     with gr.Row(elem_id="header-row"):
@@ -3209,6 +3209,7 @@ with gr.Blocks() as demo:
                 <button id="start-tour-btn" onclick="startTour()" style="padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Take the Tour!</button>
                 '''
             )
+
     # 1.1 Row: Sides of Zero Bar Display
     with gr.Row():
         sides_of_zero_display  # Reference the existing state component
@@ -3247,20 +3248,8 @@ with gr.Blocks() as demo:
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
-            last_spin_display = gr.HTML(
-                label="Last Spins",
-                value='<h4>Last Spins</h4><p>No spins yet.</p>',
-                elem_classes=["last-spins-container"]
-            )
-            last_spin_count = gr.Slider(
-                label="Show Last Spins",
-                minimum=1,
-                maximum=36,
-                step=1,
-                value=36,
-                interactive=True,
-                elem_classes="long-slider"
-            )
+            last_spin_display
+            last_spin_count
 
     # 4. Row 4: Spin Controls
     with gr.Row():
