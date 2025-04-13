@@ -67,7 +67,16 @@ def update_scores_batch(spins):
         if str(spin_value) in [str(x) for x in current_right_of_zero]:
             state.side_scores["Right Side of Zero"] += 1
             action["increments"].setdefault("side_scores", {})["Right Side of Zero"] = 1
-
+        # NEW: Update wheel side hits
+        if spin_value in LEFT_OF_ZERO_EUROPEAN:
+            state.wheel_left_hits[spin_value] += 1
+            action["increments"].setdefault("wheel_left_hits", {})[spin_value] = 1
+        elif spin_value in RIGHT_OF_ZERO_EUROPEAN:
+            state.wheel_right_hits[spin_value] += 1
+            action["increments"].setdefault("wheel_right_hits", {})[spin_value] = 1
+        elif spin_value == 0:
+            state.zero_hits += 1
+            action["increments"].setdefault("zero_hits", 1)
         action_log.append(action)
     return action_log
 
@@ -126,9 +135,12 @@ class RouletteState:
         self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
         self.split_scores = {name: 0 for name in SPLITS.keys()}
         self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
+        # NEW: Track hits for wheel sides explicitly with number lists
+        self.wheel_left_hits = {num: 0 for num in LEFT_OF_ZERO_EUROPEAN}
+        self.wheel_right_hits = {num: 0 for num in RIGHT_OF_ZERO_EUROPEAN}
+        self.zero_hits = 0  # Track zero hits separately
         self.selected_numbers = set()
         self.last_spins = []
-        self.spin_history = []  # Tracks each spin's effects for undoing
 
         # Casino data storage
         self.casino_data = {
@@ -169,6 +181,10 @@ class RouletteState:
         self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
         self.split_scores = {name: 0 for name in SPLITS.keys()}
         self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
+        # NEW: Reset wheel side hit counts
+        self.wheel_left_hits = {num: 0 for num in LEFT_OF_ZERO_EUROPEAN}
+        self.wheel_right_hits = {num: 0 for num in RIGHT_OF_ZERO_EUROPEAN}
+        self.zero_hits = 0
         self.selected_numbers = set(int(s) for s in self.last_spins if s.isdigit())
         self.last_spins = []
         self.spin_history = []
@@ -352,7 +368,53 @@ def format_spins_as_html(spins, num_to_show):
     
     # Wrap the spins in a div with flexbox to enable wrapping, and add a title
     return f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
+def format_wheel_sides_bar():
+    """Render a bar showing left wheel numbers, zero, and right wheel numbers with hit counts."""
+    total_spins = len(state.last_spins)
+    max_width = 300  # Maximum bar width in pixels
+    scale_factor = max_width / (total_spins or 1)  # Avoid division by zero
 
+    # Prepare left side numbers (in wheel order)
+    left_html = []
+    for num in LEFT_OF_ZERO_EUROPEAN:
+        hits = state.wheel_left_hits.get(num, 0)
+        width = hits * scale_factor
+        color = colors.get(str(num), "black")
+        left_html.append(
+            f'<div style="width: {width}px; background-color: {color}; height: 20px; display: inline-block; margin: 0 1px;" title="Number {num}: {hits} hits"></div>'
+        )
+        left_html.append(f'<span style="font-size: 12px;">{num} ({hits})</span>')
+
+    # Prepare right side numbers
+    right_html = []
+    for num in RIGHT_OF_ZERO_EUROPEAN:
+        hits = state.wheel_right_hits.get(num, 0)
+        width = hits * scale_factor
+        color = colors.get(str(num), "black")
+        right_html.append(
+            f'<div style="width: {width}px; background-color: {color}; height: 20px; display: inline-block; margin: 0 1px;" title="Number {num}: {hits} hits"></div>'
+        )
+        right_html.append(f'<span style="font-size: 12px;">{num} ({hits})</span>')
+
+    # Zero with blink animation if recently hit
+    zero_hits = state.zero_hits
+    zero_class = "zero-blink" if zero_hits > 0 and total_spins > 0 and state.last_spins[-1] == "0" else ""
+    zero_html = (
+        f'<div style="display: inline-block; margin: 0 10px; text-align: center;">'
+        f'<div class="{zero_class}" style="background-color: green; width: 30px; height: 20px; display: inline-block;"></div>'
+        f'<span style="display: block; font-size: 12px;">0 ({zero_hits})</span>'
+        f'</div>'
+    )
+
+    html = (
+        f'<div style="display: flex; align-items: flex-start; justify-content: center; flex-wrap: wrap; margin: 10px 0;">'
+        f'<div style="text-align: right; margin-right: 10px;">{"".join(left_html)}</div>'
+        f'{zero_html}'
+        f'<div style="text-align: left; margin-left: 10px;">{"".join(right_html)}</div>'
+        f'</div>'
+    )
+    return html
+    
 def add_spin(number, current_spins, num_to_show):
     print(f"add_spin: number='{number}', current_spins='{current_spins}'")
     spins = current_spins.split(", ") if current_spins else []
@@ -409,7 +471,7 @@ def add_spin(number, current_spins, num_to_show):
         return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter()
 
     print(f"add_spin: new_spins='{new_spins_str}'")
-    return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter()
+    return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter(), format_wheel_sides_bar()
     
 # Function to clear spins
 def clear_spins():
@@ -3237,6 +3299,12 @@ with gr.Blocks() as demo:
             spins_textbox
         with gr.Column(scale=1, min_width=200):
             spin_counter  # Restore side-by-side layout with styling
+        # NEW: Wheel sides bar
+        wheel_sides_bar = gr.HTML(
+            label="Wheel Sides Hit Bar",
+            value=format_wheel_sides_bar(),
+            elem_classes=["wheel-sides-bar"]
+        )
     
     # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
@@ -3698,6 +3766,24 @@ with gr.Blocks() as demo:
       .spin-counter:hover {
           transform: scale(1.05) !important; /* Slight zoom on hover */
           box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
+      }
+    
+      /* NEW: Wheel sides bar styling */
+      .wheel-sides-bar {
+          background-color: #f9f9f9 !important;
+          border: 1px solid #d3d3d3 !important;
+          padding: 10px !important;
+          border-radius: 5px !important;
+          margin: 10px 0 !important;
+          text-align: center !important;
+      }
+      .zero-blink {
+          animation: blink 1s infinite !important;
+      }
+      @keyframes blink {
+          0% { opacity: 1; }
+          50% { opacity: 0.3; }
+          100% { opacity: 1; }
       }
     
       /* Last Spins Container */
