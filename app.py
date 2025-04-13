@@ -3717,6 +3717,30 @@ with gr.Blocks() as demo:
       .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
       .roulette-table { display: flex !important; flex-direction: column !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
       .table-row { display: flex !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap !important; line-height: 0 !important; }
+      
+      /* Style the Dealer's Spin Target container */
+      #dealer-target-display {
+          background-color: #f0f8ff !important; /* Light blue background */
+          border: 1px solid #4682b4 !important; /* Steel blue border */
+          border-radius: 5px !important;
+          padding: 15px !important;
+          margin: 10px 0 !important;
+      }
+      
+      /* Ensure bars and labels are contained */
+      #dealer-target-display #sides-of-zero {
+          width: 100% !important;
+          max-width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+      }
+      
+      /* Buttons */
+      button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
+      button.clear-spins-btn:hover { background-color: #cc0000 !important; }
+      button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
+      button.generate-spins-btn:hover { background-color: #0056b3 !important; }
+      .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; width: 100% !important; box-sizing: border-box !important; }
     
       /* Buttons */
       button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
@@ -4500,33 +4524,36 @@ with gr.Blocks() as demo:
     title: 'Spin the Wheel, Start the Thrill!',
     text: 'Click numbers!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ja454kZwndo?fs=0" frameborder="0"></iframe>',
     attachTo: { element: '.roulette-table', on: 'right' },
-    buttons: [
-      { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 2', 'Part 3') },
+    buttons: [ 
+        { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 7', 'Part 7b') },
       { text: 'Skip', action: tour.cancel }
     ]
   });
 
   tour.addStep({
-    id: 'part3',
-    title: 'Peek at Your Spin Streak!',
-    text: 'See spins!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/a9brOFMy9sA?fs=0" frameborder="0"></iframe>',
-    attachTo: { element: '.last-spins-container', on: 'bottom' },
+    id: 'part7b',
+    title: 'Track the Zero Zone!',
+    text: 'This section shows the distribution of spins around zero.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/YOUR_VIDEO_ID?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#dealer-target-display', on: 'bottom' },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 3', 'Part 4') },
+      { text: 'Next', action: logStep('Part 7b', 'Part 8') },
       { text: 'Skip', action: tour.cancel }
     ]
   });
 
   tour.addStep({
-    id: 'part4',
-    title: 'Master Your Spin Moves!',
-    text: 'Control spins!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/xG8z1S4HJK4?fs=0" frameborder="0"></iframe>',
-    attachTo: { element: '#undo-spins-btn', on: 'bottom' },
+    id: 'part8',
+    title: 'Bet Smart, Track the Art!',
+    text: 'Track bets!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '.betting-progression', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('.betting-progression');
+    },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 4', 'Part 5') },
+      { text: 'Next', action: logStep('Part 8', 'Part 9') },
       { text: 'Skip', action: tour.cancel }
     ]
   });
