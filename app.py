@@ -324,6 +324,7 @@ colors = {
 }
 
 
+# Lines before (context)
 def format_spins_as_html(spins, num_to_show):
     if not spins:
         return "<h4>Last Spins</h4><p>No spins yet.</p>"
@@ -352,6 +353,8 @@ def format_spins_as_html(spins, num_to_show):
     
     # Wrap the spins in a div with flexbox to enable wrapping, and add a title
     return f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
+
+# Start of the function (Line 1 for context)
 def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
     zero_hits = state.scores[0]
@@ -361,20 +364,20 @@ def render_sides_of_zero_display():
     zero_width = (zero_hits / max_hits) * 100
     right_width = (right_hits / max_hits) * 100
     
-    # Return the full HTML structure plus the JavaScript to update it
+    # Updated section starts here
     return f"""
     <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">
         <div style="display: flex; align-items: center; gap: 10px;">
             <span style="width: 100px;" id="left-label">Left Side ({left_hits})</span>
-            <div style="flex-grow: 1; background-color: #3498db; height: 20px; width: {left_width}%; transition: width 0.5s ease;" id="left-bar"></div>
+            <div style="flex-grow: 1; background: linear-gradient(to right, #3498db, #5dade2); height: 20px; width: {left_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" id="left-bar"></div>
         </div>
         <div style="display: flex; align-items: center; gap: 10px;">
             <span style="width: 100px;" id="zero-label">Zero ({zero_hits})</span>
-            <div style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: {zero_width}%; transition: width 0.5s ease;" id="zero-bar"></div>
+            <div style="flex-grow: 1; background: linear-gradient(to right, #2ecc71, #27ae60); height: 20px; width: {zero_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" id="zero-bar"></div>
         </div>
         <div style="display: flex; align-items: center; gap: 10px;">
             <span style="width: 100px;" id="right-label">Right Side ({right_hits})</span>
-            <div style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: {right_width}%; transition: width 0.5s ease;" id="right-bar"></div>
+            <div style="flex-grow: 1; background: linear-gradient(to right, #e74c3c, #c0392b); height: 20px; width: {right_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" id="right-bar"></div>
         </div>
     </div>
     <script>
@@ -393,6 +396,9 @@ def render_sides_of_zero_display():
         updateBar('right-bar', {right_width}, 'right-label', 'Right Side ({right_hits})');
     </script>
     """
+    # Updated section ends here
+
+# Lines after (context)
 def add_spin(number, current_spins, num_to_show):
     print(f"add_spin: number='{number}', current_spins='{current_spins}'")
     spins = current_spins.split(", ") if current_spins else []
