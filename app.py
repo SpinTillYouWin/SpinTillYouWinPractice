@@ -125,6 +125,7 @@ class RouletteState:
         self.corner_scores = {name: 0 for name in CORNERS.keys()}
         self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
         self.split_scores = {name: 0 for name in SPLITS.keys()}
+        self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
         self.selected_numbers = set()
         self.last_spins = []
         self.spin_history = []  # Tracks each spin's effects for undoing
@@ -158,7 +159,7 @@ class RouletteState:
         self.status = "Active"
         self.status_color = "white"  # Default color for active status
 
-    ddef reset(self):
+    def reset(self):
         self.scores = {n: 0 for n in range(37)}
         self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
         self.dozen_scores = {name: 0 for name in DOZENS.keys()}
@@ -167,6 +168,7 @@ class RouletteState:
         self.corner_scores = {name: 0 for name in CORNERS.keys()}
         self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
         self.split_scores = {name: 0 for name in SPLITS.keys()}
+        self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
         self.selected_numbers = set(int(s) for s in self.last_spins if s.isdigit())
         self.last_spins = []
         self.spin_history = []
@@ -182,7 +184,6 @@ class RouletteState:
         self.message = f"Progression reset. Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
         self.status = "Active"
         return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
-What’s Updated:
 
     def update_bankroll(self, won):
         payout = {"Even Money": 1, "Dozens": 2, "Columns": 2, "Straight Bets": 35}[self.bet_type]
@@ -363,17 +364,17 @@ def render_sides_of_zero_display():
     # Return the full HTML structure plus the JavaScript to update it
     return f"""
     <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">
-        <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 10px;">
-            <div class="bar" style="flex-grow: 1; background-color: #3498db; height: 20px; width: {left_width}%; transition: width 0.5s ease; transform-origin: right;" id="left-bar"></div>
-            <span style="width: 100px; text-align: right;" id="left-label">Left Side ({left_hits})</span>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="width: 100px;" id="left-label">Left Side ({left_hits})</span>
+            <div style="flex-grow: 1; background-color: #3498db; height: 20px; width: {left_width}%; transition: width 0.5s ease;" id="left-bar"></div>
         </div>
-        <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 10px;">
-            <div class="bar" style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: {zero_width}%; transition: width 0.5s ease; transform-origin: right;" id="zero-bar"></div>
-            <span style="width: 100px; text-align: right;" id="zero-label">Zero ({zero_hits})</span>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="width: 100px;" id="zero-label">Zero ({zero_hits})</span>
+            <div style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: {zero_width}%; transition: width 0.5s ease;" id="zero-bar"></div>
         </div>
-        <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 10px;">
-            <div class="bar" style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: {right_width}%; transition: width 0.5s ease; transform-origin: right;" id="right-bar"></div>
-            <span style="width: 100px; text-align: right;" id="right-label">Right Side ({right_hits})</span>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="width: 100px;" id="right-label">Right Side ({right_hits})</span>
+            <div style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: {right_width}%; transition: width 0.5s ease;" id="right-bar"></div>
         </div>
     </div>
     <script>
@@ -402,7 +403,7 @@ def add_spin(number, current_spins, num_to_show):
     numbers = [n.strip() for n in number.split(",") if n.strip()]
     if not numbers:
         gr.Warning("No valid input provided. Please enter numbers between 0 and 36.")
-        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter()
+        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter(), render_sides_of_zero_display()
 
     errors = []
     valid_spins = []
@@ -421,7 +422,7 @@ def add_spin(number, current_spins, num_to_show):
         error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
         gr.Warning(error_msg)
         print(f"add_spin: Errors encountered - {error_msg}")
-        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter()
+        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
 
     # Batch update scores
     action_log = update_scores_batch(valid_spins)
@@ -445,10 +446,10 @@ def add_spin(number, current_spins, num_to_show):
         error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
         gr.Warning(error_msg)
         print(f"add_spin: Errors encountered - {error_msg}")
-        return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter()
+        return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
 
     print(f"add_spin: new_spins='{new_spins_str}'")
-    return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter()
+    return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter(), render_sides_of_zero_display()
     
 # Function to clear spins
 def clear_spins():
@@ -457,7 +458,7 @@ def clear_spins():
     state.spin_history = []  # Clear spin history as well
     state.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}  # Reset side scores
     state.scores = {n: 0 for n in range(37)}  # Reset straight-up scores
-    return "", "", "Spins cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", update_spin_counter()
+    return "", "", "Spins cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", update_spin_counter(), render_sides_of_zero_display()
 
 # Function to save the session
 def save_session():
@@ -3181,6 +3182,26 @@ with gr.Blocks() as demo:
         interactive=True,
         elem_id="selected-spins"
     )
+    sides_of_zero_display = gr.HTML(
+        label="Sides of Zero",
+        value="""
+        <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="width: 100px;" id="left-label">Left Side (0)</span>
+                <div style="flex-grow: 1; background-color: #3498db; height: 20px; width: 0%; transition: width 0.5s ease;" id="left-bar"></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="width: 100px;" id="zero-label">Zero (0)</span>
+                <div style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: 0%; transition: width 0.5s ease;" id="zero-bar"></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="width: 100px;" id="right-label">Right Side (0)</span>
+                <div style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: 0%; transition: width 0.5s ease;" id="right-bar"></div>
+            </div>
+        </div>
+        """,
+        elem_classes=["sides-of-zero-container"]
+    )
     last_spin_display = gr.HTML(
         label="Last Spins",
         value='<h4>Last Spins</h4><p>No spins yet.</p>',
@@ -3214,9 +3235,9 @@ with gr.Blocks() as demo:
                 '''
             )
 
-    # 1.1 Row: Dealer's Spin Target Bar Display
+    # 1.1 Row: Sides of Zero Bar Display
     with gr.Row():
-        pass  # Removed Dealer's Spin Target section
+        sides_of_zero_display  # Reference the existing state component
 
     # 2. Row 2: European Roulette Table
     with gr.Group():
@@ -3246,7 +3267,7 @@ with gr.Blocks() as demo:
                             btn.click(
                                 fn=add_spin,
                                 inputs=[gr.State(value=num), spins_display, last_spin_count],
-                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter]
+                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
                             )
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
@@ -3695,23 +3716,6 @@ with gr.Blocks() as demo:
       .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
       .roulette-table { display: flex !important; flex-direction: column !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
       .table-row { display: flex !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap !important; line-height: 0 !important; }
-      
-      /* Style the Dealer's Spin Target container */
-      #dealer-target-display {
-          background-color: #f0f8ff !important; /* Light blue background */
-          border: 1px solid #4682b4 !important; /* Steel blue border */
-          border-radius: 5px !important;
-          padding: 15px !important;
-          margin: 10px 0 !important;
-      }
-      
-      /* Ensure bars and labels are contained */
-      #dealer-target-display #sides-of-zero {
-          width: 100% !important;
-          max-width: 100% !important;
-          margin: 0 !important;
-          padding: 0 !important;
-      }
     
       /* Buttons */
       button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
@@ -3723,7 +3727,6 @@ with gr.Blocks() as demo:
       button.green-btn:hover { background-color: #218838 !important; }
       /* Ensure columns have appropriate spacing */
       .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
-
     
       /* Compact Components */
       .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
@@ -3765,13 +3768,7 @@ with gr.Blocks() as demo:
           transform: scale(1.05) !important; /* Slight zoom on hover */
           box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
       }
-
-      /* Sides of Zero Bars */
-        .sides-of-zero-container .bar {
-            transform-origin: right !important;
-            direction: ltr !important; /* Ensure consistent left-to-right base direction */
-        }
-        
+    
       /* Last Spins Container */
             .last-spins-container {
           background-color: #f5f5f5 !important; /* Light gray background */
@@ -3843,40 +3840,6 @@ with gr.Blocks() as demo:
       .shepherd-modal-overlay-container { opacity: 0.5; z-index: 999; } /* Ensure overlay is below fullscreen */
       .shepherd-button { background-color: #007bff; color: white; padding: 5px 10px; border-radius: 3px; }
       .shepherd-button:hover { background-color: #0056b3; }
-
-      /* Dealer Target Display Accordion */
-        #dealer-target-display {
-            background-color: #f0f8ff; /* Light blue background */
-            border: 1px solid #4682b4; /* Steel blue border */
-            border-radius: 5px;
-            padding: 15px; /* Increased padding to fully encompass the bars */
-            margin: 10px 0; /* Ensure spacing around the accordion */
-        }
-        
-        /* Ensure the accordion content is hidden when collapsed */
-      #dealer-target-display:not([open]) .gr-box {
-          display: none !important; /* Forcefully hide content when collapsed */
-      }
-      
-      /* Ensure the accordion content is visible when expanded */
-      #dealer-target-display[open] .gr-box {
-          display: block !important; /* Ensure content is visible when expanded */
-      }
-      
-      /* Ensure bars and labels are contained */
-      #dealer-target-display #sides-of-zero {
-          width: 100% !important;
-          max-width: 100% !important;
-          margin: 0 !important;
-          padding: 0 !important;
-      }
-      
-      /* Hide content when accordion is collapsed */
-      #dealer-target-display:not([open]) .sides-of-zero-container {
-          opacity: 0 !important;
-          max-height: 0 !important;
-          overflow: hidden !important;
-      }
     </style>
     """)
     print("CSS Updated")
@@ -4393,46 +4356,7 @@ with gr.Blocks() as demo:
 
     # Add the Shepherd.js tour script here
     gr.HTML("""
-    <script>
-      const tour = new Shepherd.Tour({
-        defaultStepOptions: {
-          cancelIcon: { enabled: true },
-          scrollTo: { behavior: 'smooth', block: 'center' },
-          classes: 'shepherd-theme-arrows',
-        },
-        useModalOverlay: true
-      });
-    
-      // Debug function to log step transitions
-      function logStep(stepId, nextStepId) {
-          return () => {
-              console.log(`Attempting move from ${stepId} to ${nextStepId}`);
-              tour.next();
-          };
-      }
-
-  <script>
-  // Initialize accordion state for dealer-target-display
-  function initializeDealerAccordion() {
-      const accordion = document.querySelector('#dealer-target-display');
-      const chevron = document.querySelector('#dealer-chevron');
-      if (accordion && chevron) {
-          // Set initial state
-          if (!accordion.hasAttribute('open')) {
-              chevron.style.transform = 'rotate(0deg)';
-          }
-          // Add event listener for toggle
-          accordion.addEventListener('toggle', () => {
-              chevron.style.transform = accordion.hasAttribute('open') ? 'rotate(180deg)' : 'rotate(0deg)';
-          });
-      } else {
-          console.error('Dealer accordion or chevron not found');
-      }
-  }
-
-  // Run initialization after DOM is loaded
-  document.addEventListener('DOMContentLoaded', initializeDealerAccordion);
-
+<script>
   const tour = new Shepherd.Tour({
     defaultStepOptions: {
       cancelIcon: { enabled: true },
@@ -4444,10 +4368,10 @@ with gr.Blocks() as demo:
 
   // Debug function to log step transitions
   function logStep(stepId, nextStepId) {
-      return () => {
-          console.log(`Attempting move from ${stepId} to ${nextStepId}`);
-          tour.next();
-      };
+    return () => {
+      console.log(`Attempting move from ${stepId} to ${nextStepId}`);
+      tour.next();
+    };
   }
 
   // Force accordion open with direct DOM manipulation and Promise
@@ -4496,54 +4420,33 @@ with gr.Blocks() as demo:
     title: 'Spin the Wheel, Start the Thrill!',
     text: 'Click numbers!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ja454kZwndo?fs=0" frameborder="0"></iframe>',
     attachTo: { element: '.roulette-table', on: 'right' },
-    buttons: [ 
+    buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 7', 'Part 8') },
+      { text: 'Next', action: logStep('Part 2', 'Part 3') },
       { text: 'Skip', action: tour.cancel }
     ]
   });
 
   tour.addStep({
-    id: 'part8',
-    title: 'Bet Smart, Track the Art!',
-    text: 'Track bets!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?fs=0" frameborder="0"></iframe>',
-    attachTo: { element: '.betting-progression', on: 'top' },
-    beforeShowPromise: function() {
-      return forceAccordionOpen('.betting-progression');
-    },
+    id: 'part3',
+    title: 'Peek at Your Spin Streak!',
+    text: 'See spins!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/a9brOFMy9sA?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '.last-spins-container', on: 'bottom' },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 8', 'Part 9') },
+      { text: 'Next', action: logStep('Part 3', 'Part 4') },
       { text: 'Skip', action: tour.cancel }
     ]
   });
 
   tour.addStep({
-    id: 'part9',
-    title: 'Paint Your Winning Hue!',
-    text: 'Make your table pop!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8?fs=0" frameborder="0"></iframe>',
-    attachTo: { element: '#color-code-key', on: 'top' },
-    beforeShowPromise: function() {
-      return forceAccordionOpen('#color-code-key');
-    },
+    id: 'part4',
+    title: 'Master Your Spin Moves!',
+    text: 'Control spins!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/xG8z1S4HJK4?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#undo-spins-btn', on: 'bottom' },
     buttons: [
       { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 9', 'Part 10') },
-      { text: 'Skip', action: tour.cancel }
-    ]
-  });
-
-  tour.addStep({
-    id: 'part8',
-    title: 'Bet Smart, Track the Art!',
-    text: 'Track bets!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?fs=0" frameborder="0"></iframe>',
-    attachTo: { element: '.betting-progression', on: 'top' },
-    beforeShowPromise: function() {
-      return forceAccordionOpen('.betting-progression');
-    },
-    buttons: [
-      { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 8', 'Part 9') },
+      { text: 'Next', action: logStep('Part 4', 'Part 5') },
       { text: 'Skip', action: tour.cancel }
     ]
   });
