@@ -360,16 +360,37 @@ def render_sides_of_zero_display():
     left_width = (left_hits / max_hits) * 100
     zero_width = (zero_hits / max_hits) * 100
     right_width = (right_hits / max_hits) * 100
+    
+    # Return the full HTML structure plus the JavaScript to update it
     return f"""
+    <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="width: 100px;" id="left-label">Left Side ({left_hits})</span>
+            <div style="flex-grow: 1; background-color: #3498db; height: 20px; width: {left_width}%; transition: width 0.5s ease;" id="left-bar"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="width: 100px;" id="zero-label">Zero ({zero_hits})</span>
+            <div style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: {zero_width}%; transition: width 0.5s ease;" id="zero-bar"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="width: 100px;" id="right-label">Right Side ({right_hits})</span>
+            <div style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: {right_width}%; transition: width 0.5s ease;" id="right-bar"></div>
+        </div>
+    </div>
     <script>
-        // Update counts
-        document.getElementById('left-label').textContent = 'Left Side ({left_hits})';
-        document.getElementById('zero-label').textContent = 'Zero ({zero_hits})';
-        document.getElementById('right-label').textContent = 'Right Side ({right_hits})';
-        // Update bar widths
-        document.getElementById('left-bar').style.width = '{left_width}%';
-        document.getElementById('zero-bar').style.width = '{zero_width}%';
-        document.getElementById('right-bar').style.width = '{right_width}%';
+        function updateBar(barId, width, labelId, labelText) {{
+            const bar = document.getElementById(barId);
+            const label = document.getElementById(labelId);
+            if (bar && label) {{
+                bar.style.width = width + '%';
+                label.textContent = labelText;
+            }} else {{
+                console.error('Element not found: ' + (bar ? labelId : barId));
+            }}
+        }}
+        updateBar('left-bar', {left_width}, 'left-label', 'Left Side ({left_hits})');
+        updateBar('zero-bar', {zero_width}, 'zero-label', 'Zero ({zero_hits})');
+        updateBar('right-bar', {right_width}, 'right-label', 'Right Side ({right_hits})');
     </script>
     """
 def add_spin(number, current_spins, num_to_show):
