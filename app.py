@@ -353,6 +353,7 @@ def format_spins_as_html(spins, num_to_show):
     # Wrap the spins in a div with flexbox to enable wrapping, and add a title
     return f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
 
+# Line 1 (start of updated function)
 def add_spin(number, current_spins, num_to_show):
     print(f"add_spin: number='{number}', current_spins='{current_spins}'")
     spins = current_spins.split(", ") if current_spins else []
@@ -384,6 +385,9 @@ def add_spin(number, current_spins, num_to_show):
         print(f"add_spin: Errors encountered - {error_msg}")
         return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), "<h4>Wheel Section Balance</h4><p>No spins yet to compare left and right sides.</p>"
 
+    # Debug: Log side scores before update
+    print(f"add_spin: Before update - side_scores = {state.side_scores}")
+
     # Batch update scores
     action_log = update_scores_batch(valid_spins)
 
@@ -407,6 +411,12 @@ def add_spin(number, current_spins, num_to_show):
         gr.Warning(error_msg)
         print(f"add_spin: Errors encountered - {error_msg}")
         return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), "<h4>Wheel Section Balance</h4><p>Some inputs failed.</p>"
+
+    # Debug: Log side scores after update
+    print(f"add_spin: After update - side_scores = {state.side_scores}, valid_spins = {valid_spins}")
+
+    print(f"add_spin: new_spins='{new_spins_str}'")
+    return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter(), create_wheel_balance_bar()
 
     print(f"add_spin: new_spins='{new_spins_str}'")
     return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter(), create_wheel_balance_bar()
@@ -1285,13 +1295,13 @@ def get_strongest_numbers_with_neighbors(num_count):
     sorted_numbers = sorted(list(all_numbers))
     return f"Strongest {len(sorted_numbers)} Numbers (Sorted Lowest to Highest): {', '.join(map(str, sorted_numbers))}"
 
-# Function to analyze spins
+# Line 1 (start of updated function)
 def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *checkbox_args):
     try:
         print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}")
         if not spins_input or not spins_input.strip():
             print("analyze_spins: No spins input provided.")
-            return "Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", ""
+            return "Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", "", "<h4>Wheel Section Balance</h4><p>No spins yet to compare left and right sides.</p>"
 
         raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
         spins = []
@@ -1311,15 +1321,18 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
         if errors:
             error_msg = "\n".join(errors)
             print(f"analyze_spins: Errors found - {error_msg}")
-            return error_msg, "", "", "", "", "", "", "", "", "", "", "", "", ""
+            return error_msg, "", "", "", "", "", "", "", "", "", "", "", "", "", "<h4>Wheel Section Balance</h4><p>Some inputs failed.</p>"
 
         if not spins:
             print("analyze_spins: No valid spins found.")
-            return "No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", ""
+            return "No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", "<h4>Wheel Section Balance</h4><p>No spins yet to compare left and right sides.</p>"
 
         if reset_scores:
             state.reset()
             print("analyze_spins: Scores reset.")
+
+        # Debug: Log side scores before update
+        print(f"analyze_spins: Before update - side_scores = {state.side_scores}")
 
         # Batch update scores
         action_log = update_scores_batch(spins)
@@ -1424,9 +1437,13 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
         strategy_output = show_strategy_recommendations(strategy_name, neighbours_count, *checkbox_args)
         print(f"analyze_spins: Strategy output = {strategy_output}")
 
+        # Debug: Log side scores after update
+        print(f"analyze_spins: After update - side_scores = {state.side_scores}, spins = {spins}")
+
         return (spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output, sides_output,
-                straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html, strategy_output)
+                straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html, strategy_output,
+                create_wheel_balance_bar())
     except Exception as e:
         print(f"analyze_spins: Unexpected error: {str(e)}")
         return f"Unexpected error while analyzing spins: {str(e)}. Please try again.", "", "", "", "", "", "", "", "", "", "", "", "", ""
@@ -3254,6 +3271,7 @@ with gr.Blocks() as demo:
                 '''
             )
 
+
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -3982,7 +4000,7 @@ with gr.Blocks() as demo:
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-            dynamic_table_output, strategy_output
+            dynamic_table_output, strategy_output, wheel_balance_html
         ]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
