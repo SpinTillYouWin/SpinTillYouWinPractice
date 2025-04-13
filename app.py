@@ -125,7 +125,6 @@ class RouletteState:
         self.corner_scores = {name: 0 for name in CORNERS.keys()}
         self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
         self.split_scores = {name: 0 for name in SPLITS.keys()}
-        self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
         self.selected_numbers = set()
         self.last_spins = []
         self.spin_history = []  # Tracks each spin's effects for undoing
@@ -159,7 +158,7 @@ class RouletteState:
         self.status = "Active"
         self.status_color = "white"  # Default color for active status
 
-    def reset(self):
+    ddef reset(self):
         self.scores = {n: 0 for n in range(37)}
         self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
         self.dozen_scores = {name: 0 for name in DOZENS.keys()}
@@ -168,7 +167,6 @@ class RouletteState:
         self.corner_scores = {name: 0 for name in CORNERS.keys()}
         self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
         self.split_scores = {name: 0 for name in SPLITS.keys()}
-        self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
         self.selected_numbers = set(int(s) for s in self.last_spins if s.isdigit())
         self.last_spins = []
         self.spin_history = []
@@ -184,6 +182,7 @@ class RouletteState:
         self.message = f"Progression reset. Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
         self.status = "Active"
         return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
+What’s Updated:
 
     def update_bankroll(self, won):
         payout = {"Even Money": 1, "Dozens": 2, "Columns": 2, "Straight Bets": 35}[self.bet_type]
@@ -3247,7 +3246,7 @@ with gr.Blocks() as demo:
                             btn.click(
                                 fn=add_spin,
                                 inputs=[gr.State(value=num), spins_display, last_spin_count],
-                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
+                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter]
                             )
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
