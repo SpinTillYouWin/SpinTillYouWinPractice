@@ -3334,8 +3334,8 @@ with gr.Blocks() as demo:
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
 
-        # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
-    with gr.Row():
+    # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
+    with gr.Row():  # Dynamic Table Row
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
             dynamic_table_output = gr.HTML(
@@ -3445,56 +3445,18 @@ with gr.Blocks() as demo:
                     label="Casino Data Insights",
                     value="<p>No casino data entered yet.</p>"
                 )
-        with gr.Column(scale=1, min_width=200):
-            category_dropdown = gr.Dropdown(
-                label="Select Category",
-                choices=category_choices,
-                value="Even Money Strategies",
-                allow_custom_value=False,
-                elem_id="select-category"
-            )
-            strategy_dropdown = gr.Dropdown(
-                label="Select Strategy",
-                choices=strategy_categories["Even Money Strategies"],
-                value="Best Even Money Bets",
-                allow_custom_value=False
-            )
-            reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
-            neighbours_count_slider = gr.Slider(
-                label="Number of Neighbors (Left + Right)",
-                minimum=1,
-                maximum=5,
-                step=1,
-                value=2,
-                interactive=True,
-                visible=False,
-                elem_classes="long-slider"
-            )
-            strong_numbers_count_slider = gr.Slider(
-                label="Strong Numbers to Highlight (Neighbours Strategy)",
-                minimum=1,
-                maximum=18,
-                step=1,
-                value=1,
-                interactive=True,
-                visible=False,
-                elem_classes="long-slider"
-            )
-            reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
 
-    # New code (Wheel Section Balance accordion)
+    # New Row: Wheel Section Balance (moved from previous position)
+    with gr.Row():
         with gr.Column(scale=3):
             with gr.Accordion("Wheel Section Balance", open=True, elem_id="wheel-balance"):
-                wheel_balance_html = gr.HTML(
-                    label="Wheel Section Balance",
-                    value="<h4>Wheel Section Balance</h4><p>No spins yet to compare left and right sides.</p>",
-                    elem_classes="compact-visual"
-                )
+                wheel_balance_html
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
 
+# Line 3 (end of updated section)
     # 7.1. Row 7.1: Dozen Tracker
-    with gr.Row():
+    with gr.Row():  # Dozen Tracker Row
         with gr.Column(scale=3):
             with gr.Accordion("Dozen Tracker", open=False, elem_id="dozen-tracker"):
                 dozen_tracker_spins_dropdown = gr.Dropdown(
