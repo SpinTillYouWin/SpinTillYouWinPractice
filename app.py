@@ -1135,7 +1135,84 @@ def update_casino_data(spins_count, even_percent, odd_percent, red_percent, blac
         return f"<p>Error: {str(e)}</p>"
     except Exception as e:
         return f"<p>Unexpected error parsing casino data: {str(e)}</p>"
+def create_roulette_wheel_svg():
+    """Generate an SVG representation of a European roulette wheel with hit frequency colors."""
+    import math
+
+    # European roulette wheel number sequence (0 at top/north)
+    wheel_numbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26]
+    
+    # Get hit frequencies from state.scores
+    scores = state.scores
+    max_hits = max(scores.values()) if scores.values() else 1  # Avoid division by zero
+    max_hits = max(max_hits, 1)  # Ensure at least 1 to prevent scaling issues
+
+    # Wheel dimensions
+    radius = 100  # Outer radius of the wheel (200px diameter)
+    center_x, center_y = 120, 120  # SVG viewport center (240x240 to fit labels)
+    segment_angle = 360 / 37  # Degrees per number
+
+    # Start SVG
+    svg = f'<svg width="240" height="240" viewBox="0 0 240 240" style="display: block; margin: auto;">'
+    
+    # Draw wheel segments
+    for i, num in enumerate(wheel_numbers):
+        # Calculate segment angles
+        start_angle = i * segment_angle
+        end_angle = (i + 1) * segment_angle
+        start_rad = math.radians(start_angle)
+        end_rad = math.radians(end_angle)
+
+        # Calculate segment coordinates
+        x1 = center_x + radius * math.cos(start_rad)
+        y1 = center_y - radius * math.sin(start_rad)  # Negative Y for SVG coords (0 at top)
+        x2 = center_x + radius * math.cos(end_rad)
+        y2 = center_y - radius * math.sin(end_rad)
+
+        # Determine color based on hit frequency (blue = cold, red = hot)
+        hits = scores.get(num, 0)
+        intensity = hits / max_hits  # Normalize to [0, 1]
+        blue = int(255 * (1 - intensity))  # More hits -> less blue
+        red = int(255 * intensity)  # More hits -> more red
+        color = f"rgb({red}, 0, {blue})"
+
+        # Base color for number (red, black, green)
+        base_color = colors.get(str(num), "black")
+
+        # Draw segment (arc path)
+        large_arc = 1 if end_angle - start_angle > 180 else 0
+        path = f"M{center_x},{center_y} L{x1},{y1} A{radius},{radius} 0 {large_arc},1 {x2},{y2} Z"
+        svg += f'<path d="{path}" fill="{color}" stroke="black" stroke-width="0.5"/>'
+
+        # Add number label (positioned just outside the wheel)
+        label_radius = radius + 15  # Place labels 15px outside
+        label_angle = (start_angle + end_angle) / 2
+        label_rad = math.radians(label_angle)
+        label_x = center_x + label_radius * math.cos(label_rad)
+        label_y = center_y - label_radius * math.sin(label_rad)
         
+        # Adjust text anchor and alignment for readability
+        text_anchor = "middle"
+        if 45 < label_angle < 135 or 225 < label_angle < 315:
+            text_anchor = "middle"
+            label_y += 5 if label_angle < 180 else -5
+        elif label_angle < 45 or label_angle > 315:
+            text_anchor = "start"
+            label_x += 5
+        else:
+            text_anchor = "end"
+            label_x -= 5
+        
+        svg += f'<text x="{label_x}" y="{label_y}" font-size="10" font-family="Arial" fill="{base_color}" text-anchor="{text_anchor}" dominant-baseline="middle">{num}</text>'
+
+    # Add center circle for aesthetics
+    svg += f'<circle cx="{center_x}" cy="{center_y}" r="10" fill="silver" stroke="black" stroke-width="1"/>'
+
+    # Close SVG
+    svg += '</svg>'
+    
+    return f'<div style="text-align: center;"><h4>Roulette Wheel</h4><p>Red = Hot, Blue = Cold</p>{svg}</div>'
+    
 def reset_casino_data():
     """Reset casino data to defaults and clear UI inputs."""
     state.casino_data = {
@@ -3140,7 +3217,7 @@ with gr.Blocks() as demo:
     last_spin_display = gr.HTML(
         label="Last Spins",
         value="",
-        elem_classes=["last-spins-container"]  # Add styling for Last Spins
+        elem_classes=["last-spins-container"]
     )
     last_spin_count = gr.Slider(
         label="Show Last Spins",
@@ -3152,9 +3229,14 @@ with gr.Blocks() as demo:
         elem_classes="long-slider"
     )
     spin_counter = gr.HTML(
-        value='<span style="font-size: 16px;">Total Spins: 0</span>',  # Restore inline label
+        value='<span style="font-size: 16px;">Total Spins: 0</span>',
         label="Total Spins",
-        elem_classes=["spin-counter"]  # Restore styling class
+        elem_classes=["spin-counter"]
+    )
+    wheel_output = gr.HTML(
+        label="Roulette Wheel",
+        value=create_roulette_wheel_svg(),
+        elem_id="roulette-wheel"
     )
 
     # Define strategy categories and choices
@@ -3184,8 +3266,14 @@ with gr.Blocks() as demo:
                 <button id="start-tour-btn" onclick="startTour()" style="padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Take the Tour!</button>
                 '''
             )
-
-    # 2. Row 2: European Roulette Table
+    # 2. Row 2: Wheel and Spin Counter, followed by Roulette Table
+    with gr.Row():
+        with gr.Column(scale=2):
+            wheel_output
+        with gr.Column(scale=1, min_width=200):
+            spin_counter
+            
+    # 3. Row 3: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
         table_layout = [
@@ -3216,13 +3304,13 @@ with gr.Blocks() as demo:
                             outputs=[spins_display, spins_textbox, last_spin_display, spin_counter]
                         )
 
-    # 3. Row 3: Last Spins Display and Show Last Spins Slider
+    # 4. Row 4: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
             last_spin_display
             last_spin_count
 
-    # 4. Row 4: Spin Controls
+    # 5. Row 5: Spin Controls
     with gr.Row():
         with gr.Column(scale=2):
             clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
@@ -3231,14 +3319,14 @@ with gr.Blocks() as demo:
         with gr.Column(scale=1):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
     
-    # 5. Row 5: Selected Spins Textbox and Spin Counter
+    # 6. Row 6: Selected Spins Textbox and Spin Counter
     with gr.Row(elem_id="selected-spins-row"):
         with gr.Column(scale=4, min_width=600):
             spins_textbox
         with gr.Column(scale=1, min_width=200):
             spin_counter  # Restore side-by-side layout with styling
     
-    # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
+    # 7. Row 7: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
         with gr.Column(scale=2):
             analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
@@ -3247,7 +3335,7 @@ with gr.Blocks() as demo:
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
 
-        # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
+    # 8. Row 8: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
@@ -3395,7 +3483,7 @@ with gr.Blocks() as demo:
             )
             reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
 
-    # 7.1. Row 7.1: Dozen Tracker
+    # 8.1. Row 8.1: Dozen Tracker
     with gr.Row():
         with gr.Column(scale=3):
             with gr.Accordion("Dozen Tracker", open=False, elem_id="dozen-tracker"):
@@ -3444,7 +3532,7 @@ with gr.Blocks() as demo:
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
 
-    # 8. Row 8: Betting Progression Tracker
+    # 9. Row 9: Betting Progression Tracker
     with gr.Row():
         with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
             with gr.Row():
@@ -3480,7 +3568,7 @@ with gr.Blocks() as demo:
                 message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
                 status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
 
-    # 9. Row 9: Color Code Key (Collapsible, with Color Pickers Inside)
+    # 10. Row 10: Color Code Key (Collapsible, with Color Pickers Inside)
     with gr.Accordion("Color Code Key", open=False, elem_id="color-code-key"):
         with gr.Row():
             top_color_picker = gr.ColorPicker(
@@ -3502,7 +3590,7 @@ with gr.Blocks() as demo:
             reset_colors_button = gr.Button("Reset Colors", elem_classes=["action-button"])
         color_code_output = gr.HTML(label="Color Code Key")
 
-    # 10. Row 10: Analysis Outputs (Collapsible, Renumbered)
+    # 11. Row 11: Analysis Outputs (Collapsible, Renumbered)
     with gr.Accordion("Spin Logic Reactor 🧠", open=False, elem_id="spin-analysis"):
         spin_analysis_output = gr.Textbox(
             label="",
@@ -3564,7 +3652,7 @@ with gr.Blocks() as demo:
                 with gr.Accordion("Sides of Zero", open=False):
                     sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
-    # 11. Row 11: Save/Load Session (Collapsible, Renumbered)
+    # 12. Row 12: Save/Load Session (Collapsible, Renumbered)
     with gr.Accordion("Save/Load Session", open=False, elem_id="save-load-session"):
         with gr.Row():
             save_button = gr.Button("Save Session", elem_id="save-session-btn")
@@ -3791,12 +3879,29 @@ with gr.Blocks() as demo:
         fn=format_spins_as_html,
         inputs=[spins_display, last_spin_count],
         outputs=[last_spin_display]
+    ).then(
+        fn=create_roulette_wheel_svg,
+        inputs=[],
+        outputs=[wheel_output]
+    )
+    spins_display.change(
+        fn=update_spin_counter,
+        inputs=[],
+        outputs=[spin_counter]
+    ).then(
+        fn=format_spins_as_html,
+        inputs=[spins_display, last_spin_count],
+        outputs=[last_spin_display]
     )
 
     clear_spins_button.click(
         fn=clear_spins,
         inputs=[],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter]
+        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, wheel_output]
+    ).then(
+        fn=create_roulette_wheel_svg,
+        inputs=[],
+        outputs=[wheel_output]
     )
 
     clear_all_button.click(
@@ -3806,7 +3911,7 @@ with gr.Blocks() as demo:
             spins_display, spins_textbox, spin_analysis_output, last_spin_display,
             even_money_output, dozens_output, columns_output, streets_output,
             corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output, spin_counter
+            straight_up_html, top_18_html, strongest_numbers_output, spin_counter, wheel_output
         ]
     ).then(
         fn=clear_outputs,
@@ -3818,6 +3923,10 @@ with gr.Blocks() as demo:
             dynamic_table_output, strategy_output, color_code_output
         ]
     ).then(
+        fn=create_roulette_wheel_svg,
+        inputs=[],
+        outputs=[wheel_output]
+    ).then(
         fn=dozen_tracker,
         inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
         outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
@@ -3826,11 +3935,15 @@ with gr.Blocks() as demo:
     generate_spins_button.click(
         fn=generate_random_spins,
         inputs=[gr.State(value="5"), spins_display, last_spin_count],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter]
+        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, wheel_output]
     ).then(
         fn=format_spins_as_html,
         inputs=[spins_display, last_spin_count],
         outputs=[last_spin_display]
+    ).then(
+        fn=create_roulette_wheel_svg,
+        inputs=[],
+        outputs=[wheel_output]
     )
 
     last_spin_count.change(
@@ -3888,12 +4001,16 @@ with gr.Blocks() as demo:
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-            dynamic_table_output, strategy_output
+            dynamic_table_output, strategy_output, wheel_output
         ]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
+    ).then(
+        fn=create_roulette_wheel_svg,
+        inputs=[],
+        outputs=[wheel_output]
     ).then(
         fn=create_color_code_table,
         inputs=[],
@@ -3944,12 +4061,16 @@ with gr.Blocks() as demo:
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_html, top_18_html, strongest_numbers_output,
             spins_textbox, spins_display, dynamic_table_output, strategy_output,
-            color_code_output, spin_counter
+            color_code_output, spin_counter, wheel_output
         ]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
+    ).then(
+        fn=create_roulette_wheel_svg,
+        inputs=[],
+        outputs=[wheel_output]
     ).then(
         fn=dozen_tracker,
         inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
