@@ -3235,9 +3235,10 @@ with gr.Blocks() as demo:
                 '''
             )
 
-    # 1.1 Row: Sides of Zero Bar Display
-        # Removed the standalone Accordion for sides_of_zero_display
-        # It will be moved to the "Spin Logic Reactor 🧠" accordion
+    # 1.1 Row: Dealer's Spin Target Bar Display
+    with gr.Row():
+        with gr.Accordion("Dealer's Spin Target: Wheel Section Analyzer", open=True, elem_id="dealer-target-display"):
+            sides_of_zero_display  # Reference the existing state component
     
 
     # 2. Row 2: European Roulette Table
@@ -3580,10 +3581,6 @@ with gr.Blocks() as demo:
             interactive=False,
             lines=5
         )
-        with gr.Row():
-            with gr.Column():
-                with gr.Accordion("Dealer's Spin Target: Wheel Section Analyzer", open=True, elem_id="dealer-target-display"):
-                    sides_of_zero_display
 
     with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-table"):
         with gr.Row():
@@ -3857,6 +3854,24 @@ with gr.Blocks() as demo:
             background-color: #f0f8ff; /* Light blue background */
             border: 1px solid #4682b4; /* Steel blue border */
             border-radius: 5px;
+            padding: 15px; /* Increased padding to fully encompass the bars */
+            margin: 10px 0; /* Ensure spacing around the accordion */
+        }
+        
+        /* Ensure the sides-of-zero-container inside the accordion is styled properly */
+        #dealer-target-display .sides-of-zero-container {
+            background-color: transparent; /* Remove any conflicting background */
+            border: none; /* Remove any conflicting border */
+            padding: 0; /* Remove padding to avoid extra spacing */
+            margin: 0; /* Remove margin to fit snugly inside the accordion */
+            box-shadow: none; /* Remove any conflicting shadow */
+        }
+        
+        /* Ensure the bars and labels are fully contained */
+        #dealer-target-display #sides-of-zero {
+            width: 100%; /* Ensure the bar container takes full width */
+            max-width: 100%; /* Prevent overflow */
+            margin: 0; /* Remove margin to fit within the accordion */
         }
     </style>
     """)
