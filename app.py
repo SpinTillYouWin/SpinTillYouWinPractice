@@ -383,7 +383,7 @@ def add_spin(number, current_spins, num_to_show):
     numbers = [n.strip() for n in number.split(",") if n.strip()]
     if not numbers:
         gr.Warning("No valid input provided. Please enter numbers between 0 and 36.")
-        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter()
+        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter(), render_sides_of_zero_display()
 
     errors = []
     valid_spins = []
@@ -402,7 +402,7 @@ def add_spin(number, current_spins, num_to_show):
         error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
         gr.Warning(error_msg)
         print(f"add_spin: Errors encountered - {error_msg}")
-        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter()
+        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
 
     # Batch update scores
     action_log = update_scores_batch(valid_spins)
@@ -426,10 +426,10 @@ def add_spin(number, current_spins, num_to_show):
         error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
         gr.Warning(error_msg)
         print(f"add_spin: Errors encountered - {error_msg}")
-        return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter()
+        return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
 
     print(f"add_spin: new_spins='{new_spins_str}'")
-    return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter()
+    return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter(), render_sides_of_zero_display()
     
 # Function to clear spins
 def clear_spins():
@@ -3209,25 +3209,9 @@ with gr.Blocks() as demo:
                 <button id="start-tour-btn" onclick="startTour()" style="padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Take the Tour!</button>
                 '''
             )
-        # 1.1 Row: Sides of Zero Bar Display
+    # 1.1 Row: Sides of Zero Bar Display
     with gr.Row():
-        sides_of_zero_display = gr.HTML(
-            label="Sides of Zero",
-            value='<div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">' +
-                  '<div style="display: flex; align-items: center; gap: 10px;">' +
-                  '<span style="width: 100px;">Left Side</span>' +
-                  '<div style="flex-grow: 1; background-color: #3498db; height: 20px; width: 0; transition: width 0.5s ease;" id="left-bar">0</div>' +
-                  '</div>' +
-                  '<div style="display: flex; align-items: center; gap: 10px;">' +
-                  '<span style="width: 100px;">Zero</span>' +
-                  '<div style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: 0; transition: width 0.5s ease;" id="zero-bar">0</div>' +
-                  '</div>' +
-                  '<div style="display: flex; align-items: center; gap: 10px;">' +
-                  '<span style="width: 100px;">Right Side</span>' +
-                  '<div style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: 0; transition: width 0.5s ease;" id="right-bar">0</div>' +
-                  '</div></div>',
-            elem_classes=["sides-of-zero-container"]
-        )
+        sides_of_zero_display  # Reference the existing state component
 
     # 2. Row 2: European Roulette Table
     with gr.Group():
@@ -3263,8 +3247,20 @@ with gr.Blocks() as demo:
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
-            last_spin_display
-            last_spin_count
+            last_spin_display = gr.HTML(
+                label="Last Spins",
+                value='<h4>Last Spins</h4><p>No spins yet.</p>',
+                elem_classes=["last-spins-container"]
+            )
+            last_spin_count = gr.Slider(
+                label="Show Last Spins",
+                minimum=1,
+                maximum=36,
+                step=1,
+                value=36,
+                interactive=True,
+                elem_classes="long-slider"
+            )
 
     # 4. Row 4: Spin Controls
     with gr.Row():
