@@ -384,6 +384,9 @@ def add_spin(number, current_spins, num_to_show):
         print(f"add_spin: Errors encountered - {error_msg}")
         return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), "<p>No streaks to display yet.</p>"
 
+    # Debug: Log spin history before update
+    print(f"add_spin: Current state.spin_history length = {len(state.spin_history)}, spins = {[action['spin'] for action in state.spin_history]}")
+
     # Batch update scores
     action_log = update_scores_batch(valid_spins)
 
@@ -410,7 +413,6 @@ def add_spin(number, current_spins, num_to_show):
 
     print(f"add_spin: new_spins='{new_spins_str}'")
     return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter(), create_streak_tracker_table()
-
     # Batch update scores
     action_log = update_scores_batch(valid_spins)
 
@@ -3293,7 +3295,7 @@ with gr.Blocks() as demo:
                         btn.click(
                             fn=add_spin,
                             inputs=[gr.State(value=num), spins_display, last_spin_count],
-                            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter]
+                            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, streak_tracker_html]
                         )
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
