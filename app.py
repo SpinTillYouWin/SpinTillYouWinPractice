@@ -360,19 +360,21 @@ def render_sides_of_zero_display():
     left_width = (left_hits / max_hits) * 100
     zero_width = (zero_hits / max_hits) * 100
     right_width = (right_hits / max_hits) * 100
-    return f'<div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">' + \
-           f'<div style="display: flex; align-items: center; gap: 10px;">' + \
-           f'<span style="width: 100px;">Left Side ({left_hits})</span>' + \
-           f'<div style="flex-grow: 1; background-color: #3498db; height: 20px; width: {left_width}%; transition: width 0.5s ease;" id="left-bar"></div>' + \
-           f'</div>' + \
-           f'<div style="display: flex; align-items: center; gap: 10px;">' + \
-           f'<span style="width: 100px;">Zero ({zero_hits})</span>' + \
-           f'<div style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: {zero_width}%; transition: width 0.5s ease;" id="zero-bar"></div>' + \
-           f'</div>' + \
-           f'<div style="display: flex; align-items: center; gap: 10px;">' + \
-           f'<span style="width: 100px;">Right Side ({right_hits})</span>' + \
-           f'<div style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: {right_width}%; transition: width 0.5s ease;" id="right-bar"></div>' + \
-           f'</div></div>'
+    
+    # Return a JavaScript snippet to update the DOM elements
+    return f"""
+    <script>
+        // Update counts
+        document.getElementById('left-label').textContent = 'Left Side ({left_hits})';
+        document.getElementById('zero-label').textContent = 'Zero ({zero_hits})';
+        document.getElementById('right-label').textContent = 'Right Side ({right_hits})';
+        
+        // Update bar widths
+        document.getElementById('left-bar').style.width = '{left_width}%';
+        document.getElementById('zero-bar').style.width = '{zero_width}%';
+        document.getElementById('right-bar').style.width = '{right_width}%';
+    </script>
+    """
 def add_spin(number, current_spins, num_to_show):
     print(f"add_spin: number='{number}', current_spins='{current_spins}'")
     spins = current_spins.split(", ") if current_spins else []
@@ -435,7 +437,10 @@ def add_spin(number, current_spins, num_to_show):
 def clear_spins():
     state.selected_numbers.clear()
     state.last_spins = []
-    return "", "", "Spins cleared successfully!", "", update_spin_counter(), render_sides_of_zero_display()
+    state.spin_history = []  # Clear spin history as well
+    state.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}  # Reset side scores
+    state.scores = {n: 0 for n in range(37)}  # Reset straight-up scores
+    return "", "", "Spins cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", update_spin_counter(), render_sides_of_zero_display()
 
 # Function to save the session
 def save_session():
@@ -1396,12 +1401,12 @@ def reset_scores():
 
 def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_count, strong_numbers_count, *checkbox_args):
     if not state.spin_history:
-        return ("No spins to undo.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter())
+        return ("No spins to undo.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), render_sides_of_zero_display())
 
     try:
         undo_count = int(undo_count)
         if undo_count <= 0:
-            return ("Please select a positive number of spins to undo.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table())
+            return ("Please select a positive number of spins to undo.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), render_sides_of_zero_display())
         undo_count = min(undo_count, len(state.spin_history))  # Don't exceed history length
 
         # Undo the specified number of spins
@@ -1464,18 +1469,17 @@ def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_
         return (spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output, sides_output,
             straight_up_html, top_18_html, strongest_numbers_output, spins_input, spins_input,
-            dynamic_table_html, strategy_output, create_color_code_table(), update_spin_counter())
+            dynamic_table_html, strategy_output, create_color_code_table(), update_spin_counter(), render_sides_of_zero_display())
     except ValueError:
-        return ("Error: Invalid undo count. Please use a positive number.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table())
+        return ("Error: Invalid undo count. Please use a positive number.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), render_sides_of_zero_display())
     except Exception as e:
         print(f"undo_last_spin: Unexpected error: {str(e)}")
-        return (f"Unexpected error during undo: {str(e)}", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table())
-
+        return (f"Unexpected error during undo: {str(e)}", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), render_sides_of_zero_display())
 def clear_all():
     state.selected_numbers.clear()
     state.last_spins = []
     state.reset()
-    return "", "", "All spins and scores cleared successfully!", "", "", "", "", "", "", "", "", "", "", "", "", update_spin_counter()
+    return "", "", "All spins and scores cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", "", "", "", "", "", "", "", "", "", "", "", update_spin_counter(), render_sides_of_zero_display()
 
 def reset_strategy_dropdowns():
     default_category = "Even Money Strategies"
