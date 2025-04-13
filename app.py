@@ -3202,7 +3202,7 @@ with gr.Blocks() as demo:
     last_spin_display = gr.HTML(
         label="Last Spins",
         value="",
-        elem_classes=["last-spins-container"]  # Add styling for Last Spins
+        elem_classes=["last-spins-container"]
     )
     last_spin_count = gr.Slider(
         label="Show Last Spins",
@@ -3214,9 +3214,16 @@ with gr.Blocks() as demo:
         elem_classes="long-slider"
     )
     spin_counter = gr.HTML(
-        value='<span style="font-size: 16px;">Total Spins: 0</span>',  # Restore inline label
+        value='<span style="font-size: 16px;">Total Spins: 0</span>',
         label="Total Spins",
-        elem_classes=["spin-counter"]  # Restore styling class
+        elem_classes=["spin-counter"]
+    )
+    # Define wheel_balance_html early to avoid NameError
+    wheel_balance_html = gr.HTML(
+        label="Wheel Section Balance",
+        value="<h4>Wheel Section Balance</h4><p>No spins yet to compare left and right sides.</p>",
+        elem_classes="compact-visual",
+        visible=False  # Hide until placed in UI
     )
 
     # Define strategy categories and choices
