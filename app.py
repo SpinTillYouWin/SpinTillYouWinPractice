@@ -3960,7 +3960,7 @@ with gr.Blocks() as demo:
         outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
     )
 
-        save_button.click(
+    save_button.click(
         fn=save_session,
         inputs=[],
         outputs=[save_output]
