@@ -3995,7 +3995,7 @@ with gr.Blocks() as demo:
 
     undo_button.click(
         fn=undo_last_spin,
-        inputs=[spins_display, gr.State(value=1), strategy_dropdown, neighbours_count_slider, strong Colonies_output],
+        inputs=[spins_display, gr.State(value=1), strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
         outputs=[
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
