@@ -3218,7 +3218,22 @@ with gr.Blocks() as demo:
                 <button id="start-tour-btn" onclick="startTour()" style="padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Take the Tour!</button>
                 '''
             )
-
+    # New accordion for dynamic roulette wheel
+            gr.Markdown("### Dynamic Roulette Wheel", elem_id="dynamic-wheel-heading")
+            with gr.Accordion("Dynamic Roulette Wheel", open=False, elem_id="dynamic-wheel"):
+                dynamic_wheel_output = gr.HTML(
+                    label="Dynamic Wheel",
+                    value=render_dynamic_wheel_image()
+                )
+                tint_intensity_slider = gr.Slider(
+                    label="Tint Intensity (Overlay Opacity)",
+                    minimum=0.1,
+                    maximum=0.5,
+                    step=0.05,
+                    value=0.3,
+                    interactive=True,
+                    elem_classes="long-slider"
+                )
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -3289,22 +3304,7 @@ with gr.Blocks() as demo:
                 label="Dynamic Table",
                 value=create_dynamic_table(strategy_name="Best Even Money Bets")
             )
-        # New accordion for dynamic roulette wheel
-            gr.Markdown("### Dynamic Roulette Wheel", elem_id="dynamic-wheel-heading")
-            with gr.Accordion("Dynamic Roulette Wheel", open=False, elem_id="dynamic-wheel"):
-                dynamic_wheel_output = gr.HTML(
-                    label="Dynamic Wheel",
-                    value=render_dynamic_wheel_image()
-                )
-                tint_intensity_slider = gr.Slider(
-                    label="Tint Intensity (Overlay Opacity)",
-                    minimum=0.1,
-                    maximum=0.5,
-                    step=0.05,
-                    value=0.3,
-                    interactive=True,
-                    elem_classes="long-slider"
-                )
+        
         with gr.Column(scale=1):
             gr.Markdown("### Strategy Recommendations")
             strategy_output = gr.HTML(
