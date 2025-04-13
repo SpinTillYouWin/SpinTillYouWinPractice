@@ -1056,26 +1056,30 @@ tint_opacity = 0.3  # Default opacity
 # New function to render dynamic wheel image with conditional styling
 def render_dynamic_wheel_image():
     """Generate HTML for the roulette wheel image with dynamic styling based on side scores."""
-    left_score = state.side_scores["Left Side of Zero"]
-    right_score = state.side_scores["Right Side of Zero"]
-    
-    # Determine which side is hotter
-    if left_score > right_score:
-        filter_style = "filter: hue-rotate(200deg);"  # Blue tint for left side
-        overlay_style = f"background: linear-gradient(to right, rgba(0, 0, 255, {tint_opacity}) 50%, transparent 50%);"
-    elif right_score > left_score:
-        filter_style = "filter: hue-rotate(0deg);"  # Red tint for right side
-        overlay_style = f"background: linear-gradient(to left, rgba(255, 0, 0, {tint_opacity}) 50%, transparent 50%);"
-    else:
-        filter_style = "filter: none;"  # No tint if tied
-        overlay_style = "background: transparent;"
-    
-    html = '<div style="position: relative; width: 300px; height: 300px; margin: 10px auto;">'
-    html += f'<img src="https://huggingface.co/spaces/ysforce1/SpinTillYouWin/raw/main/600px-European_Roulette_wheel.png" style="width: 100%; height: 100%; object-fit: contain; {filter_style} border-radius: 50%; transition: filter 0.5s ease;" class="dynamic-wheel" alt="Roulette Wheel">'
-    html += f'<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; {overlay_style} border-radius: 50%; transition: background 0.5s ease;" class="wheel-overlay"></div>'
-    html += '</div>'
-    html += f'<p style="text-align: center;">Left Side Hits: {left_score} | Right Side Hits: {right_score}</p>'
-    return html
+    try:
+        left_score = state.side_scores["Left Side of Zero"]
+        right_score = state.side_scores["Right Side of Zero"]
+        
+        # Determine which side is hotter
+        if left_score > right_score:
+            filter_style = "filter: hue-rotate(200deg);"  # Blue tint for left side
+            overlay_style = f"background: linear-gradient(to right, rgba(0, 0, 255, {tint_opacity}) 50%, transparent 50%);"
+        elif right_score > left_score:
+            filter_style = "filter: hue-rotate(0deg);"  # Red tint for right side
+            overlay_style = f"background: linear-gradient(to left, rgba(255, 0, 0, {tint_opacity}) 50%, transparent 50%);"
+        else:
+            filter_style = "filter: none;"  # No tint if tied
+            overlay_style = "background: transparent;"
+        
+        html = '<div style="position: relative; width: 300px; height: 300px; margin: 10px auto;">'
+        html += f'<img src="https://huggingface.co/spaces/ysforce1/SpinTillYouWin/raw/main/600px-European_Roulette_wheel.png" style="width: 100%; height: 100%; object-fit: contain; {filter_style} border-radius: 50%; transition: filter 0.5s ease;" class="dynamic-wheel" alt="Roulette Wheel">'
+        html += f'<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; {overlay_style} border-radius: 50%; transition: background 0.5s ease;" class="wheel-overlay"></div>'
+        html += '</div>'
+        html += f'<p style="text-align: center;">Left Side Hits: {left_score} | Right Side Hits: {right_score}</p>'
+        return html
+    except Exception as e:
+        return f'<p style="color: red;">Error rendering wheel: {str(e)}</p>'
+
 def update_casino_data(spins_count, even_percent, odd_percent, red_percent, black_percent, low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent, col1_percent, col2_percent, col3_percent, use_winners):
     """Parse casino data inputs, update state, and generate HTML output."""
     try:
@@ -2727,8 +2731,11 @@ def create_color_code_table():
     
 def update_spin_counter():
     """Return the current number of spins as formatted HTML with inline styling."""
+    try:
     spin_count = len(state.last_spins)
     return f'<span style="font-size: 16px;">Total Spins: {spin_count}</span>'
+except Exception as e:
+    return f'<span style="color: red;">Error in spin counter: {str(e)}</span>'
     
 def top_numbers_with_neighbours_tiered():
     recommendations = []
