@@ -1050,6 +1050,32 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     html += "</table>"
     return html
 
+# Global tint opacity for the wheel overlay
+tint_opacity = 0.3  # Default opacity
+
+# New function to render dynamic wheel image with conditional styling
+def render_dynamic_wheel_image():
+    """Generate HTML for the roulette wheel image with dynamic styling based on side scores."""
+    left_score = state.side_scores["Left Side of Zero"]
+    right_score = state.side_scores["Right Side of Zero"]
+    
+    # Determine which side is hotter
+    if left_score > right_score:
+        filter_style = "filter: hue-rotate(200deg);"  # Blue tint for left side
+        overlay_style = f"background: linear-gradient(to right, rgba(0, 0, 255, {tint_opacity}) 50%, transparent 50%);"
+    elif right_score > left_score:
+        filter_style = "filter: hue-rotate(0deg);"  # Red tint for right side
+        overlay_style = f"background: linear-gradient(to left, rgba(255, 0, 0, {tint_opacity}) 50%, transparent 50%);"
+    else:
+        filter_style = "filter: none;"  # No tint if tied
+        overlay_style = "background: transparent;"
+    
+    html = '<div style="position: relative; width: 300px; height: 300px; margin: 10px auto;">'
+    html += f'<img src="https://huggingface.co/spaces/ysforce1/SpinTillYouWin/raw/main/600px-European_Roulette_wheel.png" style="width: 100%; height: 100%; object-fit: contain; {filter_style} border-radius: 50%; transition: filter 0.5s ease;" class="dynamic-wheel" alt="Roulette Wheel">'
+    html += f'<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; {overlay_style} border-radius: 50%; transition: background 0.5s ease;" class="wheel-overlay"></div>'
+    html += '</div>'
+    html += f'<p style="text-align: center;">Left Side Hits: {left_score} | Right Side Hits: {right_score}</p>'
+    return html
 def update_casino_data(spins_count, even_percent, odd_percent, red_percent, black_percent, low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent, col1_percent, col2_percent, col3_percent, use_winners):
     """Parse casino data inputs, update state, and generate HTML output."""
     try:
@@ -1467,14 +1493,22 @@ def generate_random_spins(num_spins, current_spins_display, last_spin_count):
     try:
         num_spins = int(num_spins)
         if num_spins <= 0:
-            return current_spins_display, current_spins_display, "Please select a number of spins greater than 0.", update_spin_counter()
+            return current_spins_display, current_spins_display, "Please select a number of spins greater than 0.", update_spin_counter(), ""
 
         new_spins = [str(random.randint(0, 36)) for _ in range(num_spins)]
+        # Update scores for new spins
+        update_scores_batch(new_spins)
         if current_spins_display and current_spins_display.strip():
             current_spins = current_spins_display.split(", ")
             updated_spins = current_spins + new_spins
         else:
             updated_spins = new_spins
+
+        # Update state.last_spins
+        state.last_spins = updated_spins  # Replace the list entirely
+        spins_text = ", ".join(updated_spins)
+        print(f"generate_random_spins: Setting spins_textbox to '{spins_text}'")
+        return spins_text, spins_text, f"Generated {num_spins} random spins: {', '.join(new_spins)}", update_spin_counter(), render_dynamic_wheel_image()
 
         # Update state.last_spins
         state.last_spins = updated_spins  # Replace the list entirely
@@ -3112,7 +3146,7 @@ def show_strategy_recommendations(strategy_name, neighbours_count, strong_number
         return f"<p>Error generating strategy recommendations: {str(e)}</p>"
 
 def clear_outputs():
-    return "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
+    return "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
 
 def toggle_checkboxes(strategy_name):
     return (gr.update(visible=strategy_name == "Kitchen Martingale"),
@@ -3204,7 +3238,7 @@ with gr.Blocks() as demo:
                         is_selected = int(num) in state.selected_numbers
                         btn_classes = [f"roulette-button", color]
                         if is_selected:
-                            btn_classes.append("selected")
+                                                        btn_classes.append("selected")
                         btn = gr.Button(
                             value=num,
                             min_width=40,
@@ -3213,7 +3247,7 @@ with gr.Blocks() as demo:
                         btn.click(
                             fn=add_spin,
                             inputs=[gr.State(value=num), spins_display, last_spin_count],
-                            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter]
+                            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, dynamic_wheel_output]
                         )
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
@@ -3255,6 +3289,22 @@ with gr.Blocks() as demo:
                 label="Dynamic Table",
                 value=create_dynamic_table(strategy_name="Best Even Money Bets")
             )
+        # New accordion for dynamic roulette wheel
+            gr.Markdown("### Dynamic Roulette Wheel", elem_id="dynamic-wheel-heading")
+            with gr.Accordion("Dynamic Roulette Wheel", open=False, elem_id="dynamic-wheel"):
+                dynamic_wheel_output = gr.HTML(
+                    label="Dynamic Wheel",
+                    value=render_dynamic_wheel_image()
+                )
+                tint_intensity_slider = gr.Slider(
+                    label="Tint Intensity (Overlay Opacity)",
+                    minimum=0.1,
+                    maximum=0.5,
+                    step=0.05,
+                    value=0.3,
+                    interactive=True,
+                    elem_classes="long-slider"
+                )
         with gr.Column(scale=1):
             gr.Markdown("### Strategy Recommendations")
             strategy_output = gr.HTML(
@@ -3709,6 +3759,11 @@ with gr.Blocks() as demo:
           margin-top: 10px !important;
           box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; /* Very light shadow */
       }
+      
+      /* Dynamic Wheel Styling */
+      .dynamic-wheel, .wheel-overlay {
+          transition: filter 0.5s ease, background 0.5s ease !important;
+      }
     
       /* Responsive Design */
       @media (max-width: 600px) {
@@ -3781,13 +3836,13 @@ with gr.Blocks() as demo:
     spins_textbox.change(
         fn=validate_spins_input,
         inputs=spins_textbox,
-        outputs=[spins_display, last_spin_display]
+        outputs=[spins_display, last_spin_display, dynamic_wheel_output]
     )
     spins_display.change(
         fn=update_spin_counter,
         inputs=[],
         outputs=[spin_counter]
-    ).then(
+        ).then(
         fn=format_spins_as_html,
         inputs=[spins_display, last_spin_count],
         outputs=[last_spin_display]
@@ -3796,7 +3851,7 @@ with gr.Blocks() as demo:
     clear_spins_button.click(
         fn=clear_spins,
         inputs=[],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter]
+        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, dynamic_wheel_output]
     )
 
     clear_all_button.click(
@@ -3806,7 +3861,8 @@ with gr.Blocks() as demo:
             spins_display, spins_textbox, spin_analysis_output, last_spin_display,
             even_money_output, dozens_output, columns_output, streets_output,
             corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output, spin_counter
+            straight_up_html, top_18_html, strongest_numbers_output, spin_counter,
+            dynamic_wheel_output
         ]
     ).then(
         fn=clear_outputs,
@@ -3826,7 +3882,7 @@ with gr.Blocks() as demo:
     generate_spins_button.click(
         fn=generate_random_spins,
         inputs=[gr.State(value="5"), spins_display, last_spin_count],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter]
+        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, dynamic_wheel_output]
     ).then(
         fn=format_spins_as_html,
         inputs=[spins_display, last_spin_count],
@@ -3867,7 +3923,7 @@ with gr.Blocks() as demo:
             gr.update(visible=is_visible)
         )
 
-    strategy_dropdown.change(
+        strategy_dropdown.change(
         fn=toggle_neighbours_slider,
         inputs=[strategy_dropdown],
         outputs=[neighbours_count_slider, strong_numbers_count_slider]
@@ -3888,7 +3944,7 @@ with gr.Blocks() as demo:
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-            dynamic_table_output, strategy_output
+            dynamic_table_output, strategy_output, dynamic_wheel_output
         ]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -3904,7 +3960,7 @@ with gr.Blocks() as demo:
         outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
     )
 
-    save_button.click(
+        save_button.click(
         fn=save_session,
         inputs=[],
         outputs=[save_output]
@@ -3916,7 +3972,8 @@ with gr.Blocks() as demo:
         outputs=[
             spins_display, spins_textbox, spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_output, strategy_output
+            straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_output, strategy_output,
+            dynamic_wheel_output
         ]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -3938,13 +3995,13 @@ with gr.Blocks() as demo:
 
     undo_button.click(
         fn=undo_last_spin,
-        inputs=[spins_display, gr.State(value=1), strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+        inputs=[spins_display, gr.State(value=1), strategy_dropdown, neighbours_count_slider, strong Colonies_output],
         outputs=[
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_html, top_18_html, strongest_numbers_output,
             spins_textbox, spins_display, dynamic_table_output, strategy_output,
-            color_code_output, spin_counter
+            color_code_output, spin_counter, dynamic_wheel_output
         ]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -3989,7 +4046,13 @@ with gr.Blocks() as demo:
     clear_last_spins_button.click(
         fn=clear_last_spins_display,
         inputs=[],
-        outputs=[last_spin_display, spin_counter]
+        outputs=[last_spin_display, spin_counter, dynamic_wheel_output]
+    )
+
+    tint_intensity_slider.change(
+        fn=lambda value: (setattr(globals(), 'tint_opacity', value), render_dynamic_wheel_image())[1],
+        inputs=[tint_intensity_slider],
+        outputs=[dynamic_wheel_output]
     )
 
     top_color_picker.change(
