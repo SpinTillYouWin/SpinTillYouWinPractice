@@ -352,7 +352,27 @@ def format_spins_as_html(spins, num_to_show):
     
     # Wrap the spins in a div with flexbox to enable wrapping, and add a title
     return f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
-
+def render_sides_of_zero_display():
+    left_hits = state.side_scores["Left Side of Zero"]
+    zero_hits = state.scores[0]
+    right_hits = state.side_scores["Right Side of Zero"]
+    max_hits = max(left_hits, zero_hits, right_hits, 1)  # Avoid division by zero
+    left_width = (left_hits / max_hits) * 100
+    zero_width = (zero_hits / max_hits) * 100
+    right_width = (right_hits / max_hits) * 100
+    return f'<div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">' + \
+           f'<div style="display: flex; align-items: center; gap: 10px;">' + \
+           f'<span style="width: 100px;">Left Side ({left_hits})</span>' + \
+           f'<div style="flex-grow: 1; background-color: #3498db; height: 20px; width: {left_width}%; transition: width 0.5s ease;" id="left-bar"></div>' + \
+           f'</div>' + \
+           f'<div style="display: flex; align-items: center; gap: 10px;">' + \
+           f'<span style="width: 100px;">Zero ({zero_hits})</span>' + \
+           f'<div style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: {zero_width}%; transition: width 0.5s ease;" id="zero-bar"></div>' + \
+           f'</div>' + \
+           f'<div style="display: flex; align-items: center; gap: 10px;">' + \
+           f'<span style="width: 100px;">Right Side ({right_hits})</span>' + \
+           f'<div style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: {right_width}%; transition: width 0.5s ease;" id="right-bar"></div>' + \
+           f'</div></div>'
 def add_spin(number, current_spins, num_to_show):
     print(f"add_spin: number='{number}', current_spins='{current_spins}'")
     spins = current_spins.split(", ") if current_spins else []
@@ -415,7 +435,7 @@ def add_spin(number, current_spins, num_to_show):
 def clear_spins():
     state.selected_numbers.clear()
     state.last_spins = []
-    return "", "", "Spins cleared successfully!", "", update_spin_counter()
+    return "", "", "Spins cleared successfully!", "", update_spin_counter(), render_sides_of_zero_display()
 
 # Function to save the session
 def save_session():
@@ -3137,6 +3157,11 @@ with gr.Blocks() as demo:
         interactive=True,
         elem_id="selected-spins"
     )
+    sides_of_zero_display = gr.HTML(
+        label="Sides of Zero",
+        value="",
+        elem_classes=["sides-of-zero-container"]
+    )
     last_spin_display = gr.HTML(
         label="Last Spins",
         value="",
@@ -3184,6 +3209,25 @@ with gr.Blocks() as demo:
                 <button id="start-tour-btn" onclick="startTour()" style="padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Take the Tour!</button>
                 '''
             )
+    # 1.1 Row: Sides of Zero Bar Display
+    with gr.Row():
+        sides_of_zero_display = gr.HTML(
+            label="Sides of Zero",
+            value='<div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">' +
+                  '<div style="display: flex; align-items: center; gap: 10px;">' +
+                  '<span style="width: 100px;">Left Side</span>' +
+                  '<div style="flex-grow: 1; background-color: #3498db; height: 20px; width: 0; transition: width 0.5s ease;" id="left-bar">0</div>' +
+                  '</div>' +
+                  '<div style="display: flex; align-items: center; gap: 10px;">' +
+                  '<span style="width: 100px;">Zero</span>' +
+                  '<div style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: 0; transition: width 0.5s ease;" id="zero-bar">0</div>' +
+                  '</div>' +
+                  '<div style="display: flex; align-items: center; gap: 10px;">' +
+                  '<span style="width: 100px;">Right Side</span>' +
+                  '<div style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: 0; transition: width 0.5s ease;" id="right-bar">0</div>' +
+                  '</div></div>',
+            elem_classes=["sides-of-zero-container"]
+        )
 
     # 2. Row 2: European Roulette Table
     with gr.Group():
@@ -3200,7 +3244,7 @@ with gr.Blocks() as demo:
                     if num == "":
                         gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
                     else:
-                        color = colors.get(str(num), "black")
+                                                color = colors.get(str(num), "black")
                         is_selected = int(num) in state.selected_numbers
                         btn_classes = [f"roulette-button", color]
                         if is_selected:
@@ -3213,8 +3257,9 @@ with gr.Blocks() as demo:
                         btn.click(
                             fn=add_spin,
                             inputs=[gr.State(value=num), spins_display, last_spin_count],
-                            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter]
+                            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
                         )
+                    with gr.Column(elem_classes="roulette-table"):
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
@@ -3701,13 +3746,39 @@ with gr.Blocks() as demo:
       }
     
       /* Last Spins Container */
-      .last-spins-container {
+            .last-spins-container {
           background-color: #f5f5f5 !important; /* Light gray background */
           border: 1px solid #d3d3d3 !important; /* Subtle gray border */
           padding: 10px !important;
           border-radius: 5px !important;
           margin-top: 10px !important;
           box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; /* Very light shadow */
+      }
+
+      .sides-of-zero-container {
+          background-color: #ffffff !important;
+          border: 1px solid #d3d3d3 !important;
+          padding: 10px !important;
+          border-radius: 5px !important;
+          margin: 10px 0 !important;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+      }
+    
+      /* Spin Counter Styling */
+      .spin-counter {
+          font-size: 16px !important;
+          font-weight: bold !important;
+          color: #ffffff !important;
+          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
+          padding: 8px 12px !important;
+          border: 2px solid #3498DB !important; /* Darker blue border */
+          border-radius: 8px !important;
+          margin-top: 0 !important; /* Align with textbox */
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important; /* Slightly stronger shadow */
+          transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
       }
     
       /* Responsive Design */
