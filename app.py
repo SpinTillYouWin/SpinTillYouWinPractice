@@ -360,15 +360,12 @@ def render_sides_of_zero_display():
     left_width = (left_hits / max_hits) * 100
     zero_width = (zero_hits / max_hits) * 100
     right_width = (right_hits / max_hits) * 100
-    
-    # Return a JavaScript snippet to update the DOM elements
     return f"""
     <script>
         // Update counts
         document.getElementById('left-label').textContent = 'Left Side ({left_hits})';
         document.getElementById('zero-label').textContent = 'Zero ({zero_hits})';
         document.getElementById('right-label').textContent = 'Right Side ({right_hits})';
-        
         // Update bar widths
         document.getElementById('left-bar').style.width = '{left_width}%';
         document.getElementById('zero-bar').style.width = '{zero_width}%';
@@ -1254,7 +1251,7 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
         print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}")
         if not spins_input or not spins_input.strip():
             print("analyze_spins: No spins input provided.")
-            return "Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", ""
+            return "Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
 
         raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
         spins = []
@@ -1274,11 +1271,11 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
         if errors:
             error_msg = "\n".join(errors)
             print(f"analyze_spins: Errors found - {error_msg}")
-            return error_msg, "", "", "", "", "", "", "", "", "", "", "", "", ""
+            return error_msg, "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
 
         if not spins:
             print("analyze_spins: No valid spins found.")
-            return "No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", ""
+            return "No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
 
         if reset_scores:
             state.reset()
@@ -1389,10 +1386,10 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
 
         return (spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output, sides_output,
-                straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html, strategy_output)
+                straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html, strategy_output, render_sides_of_zero_display())
     except Exception as e:
         print(f"analyze_spins: Unexpected error: {str(e)}")
-        return f"Unexpected error while analyzing spins: {str(e)}. Please try again.", "", "", "", "", "", "", "", "", "", "", "", "", ""
+        return f"Unexpected error while analyzing spins: {str(e)}. Please try again.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
 
 # Function to reset scores
 def reset_scores():
@@ -1491,9 +1488,12 @@ def generate_random_spins(num_spins, current_spins_display, last_spin_count):
     try:
         num_spins = int(num_spins)
         if num_spins <= 0:
-            return current_spins_display, current_spins_display, "Please select a number of spins greater than 0.", update_spin_counter()
+            return current_spins_display, current_spins_display, "Please select a number of spins greater than 0.", update_spin_counter(), render_sides_of_zero_display()
 
         new_spins = [str(random.randint(0, 36)) for _ in range(num_spins)]
+        # Update scores for the new spins
+        update_scores_batch(new_spins)
+
         if current_spins_display and current_spins_display.strip():
             current_spins = current_spins_display.split(", ")
             updated_spins = current_spins + new_spins
@@ -1504,13 +1504,13 @@ def generate_random_spins(num_spins, current_spins_display, last_spin_count):
         state.last_spins = updated_spins  # Replace the list entirely
         spins_text = ", ".join(updated_spins)
         print(f"generate_random_spins: Setting spins_textbox to '{spins_text}'")
-        return spins_text, spins_text, f"Generated {num_spins} random spins: {', '.join(new_spins)}", update_spin_counter()
+        return spins_text, spins_text, f"Generated {num_spins} random spins: {', '.join(new_spins)}", update_spin_counter(), render_sides_of_zero_display()
     except ValueError:
         print("generate_random_spins: Invalid number of spins entered.")
-        return current_spins_display, current_spins_display, "Please enter a valid number of spins.", update_spin_counter()
+        return current_spins_display, current_spins_display, "Please enter a valid number of spins.", update_spin_counter(), render_sides_of_zero_display()
     except Exception as e:
         print(f"generate_random_spins: Unexpected error: {str(e)}")
-        return current_spins_display, current_spins_display, f"Error generating spins: {str(e)}", update_spin_counter()
+        return current_spins_display, current_spins_display, f"Error generating spins: {str(e)}", update_spin_counter(), render_sides_of_zero_display()
 
 # Strategy functions
 def best_even_money_bets():
@@ -3856,6 +3856,19 @@ with gr.Blocks() as demo:
         fn=validate_spins_input,
         inputs=spins_textbox,
         outputs=[spins_display, last_spin_display]
+    ).then(
+        fn=analyze_spins,
+        inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+        outputs=[
+            spin_analysis_output, even_money_output, dozens_output, columns_output,
+            streets_output, corners_output, six_lines_output, splits_output,
+            sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+            dynamic_table_output, strategy_output, sides_of_zero_display
+        ]
+    ).then(
+        fn=update_spin_counter,
+        inputs=[],
+        outputs=[spin_counter]
     )
     spins_display.change(
         fn=update_spin_counter,
@@ -3900,7 +3913,7 @@ with gr.Blocks() as demo:
     generate_spins_button.click(
         fn=generate_random_spins,
         inputs=[gr.State(value="5"), spins_display, last_spin_count],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter]
+        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, sides_of_zero_display]
     ).then(
         fn=format_spins_as_html,
         inputs=[spins_display, last_spin_count],
@@ -3962,7 +3975,7 @@ with gr.Blocks() as demo:
             spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-            dynamic_table_output, strategy_output
+            dynamic_table_output, strategy_output, sides_of_zero_display
         ]
     ).then(
         fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
