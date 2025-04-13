@@ -2732,10 +2732,10 @@ def create_color_code_table():
 def update_spin_counter():
     """Return the current number of spins as formatted HTML with inline styling."""
     try:
-    spin_count = len(state.last_spins)
-    return f'<span style="font-size: 16px;">Total Spins: {spin_count}</span>'
-except Exception as e:
-    return f'<span style="color: red;">Error in spin counter: {str(e)}</span>'
+        spin_count = len(state.last_spins)
+        return f'<span style="font-size: 16px;">Total Spins: {spin_count}</span>'
+    except Exception as e:
+        return f'<span style="color: red;">Error in spin counter: {str(e)}</span>'
     
 def top_numbers_with_neighbours_tiered():
     recommendations = []
