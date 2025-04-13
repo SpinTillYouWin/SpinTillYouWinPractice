@@ -3236,9 +3236,9 @@ with gr.Blocks() as demo:
             )
 
     # 1.1 Row: Sides of Zero Bar Display
-    with gr.Row():
-        with gr.Accordion("Dealer's Spin Target: Wheel Section Analyzer", open=True, elem_id="dealer-target-display"):
-            sides_of_zero_display  # Reference the existing state component
+        # Removed the standalone Accordion for sides_of_zero_display
+        # It will be moved to the "Spin Logic Reactor 🧠" accordion
+    
 
     # 2. Row 2: European Roulette Table
     with gr.Group():
@@ -3580,6 +3580,10 @@ with gr.Blocks() as demo:
             interactive=False,
             lines=5
         )
+        with gr.Row():
+            with gr.Column():
+                with gr.Accordion("Dealer's Spin Target: Wheel Section Analyzer", open=True, elem_id="dealer-target-display"):
+                    sides_of_zero_display
 
     with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-table"):
         with gr.Row():
