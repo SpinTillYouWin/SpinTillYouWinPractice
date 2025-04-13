@@ -366,15 +366,15 @@ def render_sides_of_zero_display():
     <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">
         <div style="display: flex; align-items: center; gap: 10px;">
             <span style="width: 100px;" id="left-label">Left Side ({left_hits})</span>
-            <div style="flex-grow: 1; background-color: #3498db; height: 20px; width: {left_width}%; transition: width 0.5s ease;" id="left-bar"></div>
+            <div style="flex-grow: 1; background-color: #3498db; height: 20px; width: {left_width}%; transition: width 0.5s ease; direction: rtl; margin-left: auto;" id="left-bar"></div>
         </div>
         <div style="display: flex; align-items: center; gap: 10px;">
             <span style="width: 100px;" id="zero-label">Zero ({zero_hits})</span>
-            <div style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: {zero_width}%; transition: width 0.5s ease;" id="zero-bar"></div>
+            <div style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: {zero_width}%; transition: width 0.5s ease; direction: rtl; margin-left: auto;" id="zero-bar"></div>
         </div>
         <div style="display: flex; align-items: center; gap: 10px;">
             <span style="width: 100px;" id="right-label">Right Side ({right_hits})</span>
-            <div style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: {right_width}%; transition: width 0.5s ease;" id="right-bar"></div>
+            <div style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: {right_width}%; transition: width 0.5s ease; direction: rtl; margin-left: auto;" id="right-bar"></div>
         </div>
     </div>
     <script>
@@ -3188,15 +3188,15 @@ with gr.Blocks() as demo:
         <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="width: 100px;" id="left-label">Left Side (0)</span>
-                <div style="flex-grow: 1; background-color: #3498db; height: 20px; width: 0%; transition: width 0.5s ease;" id="left-bar"></div>
+                <div style="flex-grow: 1; background-color: #3498db; height: 20px; width: 0%; transition: width 0.5s ease; direction: rtl; margin-left: auto;" id="left-bar"></div>
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="width: 100px;" id="zero-label">Zero (0)</span>
-                <div style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: 0%; transition: width 0.5s ease;" id="zero-bar"></div>
+                <div style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: 0%; transition: width 0.5s ease; direction: rtl; margin-left: auto;" id="zero-bar"></div>
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="width: 100px;" id="right-label">Right Side (0)</span>
-                <div style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: 0%; transition: width 0.5s ease;" id="right-bar"></div>
+                <div style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: 0%; transition: width 0.5s ease; direction: rtl; margin-left: auto;" id="right-bar"></div>
             </div>
         </div>
         """,
