@@ -3270,33 +3270,40 @@ with gr.Blocks() as demo:
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
+        # Define streak_tracker_html early to avoid NameError
+        streak_tracker_html = gr.HTML(
+            label="Hot/Cold Streaks",
+            value="<p>No streaks to display yet. Add spins to see hot and cold numbers.</p>",
+            elem_classes="scrollable-table",
+            visible=False  # Hide until placed in UI
+        )
         table_layout = [
             ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
             ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
-    with gr.Column(elem_classes="roulette-table"):
-        for row in table_layout:
-            with gr.Row(elem_classes="table-row"):
-                for num in row:
-                    if num == "":
-                        gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
-                    else:
-                        color = colors.get(str(num), "black")
-                        is_selected = int(num) in state.selected_numbers
-                        btn_classes = [f"roulette-button", color]
-                        if is_selected:
-                            btn_classes.append("selected")
-                        btn = gr.Button(
-                            value=num,
-                            min_width=40,
-                            elem_classes=btn_classes
-                        )
-                        btn.click(
-                            fn=add_spin,
-                            inputs=[gr.State(value=num), spins_display, last_spin_count],
-                            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, streak_tracker_html]
-                        )
+        with gr.Column(elem_classes="roulette-table"):
+            for row in table_layout:
+                with gr.Row(elem_classes="table-row"):
+                    for num in row:
+                        if num == "":
+                            gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
+                        else:
+                            color = colors.get(str(num), "black")
+                            is_selected = int(num) in state.selected_numbers
+                            btn_classes = [f"roulette-button", color]
+                            if is_selected:
+                                btn_classes.append("selected")
+                            btn = gr.Button(
+                                value=num,
+                                min_width=40,
+                                elem_classes=btn_classes
+                            )
+                            btn.click(
+                                fn=add_spin,
+                                inputs=[gr.State(value=num), spins_display, last_spin_count],
+                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, streak_tracker_html]
+                            )
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
@@ -3477,18 +3484,14 @@ with gr.Blocks() as demo:
             )
             reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
 
-    # New code (Hot/Cold Streak Tracker accordion)
+    # Updated code (Hot/Cold Streaks accordion)
     with gr.Row():
         with gr.Column(scale=3):
             with gr.Accordion("Hot/Cold Streaks", open=False, elem_id="streak-tracker"):
-                streak_tracker_html = gr.HTML(
-                    label="Hot/Cold Streaks",
-                    value="<p>No streaks to display yet. Add spins to see hot and cold numbers.</p>",
-                    elem_classes="scrollable-table"
-                )
+                streak_tracker_html  # Use pre-defined component
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
-    
+            
     # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
         with gr.Column(scale=3):
