@@ -3222,7 +3222,7 @@ with gr.Blocks() as demo:
         elem_classes=["spin-counter"]
     )
 
-    # 1. Row 1: Header
+        # 1. Row 1: Header
     with gr.Row(elem_id="header-row"):
         with gr.Column(scale=1):
             gr.Markdown(
@@ -3237,9 +3237,13 @@ with gr.Blocks() as demo:
 
     # 1.1 Row: Dealer's Spin Target Bar Display
     with gr.Row():
-        with gr.Accordion("Dealer's Spin Target: Wheel Section Analyzer", open=False, elem_id="dealer-target-display"):
+        with gr.Accordion(
+            "<span class='accordion-title'>Dealer's Spin Target: Wheel Section Analyzer <span class='chevron' id='dealer-chevron'>▼</span></span>",
+            open=False,
+            elem_id="dealer-target-display",
+            elem_classes=["dealer-accordion"]
+        ):
             sides_of_zero_display  # Reference the existing state component
-        
 
     # 2. Row 2: European Roulette Table
     with gr.Group():
@@ -3858,31 +3862,62 @@ with gr.Blocks() as demo:
             margin: 10px 0; /* Ensure spacing around the accordion */
         }
         
-        /* Ensure the accordion content is hidden when collapsed */
-        #dealer-target-display:not([open]) .gr-box {
-            display: none !important; /* Forcefully hide content when collapsed */
-        }
-        
-        /* Ensure the accordion content is visible when expanded */
-        #dealer-target-display[open] .gr-box {
-            display: block !important; /* Ensure content is visible when expanded */
-        }
-        
-        /* Style the sides-of-zero-container to fit seamlessly inside the accordion */
-        #dealer-target-display .sides-of-zero-container {
-            background-color: transparent; /* Remove any conflicting background */
-            border: none; /* Remove any conflicting border */
-            padding: 0; /* Remove padding to avoid extra spacing */
-            margin: 0; /* Remove margin to fit snugly inside the accordion */
-            box-shadow: none; /* Remove any conflicting shadow */
-        }
-        
-        /* Ensure the bars and labels are fully contained within the accordion */
-        #dealer-target-display #sides-of-zero {
-            width: 100%; /* Ensure the bar container takes full width */
-            max-width: 100%; /* Prevent overflow */
-            margin: 0; /* Remove margin to fit within the accordion */
-        }
+              /* Ensure the accordion content is hidden when collapsed */
+      #dealer-target-display:not([open]) .gr-box {
+          display: none !important; /* Forcefully hide content when collapsed */
+      }
+      
+      /* Ensure the accordion content is visible when expanded */
+      #dealer-target-display[open] .gr-box {
+          display: block !important; /* Ensure content is visible when expanded */
+      }
+      
+      /* Style the accordion header and chevron */
+      .dealer-accordion summary {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          padding: 10px !important;
+          cursor: pointer !important;
+          background-color: #f0f8ff !important;
+          transition: background-color 0.3s ease !important;
+      }
+      
+      .dealer-accordion summary:hover {
+          background-color: #e6f0fa !important;
+      }
+      
+      .accordion-title {
+          display: flex !important;
+          align-items: center !important;
+          width: 100% !important;
+      }
+      
+      .chevron {
+          display: inline-block !important;
+          margin-left: 10px !important;
+          transition: transform 0.3s ease !important;
+          font-size: 16px !important;
+      }
+      
+      #dealer-target-display[open] .chevron {
+          transform: rotate(180deg) !important; /* Rotate up when open */
+      }
+      
+      /* Ensure bars and labels are contained */
+      #dealer-target-display #sides-of-zero {
+          width: 100% !important;
+          max-width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+      }
+      
+      /* Hide content when accordion is collapsed */
+      #dealer-target-display:not([open]) .sides-of-zero-container {
+          opacity: 0 !important;
+          max-height: 0 !important;
+          overflow: hidden !important;
+      }
     </style>
     """)
     print("CSS Updated")
@@ -4409,12 +4444,43 @@ with gr.Blocks() as demo:
     useModalOverlay: true
   });
 
+  <script>
+  // Initialize accordion state for dealer-target-display
+  function initializeDealerAccordion() {
+      const accordion = document.querySelector('#dealer-target-display');
+      const chevron = document.querySelector('#dealer-chevron');
+      if (accordion && chevron) {
+          // Set initial state
+          if (!accordion.hasAttribute('open')) {
+              chevron.style.transform = 'rotate(0deg)';
+          }
+          // Add event listener for toggle
+          accordion.addEventListener('toggle', () => {
+              chevron.style.transform = accordion.hasAttribute('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+          });
+      } else {
+          console.error('Dealer accordion or chevron not found');
+      }
+  }
+
+  // Run initialization after DOM is loaded
+  document.addEventListener('DOMContentLoaded', initializeDealerAccordion);
+
+  const tour = new Shepherd.Tour({
+    defaultStepOptions: {
+      cancelIcon: { enabled: true },
+      scrollTo: { behavior: 'smooth', block: 'center' },
+      classes: 'shepherd-theme-arrows',
+    },
+    useModalOverlay: true
+  });
+
   // Debug function to log step transitions
   function logStep(stepId, nextStepId) {
-    return () => {
-      console.log(`Attempting move from ${stepId} to ${nextStepId}`);
-      tour.next();
-    };
+      return () => {
+          console.log(`Attempting move from ${stepId} to ${nextStepId}`);
+          tour.next();
+      };
   }
 
   // Force accordion open with direct DOM manipulation and Promise
