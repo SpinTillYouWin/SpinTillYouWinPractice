@@ -363,7 +363,7 @@ def add_spin(number, current_spins, num_to_show):
     numbers = [n.strip() for n in number.split(",") if n.strip()]
     if not numbers:
         gr.Warning("No valid input provided. Please enter numbers between 0 and 36.")
-        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter()
+        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter(), "<h4>Wheel Section Balance</h4><p>No spins yet to compare left and right sides.</p>"
 
     errors = []
     valid_spins = []
@@ -382,7 +382,34 @@ def add_spin(number, current_spins, num_to_show):
         error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
         gr.Warning(error_msg)
         print(f"add_spin: Errors encountered - {error_msg}")
-        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter()
+        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), "<h4>Wheel Section Balance</h4><p>No spins yet to compare left and right sides.</p>"
+
+    # Batch update scores
+    action_log = update_scores_batch(valid_spins)
+
+    # Update state with new spins
+    new_spins = spins.copy()
+    state.selected_numbers.clear()  # Clear before rebuilding
+    for num_str in valid_spins:
+        num = int(num_str)
+        new_spins.append(str(num))
+        state.selected_numbers.add(num)
+        state.last_spins.append(str(num))
+        state.spin_history.append(action_log.pop(0))
+        # Limit spin history to 100 spins
+        if len(state.spin_history) > 100:
+            state.spin_history.pop(0)
+    state.selected_numbers = set(int(s) for s in state.last_spins if s.isdigit())  # Sync with last_spins
+
+    new_spins_str = ", ".join(new_spins)
+    if errors:
+        error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
+        gr.Warning(error_msg)
+        print(f"add_spin: Errors encountered - {error_msg}")
+        return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), "<h4>Wheel Section Balance</h4><p>Some inputs failed.</p>"
+
+    print(f"add_spin: new_spins='{new_spins_str}'")
+    return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter(), create_wheel_balance_bar()
 
     # Batch update scores
     action_log = update_scores_batch(valid_spins)
@@ -542,7 +569,42 @@ def create_html_table(df, title):
         html += "<tr>" + "".join(f"<td>{val}</td>" for val in row) + "</tr>"
     html += "</table>"
     return html
-
+# New code (inserted after create_html_table)
+def create_wheel_balance_bar():
+    """Generate a horizontal bar showing Left vs Right Side of Zero hit balance."""
+    left_score = state.side_scores.get("Left Side of Zero", 0)
+    right_score = state.side_scores.get("Right Side of Zero", 0)
+    
+    if left_score == 0 and right_score == 0:
+        return "<h4>Wheel Section Balance</h4><p>No spins yet to compare left and right sides.</p>"
+    
+    # Calculate balance: positive = left dominates, negative = right dominates
+    balance = left_score - right_score
+    max_range = max(left_score + right_score, 10)  # Avoid division by zero, min range 10
+    normalized = balance / max_range * 100  # Scale to -100 (full right) to +100 (full left)
+    
+    # Bar styling
+    bar_width = 300  # Total width in pixels
+    bar_height = 20  # Height of the bar
+    left_width = max(0, min(150, 150 * (normalized / 100))) if normalized > 0 else 0
+    right_width = max(0, min(150, 150 * (-normalized / 100))) if normalized < 0 else 0
+    
+    html = f"""
+    <h4 style='margin-bottom: 5px;'>Wheel Section Balance</h4>
+    <div style='width: {bar_width}px; height: {bar_height + 30}px; font-family: Arial, sans-serif; position: relative;'>
+        <div style='width: 100%; height: {bar_height}px; background-color: #f0f0f0; position: relative;'>
+            <div style='width: {left_width}px; height: 100%; background: linear-gradient(to right, #4682B4, #87CEEB); position: absolute; left: 50%; transform: translateX(-100%);'></div>
+            <div style='width: {right_width}px; height: 100%; background: linear-gradient(to left, #FF6347, #FFA07A); position: absolute; left: 50%;'></div>
+            <div style='width: 2px; height: 100%; background-color: black; position: absolute; left: 50%;'></div>
+        </div>
+        <div style='position: absolute; top: {bar_height + 5}px; left: 0; font-size: 12px;'>Left: {left_score}</div>
+        <div style='position: absolute; top: {bar_height + 5}px; right: 0; font-size: 12px;'>Right: {right_score}</div>
+    </div>
+    <p style='font-size: 12px; text-align: center; margin-top: 5px;'>
+        {'Left side is hotter' if balance > 0 else 'Right side is hotter' if balance < 0 else 'Balanced'}
+    </p>
+    """
+    return html
 def create_strongest_numbers_with_neighbours_table():
     straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
     straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
@@ -1376,7 +1438,7 @@ def reset_scores():
 
 def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_count, strong_numbers_count, *checkbox_args):
     if not state.spin_history:
-        return ("No spins to undo.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter())
+        return ("No spins to undo.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), "<h4>Wheel Section Balance</h4><p>No spins yet to compare left and right sides.</p>")
 
     try:
         undo_count = int(undo_count)
@@ -3193,28 +3255,35 @@ with gr.Blocks() as demo:
             ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
-    with gr.Column(elem_classes="roulette-table"):
-        for row in table_layout:
-            with gr.Row(elem_classes="table-row"):
-                for num in row:
-                    if num == "":
-                        gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
-                    else:
-                        color = colors.get(str(num), "black")
-                        is_selected = int(num) in state.selected_numbers
-                        btn_classes = [f"roulette-button", color]
-                        if is_selected:
-                            btn_classes.append("selected")
-                        btn = gr.Button(
-                            value=num,
-                            min_width=40,
-                            elem_classes=btn_classes
-                        )
-                        btn.click(
-                            fn=add_spin,
-                            inputs=[gr.State(value=num), spins_display, last_spin_count],
-                            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter]
-                        )
+        with gr.Group():
+        gr.Markdown("### European Roulette Table")
+        table_layout = [
+            ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
+            ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
+            ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
+        ]
+        with gr.Column(elem_classes="roulette-table"):
+            for row in table_layout:
+                with gr.Row(elem_classes="table-row"):
+                    for num in row:
+                        if num == "":
+                            gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
+                        else:
+                            color = colors.get(str(num), "black")
+                            is_selected = int(num) in state.selected_numbers
+                            btn_classes = [f"roulette-button", color]
+                            if is_selected:
+                                btn_classes.append("selected")
+                            btn = gr.Button(
+                                value=num,
+                                min_width=40,
+                                elem_classes=btn_classes
+                            )
+                            btn.click(
+                                fn=add_spin,
+                                inputs=[gr.State(value=num), spins_display, last_spin_count],
+                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, wheel_balance_html]
+                            )
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
@@ -3394,6 +3463,17 @@ with gr.Blocks() as demo:
                 elem_classes="long-slider"
             )
             reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
+
+    # New code (Wheel Section Balance accordion)
+        with gr.Column(scale=3):
+            with gr.Accordion("Wheel Section Balance", open=True, elem_id="wheel-balance"):
+                wheel_balance_html = gr.HTML(
+                    label="Wheel Section Balance",
+                    value="<h4>Wheel Section Balance</h4><p>No spins yet to compare left and right sides.</p>",
+                    elem_classes="compact-visual"
+                )
+        with gr.Column(scale=2):
+            pass  # Empty column to maintain layout balance
 
     # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
@@ -3582,7 +3662,21 @@ with gr.Blocks() as demo:
       .gr-row { margin: 0 !important; padding: 5px 0 !important; }
       .gr-column { margin: 0 !important; padding: 5px !important; }
       .gr-box { border-radius: 5px !important; }
-    
+
+      /* Compact Visual for Wheel Balance */
+      .compact-visual {
+          max-width: 300px !important;
+          margin: 10px auto !important;
+          padding: 5px !important;
+          background-color: #f5f5f5 !important;
+          border-radius: 5px !important;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+      }
+      .compact-visual:hover {
+          transform: scale(1.02) !important;
+          transition: transform 0.2s ease !important;
+      }
+      
       /* Ensure Header Stays at the Top */
       #header-row {
           position: fixed !important;
