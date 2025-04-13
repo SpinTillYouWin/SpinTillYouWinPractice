@@ -3237,29 +3237,7 @@ with gr.Blocks() as demo:
             ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
-    with gr.Column(elem_classes="roulette-table"):
-        for row in table_layout:
-            with gr.Row(elem_classes="table-row"):
-                for num in row:
-                                            if num == "":
-                            gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
-                        else:
-                            color = colors.get(str(num), "black")
-                            is_selected = int(num) in state.selected_numbers
-                            btn_classes = [f"roulette-button", color]
-                            if is_selected:
-                                btn_classes.append("selected")
-                            btn = gr.Button(
-                                value=num,
-                                min_width=40,
-                                elem_classes=btn_classes
-                            )
-                            btn.click(
-                                fn=add_spin,
-                                inputs=[gr.State(value=num), spins_display, last_spin_count],
-                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
-                            )
-                    with gr.Column(elem_classes="roulette-table"):
+                        with gr.Column(elem_classes="roulette-table"):
                         for row in table_layout:
                             with gr.Row(elem_classes="table-row"):
                                 for num in row:
@@ -3268,7 +3246,19 @@ with gr.Blocks() as demo:
                                     else:
                                         color = colors.get(str(num), "black")
                                         is_selected = int(num) in state.selected_numbers
-
+                                        btn_classes = [f"roulette-button", color]
+                                        if is_selected:
+                                            btn_classes.append("selected")
+                                        btn = gr.Button(
+                                            value=num,
+                                            min_width=40,
+                                            elem_classes=btn_classes
+                                        )
+                                        btn.click(
+                                            fn=add_spin,
+                                            inputs=[gr.State(value=num), spins_display, last_spin_count],
+                                            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
+                                        )
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
