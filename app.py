@@ -3237,9 +3237,9 @@ with gr.Blocks() as demo:
 
     # 1.1 Row: Dealer's Spin Target Bar Display
     with gr.Row():
-        with gr.Accordion("Dealer's Spin Target: Wheel Section Analyzer", open=True, elem_id="dealer-target-display"):
+        with gr.Accordion("Dealer's Spin Target: Wheel Section Analyzer", open=False, elem_id="dealer-target-display"):
             sides_of_zero_display  # Reference the existing state component
-    
+        
 
     # 2. Row 2: European Roulette Table
     with gr.Group():
@@ -3858,7 +3858,17 @@ with gr.Blocks() as demo:
             margin: 10px 0; /* Ensure spacing around the accordion */
         }
         
-        /* Ensure the sides-of-zero-container inside the accordion is styled properly */
+        /* Ensure the accordion content is hidden when collapsed */
+        #dealer-target-display:not([open]) .gr-box {
+            display: none !important; /* Forcefully hide content when collapsed */
+        }
+        
+        /* Ensure the accordion content is visible when expanded */
+        #dealer-target-display[open] .gr-box {
+            display: block !important; /* Ensure content is visible when expanded */
+        }
+        
+        /* Style the sides-of-zero-container to fit seamlessly inside the accordion */
         #dealer-target-display .sides-of-zero-container {
             background-color: transparent; /* Remove any conflicting background */
             border: none; /* Remove any conflicting border */
@@ -3867,7 +3877,7 @@ with gr.Blocks() as demo:
             box-shadow: none; /* Remove any conflicting shadow */
         }
         
-        /* Ensure the bars and labels are fully contained */
+        /* Ensure the bars and labels are fully contained within the accordion */
         #dealer-target-display #sides-of-zero {
             width: 100%; /* Ensure the bar container takes full width */
             max-width: 100%; /* Prevent overflow */
