@@ -363,7 +363,7 @@ def add_spin(number, current_spins, num_to_show):
     numbers = [n.strip() for n in number.split(",") if n.strip()]
     if not numbers:
         gr.Warning("No valid input provided. Please enter numbers between 0 and 36.")
-        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter()
+        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter(), "<p>No streaks to display yet.</p>"
 
     errors = []
     valid_spins = []
@@ -382,7 +382,34 @@ def add_spin(number, current_spins, num_to_show):
         error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
         gr.Warning(error_msg)
         print(f"add_spin: Errors encountered - {error_msg}")
-        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter()
+        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), "<p>No streaks to display yet.</p>"
+
+    # Batch update scores
+    action_log = update_scores_batch(valid_spins)
+
+    # Update state with new spins
+    new_spins = spins.copy()
+    state.selected_numbers.clear()  # Clear before rebuilding
+    for num_str in valid_spins:
+        num = int(num_str)
+        new_spins.append(str(num))
+        state.selected_numbers.add(num)
+        state.last_spins.append(str(num))
+        state.spin_history.append(action_log.pop(0))
+        # Limit spin history to 100 spins
+        if len(state.spin_history) > 100:
+            state.spin_history.pop(0)
+    state.selected_numbers = set(int(s) for s in state.last_spins if s.isdigit())  # Sync with last_spins
+
+    new_spins_str = ", ".join(new_spins)
+    if errors:
+        error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
+        gr.Warning(error_msg)
+        print(f"add_spin: Errors encountered - {error_msg}")
+        return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), "<p>Some inputs failed.</p>"
+
+    print(f"add_spin: new_spins='{new_spins_str}'")
+    return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter(), create_streak_tracker_table()
 
     # Batch update scores
     action_log = update_scores_batch(valid_spins)
@@ -542,7 +569,60 @@ def create_html_table(df, title):
         html += "<tr>" + "".join(f"<td>{val}</td>" for val in row) + "</tr>"
     html += "</table>"
     return html
+# New code (inserted after create_html_table)
+def create_streak_tracker_table():
+    """Generate a table showing the top 5 hottest and coldest number streaks."""
+    if not state.spin_history:
+        return "<h4>Hot/Cold Streaks</h4><p>No spins to analyze yet.</p>"
 
+    # Calculate streaks
+    hot_streaks = {num: 0 for num in range(37)}  # Consecutive hits
+    cold_streaks = {num: 0 for num in range(37)}  # Spins since last hit
+    last_seen = {num: -1 for num in range(37)}   # Spin index of last hit
+
+    for idx, action in enumerate(reversed(state.spin_history)):
+        spin_value = action["spin"]
+        # Update hot streak: reset if not hit, increment if hit
+        for num in range(37):
+            if num == spin_value:
+                hot_streaks[num] += 1
+                cold_streaks[num] = 0
+                last_seen[num] = len(state.spin_history) - idx - 1
+            else:
+                hot_streaks[num] = 0
+                if last_seen[num] != -1 or idx == 0:
+                    cold_streaks[num] += 1
+
+    # Get top 5 hot and cold streaks
+    hot_list = [(num, streak, last_seen[num]) for num, streak in hot_streaks.items() if streak > 0]
+    cold_list = [(num, streak, last_seen[num]) for num, streak in cold_streaks.items() if streak > 0]
+    hot_list = sorted(hot_list, key=lambda x: x[1], reverse=True)[:5]
+    cold_list = sorted(cold_list, key=lambda x: x[1], reverse=True)[:5]
+
+    # Generate HTML table
+    html = '<h4>Hot/Cold Streaks</h4>'
+    html += '<table border="1" style="border-collapse: collapse; text-align: center; font-family: Arial, sans-serif; width: 300px; max-height: 200px; overflow-y: auto;">'
+    
+    # Hot Streaks
+    html += '<tr><th colspan="3" style="background-color: #FF6666;">Hottest Numbers</th></tr>'
+    html += '<tr><th>Number</th><th>Streak</th><th>Last Seen</th></tr>'
+    for num, streak, last_idx in hot_list:
+        color = colors.get(str(num), "black")
+        streak_color = f"#FF{int(255 - streak * 20):02X}{int(255 - streak * 20):02X}"  # Red gradient
+        last_seen_text = f"{len(state.spin_history) - last_idx - 1} spins ago" if last_idx >= 0 else "N/A"
+        html += f'<tr><td style="background-color: {color}; color: white;">{num}</td><td style="background-color: {streak_color};">{streak} hits</td><td>{last_seen_text}</td></tr>'
+    
+    # Cold Streaks
+    html += '<tr><th colspan="3" style="background-color: #66B2FF;">Coldest Numbers</th></tr>'
+    html += '<tr><th>Number</th><th>Streak</th><th>Last Seen</th></tr>'
+    for num, streak, last_idx in cold_list:
+        color = colors.get(str(num), "black")
+        streak_color = f"#99CC{int(255 - streak * 10):02X}"  # Blue gradient
+        last_seen_text = f"{len(state.spin_history) - last_idx - 1} spins ago" if last_idx >= 0 else "Never"
+        html += f'<tr><td style="background-color: {color}; color: white;">{num}</td><td style="background-color: {streak_color};">{streak} misses</td><td>{last_seen_text}</td></tr>'
+    
+    html += '</table>'
+    return html
 def create_strongest_numbers_with_neighbours_table():
     straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
     straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
@@ -3395,6 +3475,18 @@ with gr.Blocks() as demo:
             )
             reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
 
+    # New code (Hot/Cold Streak Tracker accordion)
+    with gr.Row():
+        with gr.Column(scale=3):
+            with gr.Accordion("Hot/Cold Streaks", open=False, elem_id="streak-tracker"):
+                streak_tracker_html = gr.HTML(
+                    label="Hot/Cold Streaks",
+                    value="<p>No streaks to display yet. Add spins to see hot and cold numbers.</p>",
+                    elem_classes="scrollable-table"
+                )
+        with gr.Column(scale=2):
+            pass  # Empty column to maintain layout balance
+    
     # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
         with gr.Column(scale=3):
