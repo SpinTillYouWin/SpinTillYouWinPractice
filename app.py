@@ -360,11 +360,10 @@ def render_sides_of_zero_display():
     right_hits = state.side_scores["Right Side of Zero"]
     
     # Debug print to verify hit counts
-        # Lines before
     print(f"render_sides_of_zero_display: left_hits={left_hits}, zero_hits={zero_hits}, right_hits={right_hits}")
     
     # Sensitivity factor to amplify differences
-    sensitivity_factor = 2.0  # Increased for more pronounced differences
+    sensitivity_factor = 1.5
     
     # Amplify hit counts for sensitivity
     amplified_left = (left_hits ** sensitivity_factor) if left_hits > 0 else 0
@@ -374,26 +373,10 @@ def render_sides_of_zero_display():
     # Calculate the maximum amplified hit count for scaling
     max_amplified = max(amplified_left, amplified_zero, amplified_right, 1)  # Ensure at least 1 to avoid division by zero
     
-    # Base width scaling (reduced to 50% max to shorten bars)
-    base_max_width = 50  # Cap at 50% instead of 100%
-    base_left_width = max(5, (amplified_left / max_amplified) * base_max_width)  # Minimum width of 5%
-    base_zero_width = max(5, (amplified_zero / max_amplified) * base_max_width)
-    base_right_width = max(5, (amplified_right / max_amplified) * base_max_width)
-    
-    # Determine the winner and adjust widths
-    hit_counts = {"left": left_hits, "zero": zero_hits, "right": right_hits}
-    winner = max(hit_counts, key=hit_counts.get)
-    winner_boost = 1.5  # Boost winner's width by 50%
-    loser_shrink = 0.7  # Shrink losers' widths by 30%
-    
-    left_width = base_left_width * (winner_boost if winner == "left" else loser_shrink)
-    zero_width = base_zero_width * (winner_boost if winner == "zero" else loser_shrink)
-    right_width = base_right_width * (winner_boost if winner == "right" else loser_shrink)
-    
-    # Cap the maximum width to prevent overflow
-    left_width = min(left_width, 60)  # Absolute cap at 60%
-    zero_width = min(zero_width, 60)
-    right_width = min(right_width, 60)
+    # Calculate bar widths independently as percentages of the maximum amplified hits
+    left_width = max(10, (amplified_left / max_amplified) * 100)  # Minimum width of 10% so bars are visible
+    zero_width = max(10, (amplified_zero / max_amplified) * 100)
+    right_width = max(10, (amplified_right / max_amplified) * 100)
     
     # Debug print to verify calculated widths
     print(f"render_sides_of_zero_display: left_width={left_width}%, zero_width={zero_width}%, right_width={right_width}%")
@@ -413,7 +396,6 @@ def render_sides_of_zero_display():
                 <span style="width: 100px; font-weight: bold; font-size: 12px; background-color: #6a1b9a; color: white; padding: 2px 5px; border-radius: 3px; white-space: nowrap;" id="left-label">Left Side ({left_hits})</span>
                 <div style="flex-grow: 1; background: linear-gradient(to right, #6a1b9a, #ab47bc); height: 30px; width: {left_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="left-bar"></div>
             </div>
-    # Lines after
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="width: 100px; font-weight: bold; font-size: 12px; background-color: #00695c; color: white; padding: 2px 5px; border-radius: 3px; white-space: nowrap;" id="zero-label">Zero ({zero_hits})</span>
                 <div style="flex-grow: 1; background: linear-gradient(to right, #00695c, #4db6ac); height: 30px; width: {zero_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="zero-bar"></div>
