@@ -117,18 +117,30 @@ def validate_roulette_data():
 
 class RouletteState:
     def __init__(self):
-        self.scores = {n: 0 for n in range(37)}
-        self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
-        self.dozen_scores = {name: 0 for name in DOZENS.keys()}
-        self.column_scores = {name: 0 for name in COLUMNS.keys()}
-        self.street_scores = {name: 0 for name in STREETS.keys()}
-        self.corner_scores = {name: 0 for name in CORNERS.keys()}
-        self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
-        self.split_scores = {name: 0 for name in SPLITS.keys()}
-        self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
         self.selected_numbers = set()
         self.last_spins = []
-        self.spin_history = []  # Tracks each spin's effects for undoing
+        self.even_money_scores = {name: 0 for name in EVEN_MONEY}
+        self.dozen_scores = {name: 0 for name in DOZENS}
+        self.column_scores = {name: 0 for name in COLUMNS}
+        self.street_scores = {name: 0 for name in STREETS}
+        self.corner_scores = {name: 0 for name in CORNERS}
+        self.six_line_scores = {name: 0 for name in SIX_LINES}
+        self.split_scores = {name: 0 for name in SPLITS}
+        self.scores = {i: 0 for i in range(37)}  # 0 to 36
+        self.side_scores = {
+            "Left Side of Zero": 0,
+            "Right Side of Zero": 0
+        }
+        self.spin_history = []
+        # New: Track spins since last hit for each section
+        self.last_hit_spins = {
+            "Left Side of Zero": 0,
+            "Zero": 0,
+            "Right Side of Zero": 0
+        }
+        self.total_spins = 0  # New: Track total spins to calculate spins since last hit
+
+state = State(
 
         # Casino data storage
         self.casino_data = {
@@ -425,64 +437,7 @@ def render_sides_of_zero_display():
     """
 
 
-def add_spin(number, current_spins, num_to_show):
-    print(f"add_spin: number='{number}', current_spins='{current_spins}'")
-    spins = current_spins.split(", ") if current_spins else []
-    if spins == [""]:
-        spins = []
-
-    # Split input on commas and process each number
-    numbers = [n.strip() for n in number.split(",") if n.strip()]
-    if not numbers:
-        gr.Warning("No valid input provided. Please enter numbers between 0 and 36.")
-        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter(), render_sides_of_zero_display()
-
-    errors = []
-    valid_spins = []
-    for num_str in numbers:
-        try:
-            num = int(num_str)
-            if not (0 <= num <= 36):
-                errors.append(f"'{num_str}' is out of range (0-36)")
-                continue
-            valid_spins.append(num_str)
-        except ValueError:
-            errors.append(f"'{num_str}' is not a number")
-            continue
-
-    if not valid_spins:
-        error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
-        gr.Warning(error_msg)
-        print(f"add_spin: Errors encountered - {error_msg}")
-        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
-
-    # Batch update scores
-    action_log = update_scores_batch(valid_spins)
-
-    # Update state with new spins
-    new_spins = spins.copy()
-    state.selected_numbers.clear()  # Clear before rebuilding
-    for num_str in valid_spins:
-        num = int(num_str)
-        new_spins.append(str(num))
-        state.selected_numbers.add(num)
-        state.last_spins.append(str(num))
-        state.spin_history.append(action_log.pop(0))
-        # Limit spin history to 100 spins
-        if len(state.spin_history) > 100:
-            state.spin_history.pop(0)
-    state.selected_numbers = set(int(s) for s in state.last_spins if s.isdigit())  # Sync with last_spins
-
-    new_spins_str = ", ".join(new_spins)
-    if errors:
-        error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
-        gr.Warning(error_msg)
-        print(f"add_spin: Errors encountered - {error_msg}")
-        return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
-
-    print(f"add_spin: new_spins='{new_spins_str}'")
-    return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter(), render_sides_of_zero_display()
-    
+|    
 # Function to clear spins
 def clear_spins():
     state.selected_numbers.clear()
