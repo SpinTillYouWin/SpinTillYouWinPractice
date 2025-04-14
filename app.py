@@ -325,8 +325,6 @@ colors = {
 
 
 # Lines before (context)
-# Lines before (context)
-# Lines before (context)
 def format_spins_as_html(spins, num_to_show):
     if not spins:
         return "<h4>Last Spins</h4><p>No spins yet.</p>"
@@ -375,18 +373,21 @@ def render_sides_of_zero_display():
             transition: filter 0.3s ease, transform 0.3s ease;
         }}
     </style>
-    <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="width: 100px;" id="left-label">Left Side ({left_hits})</span>
-            <div style="flex-grow: 1; background: linear-gradient(to right, #3498db, #5dade2); height: 20px; width: {left_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="left-bar"></div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="width: 100px;" id="zero-label">Zero ({zero_hits})</span>
-            <div style="flex-grow: 1; background: linear-gradient(to right, #2ecc71, #27ae60); height: 20px; width: {zero_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="zero-bar"></div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="width: 100px;" id="right-label">Right Side ({right_hits})</span>
-            <div style="flex-grow: 1; background: linear-gradient(to right, #e74c3c, #c0392b); height: 20px; width: {right_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="right-bar"></div>
+    <div style="background-color: #f5f5f5; border: 1px solid #d3d3d3; border-radius: 5px; padding: 10px;">
+        <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker</h4>
+        <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="width: 100px;" id="left-label">Left Side ({left_hits})</span>
+                <div style="flex-grow: 1; background: linear-gradient(to right, #3498db, #5dade2); height: 20px; width: {left_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="left-bar"></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="width: 100px;" id="zero-label">Zero ({zero_hits})</span>
+                <div style="flex-grow: 1; background: linear-gradient(to right, #2ecc71, #27ae60); height: 20px; width: {zero_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="zero-bar"></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="width: 100px;" id="right-label">Right Side ({right_hits})</span>
+                <div style="flex-grow: 1; background: linear-gradient(to right, #e74c3c, #c0392b); height: 20px; width: {right_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="right-bar"></div>
+            </div>
         </div>
     </div>
     <script>
@@ -3231,12 +3232,8 @@ with gr.Blocks() as demo:
         interactive=True,
         elem_classes="long-slider"
     )
-    spin_counter = gr.HTML(
-        value='<span style="font-size: 16px;">Total Spins: 0</span>',
-        label="Total Spins",
-        elem_classes=["spin-counter"]
-    )
 
+# Updated section starts here
     # 1. Row 1: Header
     with gr.Row(elem_id="header-row"):
         with gr.Column(scale=1):
@@ -3252,7 +3249,8 @@ with gr.Blocks() as demo:
 
     # 1.1 Row: Sides of Zero Bar Display
     with gr.Row():
-        sides_of_zero_display  # Reference the existing state component
+        with gr.Accordion("Dealer’s Spin Tracker", open=True, elem_id="sides-of-zero-accordion"):
+            sides_of_zero_display
 
     # 2. Row 2: European Roulette Table
     with gr.Group():
