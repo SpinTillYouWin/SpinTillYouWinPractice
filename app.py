@@ -373,17 +373,14 @@ def render_sides_of_zero_display():
     # Debug print to verify calculated progress
     print(f"render_sides_of_zero_display: left_progress={left_progress}%, zero_progress={zero_progress}%, right_progress={right_progress}%")
     
-    # Define the order of numbers for Left Side and Right Side
-    left_numbers_order = [5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26]
-    right_numbers_order = [32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
-    zero_number = [(0, state.scores.get(0, 0))]  # For the Zero section
+    # Define the order of numbers for the European roulette wheel, starting from 26 clockwise
+    wheel_order = [26, 3, 35, 12, 28, 7, 29, 18, 22, 9, 31, 14, 20, 1, 33, 16, 24, 5, 0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
     
     # Prepare numbers with hit counts
-    left_numbers = [(num, state.scores.get(num, 0)) for num in left_numbers_order]
-    right_numbers = [(num, state.scores.get(num, 0)) for num in right_numbers_order]
+    wheel_numbers = [(num, state.scores.get(num, 0)) for num in wheel_order]
     
-    # Generate HTML for number lists
-    def generate_number_list(numbers, is_zero=False):
+    # Generate HTML for the single number list
+    def generate_number_list(numbers):
         if not numbers:
             return '<div class="number-list">No numbers</div>'
         
@@ -391,16 +388,14 @@ def render_sides_of_zero_display():
         for num, hits in numbers:
             color = colors.get(str(num), "black")
             badge = f'<span class="hit-badge">{hits}</span>' if hits > 0 else ''
-            class_name = "number-item zero-number" if is_zero else "number-item"
+            class_name = "number-item" + (" zero-number" if num == 0 else "")
             number_html.append(
                 f'<span class="{class_name}" style="background-color: {color}; color: white;" data-hits="{hits}" data-number="{num}">{num}{badge}</span>'
             )
         
         return f'<div class="number-list">{"".join(number_html)}</div>'
     
-    left_number_list = generate_number_list(left_numbers)
-    zero_number_list = generate_number_list(zero_number, is_zero=True)
-    right_number_list = generate_number_list(right_numbers)
+    number_list = generate_number_list(wheel_numbers)
     
     return f"""
     <style>
@@ -448,11 +443,13 @@ def render_sides_of_zero_display():
         }}
         .number-list {{
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             gap: 3px;
             justify-content: center;
-            margin-top: 5px;
-            max-width: 200px;
+            margin-top: 10px;
+            overflow-x: auto;
+            width: 100%;
+            padding: 5px 0;
         }}
         .number-item {{
             width: 20px;
@@ -461,8 +458,11 @@ def render_sides_of_zero_display():
             text-align: center;
             font-size: 10px;
             border-radius: 50%;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             position: relative;
+            flex-shrink: 0;
         }}
         .number-item.zero-number {{
             width: 80px;
@@ -527,7 +527,8 @@ def render_sides_of_zero_display():
                 align-items: center;
             }}
             .number-list {{
-                max-width: 100%;
+                flex-wrap: nowrap;
+                overflow-x: auto;
             }}
             .number-item {{
                 width: 16px;
@@ -567,23 +568,21 @@ def render_sides_of_zero_display():
                     <span>{left_hits}</span>
                 </div>
                 <span style="display: block; font-weight: bold; font-size: 12px; background-color: #6a1b9a; color: white; padding: 2px 5px; border-radius: 3px;">Left Side</span>
-                {left_number_list}
             </div>
             <div class="tracker-column">
                 <div class="circular-progress" id="zero-progress">
                     <span>{zero_hits}</span>
                 </div>
                 <span style="display: block; font-weight: bold; font-size: 12px; background-color: #00695c; color: white; padding: 2px 5px; border-radius: 3px;">Zero</span>
-                {zero_number_list}
             </div>
             <div class="tracker-column">
                 <div class="circular-progress" id="right-progress">
                     <span>{right_hits}</span>
                 </div>
                 <span style="display: block; font-weight: bold; font-size: 12px; background-color: #f4511e; color: white; padding: 2px 5px; border-radius: 3px;">Right Side</span>
-                {right_number_list}
             </div>
         </div>
+        {number_list}
     </div>
     <script>
         function updateCircularProgress(id, progress) {{
