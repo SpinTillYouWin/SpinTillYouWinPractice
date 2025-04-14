@@ -373,25 +373,32 @@ def render_sides_of_zero_display():
     # Debug print to verify calculated progress
     print(f"render_sides_of_zero_display: left_progress={left_progress}%, zero_progress={zero_progress}%, right_progress={right_progress}%")
     
-    # Prepare numbers for Left Side and Right Side with hit counts
+    # Prepare numbers for Left Side and Right Side with hit counts, limit to top 6 by hits
     left_numbers = [(num, state.scores.get(num, 0)) for num in current_left_of_zero]
     right_numbers = [(num, state.scores.get(num, 0)) for num in current_right_of_zero]
     
-    # Generate HTML for mini wheel segments
+    # Sort by hit count (descending) and limit to top 6
+    left_numbers.sort(key=lambda x: (-x[1], x[0]))  # Sort by hits (desc), then number (asc)
+    right_numbers.sort(key=lambda x: (-x[1], x[0]))
+    left_numbers = left_numbers[:6]
+    right_numbers = right_numbers[:6]
+    
+    # Generate HTML for mini wheel segments with curved number layout
     def generate_wheel_segment(numbers, side):
         if not numbers:
             return f'<div class="wheel-segment {side}-segment">No numbers</div>'
         
-        # Sort numbers for display (optional, can be ordered as in roulette wheel)
-        numbers.sort(key=lambda x: x[0])
-        
-        # Generate number spans
+        # Generate number spans with curved positioning
         number_html = []
-        for num, hits in numbers:
+        total_numbers = len(numbers)
+        for idx, (num, hits) in enumerate(numbers):
             color = colors.get(str(num), "black")
             badge = f'<span class="hit-badge">{hits}</span>' if hits > 0 else ''
+            # Calculate angle for curved layout (spread across 180 degrees for half-circle)
+            angle = (idx / (total_numbers - 1) * 180 - 90) if total_numbers > 1 else 0
+            transform = f"rotate({angle}deg) translate(20px) rotate(-{angle}deg)"
             number_html.append(
-                f'<span class="wheel-number" style="background-color: {color}; color: white;" data-hits="{hits}" data-number="{num}">{num}{badge}</span>'
+                f'<span class="wheel-number" style="background-color: {color}; color: white; transform: {transform};" data-hits="{hits}" data-number="{num}">{num}{badge}</span>'
             )
         
         return f'<div class="wheel-segment {side}-segment">{"".join(number_html)}</div>'
@@ -444,30 +451,24 @@ def render_sides_of_zero_display():
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }}
         .wheel-segment {{
-            width: 40px;
-            height: 80px;
             position: relative;
-            overflow: hidden;
-            border-radius: 0 40px 40px 0;
+            width: 60px;
+            height: 80px;
             background: #333;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 2px;
-            padding: 5px;
+            border-radius: 50%;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            overflow: visible;
         }}
         .left-segment {{
-            border-radius: 40px 0 0 40px;
-            clip-path: polygon(0 0, 50% 0, 100% 50%, 50% 100%, 0 100%);
+            clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%);
         }}
         .right-segment {{
-            border-radius: 0 40px 40px 0;
-            clip-path: polygon(0 50%, 50% 0, 100% 0, 100% 100%, 50% 100%);
+            clip-path: polygon(0% 0%, 50% 0%, 50% 100%, 0% 100%);
         }}
         .wheel-number {{
-            position: relative;
+            position: absolute;
+            top: 50%;
+            left: 50%;
             width: 18px;
             height: 18px;
             line-height: 18px;
@@ -477,9 +478,10 @@ def render_sides_of_zero_display():
             display: inline-block;
             cursor: pointer;
             transition: transform 0.2s ease;
+            transform-origin: center center;
         }}
         .wheel-number:hover {{
-            transform: scale(1.1);
+            transform: scale(1.1) !important;
         }}
         .hit-badge {{
             position: absolute;
@@ -521,11 +523,9 @@ def render_sides_of_zero_display():
             .wheel-segment {{
                 width: 80px;
                 height: 40px;
-                border-radius: 40px 40px 0 0;
                 clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 100%, 0 50%);
             }}
             .left-segment, .right-segment {{
-                border-radius: 40px 40px 0 0;
                 clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 100%, 0 50%);
             }}
             .wheel-number {{
