@@ -359,12 +359,10 @@ def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
     zero_hits = state.scores[0]
     right_hits = state.side_scores["Right Side of Zero"]
-    max_hits = max(left_hits, zero_hits, right_hits, 1)  # Avoid division by zero
+    max_hits = max(left_hits, zero_hits, right_hits, 1)
     left_width = (left_hits / max_hits) * 100
     zero_width = (zero_hits / max_hits) * 100
     right_width = (right_hits / max_hits) * 100
-    
-    # Updated section starts here
     return f"""
     <style>
         #left-bar:hover, #zero-bar:hover, #right-bar:hover {{
@@ -406,7 +404,6 @@ def render_sides_of_zero_display():
         updateBar('right-bar', {right_width}, 'right-label', 'Right Side ({right_hits})');
     </script>
     """
-    # Updated section ends here
 
 # Lines after (context)
 def add_spin(number, current_spins, num_to_show):
@@ -3198,24 +3195,14 @@ with gr.Blocks() as demo:
         interactive=True,
         elem_id="selected-spins"
     )
+    spin_counter = gr.HTML(
+        label="Total Spins",
+        value='<span style="font-size: 16px;">Total Spins: 0</span>',
+        elem_classes=["spin-counter"]
+    )
     sides_of_zero_display = gr.HTML(
         label="Sides of Zero",
-        value="""
-        <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="width: 100px;" id="left-label">Left Side (0)</span>
-                <div style="flex-grow: 1; background-color: #3498db; height: 20px; width: 0%; transition: width 0.5s ease;" id="left-bar"></div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="width: 100px;" id="zero-label">Zero (0)</span>
-                <div style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: 0%; transition: width 0.5s ease;" id="zero-bar"></div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="width: 100px;" id="right-label">Right Side (0)</span>
-                <div style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: 0%; transition: width 0.5s ease;" id="right-bar"></div>
-            </div>
-        </div>
-        """,
+        value=render_sides_of_zero_display(),
         elem_classes=["sides-of-zero-container"]
     )
     last_spin_display = gr.HTML(
@@ -3233,7 +3220,6 @@ with gr.Blocks() as demo:
         elem_classes="long-slider"
     )
 
-# Updated section starts here
     # 1. Row 1: Header
     with gr.Row(elem_id="header-row"):
         with gr.Column(scale=1):
