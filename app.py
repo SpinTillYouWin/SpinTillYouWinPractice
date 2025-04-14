@@ -444,10 +444,18 @@ def render_sides_of_zero_display():
     <script>
         function updateCircularProgress(id, progress) {{
             const element = document.getElementById(id);
-            if (element) {{
-                element.style.background = `conic-gradient(#6a1b9a ${progress}% , #d3d3d3 ${progress}% 100%)`;
-                element.querySelector('span').textContent = element.querySelector('span').textContent;
+            if (!element) {{
+                console.error('Element not found: ' + id);
+                return;
             }}
+            const colors = {{
+                'left-progress': '#6a1b9a',
+                'zero-progress': '#00695c',
+                'right-progress': '#f4511e'
+            }};
+            const color = colors[id] || '#d3d3d3';
+            element.style.background = `conic-gradient(${color} ${progress}%, #d3d3d3 ${progress}% 100%)`;
+            element.querySelector('span').textContent = element.querySelector('span').textContent;
         }}
         updateCircularProgress('left-progress', {left_progress});
         updateCircularProgress('zero-progress', {zero_progress});
