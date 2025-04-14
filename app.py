@@ -2864,6 +2864,14 @@ def dozen_tracker(spins_to_track, consecutive_hits, alert_enabled, sequence_leng
                 sequence_output = f"<p>No sequences of length {sequence_length} found that repeat within the last {spins_to_track} spins.</p>"
 
     return None, dozen_tracker_html, sequence_output
+def reset_colors():
+    """
+    Reset the color pickers to their default values.
+    
+    Returns:
+        tuple: Default values for top_color_picker, middle_color_picker, lower_color_picker.
+    """
+    return "rgba(255, 255, 0, 0.5)", "rgba(0, 255, 255, 0.5)", "rgba(0, 255, 0, 0.5)"    
 def create_color_code_table():
     html = '''
     <div style="margin-top: 20px;">
