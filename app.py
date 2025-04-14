@@ -3633,8 +3633,8 @@ with gr.Blocks() as demo:
             load_input = gr.File(label="Upload Session")
         save_output = gr.File(label="Download Session")
     # 12. Row 12
-    with gr.Row():
-        with gr.Accordion("Dealer’s Spin Tracker", open=True, elem_id="sides-of-zero-accordion"):
+    with gr.Accordion("Dealer’s Spin Tracker", open=True, elem_id="sides-of-zero-accordion"):
+        with gr.Row():
             sides_of_zero_display
         
     # CSS and Event Handlers
