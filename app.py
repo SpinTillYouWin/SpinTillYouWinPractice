@@ -116,36 +116,19 @@ def validate_roulette_data():
     return errors if errors else None
 
 class RouletteState:
-    class State:
     def __init__(self):
+        self.scores = {n: 0 for n in range(37)}
+        self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
+        self.dozen_scores = {name: 0 for name in DOZENS.keys()}
+        self.column_scores = {name: 0 for name in COLUMNS.keys()}
+        self.street_scores = {name: 0 for name in STREETS.keys()}
+        self.corner_scores = {name: 0 for name in CORNERS.keys()}
+        self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
+        self.split_scores = {name: 0 for name in SPLITS.keys()}
+        self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
         self.selected_numbers = set()
         self.last_spins = []
-        self.even_money_scores = {name: 0 for name in EVEN_MONEY}
-        self.dozen_scores = {name: 0 for name in DOZENS}
-        self.column_scores = {name: 0 for name in COLUMNS}
-        self.street_scores = {name: 0 for name in STREETS}
-        self.corner_scores = {name: 0 for name in CORNERS}
-        self.six_line_scores = {name: 0 for name in SIX_LINES}
-        self.split_scores = {name: 0 for name in SPLITS}
-        self.scores = {i: 0 for i in range(37)}  # 0 to 36
-        self.side_scores = {
-            "Left Side of Zero": 0,
-            "Right Side of Zero": 0
-        }
-        self.spin_history = []
-        self.last_hit_spins = {
-            "Left Side of Zero": 0,
-            "Zero": 0,
-            "Right Side of Zero": 0
-        }
-        self.total_spins = 0  # Track total spins to calculate spins since last hit
-        self.casino_data = {  # Added with correct indentation
-            # Add key-value pairs as needed, e.g.,
-            "some_key": "some_value"
-        }
-
-# Instantiation
-state = State()
+        self.spin_history = []  # Tracks each spin's effects for undoing
 
         # Casino data storage
         self.casino_data = {
@@ -379,8 +362,8 @@ def render_sides_of_zero_display():
     # Debug print to verify hit counts
     print(f"render_sides_of_zero_display: left_hits={left_hits}, zero_hits={zero_hits}, right_hits={right_hits}")
     
-    # Sensitivity factor to amplify differences (increased for more visibility)
-    sensitivity_factor = 2.0  # Increased from 1.5 to 2.0 for more pronounced differences
+    # Sensitivity factor to amplify differences
+    sensitivity_factor = 1.5
     
     # Amplify hit counts for sensitivity
     amplified_left = (left_hits ** sensitivity_factor) if left_hits > 0 else 0
@@ -390,11 +373,10 @@ def render_sides_of_zero_display():
     # Calculate the maximum amplified hit count for scaling
     max_amplified = max(amplified_left, amplified_zero, amplified_right, 1)  # Ensure at least 1 to avoid division by zero
     
-    # Calculate bar widths as percentages of the maximum amplified hits
-    # Apply a smaller minimum width and a multiplier to exaggerate differences
-    left_width = max(5, (amplified_left / max_amplified) * 100 * 1.5)  # Multiplier 1.5 to exaggerate further
-    zero_width = max(5, (amplified_zero / max_amplified) * 100 * 1.5)
-    right_width = max(5, (amplified_right / max_amplified) * 100 * 1.5)
+    # Calculate bar widths independently as percentages of the maximum amplified hits
+    left_width = max(10, (amplified_left / max_amplified) * 100)  # Minimum width of 10% so bars are visible
+    zero_width = max(10, (amplified_zero / max_amplified) * 100)
+    right_width = max(10, (amplified_right / max_amplified) * 100)
     
     # Debug print to verify calculated widths
     print(f"render_sides_of_zero_display: left_width={left_width}%, zero_width={zero_width}%, right_width={right_width}%")
@@ -404,7 +386,7 @@ def render_sides_of_zero_display():
         #left-bar:hover, #zero-bar:hover, #right-bar:hover {{
             filter: brightness(1.2);
             transform: scale(1.02);
-            transition: filter 0.3s ease, transform 0.3s ease, width 0.5s ease;
+            transition: filter 0.3s ease, transform 0.3s ease;
         }}
     </style>
     <div style="background-color: #e0e0e0; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
@@ -442,7 +424,64 @@ def render_sides_of_zero_display():
     """
 
 
-|    
+def add_spin(number, current_spins, num_to_show):
+    print(f"add_spin: number='{number}', current_spins='{current_spins}'")
+    spins = current_spins.split(", ") if current_spins else []
+    if spins == [""]:
+        spins = []
+
+    # Split input on commas and process each number
+    numbers = [n.strip() for n in number.split(",") if n.strip()]
+    if not numbers:
+        gr.Warning("No valid input provided. Please enter numbers between 0 and 36.")
+        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter(), render_sides_of_zero_display()
+
+    errors = []
+    valid_spins = []
+    for num_str in numbers:
+        try:
+            num = int(num_str)
+            if not (0 <= num <= 36):
+                errors.append(f"'{num_str}' is out of range (0-36)")
+                continue
+            valid_spins.append(num_str)
+        except ValueError:
+            errors.append(f"'{num_str}' is not a number")
+            continue
+
+    if not valid_spins:
+        error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
+        gr.Warning(error_msg)
+        print(f"add_spin: Errors encountered - {error_msg}")
+        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
+
+    # Batch update scores
+    action_log = update_scores_batch(valid_spins)
+
+    # Update state with new spins
+    new_spins = spins.copy()
+    state.selected_numbers.clear()  # Clear before rebuilding
+    for num_str in valid_spins:
+        num = int(num_str)
+        new_spins.append(str(num))
+        state.selected_numbers.add(num)
+        state.last_spins.append(str(num))
+        state.spin_history.append(action_log.pop(0))
+        # Limit spin history to 100 spins
+        if len(state.spin_history) > 100:
+            state.spin_history.pop(0)
+    state.selected_numbers = set(int(s) for s in state.last_spins if s.isdigit())  # Sync with last_spins
+
+    new_spins_str = ", ".join(new_spins)
+    if errors:
+        error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
+        gr.Warning(error_msg)
+        print(f"add_spin: Errors encountered - {error_msg}")
+        return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
+
+    print(f"add_spin: new_spins='{new_spins_str}'")
+    return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter(), render_sides_of_zero_display()
+    
 # Function to clear spins
 def clear_spins():
     state.selected_numbers.clear()
