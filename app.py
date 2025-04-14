@@ -3613,7 +3613,7 @@ with gr.Blocks() as demo:
         save_output = gr.File(label="Download Session")
 
     # CSS Updates
-    with gr.Blocks() as demo:
+with gr.Blocks() as demo:
     # Define state components
     spins_display = gr.State(value="")
     spins_textbox = gr.Textbox(
