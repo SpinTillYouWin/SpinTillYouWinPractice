@@ -60,11 +60,11 @@ def update_scores_batch(spins):
         state.scores[spin_value] += 1
         action["increments"].setdefault("scores", {})[spin_value] = 1
 
-        # Update side scores
-        if str(spin_value) in [str(x) for x in current_left_of_zero]:
+        # Update side scores (simplified integer comparison)
+        if spin_value in current_left_of_zero:
             state.side_scores["Left Side of Zero"] += 1
             action["increments"].setdefault("side_scores", {})["Left Side of Zero"] = 1
-        if str(spin_value) in [str(x) for x in current_right_of_zero]:
+        if spin_value in current_right_of_zero:
             state.side_scores["Right Side of Zero"] += 1
             action["increments"].setdefault("side_scores", {})["Right Side of Zero"] = 1
 
@@ -359,56 +359,55 @@ def render_sides_of_zero_display():
     zero_hits = state.scores[0]
     right_hits = state.side_scores["Right Side of Zero"]
     
-    # Calculate total hits for balancing
-    total_hits = left_hits + zero_hits + right_hits
+    # Debug print to verify hit counts
+    print(f"render_sides_of_zero_display: left_hits={left_hits}, zero_hits={zero_hits}, right_hits={right_hits}")
     
-    # Avoid division by zero; if no hits, set default widths
-    if total_hits == 0:
-        left_width = 33.33  # Equal distribution when no hits
-        zero_width = 33.33
-        right_width = 33.33
+    # Sensitivity factor to amplify differences
+    sensitivity_factor = 1.5
+    
+    # Amplify hit counts for sensitivity
+    amplified_left = (left_hits ** sensitivity_factor) if left_hits > 0 else 0
+    amplified_zero = (zero_hits ** sensitivity_factor) if zero_hits > 0 else 0
+    amplified_right = (right_hits ** sensitivity_factor) if right_hits > 0 else 0
+    
+    # Calculate total amplified hits for scaling
+    total_amplified = amplified_left + amplified_zero + amplified_right
+    
+    # If no hits, set a default minimum width for all bars
+    if total_amplified == 0:
+        left_width = 10  # Minimum width so bars are visible
+        zero_width = 10
+        right_width = 10
     else:
-        # Calculate inverse proportions to make bars interdependent
-        # Each bar's width is inversely proportional to the sum of the other two bars' hits
-        sensitivity_factor = 1.5  # Keep the sensitivity factor for amplifying differences
-        total_amplified = (left_hits ** sensitivity_factor) + (zero_hits ** sensitivity_factor) + (right_hits ** sensitivity_factor)
+        # Calculate base widths as percentages of total amplified hits
+        left_base = (amplified_left / total_amplified) * 100
+        zero_base = (amplified_zero / total_amplified) * 100
+        right_base = (amplified_right / total_amplified) * 100
         
-        # Calculate base widths using amplified hits
-        amplified_left = (left_hits ** sensitivity_factor) if left_hits > 0 else 0
-        amplified_zero = (zero_hits ** sensitivity_factor) if zero_hits > 0 else 0
-        amplified_right = (right_hits ** sensitivity_factor) if right_hits > 0 else 0
+        # Introduce interdependence: reduce each bar's width based on the others' hits
+        total_hits = left_hits + zero_hits + right_hits
+        left_weight = max(1, total_hits - left_hits)  # Inverse influence of other bars
+        zero_weight = max(1, total_hits - zero_hits)
+        right_weight = max(1, total_hits - right_hits)
         
-        # Inverse scaling: a bar's width decreases as the other bars' hits increase
-        max_amplified = max(amplified_left, amplified_zero, amplified_right, 1)
-        left_base = (amplified_left / max_amplified) * 100 if max_amplified > 0 else 0
-        zero_base = (amplified_zero / max_amplified) * 100 if max_amplified > 0 else 0
-        right_base = (amplified_right / max_amplified) * 100 if max_amplified > 0 else 0
+        # Total weight for normalization
+        total_weight = left_weight + zero_weight + right_weight
         
-        # Adjust widths to reflect interdependence
-        # If one bar's hits increase, reduce the others proportionally
-        total_base = left_base + zero_base + right_base
-        if total_base > 0:
-            # Normalize the base widths to sum to 100%, then adjust inversely
-            left_weight = (total_hits - left_hits) if total_hits > left_hits else 1
-            zero_weight = (total_hits - zero_hits) if total_hits > zero_hits else 1
-            right_weight = (total_hits - right_hits) if total_hits > right_hits else 1
-            total_weight = left_weight + zero_weight + right_weight
-            
-            left_width = (left_base * (total_hits - left_hits) / total_weight) * 1.5  # Multiply by 1.5 to amplify effect
-            zero_width = (zero_base * (total_hits - zero_hits) / total_weight) * 1.5
-            right_width = (right_base * (total_hits - right_hits) / total_weight) * 1.5
-            
-            # Normalize to ensure the largest bar doesn't exceed 100%
-            max_width = max(left_width, zero_width, right_width)
-            if max_width > 100:
-                scale_factor = 100 / max_width
-                left_width *= scale_factor
-                zero_width *= scale_factor
-                right_width *= scale_factor
-        else:
-            left_width = 33.33
-            zero_width = 33.33
-            right_width = 33.33
+        # Adjust widths with interdependence
+        left_width = max(10, (left_base * (total_hits - left_hits) / total_weight) * 2)  # Multiply by 2 to amplify effect
+        zero_width = max(10, (zero_base * (total_hits - zero_hits) / total_weight) * 2)
+        right_width = max(10, (right_base * (total_hits - right_hits) / total_weight) * 2)
+        
+        # Normalize to ensure the largest bar doesn't exceed 100%
+        max_width = max(left_width, zero_width, right_width)
+        if max_width > 100:
+            scale_factor = 100 / max_width
+            left_width *= scale_factor
+            zero_width *= scale_factor
+            right_width *= scale_factor
+    
+    # Debug print to verify calculated widths
+    print(f"render_sides_of_zero_display: left_width={left_width}%, zero_width={zero_width}%, right_width={right_width}%")
     
     return f"""
     <style>
