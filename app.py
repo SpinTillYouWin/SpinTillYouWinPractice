@@ -354,8 +354,8 @@ def format_spins_as_html(spins, num_to_show):
     # Wrap the spins in a div with flexbox to enable wrapping, and add a title
     return f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
 
-# Start of the function (Line 1 for context)
-# Lines before (unchanged)
+
+
 def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
     zero_hits = state.scores[0]
@@ -410,7 +410,7 @@ def render_sides_of_zero_display():
     </script>
     """
 
-# Lines after (context)
+
 def add_spin(number, current_spins, num_to_show):
     print(f"add_spin: number='{number}', current_spins='{current_spins}'")
     spins = current_spins.split(", ") if current_spins else []
