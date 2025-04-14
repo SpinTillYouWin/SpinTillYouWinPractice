@@ -362,100 +362,96 @@ def render_sides_of_zero_display():
     # Debug print to verify hit counts
     print(f"render_sides_of_zero_display: left_hits={left_hits}, zero_hits={zero_hits}, right_hits={right_hits}")
     
-    # Sensitivity factor to amplify differences
-    sensitivity_factor = 1.5
+    # Calculate the maximum hit count for scaling
+    max_hits = max(left_hits, zero_hits, right_hits, 1)  # Avoid division by zero
     
-    # Amplify hit counts for sensitivity
-    amplified_left = (left_hits ** sensitivity_factor) if left_hits > 0 else 0
-    amplified_zero = (zero_hits ** sensitivity_factor) if zero_hits > 0 else 0
-    amplified_right = (right_hits ** sensitivity_factor) if right_hits > 0 else 0
+    # Calculate progress percentages (0 to 100)
+    left_progress = (left_hits / max_hits) * 100 if max_hits > 0 else 0
+    zero_progress = (zero_hits / max_hits) * 100 if max_hits > 0 else 0
+    right_progress = (right_hits / max_hits) * 100 if max_hits > 0 else 0
     
-    # Calculate the maximum amplified hit count for scaling
-    max_amplified = max(amplified_left, amplified_zero, amplified_right, 1)  # Ensure at least 1 to avoid division by zero
-    
-    # Calculate bar widths independently as percentages of the maximum amplified hits
-    left_width = max(10, (amplified_left / max_amplified) * 100)  # Minimum width of 10% so bars are visible
-    zero_width = max(10, (amplified_zero / max_amplified) * 100)
-    right_width = max(10, (amplified_right / max_amplified) * 100)
-    
-    # Debug print to verify calculated widths
-    print(f"render_sides_of_zero_display: left_width={left_width}%, zero_width={zero_width}%, right_width={right_width}%")
+    # Debug print to verify calculated progress
+    print(f"render_sides_of_zero_display: left_progress={left_progress}%, zero_progress={zero_progress}%, right_progress={right_progress}%")
     
     return f"""
     <style>
-        #left-bar:hover, #zero-bar:hover, #right-bar:hover {{
-            filter: brightness(1.2);
-            transform: scale(1.02);
-            transition: filter 0.3s ease, transform 0.3s ease, width 0.8s ease-in-out;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        .circular-progress {{
+            position: relative;
+            width: 80px;
+            height: 80px;
+            background: conic-gradient(#d3d3d3 0% 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.5s ease;
         }}
-        #left-bar, #zero-bar, #right-bar {{
-            background-size: 20px 20px;
-            transition: width 0.8s ease-in-out;
-            border-radius: 8px;
+        .circular-progress::before {{
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: #e0e0e0;
+            border-radius: 50%;
+            z-index: 1;
         }}
-        #left-bar {{
-            background: repeating-linear-gradient(
-                45deg,
-                #6a1b9a,
-                #6a1b9a 10px,
-                #ab47bc 10px,
-                #ab47bc 20px
-            );
-            box-shadow: 0 4px 8px rgba(106, 27, 154, 0.3);
+        .circular-progress span {{
+            position: relative;
+            z-index: 2;
+            font-size: 12px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
         }}
-        #zero-bar {{
-            background: repeating-linear-gradient(
-                45deg,
-                #00695c,
-                #00695c 10px,
-                #4db6ac 10px,
-                #4db6ac 20px
-            );
-            box-shadow: 0 4px 8px rgba(0, 105, 92, 0.3);
+        #left-progress {{
+            background: conic-gradient(#6a1b9a {left_progress}% , #d3d3d3 {left_progress}% 100%);
         }}
-        #right-bar {{
-            background: repeating-linear-gradient(
-                45deg,
-                #f4511e,
-                #f4511e 10px,
-                #ff8f00 10px,
-                #ff8f00 20px
-            );
-            box-shadow: 0 4px 8px rgba(244, 81, 30, 0.3);
+        #zero-progress {{
+            background: conic-gradient(#00695c {zero_progress}% , #d3d3d3 {zero_progress}% 100%);
+        }}
+        #right-progress {{
+            background: conic-gradient(#f4511e {right_progress}% , #d3d3d3 {right_progress}% 100%);
+        }}
+        .circular-progress:hover {{
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }}
     </style>
     <div style="background-color: #e0e0e0; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
         <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker</h4>
-        <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="width: 100px; font-weight: bold; font-size: 12px; background-color: #6a1b9a; color: white; padding: 2px 5px; border-radius: 3px; white-space: nowrap;" id="left-label">Left Side ({left_hits})</span>
-                <div style="flex-grow: 1; height: 25px; width: {left_width}%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid #d3d3d3;" id="left-bar"></div>
+        <div id="sides-of-zero" style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 15px; width: 100%; max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
+            <div style="text-align: center;">
+                <div class="circular-progress" id="left-progress">
+                    <span>{left_hits}</span>
+                </div>
+                <span style="display: block; font-weight: bold; font-size: 12px; background-color: #6a1b9a; color: white; padding: 2px 5px; border-radius: 3px; margin-top: 5px;">Left Side</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="width: 100px; font-weight: bold; font-size: 12px; background-color: #00695c; color: white; padding: 2px 5px; border-radius: 3px; white-space: nowrap;" id="zero-label">Zero ({zero_hits})</span>
-                <div style="flex-grow: 1; height: 25px; width: {zero_width}%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid #d3d3d3;" id="zero-bar"></div>
+            <div style="text-align: center;">
+                <div class="circular-progress" id="zero-progress">
+                    <span>{zero_hits}</span>
+                </div>
+                <span style="display: block; font-weight: bold; font-size: 12px; background-color: #00695c; color: white; padding: 2px 5px; border-radius: 3px; margin-top: 5px;">Zero</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="width: 100px; font-weight: bold; font-size: 12px; background-color: #f4511e; color: white; padding: 2px 5px; border-radius: 3px; white-space: nowrap;" id="right-label">Right Side ({right_hits})</span>
-                <div style="flex-grow: 1; height: 25px; width: {right_width}%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid #d3d3d3;" id="right-bar"></div>
+            <div style="text-align: center;">
+                <div class="circular-progress" id="right-progress">
+                    <span>{right_hits}</span>
+                </div>
+                <span style="display: block; font-weight: bold; font-size: 12px; background-color: #f4511e; color: white; padding: 2px 5px; border-radius: 3px; margin-top: 5px;">Right Side</span>
             </div>
         </div>
     </div>
     <script>
-        function updateBar(barId, width, labelId, labelText) {{
-            const bar = document.getElementById(barId);
-            const label = document.getElementById(labelId);
-            if (bar && label) {{
-                bar.style.width = width + '%';
-                label.textContent = labelText;
-            }} else {{
-                console.error('Element not found: ' + (bar ? labelId : barId));
+        function updateCircularProgress(id, progress) {{
+            const element = document.getElementById(id);
+            if (element) {{
+                element.style.background = `conic-gradient(#6a1b9a ${progress}% , #d3d3d3 ${progress}% 100%)`;
+                element.querySelector('span').textContent = element.querySelector('span').textContent;
             }}
         }}
-        updateBar('left-bar', {left_width}, 'left-label', 'Left Side ({left_hits})');
-        updateBar('zero-bar', {zero_width}, 'zero-label', 'Zero ({zero_hits})');
-        updateBar('right-bar', {right_width}, 'right-label', 'Right Side ({right_hits})');
+        updateCircularProgress('left-progress', {left_progress});
+        updateCircularProgress('zero-progress', {zero_progress});
+        updateCircularProgress('right-progress', {right_progress});
     </script>
     """
 
