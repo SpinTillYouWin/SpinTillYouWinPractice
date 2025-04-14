@@ -392,36 +392,36 @@ def render_sides_of_zero_display():
             align-items: center;
             justify-content: center;
         }}
-        #left-bar[style*="width: 10%"] ~ .percent-label,
-        #left-bar[style*="width: 20%"] ~ .percent-label,
-        #left-bar[style*="width: 30%"] ~ .percent-label,
-        #left-bar[style*="width: 40%"] ~ .percent-label,
-        #left-bar[style*="width: 50%"] ~ .percent-label,
-        #left-bar[style*="width: 60%"] ~ .percent-label,
-        #left-bar[style*="width: 70%"] ~ .percent-label,
-        #left-bar[style*="width: 80%"] ~ .percent-label,
-        #left-bar[style*="width: 90%"] ~ .percent-label,
-        #left-bar[style*="width: 100%"] ~ .percent-label,
-        #zero-bar[style*="width: 10%"] ~ .percent-label,
-        #zero-bar[style*="width: 20%"] ~ .percent-label,
-        #zero-bar[style*="width: 30%"] ~ .percent-label,
-        #zero-bar[style*="width: 40%"] ~ .percent-label,
-        #zero-bar[style*="width: 50%"] ~ .percent-label,
-        #zero-bar[style*="width: 60%"] ~ .percent-label,
-        #zero-bar[style*="width: 70%"] ~ .percent-label,
-        #zero-bar[style*="width: 80%"] ~ .percent-label,
-        #zero-bar[style*="width: 90%"] ~ .percent-label,
-        #zero-bar[style*="width: 100%"] ~ .percent-label,
-        #right-bar[style*="width: 10%"] ~ .percent-label,
-        #right-bar[style*="width: 20%"] ~ .percent-label,
-        #right-bar[style*="width: 30%"] ~ .percent-label,
-        #right-bar[style*="width: 40%"] ~ .percent-label,
-        #right-bar[style*="width: 50%"] ~ .percent-label,
-        #right-bar[style*="width: 60%"] ~ .percent-label,
-        #right-bar[style*="width: 70%"] ~ .percent-label,
-        #right-bar[style*="width: 80%"] ~ .percent-label,
-        #right-bar[style*="width: 90%"] ~ .percent-label,
-        #right-bar[style*="width: 100%"] ~ .percent-label {{
+        #left-bar[style*="width: 10%"] .percent-label,
+        #left-bar[style*="width: 20%"] .percent-label,
+        #left-bar[style*="width: 30%"] .percent-label,
+        #left-bar[style*="width: 40%"] .percent-label,
+        #left-bar[style*="width: 50%"] .percent-label,
+        #left-bar[style*="width: 60%"] .percent-label,
+        #left-bar[style*="width: 70%"] .percent-label,
+        #left-bar[style*="width: 80%"] .percent-label,
+        #left-bar[style*="width: 90%"] .percent-label,
+        #left-bar[style*="width: 100%"] .percent-label,
+        #zero-bar[style*="width: 10%"] .percent-label,
+        #zero-bar[style*="width: 20%"] .percent-label,
+        #zero-bar[style*="width: 30%"] .percent-label,
+        #zero-bar[style*="width: 40%"] .percent-label,
+        #zero-bar[style*="width: 50%"] .percent-label,
+        #zero-bar[style*="width: 60%"] .percent-label,
+        #zero-bar[style*="width: 70%"] .percent-label,
+        #zero-bar[style*="width: 80%"] .percent-label,
+        #zero-bar[style*="width: 90%"] .percent-label,
+        #zero-bar[style*="width: 100%"] .percent-label,
+        #right-bar[style*="width: 10%"] .percent-label,
+        #right-bar[style*="width: 20%"] .percent-label,
+        #right-bar[style*="width: 30%"] .percent-label,
+        #right-bar[style*="width: 40%"] .percent-label,
+        #right-bar[style*="width: 50%"] .percent-label,
+        #right-bar[style*="width: 60%"] .percent-label,
+        #right-bar[style*="width: 70%"] .percent-label,
+        #right-bar[style*="width: 80%"] .percent-label,
+        #right-bar[style*="width: 90%"] .percent-label,
+        #right-bar[style*="width: 100%"] .percent-label {{
             display: block;
         }}
     </style>
@@ -449,21 +449,19 @@ def render_sides_of_zero_display():
         </div>
     </div>
     <script>
-        function updateBar(barId, width, labelId, labelText, percentId, percentText) {{
+        function updateBar(barId, width, labelId, labelText) {{
             const bar = document.getElementById(barId);
             const label = document.getElementById(labelId);
-            const percentLabel = document.getElementById(percentId);
-            if (bar && label && percentLabel) {{
+            if (bar && label) {{
                 bar.style.width = width + '%';
                 label.textContent = labelText;
-                percentLabel.textContent = percentText + '%';
             }} else {{
-                console.error('Element not found: ' + (bar ? (label ? percentId : labelId) : barId));
+                console.error('Element not found: ' + (bar ? labelId : barId));
             }}
         }}
-        updateBar('left-bar', {left_width}, 'left-label', 'Left Side ({left_hits})', 'left-percent', {left_percent.toFixed(1)});
-        updateBar('zero-bar', {zero_width}, 'zero-label', 'Zero ({zero_hits})', 'zero-percent', {zero_percent.toFixed(1)});
-        updateBar('right-bar', {right_width}, 'right-label', 'Right Side ({right_hits})', 'right-percent', {right_percent.toFixed(1)});
+        updateBar('left-bar', {left_width}, 'left-label', 'Left Side ({left_hits})');
+        updateBar('zero-bar', {zero_width}, 'zero-label', 'Zero ({zero_hits})');
+        updateBar('right-bar', {right_width}, 'right-label', 'Right Side ({right_hits})');
     </script>
     """
     # Updated section ends here
