@@ -2925,10 +2925,61 @@ def render_sides_of_zero_display():
     </script>
     """
 
-# Placeholder for missing function to fix NameError
+# Placeholder for previously missing function
 def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count):
     # Mock implementation to match the UI output in the screenshot
     return "<p>No spins yet. Default Even Money Bets consider:<br>1. Red<br>2. Black<br>3. Even</p>"
+
+# Placeholder for missing function to fix NameError
+def clear_outputs():
+    # Mock implementation to reset all outputs to their initial values
+    return (
+        "",  # spins_display
+        "",  # spins_textbox
+        '<h4>Last Spins</h4><p>No spins yet.</p>',  # last_spin_display
+        '<span style="font-size: 16px;">Total Spins: 0</span>',  # spin_counter
+        render_sides_of_zero_display(),  # sides_of_zero_display
+        create_dynamic_table(strategy_name="Best Even Money Bets"),  # dynamic_table_output
+        "<p>No spins yet. Default Even Money Bets consider:<br>1. Red<br>2. Black<br>3. Even</p>",  # strategy_output
+        "<p>Select the number of spins to track and analyze spins to see the Dozen history.</p>",  # dozen_tracker_output
+        "<p>Enable sequence matching to see results here.</p>",  # dozen_tracker_sequence_output
+        "<p>No casino data entered yet.</p>",  # casino_data_output
+        "00",  # even_percent
+        "00",  # odd_percent
+        "00",  # red_percent
+        "00",  # black_percent
+        "00",  # low_percent
+        "00",  # high_percent
+        "00",  # dozen1_percent
+        "00",  # dozen2_percent
+        "00",  # dozen3_percent
+        "00",  # col1_percent
+        "00",  # col2_percent
+        "00",  # col3_percent
+        1000,  # bankroll_input
+        "1000",  # bankroll_output
+        "10",  # current_bet_output
+        "10",  # next_bet_output
+        "Start with base bet of 10 on Even Money (Martingale)",  # message_output
+        '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>',  # status_output
+        "rgba(255, 255, 0, 0.5)",  # top_color_picker
+        "rgba(0, 255, 255, 0.5)",  # middle_color_picker
+        "rgba(0, 255, 0, 0.5)",  # lower_color_picker
+        "",  # color_code_output (initial value not specified, assuming empty)
+        "",  # spin_analysis_output
+        "",  # straight_up_html
+        "",  # top_18_html
+        "",  # strongest_numbers_output
+        "",  # even_money_output
+        "",  # dozens_output
+        "",  # columns_output
+        "",  # streets_output
+        "",  # corners_output
+        "",  # six_lines_output
+        "",  # splits_output
+        "",  # sides_output
+        None  # save_output
+    )
 
 # Build the Gradio interface
 with gr.Blocks() as demo:
@@ -3059,6 +3110,58 @@ with gr.Blocks() as demo:
             clear_spins_button = gr.Button("Clear Spins", elem_classes=["clear-spins-btn", "small-btn"])
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
+            # Attach event handler for Clear All button
+            clear_all_button.click(
+                fn=clear_outputs,
+                inputs=[],
+                outputs=[
+                    spins_display,
+                    spins_textbox,
+                    last_spin_display,
+                    spin_counter,
+                    sides_of_zero_display,
+                    dynamic_table_output,
+                    strategy_output,
+                    dozen_tracker_output,
+                    dozen_tracker_sequence_output,
+                    casino_data_output,
+                    even_percent,
+                    odd_percent,
+                    red_percent,
+                    black_percent,
+                    low_percent,
+                    high_percent,
+                    dozen1_percent,
+                    dozen2_percent,
+                    dozen3_percent,
+                    col1_percent,
+                    col2_percent,
+                    col3_percent,
+                    bankroll_input,
+                    bankroll_output,
+                    current_bet_output,
+                    next_bet_output,
+                    message_output,
+                    status_output,
+                    top_color_picker,
+                    middle_color_picker,
+                    lower_color_picker,
+                    color_code_output,
+                    spin_analysis_output,
+                    straight_up_html,
+                    top_18_html,
+                    strongest_numbers_output,
+                    even_money_output,
+                    dozens_output,
+                    columns_output,
+                    streets_output,
+                    corners_output,
+                    six_lines_output,
+                    splits_output,
+                    sides_output,
+                    save_output
+                ]
+            )
 
     # Row 8: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
     with gr.Row():
@@ -3386,6 +3489,7 @@ with gr.Blocks() as demo:
             load_input = gr.File(label="Upload Session")
         save_output = gr.File(label="Download Session")
 
+
     # CSS and Event Handlers
     gr.HTML("""
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css">
@@ -3652,14 +3756,56 @@ with gr.Blocks() as demo:
     )
 
     clear_all_button.click(
-        fn=clear_all,
+        fn=clear_outputs,
         inputs=[],
         outputs=[
-            spins_display, spins_textbox, spin_analysis_output, last_spin_display,
-            even_money_output, dozens_output, columns_output, streets_output,
-            corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output, spin_counter
+            spins_display,
+            spins_textbox,
+            last_spin_display,
+            spin_counter,
+            sides_of_zero_display,
+            dynamic_table_output,
+            strategy_output,
+            dozen_tracker_output,
+            dozen_tracker_sequence_output,
+            casino_data_output,
+            even_percent,
+            odd_percent,
+            red_percent,
+            black_percent,
+            low_percent,
+            high_percent,
+            dozen1_percent,
+            dozen2_percent,
+            dozen3_percent,
+            col1_percent,
+            col2_percent,
+            col3_percent,
+            bankroll_input,
+            bankroll_output,
+            current_bet_output,
+            next_bet_output,
+            message_output,
+            status_output,
+            top_color_picker,
+            middle_color_picker,
+            lower_color_picker,
+            color_code_output,
+            spin_analysis_output,
+            straight_up_html,
+            top_18_html,
+            strongest_numbers_output,
+            even_money_output,
+            dozens_output,
+            columns_output,
+            streets_output,
+            corners_output,
+            six_lines_output,
+            splits_output,
+            sides_output,
+            save_output
         ]
+    )
     ).then(
         fn=clear_outputs,
         inputs=[],
