@@ -116,6 +116,7 @@ def validate_roulette_data():
     return errors if errors else None
 
 class RouletteState:
+    class State:
     def __init__(self):
         self.selected_numbers = set()
         self.last_spins = []
@@ -132,14 +133,18 @@ class RouletteState:
             "Right Side of Zero": 0
         }
         self.spin_history = []
-        # New: Track spins since last hit for each section
         self.last_hit_spins = {
             "Left Side of Zero": 0,
             "Zero": 0,
             "Right Side of Zero": 0
         }
-        self.total_spins = 0  # New: Track total spins to calculate spins since last hit
+        self.total_spins = 0  # Track total spins to calculate spins since last hit
+        self.casino_data = {  # Added with correct indentation
+            # Add key-value pairs as needed, e.g.,
+            "some_key": "some_value"
+        }
 
+# Instantiation
 state = State()
 
         # Casino data storage
