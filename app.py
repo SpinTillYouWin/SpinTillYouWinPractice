@@ -354,8 +354,6 @@ def format_spins_as_html(spins, num_to_show):
     # Wrap the spins in a div with flexbox to enable wrapping, and add a title
     return f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
 
-
-
 def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
     zero_hits = state.scores[0]
@@ -376,8 +374,6 @@ def render_sides_of_zero_display():
         <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker</h4>
         <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
             <div style="display: flex; align-items: center; gap: 10px;">
-
-# Changed lines
                 <span style="width: 100px; font-weight: bold;" id="left-label">Left Side ({left_hits})</span>
                 <div style="flex-grow: 1; background: linear-gradient(to right, #3498db, #5dade2); height: 20px; width: {left_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="left-bar"></div>
             </div>
@@ -388,8 +384,6 @@ def render_sides_of_zero_display():
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="width: 100px; font-weight: bold;" id="right-label">Right Side ({right_hits})</span>
                 <div style="flex-grow: 1; background: linear-gradient(to right, #e74c3c, #c0392b); height: 20px; width: {right_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="right-bar"></div>
-
-# Lines after (unchanged)
             </div>
         </div>
     </div>
