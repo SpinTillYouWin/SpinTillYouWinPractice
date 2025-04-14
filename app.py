@@ -358,10 +358,23 @@ def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
     zero_hits = state.scores[0]
     right_hits = state.side_scores["Right Side of Zero"]
-    max_hits = max(left_hits, zero_hits, right_hits, 1)
-    left_width = (left_hits / max_hits) * 100
-    zero_width = (zero_hits / max_hits) * 100
-    right_width = (right_hits / max_hits) * 100
+    
+    # Introduce a sensitivity factor to amplify differences
+    sensitivity_factor = 1.5  # Adjust this value to increase/decrease sensitivity (higher = more sensitive)
+    
+    # Amplify hit counts to exaggerate differences
+    amplified_left = left_hits ** sensitivity_factor if left_hits > 0 else 0
+    amplified_zero = zero_hits ** sensitivity_factor if zero_hits > 0 else 0
+    amplified_right = right_hits ** sensitivity_factor if right_hits > 0 else 0
+    
+    # Calculate the maximum amplified value for scaling (ensure it's at least 1 to avoid division by zero)
+    max_amplified = max(amplified_left, amplified_zero, amplified_right, 1)
+    
+    # Calculate bar widths as percentages of the maximum amplified value
+    left_width = (amplified_left / max_amplified) * 100 if max_amplified > 0 else 0
+    zero_width = (amplified_zero / max_amplified) * 100 if max_amplified > 0 else 0
+    right_width = (amplified_right / max_amplified) * 100 if max_amplified > 0 else 0
+    
     return f"""
     <style>
         #left-bar:hover, #zero-bar:hover, #right-bar:hover {{
