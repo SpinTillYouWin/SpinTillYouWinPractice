@@ -359,21 +359,56 @@ def render_sides_of_zero_display():
     zero_hits = state.scores[0]
     right_hits = state.side_scores["Right Side of Zero"]
     
-    # Introduce a sensitivity factor to amplify differences
-    sensitivity_factor = 1.5  # Adjust this value to increase/decrease sensitivity (higher = more sensitive)
+    # Calculate total hits for balancing
+    total_hits = left_hits + zero_hits + right_hits
     
-    # Amplify hit counts to exaggerate differences
-    amplified_left = left_hits ** sensitivity_factor if left_hits > 0 else 0
-    amplified_zero = zero_hits ** sensitivity_factor if zero_hits > 0 else 0
-    amplified_right = right_hits ** sensitivity_factor if right_hits > 0 else 0
-    
-    # Calculate the maximum amplified value for scaling (ensure it's at least 1 to avoid division by zero)
-    max_amplified = max(amplified_left, amplified_zero, amplified_right, 1)
-    
-    # Calculate bar widths as percentages of the maximum amplified value
-    left_width = (amplified_left / max_amplified) * 100 if max_amplified > 0 else 0
-    zero_width = (amplified_zero / max_amplified) * 100 if max_amplified > 0 else 0
-    right_width = (amplified_right / max_amplified) * 100 if max_amplified > 0 else 0
+    # Avoid division by zero; if no hits, set default widths
+    if total_hits == 0:
+        left_width = 33.33  # Equal distribution when no hits
+        zero_width = 33.33
+        right_width = 33.33
+    else:
+        # Calculate inverse proportions to make bars interdependent
+        # Each bar's width is inversely proportional to the sum of the other two bars' hits
+        sensitivity_factor = 1.5  # Keep the sensitivity factor for amplifying differences
+        total_amplified = (left_hits ** sensitivity_factor) + (zero_hits ** sensitivity_factor) + (right_hits ** sensitivity_factor)
+        
+        # Calculate base widths using amplified hits
+        amplified_left = (left_hits ** sensitivity_factor) if left_hits > 0 else 0
+        amplified_zero = (zero_hits ** sensitivity_factor) if zero_hits > 0 else 0
+        amplified_right = (right_hits ** sensitivity_factor) if right_hits > 0 else 0
+        
+        # Inverse scaling: a bar's width decreases as the other bars' hits increase
+        max_amplified = max(amplified_left, amplified_zero, amplified_right, 1)
+        left_base = (amplified_left / max_amplified) * 100 if max_amplified > 0 else 0
+        zero_base = (amplified_zero / max_amplified) * 100 if max_amplified > 0 else 0
+        right_base = (amplified_right / max_amplified) * 100 if max_amplified > 0 else 0
+        
+        # Adjust widths to reflect interdependence
+        # If one bar's hits increase, reduce the others proportionally
+        total_base = left_base + zero_base + right_base
+        if total_base > 0:
+            # Normalize the base widths to sum to 100%, then adjust inversely
+            left_weight = (total_hits - left_hits) if total_hits > left_hits else 1
+            zero_weight = (total_hits - zero_hits) if total_hits > zero_hits else 1
+            right_weight = (total_hits - right_hits) if total_hits > right_hits else 1
+            total_weight = left_weight + zero_weight + right_weight
+            
+            left_width = (left_base * (total_hits - left_hits) / total_weight) * 1.5  # Multiply by 1.5 to amplify effect
+            zero_width = (zero_base * (total_hits - zero_hits) / total_weight) * 1.5
+            right_width = (right_base * (total_hits - right_hits) / total_weight) * 1.5
+            
+            # Normalize to ensure the largest bar doesn't exceed 100%
+            max_width = max(left_width, zero_width, right_width)
+            if max_width > 100:
+                scale_factor = 100 / max_width
+                left_width *= scale_factor
+                zero_width *= scale_factor
+                right_width *= scale_factor
+        else:
+            left_width = 33.33
+            zero_width = 33.33
+            right_width = 33.33
     
     return f"""
     <style>
@@ -387,15 +422,15 @@ def render_sides_of_zero_display():
         <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker</h4>
         <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
             <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="width: 100px; font-weight: bold; background-color: #6a1b9a; color: white; padding: 2px 5px; border-radius: 3px;" id="left-label">Left Side ({left_hits})</span>
+                <span style="width: 100px; font-weight: bold; font-size: 12px; background-color: #6a1b9a; color: white; padding: 2px 5px; border-radius: 3px; white-space: nowrap;" id="left-label">Left Side ({left_hits})</span>
                 <div style="flex-grow: 1; background: linear-gradient(to right, #6a1b9a, #ab47bc); height: 30px; width: {left_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="left-bar"></div>
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="width: 100px; font-weight: bold; background-color: #00695c; color: white; padding: 2px 5px; border-radius: 3px;" id="zero-label">Zero ({zero_hits})</span>
+                <span style="width: 100px; font-weight: bold; font-size: 12px; background-color: #00695c; color: white; padding: 2px 5px; border-radius: 3px; white-space: nowrap;" id="zero-label">Zero ({zero_hits})</span>
                 <div style="flex-grow: 1; background: linear-gradient(to right, #00695c, #4db6ac); height: 30px; width: {zero_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="zero-bar"></div>
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="width: 100px; font-weight: bold; background-color: #f4511e; color: white; padding: 2px 5px; border-radius: 3px;" id="right-label">Right Side ({right_hits})</span>
+                <span style="width: 100px; font-weight: bold; font-size: 12px; background-color: #f4511e; color: white; padding: 2px 5px; border-radius: 3px; white-space: nowrap;" id="right-label">Right Side ({right_hits})</span>
                 <div style="flex-grow: 1; background: linear-gradient(to right, #f4511e, #ff8f00); height: 30px; width: {right_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="right-bar"></div>
             </div>
         </div>
