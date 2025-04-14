@@ -356,30 +356,30 @@ def format_spins_as_html(spins, num_to_show):
 
 def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
+    zero_hits = state.scores[0]
     right_hits = state.side_scores["Right Side of Zero"]
     
     # Debug print to verify hit counts
-    print(f"render_sides_of_zero_display: left_hits={left_hits}, right_hits={right_hits}")
+    print(f"render_sides_of_zero_display: left_hits={left_hits}, zero_hits={zero_hits}, right_hits={right_hits}")
     
     # Calculate the maximum hit count for scaling
-    max_hits = max(left_hits, right_hits, 1)  # Avoid division by zero
+    max_hits = max(left_hits, zero_hits, right_hits, 1)  # Avoid division by zero
     
     # Calculate progress percentages (0 to 100)
     left_progress = (left_hits / max_hits) * 100 if max_hits > 0 else 0
+    zero_progress = (zero_hits / max_hits) * 100 if max_hits > 0 else 0
     right_progress = (right_hits / max_hits) * 100 if max_hits > 0 else 0
     
     # Debug print to verify calculated progress
-    print(f"render_sides_of_zero_display: left_progress={left_progress}%, right_progress={right_progress}%")
+    print(f"render_sides_of_zero_display: left_progress={left_progress}%, zero_progress={zero_progress}%, right_progress={right_progress}%")
     
-    # Prepare numbers for Left Side and Right Side with hit counts, limit to top 6 by hits
+    # Prepare numbers for Left Side and Right Side with hit counts
     left_numbers = [(num, state.scores.get(num, 0)) for num in current_left_of_zero]
     right_numbers = [(num, state.scores.get(num, 0)) for num in current_right_of_zero]
     
-    # Sort by hit count (descending) and limit to top 6
-    left_numbers.sort(key=lambda x: (-x[1], x[0]))  # Sort by hits (desc), then number (asc)
-    right_numbers.sort(key=lambda x: (-x[1], x[0]))
-    left_numbers_display = left_numbers[:6]
-    right_numbers_display = right_numbers[:6]
+    # Sort by number (ascending) to match wheel order
+    left_numbers.sort(key=lambda x: x[0])
+    right_numbers.sort(key=lambda x: x[0])
     
     # Generate tooltips for full number lists
     left_full_list = ", ".join(f"{num} ({hits})" for num, hits in left_numbers if hits > 0)
@@ -403,8 +403,8 @@ def render_sides_of_zero_display():
         
         return f'<div class="wheel-segment {side}-segment">{"".join(number_html)}</div>'
     
-    left_segment = generate_wheel_segment(left_numbers_display, "left")
-    right_segment = generate_wheel_segment(right_numbers_display, "right")
+    left_segment = generate_wheel_segment(left_numbers, "left")
+    right_segment = generate_wheel_segment(right_numbers, "right")
     
     return f"""
     <style>
@@ -440,6 +440,9 @@ def render_sides_of_zero_display():
         #left-progress {{
             background: conic-gradient(#6a1b9a {left_progress}% , #d3d3d3 {left_progress}% 100%);
         }}
+        #zero-progress {{
+            background: conic-gradient(#00695c {zero_progress}% , #d3d3d3 {zero_progress}% 100%);
+        }}
         #right-progress {{
             background: conic-gradient(#f4511e {right_progress}% , #d3d3d3 {right_progress}% 100%);
         }}
@@ -448,19 +451,31 @@ def render_sides_of_zero_display():
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }}
         .wheel-segment {{
-            width: 60px;
-            height: 80px;
+            width: 80px;
+            height: 100px;
             background: #333;
             border-radius: 50%;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            overflow: hidden;
+            overflow-y: auto;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            align-items: center;
+            align-content: flex-start;
             gap: 2px;
             padding: 5px;
             position: relative;
+            scrollbar-width: thin;
+            scrollbar-color: #666 #333;
+        }}
+        .wheel-segment::-webkit-scrollbar {{
+            width: 6px;
+        }}
+        .wheel-segment::-webkit-scrollbar-track {{
+            background: #333;
+        }}
+        .wheel-segment::-webkit-scrollbar-thumb {{
+            background-color: #666;
+            border-radius: 3px;
         }}
         .left-segment {{
             clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%);
@@ -469,29 +484,25 @@ def render_sides_of_zero_display():
             clip-path: polygon(0% 0%, 50% 0%, 50% 100%, 0% 100%);
         }}
         .wheel-number {{
-            width: 18px;
-            height: 18px;
-            line-height: 18px;
+            width: 14px;
+            height: 14px;
+            line-height: 14px;
             text-align: center;
-            font-size: 10px;
+            font-size: 8px;
             border-radius: 50%;
             display: inline-block;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }}
-        .wheel-number:hover {{
-            transform: scale(1.1);
+            position: relative;
         }}
         .hit-badge {{
             position: absolute;
-            top: -5px;
-            right: -5px;
+            top: -3px;
+            right: -3px;
             background: #ff4444;
             color: white;
-            font-size: 8px;
-            width: 12px;
-            height: 12px;
-            line-height: 12px;
+            font-size: 6px;
+            width: 10px;
+            height: 10px;
+            line-height: 10px;
             border-radius: 50%;
             z-index: 2;
         }}
@@ -510,7 +521,7 @@ def render_sides_of_zero_display():
         }}
         .tracker-column {{
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             align-items: center;
             gap: 5px;
         }}
@@ -520,11 +531,11 @@ def render_sides_of_zero_display():
             justify-content: space-around;
             gap: 15px;
             width: 100%;
-            max-width: 400px;
+            max-width: 600px;
             margin: 0 auto;
             font-family: Arial, sans-serif;
         }}
-        @media (max-width: 400px) {{
+        @media (max-width: 600px) {{
             .tracker-container {{
                 flex-direction: column;
                 align-items: center;
@@ -534,26 +545,26 @@ def render_sides_of_zero_display():
                 gap: 10px;
             }}
             .wheel-segment {{
-                width: 80px;
-                height: 40px;
+                width: 100px;
+                height: 60px;
                 clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 100%, 0 50%);
             }}
             .left-segment, .right-segment {{
                 clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 100%, 0 50%);
             }}
             .wheel-number {{
-                width: 14px;
-                height: 14px;
-                line-height: 14px;
-                font-size: 8px;
+                width: 12px;
+                height: 12px;
+                line-height: 12px;
+                font-size: 7px;
             }}
             .hit-badge {{
-                width: 10px;
-                height: 10px;
-                line-height: 10px;
-                font-size: 6px;
-                top: -3px;
-                right: -3px;
+                width: 8px;
+                height: 8px;
+                line-height: 8px;
+                font-size: 5px;
+                top: -2px;
+                right: -2px;
             }}
         }}
     </style>
@@ -568,6 +579,12 @@ def render_sides_of_zero_display():
                 <div class="wheel-segment-wrapper" data-tooltip="{left_tooltip}">
                     {left_segment}
                 </div>
+            </div>
+            <div class="tracker-column">
+                <div class="circular-progress" id="zero-progress">
+                    <span>{zero_hits}</span>
+                </div>
+                <span style="display: block; font-weight: bold; font-size: 12px; background-color: #00695c; color: white; padding: 2px 5px; border-radius: 3px;">Zero</span>
             </div>
             <div class="tracker-column">
                 <div class="circular-progress" id="right-progress">
@@ -589,6 +606,7 @@ def render_sides_of_zero_display():
             }}
             const colors = {{
                 'left-progress': '#6a1b9a',
+                'zero-progress': '#00695c',
                 'right-progress': '#f4511e'
             }};
             const color = colors[id] || '#d3d3d3';
@@ -596,6 +614,7 @@ def render_sides_of_zero_display():
             element.querySelector('span').textContent = element.querySelector('span').textContent;
         }}
         updateCircularProgress('left-progress', {left_progress});
+        updateCircularProgress('zero-progress', {zero_progress});
         updateCircularProgress('right-progress', {right_progress});
 
         // Tooltip functionality for wheel numbers and segments
