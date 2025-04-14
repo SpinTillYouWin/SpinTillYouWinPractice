@@ -360,10 +360,72 @@ def render_sides_of_zero_display():
     right_hits = state.side_scores["Right Side of Zero"]
     
     # Debug print to verify hit counts
+    Thank you for the feedback! I understand your concerns about the Sides of Zero display bars in the render_sides_of_zero_display function:
+
+Bar Width Too Long: The bars (Left Side, Zero, Right Side) are extending too far, making them appear overly long and potentially overwhelming the layout.
+Bar Movement Too Subtle: The bars don’t visually emphasize the "winner" (the bar with the most hits) enough, as their movement (width changes) is too subtle. You’d like the winner bar to increase in width more significantly, while the "loser" bars (those with fewer hits) decrease in width, creating a more dynamic and visually striking contrast.
+Let’s address these issues by modifying the render_sides_of_zero_display function. We’ll:
+
+Adjust the bar width scaling to reduce the overall length, ensuring they don’t extend too far.
+Enhance the visual contrast by making the winner bar grow more prominently and the loser bars shrink, using a new scaling approach based on relative hit counts.
+As per your instructions, I’ll:
+
+Provide the updated code with a few lines before and after the changed section for clear alignment.
+Specify search terms to locate the exact insertion points (start and end).
+Clearly differentiate between updated and unchanged lines.
+Show only the relevant code snippet, avoiding vague references like “rest of the code.”
+Since this is a direct request to improve the Sides of Zero display, I’ll proceed with the implementation. If you’d prefer to treat this as a suggestion to save or skip, let me know.
+
+Step-by-Step Implementation: Adjust Bar Width and Enhance Winner/Loser Contrast
+Step 1: Analyze Current Behavior
+Currently:
+
+Bar widths are calculated as max(10, (amplified_value / max_amplified) * 100), where amplified_value is (hits ** sensitivity_factor) with sensitivity_factor = 1.5.
+This makes all bars scale proportionally to the maximum amplified value, with a minimum width of 10%. However:
+The maximum width can reach 100%, which may be too long for the container (up to max-width: 600px), making bars visually dominate.
+The proportional scaling doesn’t emphasize the winner enough, as all bars adjust relatively, leading to subtle changes.
+Step 2: Proposed Changes
+To address your concerns:
+
+Reduce Overall Bar Width:
+Cap the maximum width at a lower percentage (e.g., 60% instead of 100%) to prevent bars from being too long.
+Adjust the scaling factor to compress the range, ensuring bars fit better within the container.
+Enhance Winner/Loser Contrast:
+Identify the "winner" (bar with the most hits) and apply a width boost (e.g., increase its width by a factor).
+Reduce the width of "losers" (bars with fewer hits) by a factor, making the winner stand out more.
+Adjust the sensitivity_factor or introduce a new scaling mechanism to exaggerate the difference between winner and losers.
+New Approach:
+
+Use a base width scaling of 50% (instead of 100%) to reduce overall length.
+Identify the winner by comparing raw hit counts (left_hits, zero_hits, right_hits).
+Boost the winner’s width by a factor (e.g., 1.5x) and reduce losers’ widths by a factor (e.g., 0.7x).
+Adjust sensitivity_factor to a higher value (e.g., 2.0) to make differences more pronounced.
+Step 3: Update render_sides_of_zero_display
+We’ll modify the width calculations and scaling logic in the function.
+
+Code Change Location: The change is in the render_sides_of_zero_display function, specifically the section where bar widths are calculated and applied.
+
+Search Term to Locate the Starting Point: To find the exact spot, search for:
+
+text
+
+Copy
+# Sensitivity factor to amplify differences
+This is the line before the width calculations begin, ensuring you land in the correct section.
+
+Context and Updated Code:
+
+Here are the relevant lines with the proposed changes, showing a few lines before and after for alignment:
+
+python
+
+Copy
+    # Lines before
     print(f"render_sides_of_zero_display: left_hits={left_hits}, zero_hits={zero_hits}, right_hits={right_hits}")
     
+    # Start of updated section
     # Sensitivity factor to amplify differences
-    sensitivity_factor = 1.5
+    sensitivity_factor = 2.0  # Increased for more pronounced differences
     
     # Amplify hit counts for sensitivity
     amplified_left = (left_hits ** sensitivity_factor) if left_hits > 0 else 0
@@ -373,15 +435,30 @@ def render_sides_of_zero_display():
     # Calculate the maximum amplified hit count for scaling
     max_amplified = max(amplified_left, amplified_zero, amplified_right, 1)  # Ensure at least 1 to avoid division by zero
     
-    # Calculate bar widths independently as percentages of the maximum amplified hits
-    left_width = max(10, (amplified_left / max_amplified) * 100)  # Minimum width of 10% so bars are visible
-    zero_width = max(10, (amplified_zero / max_amplified) * 100)
-    right_width = max(10, (amplified_right / max_amplified) * 100)
+    # Base width scaling (reduced to 50% max to shorten bars)
+    base_max_width = 50  # Cap at 50% instead of 100%
+    base_left_width = max(5, (amplified_left / max_amplified) * base_max_width)  # Minimum width of 5%
+    base_zero_width = max(5, (amplified_zero / max_amplified) * base_max_width)
+    base_right_width = max(5, (amplified_right / max_amplified) * base_max_width)
+    
+    # Determine the winner and adjust widths
+    hit_counts = {"left": left_hits, "zero": zero_hits, "right": right_hits}
+    winner = max(hit_counts, key=hit_counts.get)
+    winner_boost = 1.5  # Boost winner's width by 50%
+    loser_shrink = 0.7  # Shrink losers' widths by 30%
+    
+    left_width = base_left_width * (winner_boost if winner == "left" else loser_shrink)
+    zero_width = base_zero_width * (winner_boost if winner == "zero" else loser_shrink)
+    right_width = base_right_width * (winner_boost if winner == "right" else loser_shrink)
+    
+    # Cap the maximum width to prevent overflow
+    left_width = min(left_width, 60)  # Absolute cap at 60%
+    zero_width = min(zero_width, 60)
+    right_width = min(right_width, 60)
     
     # Debug print to verify calculated widths
     print(f"render_sides_of_zero_display: left_width={left_width}%, zero_width={zero_width}%, right_width={right_width}%")
     
-    # Start of updated section
     return f"""
     <style>
         #left-bar:hover, #zero-bar:hover, #right-bar:hover {{
@@ -397,6 +474,7 @@ def render_sides_of_zero_display():
                 <span style="width: 100px; font-weight: bold; font-size: 12px; background-color: #6a1b9a; color: white; padding: 2px 5px; border-radius: 3px; white-space: nowrap;" id="left-label">Left Side ({left_hits})</span>
                 <div style="flex-grow: 1; background: linear-gradient(to right, #6a1b9a, #ab47bc); height: 30px; width: {left_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="left-bar"></div>
             </div>
+    # Lines after
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="width: 100px; font-weight: bold; font-size: 12px; background-color: #00695c; color: white; padding: 2px 5px; border-radius: 3px; white-space: nowrap;" id="zero-label">Zero ({zero_hits})</span>
                 <div style="flex-grow: 1; background: linear-gradient(to right, #00695c, #4db6ac); height: 30px; width: {zero_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="zero-bar"></div>
@@ -407,7 +485,6 @@ def render_sides_of_zero_display():
             </div>
         </div>
     </div>
-    # Lines after
     <script>
         function updateBar(barId, width, labelId, labelText) {{
             const bar = document.getElementById(barId);
