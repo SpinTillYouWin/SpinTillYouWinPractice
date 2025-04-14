@@ -370,41 +370,13 @@ def render_sides_of_zero_display():
     amplified_zero = (zero_hits ** sensitivity_factor) if zero_hits > 0 else 0
     amplified_right = (right_hits ** sensitivity_factor) if right_hits > 0 else 0
     
-    # Calculate total amplified hits for scaling
-    total_amplified = amplified_left + amplified_zero + amplified_right
+    # Calculate the maximum amplified hit count for scaling
+    max_amplified = max(amplified_left, amplified_zero, amplified_right, 1)  # Ensure at least 1 to avoid division by zero
     
-    # If no hits, set a default minimum width for all bars
-    if total_amplified == 0:
-        left_width = 10  # Minimum width so bars are visible
-        zero_width = 10
-        right_width = 10
-    else:
-        # Calculate base widths as percentages of total amplified hits
-        left_base = (amplified_left / total_amplified) * 100
-        zero_base = (amplified_zero / total_amplified) * 100
-        right_base = (amplified_right / total_amplified) * 100
-        
-        # Introduce interdependence: reduce each bar's width based on the others' hits
-        total_hits = left_hits + zero_hits + right_hits
-        left_weight = max(1, total_hits - left_hits)  # Inverse influence of other bars
-        zero_weight = max(1, total_hits - zero_hits)
-        right_weight = max(1, total_hits - right_hits)
-        
-        # Total weight for normalization
-        total_weight = left_weight + zero_weight + right_weight
-        
-        # Adjust widths with interdependence
-        left_width = max(10, (left_base * (total_hits - left_hits) / total_weight) * 2)  # Multiply by 2 to amplify effect
-        zero_width = max(10, (zero_base * (total_hits - zero_hits) / total_weight) * 2)
-        right_width = max(10, (right_base * (total_hits - right_hits) / total_weight) * 2)
-        
-        # Normalize to ensure the largest bar doesn't exceed 100%
-        max_width = max(left_width, zero_width, right_width)
-        if max_width > 100:
-            scale_factor = 100 / max_width
-            left_width *= scale_factor
-            zero_width *= scale_factor
-            right_width *= scale_factor
+    # Calculate bar widths independently as percentages of the maximum amplified hits
+    left_width = max(10, (amplified_left / max_amplified) * 100)  # Minimum width of 10% so bars are visible
+    zero_width = max(10, (amplified_zero / max_amplified) * 100)
+    right_width = max(10, (amplified_right / max_amplified) * 100)
     
     # Debug print to verify calculated widths
     print(f"render_sides_of_zero_display: left_width={left_width}%, zero_width={zero_width}%, right_width={right_width}%")
