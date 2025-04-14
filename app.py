@@ -359,10 +359,16 @@ def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
     zero_hits = state.scores[0]
     right_hits = state.side_scores["Right Side of Zero"]
-    max_hits = max(left_hits, zero_hits, right_hits, 1)
+    max_hits = max(left_hits, zero_hits, right_hits, 1)  # Avoid division by zero
     left_width = (left_hits / max_hits) * 100
     zero_width = (zero_hits / max_hits) * 100
     right_width = (right_hits / max_hits) * 100
+    total_spins = left_hits + zero_hits + right_hits
+    left_percent = (left_hits / total_spins * 100) if total_spins > 0 else 0
+    zero_percent = (zero_hits / total_spins * 100) if total_spins > 0 else 0
+    right_percent = (right_hits / total_spins * 100) if total_spins > 0 else 0
+    
+    # Updated section starts here
     return f"""
     <style>
         #left-bar:hover, #zero-bar:hover, #right-bar:hover {{
@@ -370,40 +376,97 @@ def render_sides_of_zero_display():
             transform: scale(1.02);
             transition: filter 0.3s ease, transform 0.3s ease;
         }}
+        .percent-label {{
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }}
+        #left-bar, #zero-bar, #right-bar {{
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }}
+        #left-bar[style*="width: 10%"] ~ .percent-label,
+        #left-bar[style*="width: 20%"] ~ .percent-label,
+        #left-bar[style*="width: 30%"] ~ .percent-label,
+        #left-bar[style*="width: 40%"] ~ .percent-label,
+        #left-bar[style*="width: 50%"] ~ .percent-label,
+        #left-bar[style*="width: 60%"] ~ .percent-label,
+        #left-bar[style*="width: 70%"] ~ .percent-label,
+        #left-bar[style*="width: 80%"] ~ .percent-label,
+        #left-bar[style*="width: 90%"] ~ .percent-label,
+        #left-bar[style*="width: 100%"] ~ .percent-label,
+        #zero-bar[style*="width: 10%"] ~ .percent-label,
+        #zero-bar[style*="width: 20%"] ~ .percent-label,
+        #zero-bar[style*="width: 30%"] ~ .percent-label,
+        #zero-bar[style*="width: 40%"] ~ .percent-label,
+        #zero-bar[style*="width: 50%"] ~ .percent-label,
+        #zero-bar[style*="width: 60%"] ~ .percent-label,
+        #zero-bar[style*="width: 70%"] ~ .percent-label,
+        #zero-bar[style*="width: 80%"] ~ .percent-label,
+        #zero-bar[style*="width: 90%"] ~ .percent-label,
+        #zero-bar[style*="width: 100%"] ~ .percent-label,
+        #right-bar[style*="width: 10%"] ~ .percent-label,
+        #right-bar[style*="width: 20%"] ~ .percent-label,
+        #right-bar[style*="width: 30%"] ~ .percent-label,
+        #right-bar[style*="width: 40%"] ~ .percent-label,
+        #right-bar[style*="width: 50%"] ~ .percent-label,
+        #right-bar[style*="width: 60%"] ~ .percent-label,
+        #right-bar[style*="width: 70%"] ~ .percent-label,
+        #right-bar[style*="width: 80%"] ~ .percent-label,
+        #right-bar[style*="width: 90%"] ~ .percent-label,
+        #right-bar[style*="width: 100%"] ~ .percent-label {{
+            display: block;
+        }}
     </style>
     <div style="background-color: #f5f5f5; border: 1px solid #d3d3d3; border-radius: 5px; padding: 10px;">
         <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker</h4>
         <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="width: 100px;" id="left-label">Left Side ({left_hits})</span>
-                <div style="flex-grow: 1; background: linear-gradient(to right, #3498db, #5dade2); height: 20px; width: {left_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="left-bar"></div>
+                <div style="flex-grow: 1; background: linear-gradient(to right, #3498db, #5dade2); height: 20px; width: {left_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="left-bar">
+                    <span class="percent-label">{left_percent:.1f}%</span>
+                </div>
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="width: 100px;" id="zero-label">Zero ({zero_hits})</span>
-                <div style="flex-grow: 1; background: linear-gradient(to right, #2ecc71, #27ae60); height: 20px; width: {zero_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="zero-bar"></div>
+                <div style="flex-grow: 1; background: linear-gradient(to right, #2ecc71, #27ae60); height: 20px; width: {zero_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="zero-bar">
+                    <span class="percent-label">{zero_percent:.1f}%</span>
+                </div>
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="width: 100px;" id="right-label">Right Side ({right_hits})</span>
-                <div style="flex-grow: 1; background: linear-gradient(to right, #e74c3c, #c0392b); height: 20px; width: {right_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="right-bar"></div>
+                <div style="flex-grow: 1; background: linear-gradient(to right, #e74c3c, #c0392b); height: 20px; width: {right_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="right-bar">
+                    <span class="percent-label">{right_percent:.1f}%</span>
+                </div>
             </div>
         </div>
     </div>
     <script>
-        function updateBar(barId, width, labelId, labelText) {{
+        function updateBar(barId, width, labelId, labelText, percentId, percentText) {{
             const bar = document.getElementById(barId);
             const label = document.getElementById(labelId);
-            if (bar && label) {{
+            const percentLabel = document.getElementById(percentId);
+            if (bar && label && percentLabel) {{
                 bar.style.width = width + '%';
                 label.textContent = labelText;
+                percentLabel.textContent = percentText + '%';
             }} else {{
-                console.error('Element not found: ' + (bar ? labelId : barId));
+                console.error('Element not found: ' + (bar ? (label ? percentId : labelId) : barId));
             }}
         }}
-        updateBar('left-bar', {left_width}, 'left-label', 'Left Side ({left_hits})');
-        updateBar('zero-bar', {zero_width}, 'zero-label', 'Zero ({zero_hits})');
-        updateBar('right-bar', {right_width}, 'right-label', 'Right Side ({right_hits})');
+        updateBar('left-bar', {left_width}, 'left-label', 'Left Side ({left_hits})', 'left-percent', {left_percent.toFixed(1)});
+        updateBar('zero-bar', {zero_width}, 'zero-label', 'Zero ({zero_hits})', 'zero-percent', {zero_percent.toFixed(1)});
+        updateBar('right-bar', {right_width}, 'right-label', 'Right Side ({right_hits})', 'right-percent', {right_percent.toFixed(1)});
     </script>
     """
+    # Updated section ends here
 
 # Lines after (context)
 def add_spin(number, current_spins, num_to_show):
