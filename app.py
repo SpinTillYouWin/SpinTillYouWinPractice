@@ -3171,7 +3171,56 @@ def reset_colors():
 def clear_last_spins_display():
     """Clear the Last Spins HTML display without affecting spins data."""
     return "<h4>Last Spins</h4><p>Display cleared. Add spins to see them here.</p>", update_spin_counter()
-
+# Define strategy_categories before the Gradio interface
+strategy_categories = {
+    "Trends": [
+        "Cold Bet Strategy",
+        "Hot Bet Strategy",
+        "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers",
+        "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"
+    ],
+    "Even Money Strategies": [
+        "Best Even Money Bets",
+        "Best Even Money Bets + Top Pick 18 Numbers",
+        "Fibonacci To Fortune"
+    ],
+    "Dozen Strategies": [
+        "1 Dozen +1 Column Strategy",
+        "Best Dozens",
+        "Best Dozens + Top Pick 18 Numbers",
+        "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers",
+        "Best Dozens + Best Streets",
+        "Fibonacci Strategy",
+        "Romanowksy Missing Dozen"
+    ],
+    "Column Strategies": [
+        "1 Dozen +1 Column Strategy",
+        "Best Columns",
+        "Best Columns + Top Pick 18 Numbers",
+        "Best Columns + Best Even Money Bets + Top Pick 18 Numbers",
+        "Best Columns + Best Streets"
+    ],
+    "Street Strategies": [
+        "3-8-6 Rising Martingale",
+        "Best Streets",
+        "Best Columns + Best Streets",
+        "Best Dozens + Best Streets"
+    ],
+    "Double Street Strategies": [
+        "Best Double Streets",
+        "Non-Overlapping Double Street Strategy"
+    ],
+    "Corner Strategies": [
+        "Best Corners",
+        "Non-Overlapping Corner Strategy"
+    ],
+    "Split Strategies": ["Best Splits"],
+    "Number Strategies": [
+        "Top Numbers with Neighbours (Tiered)",
+        "Top Pick 18 Numbers without Neighbours"
+    ],
+    "Neighbours Strategies": ["Neighbours of Strong Number"]
+}
 # Build the Gradio interface
 with gr.Blocks() as demo:
     # Define state components
