@@ -373,6 +373,32 @@ def render_sides_of_zero_display():
     # Debug print to verify calculated progress
     print(f"render_sides_of_zero_display: left_progress={left_progress}%, zero_progress={zero_progress}%, right_progress={right_progress}%")
     
+    # Define the order of numbers for Left Side and Right Side
+    left_numbers_order = [5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26]
+    right_numbers_order = [32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
+    
+    # Prepare numbers with hit counts
+    left_numbers = [(num, state.scores.get(num, 0)) for num in left_numbers_order]
+    right_numbers = [(num, state.scores.get(num, 0)) for num in right_numbers_order]
+    
+    # Generate HTML for number lists
+    def generate_number_list(numbers):
+        if not numbers:
+            return '<div class="number-list">No numbers</div>'
+        
+        number_html = []
+        for num, hits in numbers:
+            color = colors.get(str(num), "black")
+            badge = f'<span class="hit-badge">{hits}</span>' if hits > 0 else ''
+            number_html.append(
+                f'<span class="number-item" style="background-color: {color}; color: white;" data-hits="{hits}" data-number="{num}">{num}{badge}</span>'
+            )
+        
+        return f'<div class="number-list">{"".join(number_html)}</div>'
+    
+    left_number_list = generate_number_list(left_numbers)
+    right_number_list = generate_number_list(right_numbers)
+    
     return f"""
     <style>
         .circular-progress {{
@@ -417,27 +443,112 @@ def render_sides_of_zero_display():
             transform: scale(1.05);
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }}
+        .number-list {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            justify-content: center;
+            margin-top: 5px;
+            max-width: 200px;
+        }}
+        .number-item {{
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            text-align: center;
+            font-size: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+        }}
+        .hit-badge {{
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ff4444;
+            color: white;
+            font-size: 8px;
+            width: 12px;
+            height: 12px;
+            line-height: 12px;
+            border-radius: 50%;
+            z-index: 2;
+        }}
+        .tooltip {{
+            position: absolute;
+            background: #333;
+            color: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 12px;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            white-space: nowrap;
+        }}
+        .tracker-column {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }}
+        .tracker-container {{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            gap: 15px;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            font-family: Arial, sans-serif;
+        }}
+        @media (max-width: 600px) {{
+            .tracker-container {{
+                flex-direction: column;
+                align-items: center;
+            }}
+            .number-list {{
+                max-width: 100%;
+            }}
+            .number-item {{
+                width: 16px;
+                height: 16px;
+                line-height: 16px;
+                font-size: 8px;
+            }}
+            .hit-badge {{
+                width: 10px;
+                height: 10px;
+                line-height: 10px;
+                font-size: 6px;
+                top: -3px;
+                right: -3px;
+            }}
+        }}
     </style>
     <div style="background-color: #e0e0e0; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
         <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker</h4>
-        <div id="sides-of-zero" style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 15px; width: 100%; max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
-            <div style="text-align: center;">
+        <div class="tracker-container">
+            <div class="tracker-column">
                 <div class="circular-progress" id="left-progress">
                     <span>{left_hits}</span>
                 </div>
-                <span style="display: block; font-weight: bold; font-size: 12px; background-color: #6a1b9a; color: white; padding: 2px 5px; border-radius: 3px; margin-top: 5px;">Left Side</span>
+                <span style="display: block; font-weight: bold; font-size: 12px; background-color: #6a1b9a; color: white; padding: 2px 5px; border-radius: 3px;">Left Side</span>
+                {left_number_list}
             </div>
-            <div style="text-align: center;">
+            <div class="tracker-column">
                 <div class="circular-progress" id="zero-progress">
                     <span>{zero_hits}</span>
                 </div>
-                <span style="display: block; font-weight: bold; font-size: 12px; background-color: #00695c; color: white; padding: 2px 5px; border-radius: 3px; margin-top: 5px;">Zero</span>
+                <span style="display: block; font-weight: bold; font-size: 12px; background-color: #00695c; color: white; padding: 2px 5px; border-radius: 3px;">Zero</span>
             </div>
-            <div style="text-align: center;">
+            <div class="tracker-column">
                 <div class="circular-progress" id="right-progress">
                     <span>{right_hits}</span>
                 </div>
-                <span style="display: block; font-weight: bold; font-size: 12px; background-color: #f4511e; color: white; padding: 2px 5px; border-radius: 3px; margin-top: 5px;">Right Side</span>
+                <span style="display: block; font-weight: bold; font-size: 12px; background-color: #f4511e; color: white; padding: 2px 5px; border-radius: 3px;">Right Side</span>
+                {right_number_list}
             </div>
         </div>
     </div>
@@ -460,6 +571,34 @@ def render_sides_of_zero_display():
         updateCircularProgress('left-progress', {left_progress});
         updateCircularProgress('zero-progress', {zero_progress});
         updateCircularProgress('right-progress', {right_progress});
+
+        // Tooltip functionality for numbers
+        document.querySelectorAll('.number-item').forEach(element => {{
+            element.addEventListener('mouseover', (e) => {{
+                const hits = element.getAttribute('data-hits');
+                const num = element.getAttribute('data-number');
+                const tooltipText = `Number ${{num}}: ${{hits}} hits`;
+                
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.textContent = tooltipText;
+                
+                document.body.appendChild(tooltip);
+                
+                const rect = element.getBoundingClientRect();
+                const tooltipRect = tooltip.getBoundingClientRect();
+                tooltip.style.left = `${{rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}}px`;
+                tooltip.style.top = `${{rect.top + window.scrollY - tooltipRect.height - 5}}px`;
+                tooltip.style.opacity = '1';
+            }});
+            
+            element.addEventListener('mouseout', () => {{
+                const tooltip = document.querySelector('.tooltip');
+                if (tooltip) {{
+                    tooltip.remove();
+                }}
+            }});
+        }});
     </script>
     """
 
