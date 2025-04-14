@@ -362,31 +362,65 @@ def render_sides_of_zero_display():
     # Debug print to verify hit counts
     print(f"render_sides_of_zero_display: left_hits={left_hits}, zero_hits={zero_hits}, right_hits={right_hits}")
     
+    # Calculate the average hit count
+    total_hits = left_hits + zero_hits + right_hits
+    avg_hits = total_hits / 3 if total_hits > 0 else 0
+    
     # Sensitivity factor to amplify differences
     sensitivity_factor = 1.5
     
-    # Amplify hit counts for sensitivity
-    amplified_left = (left_hits ** sensitivity_factor) if left_hits > 0 else 0
-    amplified_zero = (zero_hits ** sensitivity_factor) if zero_hits > 0 else 0
-    amplified_right = (right_hits ** sensitivity_factor) if right_hits > 0 else 0
+    # Calculate deviations from the average, amplified for sensitivity
+    left_deviation = (left_hits - avg_hits) * sensitivity_factor
+    zero_deviation = (zero_hits - avg_hits) * sensitivity_factor
+    right_deviation = (right_hits - avg_hits) * sensitivity_factor
     
-    # Calculate the maximum amplified hit count for scaling
-    max_amplified = max(amplified_left, amplified_zero, amplified_right, 1)  # Ensure at least 1 to avoid division by zero
+    # Find the maximum absolute deviation to scale the bars
+    max_deviation = max(abs(left_deviation), abs(zero_deviation), abs(right_deviation), 1)  # Ensure at least 1 to avoid division by zero
     
-    # Calculate bar widths independently as percentages of the maximum amplified hits
-    left_width = max(10, (amplified_left / max_amplified) * 100)  # Minimum width of 10% so bars are visible
-    zero_width = max(10, (amplified_zero / max_amplified) * 100)
-    right_width = max(10, (amplified_right / max_amplified) * 100)
+    # Calculate bar widths as percentages of the maximum deviation
+    # Positive deviation grows right, negative grows left
+    left_width = abs(left_deviation / max_deviation) * 50  # Scale to 50% max in each direction
+    zero_width = abs(zero_deviation / max_deviation) * 50
+    right_width = abs(right_deviation / max_deviation) * 50
     
-    # Debug print to verify calculated widths
-    print(f"render_sides_of_zero_display: left_width={left_width}%, zero_width={zero_width}%, right_width={right_width}%")
+    # Determine direction (positive deviation = grow right, negative = grow left)
+    left_offset = -left_width if left_deviation < 0 else 0
+    zero_offset = -zero_width if zero_deviation < 0 else 0
+    right_offset = -right_width if right_deviation < 0 else 0
+    
+    # Debug print to verify calculated widths and offsets
+    print(f"render_sides_of_zero_display: left_width={left_width}%, left_offset={left_offset}%, zero_width={zero_width}%, zero_offset={zero_offset}%, right_width={right_width}%, right_offset={right_offset}%")
     
     return f"""
     <style>
         #left-bar:hover, #zero-bar:hover, #right-bar:hover {{
             filter: brightness(1.2);
             transform: scale(1.02);
-            transition: filter 0.3s ease, transform 0.3s ease;
+            transition: filter 0.3s ease, transform 0.3s ease, width 0.5s ease, margin-left 0.5s ease;
+        }}
+        .bar-container {{
+            position: relative;
+            flex-grow: 1;
+            height: 30px;
+        }}
+        .bar {{
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 30px;
+            transition: width 0.5s ease, margin-left 0.5s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border-radius: 5px;
+            border: 1px solid #d3d3d3;
+        }}
+        .center-line {{
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1px;
+            height: 30px;
+            background-color: #888;
+            z-index: 1;
         }}
     </style>
     <div style="background-color: #e0e0e0; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
@@ -394,32 +428,42 @@ def render_sides_of_zero_display():
         <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="width: 100px; font-weight: bold; font-size: 12px; background-color: #6a1b9a; color: white; padding: 2px 5px; border-radius: 3px; white-space: nowrap;" id="left-label">Left Side ({left_hits})</span>
-                <div style="flex-grow: 1; background: linear-gradient(to right, #6a1b9a, #ab47bc); height: 30px; width: {left_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="left-bar"></div>
+                <div class="bar-container">
+                    <div class="center-line"></div>
+                    <div class="bar" id="left-bar" style="width: {left_width}%; margin-left: {left_offset}%; background: linear-gradient(to right, #6a1b9a, #ab47bc);"></div>
+                </div>
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="width: 100px; font-weight: bold; font-size: 12px; background-color: #00695c; color: white; padding: 2px 5px; border-radius: 3px; white-space: nowrap;" id="zero-label">Zero ({zero_hits})</span>
-                <div style="flex-grow: 1; background: linear-gradient(to right, #00695c, #4db6ac); height: 30px; width: {zero_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="zero-bar"></div>
+                <div class="bar-container">
+                    <div class="center-line"></div>
+                    <div class="bar" id="zero-bar" style="width: {zero_width}%; margin-left: {zero_offset}%; background: linear-gradient(to right, #00695c, #4db6ac);"></div>
+                </div>
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="width: 100px; font-weight: bold; font-size: 12px; background-color: #f4511e; color: white; padding: 2px 5px; border-radius: 3px; white-space: nowrap;" id="right-label">Right Side ({right_hits})</span>
-                <div style="flex-grow: 1; background: linear-gradient(to right, #f4511e, #ff8f00); height: 30px; width: {right_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="right-bar"></div>
+                <div class="bar-container">
+                    <div class="center-line"></div>
+                    <div class="bar" id="right-bar" style="width: {right_width}%; margin-left: {right_offset}%; background: linear-gradient(to right, #f4511e, #ff8f00);"></div>
+                </div>
             </div>
         </div>
     </div>
     <script>
-        function updateBar(barId, width, labelId, labelText) {{
+        function updateBar(barId, width, offset, labelId, labelText) {{
             const bar = document.getElementById(barId);
             const label = document.getElementById(labelId);
             if (bar && label) {{
                 bar.style.width = width + '%';
+                bar.style.marginLeft = offset + '%';
                 label.textContent = labelText;
             }} else {{
                 console.error('Element not found: ' + (bar ? labelId : barId));
             }}
         }}
-        updateBar('left-bar', {left_width}, 'left-label', 'Left Side ({left_hits})');
-        updateBar('zero-bar', {zero_width}, 'zero-label', 'Zero ({zero_hits})');
-        updateBar('right-bar', {right_width}, 'right-label', 'Right Side ({right_hits})');
+        updateBar('left-bar', {left_width}, {left_offset}, 'left-label', 'Left Side ({left_hits})');
+        updateBar('zero-bar', {zero_width}, {zero_offset}, 'zero-label', 'Zero ({zero_hits})');
+        updateBar('right-bar', {right_width}, {right_offset}, 'right-label', 'Right Side ({right_hits})');
     </script>
     """
 
