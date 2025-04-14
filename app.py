@@ -2739,7 +2739,131 @@ def best_columns_even_money_and_top_18():
         recommendations.append(f"{i}. Number {num} (Score: {score})")
 
     return "\n".join(recommendations)
+def dozen_tracker(spins_to_track, consecutive_hits, alert_enabled, sequence_length, follow_up_spins, sequence_alert_enabled):
+    """
+    Analyze the last N spins to track Dozens, consecutive hits, and sequence patterns.
+    
+    Args:
+        spins_to_track (int): Number of spins to analyze.
+        consecutive_hits (int): Number of consecutive hits to trigger an alert.
+        alert_enabled (bool): Whether to enable consecutive hits alert.
+        sequence_length (int): Length of the sequence to match (X).
+        follow_up_spins (int): Number of follow-up spins to track after a sequence match (Y).
+        sequence_alert_enabled (bool): Whether to enable sequence matching alert.
+    
+    Returns:
+        tuple: (gr.State(), HTML for dozen_tracker_output, HTML for dozen_tracker_sequence_output)
+    """
+    # Convert inputs to integers
+    try:
+        spins_to_track = int(spins_to_track)
+        consecutive_hits = int(consecutive_hits)
+        sequence_length = int(sequence_length)
+        follow_up_spins = int(follow_up_spins)
+    except ValueError:
+        return None, "<p>Error: Invalid input values. Please use numbers for spins, consecutive hits, and sequence settings.</p>", "<p>Error: Invalid input values for sequence matching.</p>"
 
+    if spins_to_track <= 0:
+        return None, "<p>Error: Number of spins to track must be greater than 0.</p>", "<p>Error: Invalid number of spins for sequence matching.</p>"
+
+    # Get the last N spins
+    recent_spins = state.last_spins[-spins_to_track:] if len(state.last_spins) >= spins_to_track else state.last_spins
+    if not recent_spins:
+        return None, "<p>No spins recorded yet. Click some numbers on the table or enter spins manually.</p>", "<p>Enable sequence matching to see results here.</p>"
+
+    # Map spins to their Dozens
+    dozen_history = []
+    for spin in recent_spins:
+        spin_value = int(spin)
+        if spin_value == 0:
+            dozen_history.append("0")  # Special case for 0 (not in any Dozen)
+        else:
+            found = False
+            for dozen_name, numbers in DOZENS.items():
+                if spin_value in numbers:
+                    dozen_history.append(dozen_name)
+                    found = True
+                    break
+            if not found:
+                dozen_history.append("0")  # Fallback, should not happen with valid data
+
+    # Generate Dozen Tracker output (visual history)
+    dozen_colors = {
+        "1st Dozen": "#FF6347",  # Tomato Red
+        "2nd Dozen": "#4682B4",  # Steel Blue
+        "3rd Dozen": "#32CD32",  # Lime Green
+        "0": "#808080"           # Gray for 0
+    }
+    html_spins = []
+    for dozen in dozen_history:
+        color = dozen_colors.get(dozen, "#808080")  # Default to gray if not found
+        display_text = dozen.replace(" Dozen", "") if dozen != "0" else "0"
+        html_spins.append(f'<span style="background-color: {color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px; display: inline-block;">{display_text}</span>')
+    
+    dozen_tracker_html = f'<h4 style="margin-bottom: 5px;">Dozen Tracker (Last {len(recent_spins)} Spins)</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
+
+    # Check for consecutive hits if alert is enabled
+    if alert_enabled and consecutive_hits > 0:
+        current_streak = 1
+        current_dozen = None
+        streaks = []
+        for i in range(len(dozen_history)):
+            dozen = dozen_history[i]
+            if dozen == "0":
+                if current_dozen and current_streak >= consecutive_hits:
+                    streaks.append(f"{current_dozen} hit {current_streak} times consecutively at spin {i}.")
+                current_streak = 1
+                current_dozen = None
+                continue
+            if dozen == current_dozen:
+                current_streak += 1
+            else:
+                if current_dozen and current_streak >= consecutive_hits:
+                    streaks.append(f"{current_dozen} hit {current_streak} times consecutively at spin {i}.")
+                current_dozen = dozen
+                current_streak = 1
+        # Check the last streak
+        if current_dozen and current_streak >= consecutive_hits:
+            streaks.append(f"{current_dozen} hit {current_streak} times consecutively at the end.")
+        
+        if streaks:
+            dozen_tracker_html += "<h4>Consecutive Hits Alerts:</h4><ul>" + "".join(f"<li>{streak}</li>" for streak in streaks) + "</ul>"
+
+    # Sequence matching logic
+    sequence_output = "<p>Enable sequence matching to see results here.</p>"
+    if sequence_alert_enabled and sequence_length > 0 and follow_up_spins > 0:
+        if len(dozen_history) < sequence_length:
+            sequence_output = f"<p>Not enough spins to match a sequence of length {sequence_length}. Need at least {sequence_length} spins, but only have {len(dozen_history)}.</p>"
+        else:
+            sequences_found = []
+            for i in range(len(dozen_history) - sequence_length - follow_up_spins + 1):
+                sequence = dozen_history[i:i + sequence_length]
+                # Skip sequences containing 0
+                if "0" in sequence:
+                    continue
+                # Check if the sequence repeats
+                next_sequence = dozen_history[i + sequence_length:i + sequence_length + follow_up_spins]
+                if "0" in next_sequence:
+                    continue
+                # Count occurrences of the sequence in the remaining spins
+                matches = []
+                for j in range(i + sequence_length, len(dozen_history) - sequence_length + 1):
+                    if dozen_history[j:j + sequence_length] == sequence:
+                        follow_up = dozen_history[j + sequence_length:j + sequence_length + follow_up_spins]
+                        if "0" not in follow_up and follow_up:
+                            matches.append((j + sequence_length, follow_up))
+                if matches:
+                    sequence_str = " -> ".join(sequence)
+                    for match_idx, follow_up in matches:
+                        follow_up_str = " -> ".join(follow_up)
+                        sequences_found.append(f"Sequence [{sequence_str}] found at spin {match_idx - sequence_length + 1}, followed by [{follow_up_str}]")
+
+            if sequences_found:
+                sequence_output = "<h4>Sequence Matching Results:</h4><ul>" + "".join(f"<li>{match}</li>" for match in sequences_found) + "</ul>"
+            else:
+                sequence_output = f"<p>No sequences of length {sequence_length} found that repeat within the last {spins_to_track} spins.</p>"
+
+    return None, dozen_tracker_html, sequence_output
 def create_color_code_table():
     html = '''
     <div style="margin-top: 20px;">
