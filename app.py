@@ -376,13 +376,14 @@ def render_sides_of_zero_display():
     # Define the order of numbers for Left Side and Right Side
     left_numbers_order = [5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26]
     right_numbers_order = [32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
+    zero_number = [(0, state.scores.get(0, 0))]  # For the Zero section
     
     # Prepare numbers with hit counts
     left_numbers = [(num, state.scores.get(num, 0)) for num in left_numbers_order]
     right_numbers = [(num, state.scores.get(num, 0)) for num in right_numbers_order]
     
     # Generate HTML for number lists
-    def generate_number_list(numbers):
+    def generate_number_list(numbers, is_zero=False):
         if not numbers:
             return '<div class="number-list">No numbers</div>'
         
@@ -390,13 +391,15 @@ def render_sides_of_zero_display():
         for num, hits in numbers:
             color = colors.get(str(num), "black")
             badge = f'<span class="hit-badge">{hits}</span>' if hits > 0 else ''
+            class_name = "number-item zero-number" if is_zero else "number-item"
             number_html.append(
-                f'<span class="number-item" style="background-color: {color}; color: white;" data-hits="{hits}" data-number="{num}">{num}{badge}</span>'
+                f'<span class="{class_name}" style="background-color: {color}; color: white;" data-hits="{hits}" data-number="{num}">{num}{badge}</span>'
             )
         
         return f'<div class="number-list">{"".join(number_html)}</div>'
     
     left_number_list = generate_number_list(left_numbers)
+    zero_number_list = generate_number_list(zero_number, is_zero=True)
     right_number_list = generate_number_list(right_numbers)
     
     return f"""
@@ -461,18 +464,33 @@ def render_sides_of_zero_display():
             display: inline-block;
             position: relative;
         }}
+        .number-item.zero-number {{
+            width: 80px;
+            height: 80px;
+            line-height: 80px;
+            font-size: 40px;
+        }}
         .hit-badge {{
             position: absolute;
             top: -4px;
             right: -4px;
-            background: #ff4444;
-            color: white;
+            background: #ffffff;
+            color: #000000;
+            border: 1px solid #000000;
             font-size: 8px;
             width: 12px;
             height: 12px;
             line-height: 12px;
             border-radius: 50%;
             z-index: 2;
+        }}
+        .number-item.zero-number .hit-badge {{
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            font-size: 12px;
         }}
         .tooltip {{
             position: absolute;
@@ -517,6 +535,12 @@ def render_sides_of_zero_display():
                 line-height: 16px;
                 font-size: 8px;
             }}
+            .number-item.zero-number {{
+                width: 64px;
+                height: 64px;
+                line-height: 64px;
+                font-size: 32px;
+            }}
             .hit-badge {{
                 width: 10px;
                 height: 10px;
@@ -524,6 +548,14 @@ def render_sides_of_zero_display():
                 font-size: 6px;
                 top: -3px;
                 right: -3px;
+            }}
+            .number-item.zero-number .hit-badge {{
+                width: 20px;
+                height: 20px;
+                line-height: 20px;
+                font-size: 10px;
+                top: -6px;
+                right: -6px;
             }}
         }}
     </style>
@@ -542,6 +574,7 @@ def render_sides_of_zero_display():
                     <span>{zero_hits}</span>
                 </div>
                 <span style="display: block; font-weight: bold; font-size: 12px; background-color: #00695c; color: white; padding: 2px 5px; border-radius: 3px;">Zero</span>
+                {zero_number_list}
             </div>
             <div class="tracker-column">
                 <div class="circular-progress" id="right-progress">
