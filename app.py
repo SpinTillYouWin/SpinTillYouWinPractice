@@ -3805,7 +3805,6 @@ with gr.Blocks() as demo:
             sides_output,
             save_output
         ]
-    )
     ).then(
         fn=clear_outputs,
         inputs=[],
