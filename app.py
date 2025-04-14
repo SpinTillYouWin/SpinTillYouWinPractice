@@ -373,8 +373,17 @@ def render_sides_of_zero_display():
     # Debug print to verify calculated progress
     print(f"render_sides_of_zero_display: left_progress={left_progress}%, zero_progress={zero_progress}%, right_progress={right_progress}%")
     
-    # Define the order of numbers for the European roulette wheel, starting from 26 clockwise
-    wheel_order = [26, 3, 35, 12, 28, 7, 29, 18, 22, 9, 31, 14, 20, 1, 33, 16, 24, 5, 0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
+    # Define the order of numbers for the European roulette wheel
+    # Original order starting from 26 clockwise
+    original_order = [26, 3, 35, 12, 28, 7, 29, 18, 22, 9, 31, 14, 20, 1, 33, 16, 24, 5, 0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
+    # Split into Left Side (26 to 5), Zero (0), and Right Side (32 to 10)
+    left_side = original_order[:18]  # 26 to 5
+    zero = [0]
+    right_side = original_order[19:]  # 32 to 10
+    # Reverse the Left Side to start from 5 and end at 26
+    left_side_reversed = left_side[::-1]
+    # Combine the parts: Left Side (reversed), Zero, Right Side
+    wheel_order = left_side_reversed + zero + right_side
     
     # Prepare numbers with hit counts
     wheel_numbers = [(num, state.scores.get(num, 0)) for num in wheel_order]
