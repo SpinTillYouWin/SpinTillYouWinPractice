@@ -444,12 +444,11 @@ def render_sides_of_zero_display():
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }}
         .wheel-segment {{
-            width: 80px;
-            height: 40px;
+            width: 40px;
+            height: 80px;
             position: relative;
-            margin-top: 5px;
             overflow: hidden;
-            border-radius: 40px 40px 0 0;
+            border-radius: 0 40px 40px 0;
             background: #333;
             display: flex;
             flex-wrap: wrap;
@@ -460,10 +459,12 @@ def render_sides_of_zero_display():
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }}
         .left-segment {{
-            clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 100%, 0 50%);
+            border-radius: 40px 0 0 40px;
+            clip-path: polygon(0 0, 50% 0, 100% 50%, 50% 100%, 0 100%);
         }}
         .right-segment {{
-            clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 100%, 0 50%);
+            border-radius: 0 40px 40px 0;
+            clip-path: polygon(0 50%, 50% 0, 100% 0, 100% 100%, 50% 100%);
         }}
         .wheel-number {{
             position: relative;
@@ -507,20 +508,25 @@ def render_sides_of_zero_display():
         }}
         .tracker-column {{
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
             gap: 5px;
         }}
         @media (max-width: 600px) {{
             .tracker-column {{
-                flex-direction: row;
-                justify-content: center;
-                gap: 10px;
+                flex-direction: column;
+                align-items: center;
+                gap: 5px;
             }}
             .wheel-segment {{
-                width: 60px;
-                height: 30px;
-                border-radius: 30px 30px 0 0;
+                width: 80px;
+                height: 40px;
+                border-radius: 40px 40px 0 0;
+                clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 100%, 0 50%);
+            }}
+            .left-segment, .right-segment {{
+                border-radius: 40px 40px 0 0;
+                clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 100%, 0 50%);
             }}
             .wheel-number {{
                 width: 14px;
@@ -542,23 +548,29 @@ def render_sides_of_zero_display():
         <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker</h4>
         <div id="sides-of-zero" style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 15px; width: 100%; max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
             <div class="tracker-column">
-                <div class="circular-progress" id="left-progress">
-                    <span>{left_hits}</span>
-                </div>
-                <span style="display: block; font-weight: bold; font-size: 12px; background-color: #6a1b9a; color: white; padding: 2px 5px; border-radius: 3px; margin-top: 5px;">Left Side</span>
                 {left_segment}
+                <div style="text-align: center;">
+                    <div class="circular-progress" id="left-progress">
+                        <span>{left_hits}</span>
+                    </div>
+                    <span style="display: block; font-weight: bold; font-size: 12px; background-color: #6a1b9a; color: white; padding: 2px 5px; border-radius: 3px; margin-top: 5px;">Left Side</span>
+                </div>
             </div>
             <div class="tracker-column">
-                <div class="circular-progress" id="zero-progress">
-                    <span>{zero_hits}</span>
+                <div style="text-align: center;">
+                    <div class="circular-progress" id="zero-progress">
+                        <span>{zero_hits}</span>
+                    </div>
+                    <span style="display: block; font-weight: bold; font-size: 12px; background-color: #00695c; color: white; padding: 2px 5px; border-radius: 3px; margin-top: 5px;">Zero</span>
                 </div>
-                <span style="display: block; font-weight: bold; font-size: 12px; background-color: #00695c; color: white; padding: 2px 5px; border-radius: 3px; margin-top: 5px;">Zero</span>
             </div>
             <div class="tracker-column">
-                <div class="circular-progress" id="right-progress">
-                    <span>{right_hits}</span>
+                <div style="text-align: center;">
+                    <div class="circular-progress" id="right-progress">
+                        <span>{right_hits}</span>
+                    </div>
+                    <span style="display: block; font-weight: bold; font-size: 12px; background-color: #f4511e; color: white; padding: 2px 5px; border-radius: 3px; margin-top: 5px;">Right Side</span>
                 </div>
-                <span style="display: block; font-weight: bold; font-size: 12px; background-color: #f4511e; color: white; padding: 2px 5px; border-radius: 3px; margin-top: 5px;">Right Side</span>
                 {right_segment}
             </div>
         </div>
@@ -595,8 +607,9 @@ def render_sides_of_zero_display():
                 document.body.appendChild(tooltip);
                 
                 const rect = number.getBoundingClientRect();
-                tooltip.style.left = `${{rect.left + window.scrollX + (rect.width / 2) - (tooltip.offsetWidth / 2)}}px`;
-                tooltip.style.top = `${{rect.top + window.scrollY - tooltip.offsetHeight - 5}}px`;
+                const tooltipRect = tooltip.getBoundingClientRect();
+                tooltip.style.left = `${{rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}}px`;
+                tooltip.style.top = `${{rect.top + window.scrollY - tooltipRect.height - 5}}px`;
                 tooltip.style.opacity = '1';
             }});
             
