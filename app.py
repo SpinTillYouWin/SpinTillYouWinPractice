@@ -381,69 +381,31 @@ def render_sides_of_zero_display():
     # Debug print to verify calculated widths
     print(f"render_sides_of_zero_display: left_width={left_width}%, zero_width={zero_width}%, right_width={right_width}%")
     
-    # Start of updated section
     return f"""
     <style>
         #left-bar:hover, #zero-bar:hover, #right-bar:hover {{
             filter: brightness(1.2);
             transform: scale(1.02);
-            transition: filter 0.3s ease, transform 0.3s ease, width 0.8s ease-in-out;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-        }}
-        #left-bar, #zero-bar, #right-bar {{
-            background-size: 20px 20px;
-            transition: width 0.8s ease-in-out;
-            border-radius: 8px;
-        }}
-        #left-bar {{
-            background: repeating-linear-gradient(
-                45deg,
-                #6a1b9a,
-                #6a1b9a 10px,
-                #ab47bc 10px,
-                #ab47bc 20px
-            );
-            box-shadow: 0 4px 8px rgba(106, 27, 154, 0.3);
-        }}
-        #zero-bar {{
-            background: repeating-linear-gradient(
-                45deg,
-                #00695c,
-                #00695c 10px,
-                #4db6ac 10px,
-                #4db6ac 20px
-            );
-            box-shadow: 0 4px 8px rgba(0, 105, 92, 0.3);
-        }}
-        #right-bar {{
-            background: repeating-linear-gradient(
-                45deg,
-                #f4511e,
-                #f4511e 10px,
-                #ff8f00 10px,
-                #ff8f00 20px
-            );
-            box-shadow: 0 4px 8px rgba(244, 81, 30, 0.3);
+            transition: filter 0.3s ease, transform 0.3s ease;
         }}
     </style>
     <div style="background-color: #e0e0e0; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
         <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker</h4>
-        <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
+        <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="width: 100px; font-weight: bold; font-size: 12px; background-color: #6a1b9a; color: white; padding: 2px 5px; border-radius: 3px; white-space: nowrap;" id="left-label">Left Side ({left_hits})</span>
-                <div style="flex-grow: 1; height: 25px; width: {left_width}%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid #d3d3d3;" id="left-bar"></div>
+                <div style="flex-grow: 1; background: linear-gradient(to right, #6a1b9a, #ab47bc); height: 30px; width: {left_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="left-bar"></div>
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="width: 100px; font-weight: bold; font-size: 12px; background-color: #00695c; color: white; padding: 2px 5px; border-radius: 3px; white-space: nowrap;" id="zero-label">Zero ({zero_hits})</span>
-                <div style="flex-grow: 1; height: 25px; width: {zero_width}%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid #d3d3d3;" id="zero-bar"></div>
+                <div style="flex-grow: 1; background: linear-gradient(to right, #00695c, #4db6ac); height: 30px; width: {zero_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="zero-bar"></div>
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="width: 100px; font-weight: bold; font-size: 12px; background-color: #f4511e; color: white; padding: 2px 5px; border-radius: 3px; white-space: nowrap;" id="right-label">Right Side ({right_hits})</span>
-                <div style="flex-grow: 1; height: 25px; width: {right_width}%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid #d3d3d3;" id="right-bar"></div>
+                <div style="flex-grow: 1; background: linear-gradient(to right, #f4511e, #ff8f00); height: 30px; width: {right_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="right-bar"></div>
             </div>
         </div>
     </div>
-    # Lines after
     <script>
         function updateBar(barId, width, labelId, labelText) {{
             const bar = document.getElementById(barId);
@@ -3701,11 +3663,7 @@ with gr.Blocks() as demo:
       .gr-row { margin: 0 !important; padding: 5px 0 !important; }
       .gr-column { margin: 0 !important; padding: 5px !important; }
       .gr-box { border-radius: 5px !important; }
-
-      /* Hide stray labels in the Sides of Zero section */
-      .sides-of-zero-container + label, .last-spins-container + label:not(.long-slider label) {
-          display: none !important;
-      }
+    
       /* Ensure Header Stays at the Top */
       #header-row {
           position: fixed !important;
