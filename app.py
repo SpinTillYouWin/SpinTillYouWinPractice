@@ -140,7 +140,7 @@ class RouletteState:
         }
         self.total_spins = 0  # New: Track total spins to calculate spins since last hit
 
-state = State(
+state = State()
 
         # Casino data storage
         self.casino_data = {
