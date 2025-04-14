@@ -3218,11 +3218,12 @@ with gr.Blocks() as demo:
         value='<span style="font-size: 16px;">Total Spins: 0</span>',
         elem_classes=["spin-counter"]
     )
-    sides_of_zero_display = gr.HTML(
-        label="Sides of Zero",
-        value=render_sides_of_zero_display(),
-        elem_classes=["sides-of-zero-container"]
-    )
+    with gr.Accordion("Dealer’s Spin Tracker", open=True, elem_id="sides-of-zero-accordion"):
+        sides_of_zero_display = gr.HTML(
+            label="Sides of Zero",
+            value=render_sides_of_zero_display(),
+            elem_classes=["sides-of-zero-container"]
+        )
     last_spin_display = gr.HTML(
         label="Last Spins",
         value='<h4>Last Spins</h4><p>No spins yet.</p>',
