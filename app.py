@@ -373,6 +373,32 @@ def render_sides_of_zero_display():
     # Debug print to verify calculated progress
     print(f"render_sides_of_zero_display: left_progress={left_progress}%, zero_progress={zero_progress}%, right_progress={right_progress}%")
     
+    # Prepare numbers for Left Side and Right Side with hit counts
+    left_numbers = [(num, state.scores.get(num, 0)) for num in current_left_of_zero]
+    right_numbers = [(num, state.scores.get(num, 0)) for num in current_right_of_zero]
+    
+    # Generate HTML for mini wheel segments
+    def generate_wheel_segment(numbers, side):
+        if not numbers:
+            return f'<div class="wheel-segment {side}-segment">No numbers</div>'
+        
+        # Sort numbers for display (optional, can be ordered as in roulette wheel)
+        numbers.sort(key=lambda x: x[0])
+        
+        # Generate number spans
+        number_html = []
+        for num, hits in numbers:
+            color = colors.get(str(num), "black")
+            badge = f'<span class="hit-badge">{hits}</span>' if hits > 0 else ''
+            number_html.append(
+                f'<span class="wheel-number" style="background-color: {color}; color: white;" data-hits="{hits}" data-number="{num}">{num}{badge}</span>'
+            )
+        
+        return f'<div class="wheel-segment {side}-segment">{"".join(number_html)}</div>'
+    
+    left_segment = generate_wheel_segment(left_numbers, "left")
+    right_segment = generate_wheel_segment(right_numbers, "right")
+    
     return f"""
     <style>
         .circular-progress {{
@@ -417,27 +443,123 @@ def render_sides_of_zero_display():
             transform: scale(1.05);
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }}
+        .wheel-segment {{
+            width: 80px;
+            height: 40px;
+            position: relative;
+            margin-top: 5px;
+            overflow: hidden;
+            border-radius: 40px 40px 0 0;
+            background: #333;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 2px;
+            padding: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }}
+        .left-segment {{
+            clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 100%, 0 50%);
+        }}
+        .right-segment {{
+            clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 100%, 0 50%);
+        }}
+        .wheel-number {{
+            position: relative;
+            width: 18px;
+            height: 18px;
+            line-height: 18px;
+            text-align: center;
+            font-size: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }}
+        .wheel-number:hover {{
+            transform: scale(1.1);
+        }}
+        .hit-badge {{
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4444;
+            color: white;
+            font-size: 8px;
+            width: 12px;
+            height: 12px;
+            line-height: 12px;
+            border-radius: 50%;
+            z-index: 2;
+        }}
+        .tooltip {{
+            position: absolute;
+            background: #333;
+            color: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 12px;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }}
+        .tracker-column {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }}
+        @media (max-width: 600px) {{
+            .tracker-column {{
+                flex-direction: row;
+                justify-content: center;
+                gap: 10px;
+            }}
+            .wheel-segment {{
+                width: 60px;
+                height: 30px;
+                border-radius: 30px 30px 0 0;
+            }}
+            .wheel-number {{
+                width: 14px;
+                height: 14px;
+                line-height: 14px;
+                font-size: 8px;
+            }}
+            .hit-badge {{
+                width: 10px;
+                height: 10px;
+                line-height: 10px;
+                font-size: 6px;
+                top: -3px;
+                right: -3px;
+            }}
+        }}
     </style>
     <div style="background-color: #e0e0e0; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
         <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker</h4>
         <div id="sides-of-zero" style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 15px; width: 100%; max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
-            <div style="text-align: center;">
+            <div class="tracker-column">
                 <div class="circular-progress" id="left-progress">
                     <span>{left_hits}</span>
                 </div>
                 <span style="display: block; font-weight: bold; font-size: 12px; background-color: #6a1b9a; color: white; padding: 2px 5px; border-radius: 3px; margin-top: 5px;">Left Side</span>
+                {left_segment}
             </div>
-            <div style="text-align: center;">
+            <div class="tracker-column">
                 <div class="circular-progress" id="zero-progress">
                     <span>{zero_hits}</span>
                 </div>
                 <span style="display: block; font-weight: bold; font-size: 12px; background-color: #00695c; color: white; padding: 2px 5px; border-radius: 3px; margin-top: 5px;">Zero</span>
             </div>
-            <div style="text-align: center;">
+            <div class="tracker-column">
                 <div class="circular-progress" id="right-progress">
                     <span>{right_hits}</span>
                 </div>
                 <span style="display: block; font-weight: bold; font-size: 12px; background-color: #f4511e; color: white; padding: 2px 5px; border-radius: 3px; margin-top: 5px;">Right Side</span>
+                {right_segment}
             </div>
         </div>
     </div>
@@ -460,6 +582,31 @@ def render_sides_of_zero_display():
         updateCircularProgress('left-progress', {left_progress});
         updateCircularProgress('zero-progress', {zero_progress});
         updateCircularProgress('right-progress', {right_progress});
+
+        // Tooltip functionality for wheel numbers
+        document.querySelectorAll('.wheel-number').forEach(number => {{
+            number.addEventListener('mouseover', (e) => {{
+                const hits = number.getAttribute('data-hits');
+                const num = number.getAttribute('data-number');
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.textContent = `Number ${{num}}: ${{hits}} hits`;
+                
+                document.body.appendChild(tooltip);
+                
+                const rect = number.getBoundingClientRect();
+                tooltip.style.left = `${{rect.left + window.scrollX + (rect.width / 2) - (tooltip.offsetWidth / 2)}}px`;
+                tooltip.style.top = `${{rect.top + window.scrollY - tooltip.offsetHeight - 5}}px`;
+                tooltip.style.opacity = '1';
+            }});
+            
+            number.addEventListener('mouseout', () => {{
+                const tooltip = document.querySelector('.tooltip');
+                if (tooltip) {{
+                    tooltip.remove();
+                }}
+            }});
+        }});
     </script>
     """
 
