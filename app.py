@@ -3438,7 +3438,7 @@ with gr.Blocks() as demo:
         value='<span style="font-size: 16px;">Total Spins: 0</span>',
         elem_classes=["spin-counter"]
     )
-    with gr.Accordion("Dealer’s Spin Tracker", open=True, elem_id="sides-of-zero-accordion"):
+    with gr.Accordion("Dealer’s Spin Tracker 🕵️‍♂️ (Can You Spot the Bias?)", open=False, elem_id="sides-of-zero-accordion"):
         sides_of_zero_display = gr.HTML(
             label="Sides of Zero",
             value=render_sides_of_zero_display(),
@@ -4041,6 +4041,24 @@ with gr.Blocks() as demo:
           box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important; /* Slightly stronger shadow */
           transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
       }
+        /* Add new CSS rules here */
+        #sides-of-zero-accordion {
+            background-color: #fff3cd !important;
+            border: 1px solid #ffeeba !important;
+            transition: background-color 0.3s ease !important;
+        }
+        #sides-of-zero-accordion[open] {
+            background-color: #ffecb3 !important;
+        }
+        #sides-of-zero-accordion summary {
+            background-color: #fff3cd !important;
+            font-weight: bold !important;
+            padding: 8px !important;
+            border-bottom: 1px solid #ffeeba !important;
+        }
+        #sides-of-zero-accordion[open] summary {
+            background-color: #ffecb3 !important;
+        }
     
       /* Responsive Design */
       @media (max-width: 600px) {
