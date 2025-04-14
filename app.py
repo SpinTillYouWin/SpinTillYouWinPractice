@@ -324,6 +324,7 @@ colors = {
 }
 
 
+# Lines before (context)
 def format_spins_as_html(spins, num_to_show):
     if not spins:
         return "<h4>Last Spins</h4><p>No spins yet.</p>"
@@ -352,29 +353,39 @@ def format_spins_as_html(spins, num_to_show):
     
     # Wrap the spins in a div with flexbox to enable wrapping, and add a title
     return f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
+
+# Start of the function (Line 1 for context)
 def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
     zero_hits = state.scores[0]
     right_hits = state.side_scores["Right Side of Zero"]
-    max_hits = max(left_hits, zero_hits, right_hits, 1)  # Avoid division by zero
+    max_hits = max(left_hits, zero_hits, right_hits, 1)
     left_width = (left_hits / max_hits) * 100
     zero_width = (zero_hits / max_hits) * 100
     right_width = (right_hits / max_hits) * 100
-    
-    # Return the full HTML structure plus the JavaScript to update it
     return f"""
-    <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="width: 100px;" id="left-label">Left Side ({left_hits})</span>
-            <div style="flex-grow: 1; background-color: #3498db; height: 20px; width: {left_width}%; transition: width 0.5s ease;" id="left-bar"></div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="width: 100px;" id="zero-label">Zero ({zero_hits})</span>
-            <div style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: {zero_width}%; transition: width 0.5s ease;" id="zero-bar"></div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="width: 100px;" id="right-label">Right Side ({right_hits})</span>
-            <div style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: {right_width}%; transition: width 0.5s ease;" id="right-bar"></div>
+    <style>
+        #left-bar:hover, #zero-bar:hover, #right-bar:hover {{
+            filter: brightness(1.2);
+            transform: scale(1.02);
+            transition: filter 0.3s ease, transform 0.3s ease;
+        }}
+    </style>
+    <div style="background-color: #f5f5f5; border: 1px solid #d3d3d3; border-radius: 5px; padding: 10px;">
+        <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker</h4>
+        <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="width: 100px;" id="left-label">Left Side ({left_hits})</span>
+                <div style="flex-grow: 1; background: linear-gradient(to right, #3498db, #5dade2); height: 20px; width: {left_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="left-bar"></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="width: 100px;" id="zero-label">Zero ({zero_hits})</span>
+                <div style="flex-grow: 1; background: linear-gradient(to right, #2ecc71, #27ae60); height: 20px; width: {zero_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="zero-bar"></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="width: 100px;" id="right-label">Right Side ({right_hits})</span>
+                <div style="flex-grow: 1; background: linear-gradient(to right, #e74c3c, #c0392b); height: 20px; width: {right_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="right-bar"></div>
+            </div>
         </div>
     </div>
     <script>
@@ -393,6 +404,8 @@ def render_sides_of_zero_display():
         updateBar('right-bar', {right_width}, 'right-label', 'Right Side ({right_hits})');
     </script>
     """
+
+# Lines after (context)
 def add_spin(number, current_spins, num_to_show):
     print(f"add_spin: number='{number}', current_spins='{current_spins}'")
     spins = current_spins.split(", ") if current_spins else []
@@ -3171,78 +3184,34 @@ def reset_colors():
 def clear_last_spins_display():
     """Clear the Last Spins HTML display without affecting spins data."""
     return "<h4>Last Spins</h4><p>Display cleared. Add spins to see them here.</p>", update_spin_counter()
-# Define strategy_categories before the Gradio interface
-strategy_categories = {
-    "Trends": [
-        "Cold Bet Strategy",
-        "Hot Bet Strategy",
-        "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers",
-        "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"
-    ],
-    "Even Money Strategies": [
-        "Best Even Money Bets",
-        "Best Even Money Bets + Top Pick 18 Numbers",
-        "Fibonacci To Fortune"
-    ],
-    "Dozen Strategies": [
-        "1 Dozen +1 Column Strategy",
-        "Best Dozens",
-        "Best Dozens + Top Pick 18 Numbers",
-        "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers",
-        "Best Dozens + Best Streets",
-        "Fibonacci Strategy",
-        "Romanowksy Missing Dozen"
-    ],
-    "Column Strategies": [
-        "1 Dozen +1 Column Strategy",
-        "Best Columns",
-        "Best Columns + Top Pick 18 Numbers",
-        "Best Columns + Best Even Money Bets + Top Pick 18 Numbers",
-        "Best Columns + Best Streets"
-    ],
-    "Street Strategies": [
-        "3-8-6 Rising Martingale",
-        "Best Streets",
-        "Best Columns + Best Streets",
-        "Best Dozens + Best Streets"
-    ],
-    "Double Street Strategies": [
-        "Best Double Streets",
-        "Non-Overlapping Double Street Strategy"
-    ],
-    "Corner Strategies": [
-        "Best Corners",
-        "Non-Overlapping Corner Strategy"
-    ],
-    "Split Strategies": ["Best Splits"],
-    "Number Strategies": [
-        "Top Numbers with Neighbours (Tiered)",
-        "Top Pick 18 Numbers without Neighbours"
-    ],
-    "Neighbours Strategies": ["Neighbours of Strong Number"]
-}
+
 # Build the Gradio interface
 with gr.Blocks() as demo:
-    # Define state components
+    # Define state and components used across sections at the top
     spins_display = gr.State(value="")
     spins_textbox = gr.Textbox(
-        label="Spins Input (Edit manually with commas, e.g., 5, 12, 0)",
+        label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
         value="",
         interactive=True,
-        elem_id="spins-input"
+        elem_id="selected-spins"
+    )
+    spin_counter = gr.HTML(
+        label="Total Spins",
+        value='<span style="font-size: 16px;">Total Spins: 0</span>',
+        elem_classes=["spin-counter"]
     )
     sides_of_zero_display = gr.HTML(
-        label="Dealer’s Spin Tracker",
+        label="Sides of Zero",
         value=render_sides_of_zero_display(),
         elem_classes=["sides-of-zero-container"]
     )
     last_spin_display = gr.HTML(
-        label="Spin History",
-        value='<h4>Spin History</h4><p>No spins yet.</p>',
-        elem_classes=["spin-history-container"]
+        label="Last Spins",
+        value='<h4>Last Spins</h4><p>No spins yet.</p>',
+        elem_classes=["last-spins-container"]
     )
     last_spin_count = gr.Slider(
-        label="Show Spin History",
+        label="Show Last Spins",
         minimum=1,
         maximum=36,
         step=1,
@@ -3250,13 +3219,8 @@ with gr.Blocks() as demo:
         interactive=True,
         elem_classes="long-slider"
     )
-    spin_counter = gr.HTML(
-        value='<span style="font-size: 16px;">Total Spins: 0</span>',
-        label="Spin Counter",
-        elem_classes=["spin-counter"]
-    )
 
-    # Row 1: Header and Tour Button
+    # 1. Row 1: Header
     with gr.Row(elem_id="header-row"):
         with gr.Column(scale=1):
             gr.Markdown(
@@ -3269,26 +3233,14 @@ with gr.Blocks() as demo:
                 '''
             )
 
-    # Row 2: Spins Input and Counter
-    with gr.Row(elem_id="spins-input-row"):
-        with gr.Column(scale=4, min_width=600):
-            spins_textbox
-        with gr.Column(scale=1, min_width=200):
-            spin_counter
-
-    # Row 3: Dealer’s Spin Tracker
+    # 1.1 Row: Sides of Zero Bar Display
     with gr.Row():
-        sides_of_zero_display
+        with gr.Accordion("Dealer’s Spin Tracker", open=True, elem_id="sides-of-zero-accordion"):
+            sides_of_zero_display
 
-    # Row 4: Spin History and Slider
-    with gr.Row():
-        with gr.Column():
-            last_spin_display
-            last_spin_count
-
-    # Row 5: Roulette Table
+    # 2. Row 2: European Roulette Table
     with gr.Group():
-        gr.Markdown("### Roulette Table")
+        gr.Markdown("### European Roulette Table")
         table_layout = [
             ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
             ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
@@ -3317,16 +3269,44 @@ with gr.Blocks() as demo:
                                 outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
                             )
 
-    # Row 6: Spin Actions
+    # 3. Row 3: Last Spins Display and Show Last Spins Slider
+    with gr.Row():
+        with gr.Column():
+            last_spin_display
+            last_spin_count
+
+    # 4. Row 4: Spin Controls
     with gr.Row():
         with gr.Column(scale=2):
-            clear_last_spins_button = gr.Button("Clear Spin History Display", elem_classes=["action-button"])
+            clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
         with gr.Column(scale=1):
             undo_button = gr.Button("Undo Spins", elem_classes=["action-button"], elem_id="undo-spins-btn")
         with gr.Column(scale=1):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
+    
+    # 5. Row 5: Selected Spins Textbox and Spin Counter
+    with gr.Row(elem_id="selected-spins-row"):
+        with gr.Column(scale=4, min_width=600):
+            spins_textbox
+        with gr.Column(scale=1, min_width=200):
+            spin_counter  # Restore side-by-side layout with styling
 
-    # Row 7: Analysis and Reset Controls
+    # Define strategy categories and choices
+    strategy_categories = {
+        "Trends": ["Cold Bet Strategy", "Hot Bet Strategy", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"],
+        "Even Money Strategies": ["Best Even Money Bets", "Best Even Money Bets + Top Pick 18 Numbers", "Fibonacci To Fortune"],
+        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Top Pick 18 Numbers", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],
+        "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Streets"],
+        "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
+        "Double Street Strategies": ["Best Double Streets", "Non-Overlapping Double Street Strategy"],
+        "Corner Strategies": ["Best Corners", "Non-Overlapping Corner Strategy"],
+        "Split Strategies": ["Best Splits"],
+        "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"],
+        "Neighbours Strategies": ["Neighbours of Strong Number"]
+    }
+    category_choices = ["None"] + sorted(strategy_categories.keys())
+    
+    # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
         with gr.Column(scale=2):
             analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
@@ -3335,10 +3315,10 @@ with gr.Blocks() as demo:
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
 
-    # Row 8: Strategy Dashboard
+        # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
     with gr.Row():
         with gr.Column(scale=3):
-            gr.Markdown("### Dynamic Table")
+            gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
             dynamic_table_output = gr.HTML(
                 label="Dynamic Table",
                 value=create_dynamic_table(strategy_name="Best Even Money Bets")
@@ -3449,7 +3429,7 @@ with gr.Blocks() as demo:
         with gr.Column(scale=1, min_width=200):
             category_dropdown = gr.Dropdown(
                 label="Select Category",
-                choices=["None"] + sorted(strategy_categories.keys()),
+                choices=category_choices,
                 value="Even Money Strategies",
                 allow_custom_value=False,
                 elem_id="select-category"
@@ -3483,7 +3463,7 @@ with gr.Blocks() as demo:
             )
             reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
 
-    # Row 9: Dozen Tracker
+    # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
         with gr.Column(scale=3):
             with gr.Accordion("Dozen Tracker", open=False, elem_id="dozen-tracker"):
@@ -3530,11 +3510,11 @@ with gr.Blocks() as demo:
                     value="<p>Enable sequence matching to see results here.</p>"
                 )
         with gr.Column(scale=2):
-            pass  # Empty column for layout balance
+            pass  # Empty column to maintain layout balance
 
-    # Row 10: Betting Progression
+    # 8. Row 8: Betting Progression Tracker
     with gr.Row():
-        with gr.Accordion("Betting Progression", open=False, elem_classes=["betting-progression"]):
+        with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
             with gr.Row():
                 bankroll_input = gr.Number(label="Bankroll", value=1000)
                 base_unit_input = gr.Number(label="Base Unit", value=10)
@@ -3568,8 +3548,8 @@ with gr.Blocks() as demo:
                 message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
                 status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
 
-    # Row 11: Color Key
-    with gr.Accordion("Color Key", open=False, elem_id="color-key"):
+    # 9. Row 9: Color Code Key (Collapsible, with Color Pickers Inside)
+    with gr.Accordion("Color Code Key", open=False, elem_id="color-code-key"):
         with gr.Row():
             top_color_picker = gr.ColorPicker(
                 label="Top Tier Color",
@@ -3588,19 +3568,18 @@ with gr.Blocks() as demo:
                 interactive=True
             )
             reset_colors_button = gr.Button("Reset Colors", elem_classes=["action-button"])
-        color_code_output = gr.HTML(label="Color Key")
+        color_code_output = gr.HTML(label="Color Code Key")
 
-    # Row 12: Spin Logic Reactor 🧠
-    with gr.Accordion("Spin Logic Reactor 🧠", open=False, elem_id="spin-logic-reactor"):
+    # 10. Row 10: Analysis Outputs (Collapsible, Renumbered)
+    with gr.Accordion("Spin Logic Reactor 🧠", open=False, elem_id="spin-analysis"):
         spin_analysis_output = gr.Textbox(
-            label="Spin Analysis",
+            label="",
             value="",
             interactive=False,
             lines=5
         )
 
-    # Row 13: Strongest Numbers Tables
-    with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-tables"):
+    with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-table"):
         with gr.Row():
             with gr.Column():
                 straight_up_html = gr.HTML(label="Strongest Numbers", elem_classes="scrollable-table")
@@ -3614,16 +3593,15 @@ with gr.Blocks() as demo:
                 allow_custom_value=False,
                 interactive=True,
                 elem_id="strongest-numbers-dropdown",
-                visible=False  # Hidden as per original
+                visible=False  # Hide the dropdown
             )
             strongest_numbers_output = gr.Textbox(
                 label="Strongest Numbers (Sorted Lowest to Highest)",
                 value="",
                 lines=2,
-                visible=False  # Hidden as per original
+                visible=False  # Hide the textbox
             )
 
-    # Row 14: Aggregated Scores
     with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
         with gr.Row():
             with gr.Column():
@@ -3654,533 +3632,229 @@ with gr.Blocks() as demo:
                 with gr.Accordion("Sides of Zero", open=False):
                     sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
-    # Row 15: Session Management
-    with gr.Accordion("Session Management", open=False, elem_id="session-management"):
+    # 11. Row 11: Save/Load Session (Collapsible, Renumbered)
+    with gr.Accordion("Save/Load Session", open=False, elem_id="save-load-session"):
         with gr.Row():
             save_button = gr.Button("Save Session", elem_id="save-session-btn")
             load_input = gr.File(label="Upload Session")
         save_output = gr.File(label="Download Session")
 
-    # CSS Updates
-with gr.Blocks() as demo:
-    # Define state components
-    spins_display = gr.State(value="")
-    spins_textbox = gr.Textbox(
-        label="Spins Input (Edit manually with commas, e.g., 5, 12, 0)",
-        value="",
-        interactive=True,
-        elem_id="spins-input"
-    )
-    sides_of_zero_display = gr.HTML(
-        label="Dealer’s Spin Tracker",
-        value=render_sides_of_zero_display(),
-        elem_classes=["sides-of-zero-container"]
-    )
-    last_spin_display = gr.HTML(
-        label="Spin History",
-        value='<h4>Spin History</h4><p>No spins yet.</p>',
-        elem_classes=["spin-history-container"]
-    )
-    last_spin_count = gr.Slider(
-        label="Show Spin History",
-        minimum=1,
-        maximum=36,
-        step=1,
-        value=36,
-        interactive=True,
-        elem_classes="long-slider"
-    )
-    spin_counter = gr.HTML(
-        value='<span style="font-size: 16px;">Total Spins: 0</span>',
-        label="Spin Counter",
-        elem_classes=["spin-counter"]
-    )
 
-    # Row 1: Header and Tour Button
-    with gr.Row(elem_id="header-row"):
-        with gr.Column(scale=1):
-            gr.Markdown(
-                "# Roulette Spin Analyzer with Strategies (European Table)",
-                elem_classes="header-title"
-            )
-            gr.HTML(
-                '''
-                <button id="start-tour-btn" onclick="startTour()" style="padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Take the Tour!</button>
-                '''
-            )
-
-    # Row 2: Spins Input and Counter
-    with gr.Row(elem_id="spins-input-row"):
-        with gr.Column(scale=4, min_width=600):
-            spins_textbox
-        with gr.Column(scale=1, min_width=200):
-            spin_counter
-
-    # Row 3: Dealer’s Spin Tracker
-    with gr.Row():
-        sides_of_zero_display
-
-    # Row 4: Spin History and Slider
-    with gr.Row():
-        with gr.Column():
-            last_spin_display
-            last_spin_count
-
-    # Row 5: Roulette Table
-    with gr.Group():
-        gr.Markdown("### Roulette Table")
-        table_layout = [
-            ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
-            ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
-            ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
-        ]
-        with gr.Column(elem_classes="roulette-table"):
-            for row in table_layout:
-                with gr.Row(elem_classes="table-row"):
-                    for num in row:
-                        if num == "":
-                            gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
-                        else:
-                            color = colors.get(str(num), "black")
-                            is_selected = int(num) in state.selected_numbers
-                            btn_classes = [f"roulette-button", color]
-                            if is_selected:
-                                btn_classes.append("selected")
-                            btn = gr.Button(
-                                value=num,
-                                min_width=40,
-                                elem_classes=btn_classes
-                            )
-                            btn.click(
-                                fn=add_spin,
-                                inputs=[gr.State(value=num), spins_display, last_spin_count],
-                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
-                            )
-
-    # Row 6: Spin Actions
-    with gr.Row():
-        with gr.Column(scale=2):
-            clear_last_spins_button = gr.Button("Clear Spin History Display", elem_classes=["action-button"])
-        with gr.Column(scale=1):
-            undo_button = gr.Button("Undo Spins", elem_classes=["action-button"], elem_id="undo-spins-btn")
-        with gr.Column(scale=1):
-            generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
-
-    # Row 7: Analysis and Reset Controls
-    with gr.Row():
-        with gr.Column(scale=2):
-            analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
-        with gr.Column(scale=1):
-            clear_spins_button = gr.Button("Clear Spins", elem_classes=["clear-spins-btn", "small-btn"])
-        with gr.Column(scale=1):
-            clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
-
-    # Row 8: Strategy Dashboard
-    with gr.Row():
-        with gr.Column(scale=3):
-            gr.Markdown("### Dynamic Table")
-            dynamic_table_output = gr.HTML(
-                label="Dynamic Table",
-                value=create_dynamic_table(strategy_name="Best Even Money Bets")
-            )
-        with gr.Column(scale=1):
-            gr.Markdown("### Strategy Recommendations")
-            strategy_output = gr.HTML(
-                label="Strategy Recommendations",
-                value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
-            )
-            with gr.Accordion("Casino Data Insights", open=False, elem_id="casino-data-insights"):
-                spins_count_dropdown = gr.Dropdown(
-                    label="Past Spins Count",
-                    choices=["30", "50", "100", "200", "300", "500"],
-                    value="100",
-                    interactive=True
-                )
-                with gr.Row():
-                    even_percent = gr.Dropdown(
-                        label="Even %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    odd_percent = gr.Dropdown(
-                        label="Odd %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                with gr.Row():
-                    red_percent = gr.Dropdown(
-                        label="Red %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    black_percent = gr.Dropdown(
-                        label="Black %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                with gr.Row():
-                    low_percent = gr.Dropdown(
-                        label="Low %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    high_percent = gr.Dropdown(
-                        label="High %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                with gr.Row():
-                    dozen1_percent = gr.Dropdown(
-                        label="1st Dozen %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    dozen2_percent = gr.Dropdown(
-                        label="2nd Dozen %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    dozen3_percent = gr.Dropdown(
-                        label="3rd Dozen %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                with gr.Row():
-                    col1_percent = gr.Dropdown(
-                        label="1st Column %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    col2_percent = gr.Dropdown(
-                        label="2nd Column %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    col3_percent = gr.Dropdown(
-                        label="3rd Column %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                use_winners_checkbox = gr.Checkbox(
-                    label="Highlight Casino Winners",
-                    value=False,
-                    interactive=True
-                )
-                reset_casino_data_button = gr.Button(
-                    "Reset Casino Data",
-                    elem_classes=["action-button"]
-                )
-                casino_data_output = gr.HTML(
-                    label="Casino Data Insights",
-                    value="<p>No casino data entered yet.</p>"
-                )
-        with gr.Column(scale=1, min_width=200):
-            category_dropdown = gr.Dropdown(
-                label="Select Category",
-                choices=["None"] + sorted(strategy_categories.keys()),
-                value="Even Money Strategies",
-                allow_custom_value=False,
-                elem_id="select-category"
-            )
-            strategy_dropdown = gr.Dropdown(
-                label="Select Strategy",
-                choices=strategy_categories["Even Money Strategies"],
-                value="Best Even Money Bets",
-                allow_custom_value=False
-            )
-            reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
-            neighbours_count_slider = gr.Slider(
-                label="Number of Neighbors (Left + Right)",
-                minimum=1,
-                maximum=5,
-                step=1,
-                value=2,
-                interactive=True,
-                visible=False,
-                elem_classes="long-slider"
-            )
-            strong_numbers_count_slider = gr.Slider(
-                label="Strong Numbers to Highlight (Neighbours Strategy)",
-                minimum=1,
-                maximum=18,
-                step=1,
-                value=1,
-                interactive=True,
-                visible=False,
-                elem_classes="long-slider"
-            )
-            reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
-
-    # Row 9: Dozen Tracker
-    with gr.Row():
-        with gr.Column(scale=3):
-            with gr.Accordion("Dozen Tracker", open=False, elem_id="dozen-tracker"):
-                dozen_tracker_spins_dropdown = gr.Dropdown(
-                    label="Number of Spins to Track",
-                    choices=["3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
-                    value="5",
-                    interactive=True
-                )
-                dozen_tracker_consecutive_hits_dropdown = gr.Dropdown(
-                    label="Alert on Consecutive Dozen Hits",
-                    choices=["3", "4", "5"],
-                    value="3",
-                    interactive=True
-                )
-                dozen_tracker_alert_checkbox = gr.Checkbox(
-                    label="Enable Consecutive Dozen Hits Alert",
-                    value=False,
-                    interactive=True
-                )
-                dozen_tracker_sequence_length_dropdown = gr.Dropdown(
-                    label="Sequence Length to Match (X)",
-                    choices=["3", "4", "5"],
-                    value="4",
-                    interactive=True
-                )
-                dozen_tracker_follow_up_spins_dropdown = gr.Dropdown(
-                    label="Follow-Up Spins to Track (Y)",
-                    choices=["3", "4", "5", "6", "7", "8", "9", "10"],
-                    value="5",
-                    interactive=True
-                )
-                dozen_tracker_sequence_alert_checkbox = gr.Checkbox(
-                    label="Enable Sequence Matching Alert",
-                    value=False,
-                    interactive=True
-                )
-                dozen_tracker_output = gr.HTML(
-                    label="Dozen Tracker",
-                    value="<p>Select the number of spins to track and analyze spins to see the Dozen history.</p>"
-                )
-                dozen_tracker_sequence_output = gr.HTML(
-                    label="Sequence Matching Results",
-                    value="<p>Enable sequence matching to see results here.</p>"
-                )
-        with gr.Column(scale=2):
-            pass  # Empty column for layout balance
-
-    # Row 10: Betting Progression
-    with gr.Row():
-        with gr.Accordion("Betting Progression", open=False, elem_classes=["betting-progression"]):
-            with gr.Row():
-                bankroll_input = gr.Number(label="Bankroll", value=1000)
-                base_unit_input = gr.Number(label="Base Unit", value=10)
-                stop_loss_input = gr.Number(label="Stop Loss", value=-500)
-                stop_win_input = gr.Number(label="Stop Win", value=200)
-            with gr.Row():
-                bet_type_dropdown = gr.Dropdown(
-                    label="Bet Type",
-                    choices=["Even Money", "Dozens", "Columns", "Straight Bets"],
-                    value="Even Money"
-                )
-                progression_dropdown = gr.Dropdown(
-                    label="Progression",
-                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss"],
-                    value="Martingale"
-                )
-                labouchere_sequence = gr.Textbox(
-                    label="Labouchere Sequence (comma-separated)",
-                    value="1, 2, 3, 4",
-                    visible=False
-                )
-            with gr.Row():
-                win_button = gr.Button("Win")
-                lose_button = gr.Button("Lose")
-                reset_progression_button = gr.Button("Reset Progression")
-            with gr.Row():
-                bankroll_output = gr.Textbox(label="Current Bankroll", value="1000", interactive=False)
-                current_bet_output = gr.Textbox(label="Current Bet", value="10", interactive=False)
-                next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
-            with gr.Row():
-                message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
-                status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
-
-    # Row 11: Color Key
-    with gr.Accordion("Color Key", open=False, elem_id="color-key"):
-        with gr.Row():
-            top_color_picker = gr.ColorPicker(
-                label="Top Tier Color",
-                value="rgba(255, 255, 0, 0.5)",
-                interactive=True,
-                elem_id="top-color-picker"
-            )
-            middle_color_picker = gr.ColorPicker(
-                label="Middle Tier Color",
-                value="rgba(0, 255, 255, 0.5)",
-                interactive=True
-            )
-            lower_color_picker = gr.ColorPicker(
-                label="Lower Tier Color",
-                value="rgba(0, 255, 0, 0.5)",
-                interactive=True
-            )
-            reset_colors_button = gr.Button("Reset Colors", elem_classes=["action-button"])
-        color_code_output = gr.HTML(label="Color Key")
-
-    # Row 12: Spin Logic Reactor 🧠
-    with gr.Accordion("Spin Logic Reactor 🧠", open=False, elem_id="spin-logic-reactor"):
-        spin_analysis_output = gr.Textbox(
-            label="Spin Analysis",
-            value="",
-            interactive=False,
-            lines=5
-        )
-
-    # Row 13: Strongest Numbers Tables
-    with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-tables"):
-        with gr.Row():
-            with gr.Column():
-                straight_up_html = gr.HTML(label="Strongest Numbers", elem_classes="scrollable-table")
-            with gr.Column():
-                top_18_html = gr.HTML(label="Top 18 Strongest Numbers (Sorted Lowest to Highest)", elem_classes="scrollable-table")
-        with gr.Row():
-            strongest_numbers_dropdown = gr.Dropdown(
-                label="Select Number of Strongest Numbers",
-                choices=["3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33"],
-                value="3",
-                allow_custom_value=False,
-                interactive=True,
-                elem_id="strongest-numbers-dropdown",
-                visible=False
-            )
-            strongest_numbers_output = gr.Textbox(
-                label="Strongest Numbers (Sorted Lowest to Highest)",
-                value="",
-                lines=2,
-                visible=False
-            )
-
-    # Row 14: Aggregated Scores
-    with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
-        with gr.Row():
-            with gr.Column():
-                with gr.Accordion("Even Money Bets", open=False):
-                    even_money_output = gr.Textbox(label="Even Money Bets", lines=10, max_lines=50)
-            with gr.Column():
-                with gr.Accordion("Dozens", open=False):
-                    dozens_output = gr.Textbox(label="Dozens", lines=10, max_lines=50)
-        with gr.Row():
-            with gr.Column():
-                with gr.Accordion("Columns", open=False):
-                    columns_output = gr.Textbox(label="Columns", lines=10, max_lines=50)
-            with gr.Column():
-                with gr.Accordion("Streets", open=False):
-                    streets_output = gr.Textbox(label="Streets", lines=10, max_lines=50)
-        with gr.Row():
-            with gr.Column():
-                with gr.Accordion("Corners", open=False):
-                    corners_output = gr.Textbox(label="Corners", lines=10, max_lines=50)
-            with gr.Column():
-                with gr.Accordion("Double Streets", open=False):
-                    six_lines_output = gr.Textbox(label="Double Streets", lines=10, max_lines=50)
-        with gr.Row():
-            with gr.Column():
-                with gr.Accordion("Splits", open=False):
-                    splits_output = gr.Textbox(label="Splits", lines=10, max_lines=50)
-            with gr.Column():
-                with gr.Accordion("Sides of Zero", open=False):
-                    sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
-
-    # Row 15: Session Management
-    with gr.Accordion("Session Management", open=False, elem_id="session-management"):
-        with gr.Row():
-            save_button = gr.Button("Save Session", elem_id="save-session-btn")
-            load_input = gr.File(label="Upload Session")
-        save_output = gr.File(label="Download Session")
-
-    # CSS
+        
+    # CSS and Event Handlers
     gr.HTML("""
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css">
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
     <style>
-        /* General Layout */
-        .gr-row { margin: 0 !important; padding: 5px 0 !important; }
-        .gr-column { margin: 0 !important; padding: 5px !important; }
-        .gr-box { border-radius: 5px !important; }
-
-        /* Header Styling */
-        #header-row {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            z-index: 1000 !important;
-            background-color: white !important;
-            padding: 10px 0 !important;
-            margin: 0 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            flex-wrap: wrap !important;
+      /* General Layout */
+      .gr-row { margin: 0 !important; padding: 5px 0 !important; }
+      .gr-column { margin: 0 !important; padding: 5px !important; }
+      .gr-box { border-radius: 5px !important; }
+    
+      /* Ensure Header Stays at the Top */
+      #header-row {
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          z-index: 1000 !important;
+          background-color: white !important;
+          padding: 10px 0 !important;
+          margin: 0 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          flex-wrap: wrap !important;
+      }
+    
+      /* Add padding to the body to account for the fixed header */
+      body {
+          padding-top: 120px !important; /* Increased to account for taller header */
+      }
+    
+      /* Ensure content below header is not overlapped */
+      .roulette-table {
+          margin-top: 120px !important; /* Match body padding-top */
+      }
+    
+      /* Header Styling */
+      .header-title { text-align: center !important; font-size: 2.5em !important; margin-bottom: 5px !important; color: #333 !important; }
+    
+      /* Fix Selected Spins Label Cutoff */
+      #selected-spins-row {
+          width: 100% !important;
+          max-width: none !important;
+          overflow: visible !important;
+      }
+        #selected-spins label {
+            white-space: normal !important;
+            width: 100% !important;
+            height: auto !important;
+            overflow: visible !important;
+            display: block !important;
+            background-color: #87CEEB;
+            color: black;
+            padding: 10px 5px !important; /* Increased top/bottom padding */
+            border-radius: 3px;
+            line-height: 1.5em !important; /* Increased for better spacing */
+            font-size: 14px !important; /* Reduced font size */
+            margin-top: 5px !important; /* Added to shift text downward */
         }
-        body { padding-top: 120px !important; }
-        .roulette-table { margin-top: 120px !important; }
-        .header-title { text-align: center !important; font-size: 2.5em !important; margin-bottom: 5px !important; color: #333 !important; }
+      #selected-spins {
+          width: 100% !important;
+          min-width: 800px !important;
+      }
+    
+      /* Roulette Table */
+      .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+      .roulette-button.red { background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+      .roulette-button.black { background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+      .roulette-button:hover { opacity: 0.8; }
+      .roulette-button.selected { border: 3px solid yellow !important; opacity: 0.9; }
+      .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid white !important; box-sizing: border-box !important; }
+      .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
+      .roulette-table { display: flex !important; flex-direction: column !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
+      .table-row { display: flex !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap !important; line-height: 0 !important; }
+    
+      /* Buttons */
+      button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
+      button.clear-spins-btn:hover { background-color: #cc0000 !important; }
+      button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
+      button.generate-spins-btn:hover { background-color: #0056b3 !important; }
+      .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; width: 100% !important; box-sizing: border-box !important; }
+      button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
+      button.green-btn:hover { background-color: #218838 !important; }
+      /* Ensure columns have appropriate spacing */
+      .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
+    
+      /* Compact Components */
+      .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+      .long-slider .gr-box { width: 100% !important; }
+      /* Target the Accordion and its children */
+      .gr-accordion { background-color: #ffffff !important; }
+      .gr-accordion * { background-color: #ffffff !important; }
+      .gr-accordion .gr-column { background-color: #ffffff !important; }
+      .gr-accordion .gr-row { background-color: #ffffff !important; }
+    
+      /* Section Labels */
+      #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
+      #spin-analysis label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #strongest-numbers-table label { background-color: #E6E6FA !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      
+      /* Scrollable Tables */
+      .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
+    
+      /* Spin Counter Styling */
+      .spin-counter {
+          font-size: 16px !important;
+          font-weight: bold !important;
+          color: #ffffff !important;
+          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
+          padding: 8px 12px !important;
+          border: 2px solid #3498DB !important; /* Darker blue border */
+          border-radius: 8px !important;
+          margin-top: 0 !important; /* Align with textbox */
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important; /* Slightly stronger shadow */
+          transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
+      }
+      .spin-counter:hover {
+          transform: scale(1.05) !important; /* Slight zoom on hover */
+          box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
+      }
+    
+      /* Last Spins Container */
+            .last-spins-container {
+          background-color: #f5f5f5 !important; /* Light gray background */
+          border: 1px solid #d3d3d3 !important; /* Subtle gray border */
+          padding: 10px !important;
+          border-radius: 5px !important;
+          margin-top: 10px !important;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; /* Very light shadow */
+      }
 
-        /* Component Labels */
-        #spins-input label { background-color: #87CEEB; color: black; padding: 10px 5px; border-radius: 3px; line-height: 1.5em; font-size: 14px; margin-top: 5px; }
-        #spin-logic-reactor label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
-        #strongest-numbers-tables label { background-color: #E6E6FA !important; color: black !important; padding: 5px; border-radius: 3px; }
-        #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
-        #color-key label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
-        #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
-
-        /* Roulette Table */
-        .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-        .roulette-button.red { background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-        .roulette-button.black { background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-        .roulette-button:hover { opacity: 0.8; }
-        .roulette-button.selected { border: 3px solid yellow !important; opacity: 0.9; }
-        .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid white !important; box-sizing: border-box !important; }
-        .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
-        .roulette-table { display: flex !important; flex-direction: column !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
-        .table-row { display: flex !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap !important; line-height: 0 !important; }
-
-        /* Buttons */
-        button.clear-spins-btn { background-color: #ff4444 !important; color: white !important; border: 1px solid #000 !important; }
-        button.clear-spins-btn:hover { background-color: #cc0000 !important; }
-        button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; }
-        button.green-btn:hover { background-color: #218838 !important; }
-        .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; width: 100% !important; box-sizing: border-box !important; }
-
-        /* Other Styles */
-        .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
-        .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
-        .spin-counter { font-size: 16px !important; font-weight: bold !important; color: #ffffff !important; background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; padding: 8px 12px !important; border: 2px solid #3498DB !important; border-radius: 8px !important; margin-top: 0 !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important; }
-        .spin-history-container { background-color: #f5f5f5 !important; border: 1px solid #d3d3d3 !important; padding: 10px !important; border-radius: 5px !important; margin-top: 10px !important; box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; }
-        .sides-of-zero-container { background-color: #ffffff !important; border: 1px solid #d3d3d3 !important; padding: 10px !important; border-radius: 5px !important; margin: 10px 0 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; }
-
-        @media (max-width: 600px) {
-            .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
-            td, th { padding: 5px; font-size: 12px; }
-            .gr-textbox { font-size: 12px; }
-            .scrollable-table { max-height: 200px; }
-            .long-slider { width: 100% !important; }
-            .header-title { font-size: 1.8em !important; }
-        }
+      .sides-of-zero-container {
+          background-color: #ffffff !important;
+          border: 1px solid #d3d3d3 !important;
+          padding: 10px !important;
+          border-radius: 5px !important;
+          margin: 10px 0 !important;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+      }
+    
+      /* Spin Counter Styling */
+      .spin-counter {
+          font-size: 16px !important;
+          font-weight: bold !important;
+          color: #ffffff !important;
+          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
+          padding: 8px 12px !important;
+          border: 2px solid #3498DB !important; /* Darker blue border */
+          border-radius: 8px !important;
+          margin-top: 0 !important; /* Align with textbox */
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important; /* Slightly stronger shadow */
+          transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
+      }
+    
+      /* Responsive Design */
+      @media (max-width: 600px) {
+          .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
+          td, th { padding: 5px; font-size: 12px; }
+          .gr-textbox { font-size: 12px; }
+          .scrollable-table { max-height: 200px; }
+          .long-slider { width: 100% !important; }
+          .header-title { font-size: 1.8em !important; }
+      }
+    
+      #strongest-numbers-dropdown select {
+          -webkit-appearance: menulist !important;
+          -moz-appearance: menulist !important;
+          appearance: menulist !important;
+      }
+      #strategy-dropdown select {
+          font-size: 14px;
+          padding: 5px;
+          background-color: #f9f9f9;
+          border: 1px solid #ccc;
+          border-radius: 3px;
+      }
+      #strategy-dropdown select option:checked {
+          font-weight: bold;
+          background-color: #e0e0ff; /* Light blue to indicate selection */
+          color: #000;
+      }
+      .betting-progression .gr-textbox { width: 100%; margin: 5px 0; }
+      .betting-progression .gr-button { width: 100px; margin: 5px; }
+      .betting-progression .gr-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    
+      /* Shepherd.js Tweaks */
+      .shepherd-modal-overlay-container { opacity: 0.5; z-index: 999; } /* Ensure overlay is below fullscreen */
+      .shepherd-button { background-color: #007bff; color: white; padding: 5px 10px; border-radius: 3px; }
+      .shepherd-button:hover { background-color: #0056b3; }
     </style>
     """)
+    print("CSS Updated")
 
-    # Event Handlers
+    # Lines 4888-4920 (Updated Section with `toggle_labouchere` and Fixed Indentation)
+    def toggle_labouchere(progression):
+        return gr.update(visible=progression == "Labouchere")
+
     def validate_spins_input(spins_input):
         if not spins_input or not spins_input.strip():
-            return None, "<h4>Spin History</h4><p>No spins yet.</p>"
+            return None, "<h4>Last Spins</h4><p>No spins yet.</p>"
+        
         raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
         errors = []
         valid_spins = []
+        
         for spin in raw_spins:
             try:
                 num = int(spin)
@@ -4190,10 +3864,12 @@ with gr.Blocks() as demo:
                     valid_spins.append(spin)
             except ValueError:
                 errors.append(f"'{spin}' is not a number")
+        
         if errors:
             error_msg = "Invalid inputs:\n- " + "\n- ".join(errors)
             gr.Warning(error_msg)
-            return spins_input, f"<h4>Spin History</h4><p>{error_msg}</p>"
+            return spins_input, f"<h4>Last Spins</h4><p>{error_msg}</p>"
+        
         return ", ".join(valid_spins), format_spins_as_html(", ".join(valid_spins), last_spin_count.value)
 
     spins_textbox.change(
@@ -4214,11 +3890,20 @@ with gr.Blocks() as demo:
         inputs=[],
         outputs=[spin_counter]
     )
+    spins_display.change(
+        fn=update_spin_counter,
+        inputs=[],
+        outputs=[spin_counter]
+    ).then(
+        fn=format_spins_as_html,
+        inputs=[spins_display, last_spin_count],
+        outputs=[last_spin_display]
+    )
 
     clear_spins_button.click(
         fn=clear_spins,
         inputs=[],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display]
+        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter]
     )
 
     clear_all_button.click(
@@ -4228,7 +3913,7 @@ with gr.Blocks() as demo:
             spins_display, spins_textbox, spin_analysis_output, last_spin_display,
             even_money_output, dozens_output, columns_output, streets_output,
             corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output, spin_counter, sides_of_zero_display
+            straight_up_html, top_18_html, strongest_numbers_output, spin_counter
         ]
     ).then(
         fn=clear_outputs,
@@ -4276,6 +3961,10 @@ with gr.Blocks() as demo:
         fn=reset_strategy_dropdowns,
         inputs=[],
         outputs=[category_dropdown, strategy_dropdown, strategy_dropdown]
+    ).then(
+        fn=lambda category: gr.update(choices=strategy_categories[category], value=strategy_categories[category][0]),
+        inputs=[category_dropdown],
+        outputs=[strategy_dropdown]
     )
 
     def toggle_neighbours_slider(strategy_name):
@@ -4294,7 +3983,7 @@ with gr.Blocks() as demo:
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
         outputs=[strategy_output]
     ).then(
-        fn=create_dynamic_table,
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: (print(f"Updating Dynamic Table with Strategy: {strategy}, Neighbours Count: {neighbours_count}, Strong Numbers Count: {strong_numbers_count}, Dozen Tracker Spins: {dozen_tracker_spins}, Colors: {top_color}, {middle_color}, {lower_color}"), create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color))[-1],
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     )
@@ -4309,7 +3998,7 @@ with gr.Blocks() as demo:
             dynamic_table_output, strategy_output, sides_of_zero_display
         ]
     ).then(
-        fn=create_dynamic_table,
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     ).then(
@@ -4337,7 +4026,7 @@ with gr.Blocks() as demo:
             straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_output, strategy_output
         ]
     ).then(
-        fn=create_dynamic_table,
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     ).then(
@@ -4362,10 +4051,10 @@ with gr.Blocks() as demo:
             streets_output, corners_output, six_lines_output, splits_output,
             sides_output, straight_up_html, top_18_html, strongest_numbers_output,
             spins_textbox, spins_display, dynamic_table_output, strategy_output,
-            color_code_output, spin_counter, sides_of_zero_display
+            color_code_output, spin_counter
         ]
     ).then(
-        fn=create_dynamic_table,
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
         inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
         outputs=[dynamic_table_output]
     ).then(
@@ -4374,31 +4063,211 @@ with gr.Blocks() as demo:
         outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
     )
 
+    neighbours_count_slider.change(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    ).then(
+        fn=show_strategy_recommendations,
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+        outputs=[strategy_output]
+    )
+
+    strong_numbers_count_slider.change(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    ).then(
+        fn=show_strategy_recommendations,
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+        outputs=[strategy_output]
+    )
+
+    reset_colors_button.click(
+        fn=reset_colors,
+        inputs=[],
+        outputs=[top_color_picker, middle_color_picker, lower_color_picker]
+    ).then(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+
     clear_last_spins_button.click(
         fn=clear_last_spins_display,
         inputs=[],
         outputs=[last_spin_display, spin_counter]
     )
 
-    # Casino Data Event Handlers
+    top_color_picker.change(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+
+    middle_color_picker.change(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+
+    lower_color_picker.change(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+
+    # Dozen Tracker Event Handler
+    dozen_tracker_spins_dropdown.change(
+        fn=dozen_tracker,
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+    ).then(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+
+    # Dozen Tracker Consecutive Hits Event Handler
+    dozen_tracker_consecutive_hits_dropdown.change(
+        fn=dozen_tracker,
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+    ).then(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+
+    # Dozen Tracker Alert Checkbox Event Handler
+    dozen_tracker_alert_checkbox.change(
+        fn=dozen_tracker,
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+    ).then(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+
+    # Dozen Tracker Sequence Length Event Handler
+    dozen_tracker_sequence_length_dropdown.change(
+        fn=dozen_tracker,
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+    ).then(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+
+    # Dozen Tracker Follow-Up Spins Event Handler
+    dozen_tracker_follow_up_spins_dropdown.change(
+        fn=dozen_tracker,
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+    ).then(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+
+    # Dozen Tracker Sequence Alert Checkbox Event Handler
+    dozen_tracker_sequence_alert_checkbox.change(
+        fn=dozen_tracker,
+        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+    ).then(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
+
+    # Casino data event handlers
     inputs_list = [
         spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
         low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent,
         col1_percent, col2_percent, col3_percent, use_winners_checkbox
     ]
-    for input_component in inputs_list:
-        input_component.change(
-            fn=update_casino_data,
-            inputs=inputs_list,
-            outputs=[casino_data_output]
-        ).then(
-            fn=create_dynamic_table,
-            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-            outputs=[dynamic_table_output]
-        )
-
+    spins_count_dropdown.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    even_percent.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    odd_percent.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    red_percent.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    black_percent.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    low_percent.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    high_percent.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    dozen1_percent.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    dozen2_percent.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    dozen3_percent.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    col1_percent.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    col2_percent.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    col3_percent.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    )
+    use_winners_checkbox.change(
+        fn=update_casino_data,
+        inputs=inputs_list,
+        outputs=[casino_data_output]
+    ).then(
+        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+        outputs=[dynamic_table_output]
+    )
     reset_casino_data_button.click(
-        fn=reset_casino_data,
+        fn=lambda: (
+            "100", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", False,
+            "<p>Casino data reset to defaults.</p>"
+        ),
         inputs=[],
         outputs=[
             spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
@@ -4411,7 +4280,7 @@ with gr.Blocks() as demo:
         outputs=[dynamic_table_output]
     )
 
-    # Betting Progression Event Handlers
+    # Betting progression event handlers
     def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence):
         state.bankroll = bankroll
         state.initial_bankroll = bankroll
@@ -4486,229 +4355,256 @@ with gr.Blocks() as demo:
 
     # Add the Shepherd.js tour script here
     gr.HTML("""
-    <script>
-      const tour = new Shepherd.Tour({
-        defaultStepOptions: {
-          cancelIcon: { enabled: true },
-          scrollTo: { behavior: 'smooth', block: 'center' },
-          classes: 'shepherd-theme-arrows',
-        },
-        useModalOverlay: true
-      });
+<script>
+  const tour = new Shepherd.Tour({
+    defaultStepOptions: {
+      cancelIcon: { enabled: true },
+      scrollTo: { behavior: 'smooth', block: 'center' },
+      classes: 'shepherd-theme-arrows',
+    },
+    useModalOverlay: true
+  });
 
-      function forceAccordionOpen(accordionId) {
-        return new Promise(resolve => {
-          const accordion = document.querySelector(accordionId);
-          if (!accordion) {
-            console.error(`Accordion ${accordionId} not found`);
-            resolve();
-            return;
-          }
-          const content = accordion.querySelector('.gr-box') || accordion.nextElementSibling;
-          if (content && window.getComputedStyle(content).display === 'none') {
-            content.style.display = 'block';
-            accordion.setAttribute('open', '');
-            setTimeout(() => resolve(), 500);
-          } else {
-            resolve();
-          }
-        });
+  // Debug function to log step transitions
+  function logStep(stepId, nextStepId) {
+    return () => {
+      console.log(`Attempting move from ${stepId} to ${nextStepId}`);
+      tour.next();
+    };
+  }
+
+  // Force accordion open with direct DOM manipulation and Promise
+  function forceAccordionOpen(accordionId) {
+    console.log(`Checking accordion: ${accordionId}`);
+    return new Promise(resolve => {
+      const accordion = document.querySelector(accordionId);
+      if (!accordion) {
+        console.error(`Accordion ${accordionId} not found`);
+        resolve();
+        return;
       }
-
-      tour.addStep({
-        id: 'header-tour',
-        title: 'Header and Tour Button',
-        text: 'Start here with the app title and tour button!',
-        attachTo: { element: '#header-row', on: 'bottom' },
-        buttons: [
-          { text: 'Next', action: tour.next },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-
-      tour.addStep({
-        id: 'spins-input',
-        title: 'Spins Input and Counter',
-        text: 'Enter spins and track total spins here.',
-        attachTo: { element: '#spins-input-row', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: tour.next },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-
-      tour.addStep({
-        id: 'dealers-tracker',
-        title: 'Dealer’s Spin Tracker',
-        text: 'Monitor sides of zero activity.',
-        attachTo: { element: '.sides-of-zero-container', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: tour.next },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-
-      tour.addStep({
-        id: 'spin-history',
-        title: 'Spin History and Slider',
-        text: 'View recent spins and adjust display.',
-        attachTo: { element: '.spin-history-container', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: tour.next },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-
-      tour.addStep({
-        id: 'roulette-table',
-        title: 'Roulette Table',
-        text: 'Click numbers to add spins.',
-        attachTo: { element: '.roulette-table', on: 'right' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: tour.next },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-
-      tour.addStep({
-        id: 'spin-actions',
-        title: 'Spin Actions',
-        text: 'Clear, undo, or generate spins.',
-        attachTo: { element: '#undo-spins-btn', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: tour.next },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-
-      tour.addStep({
-        id: 'analysis-controls',
-        title: 'Analysis and Reset Controls',
-        text: 'Analyze spins or reset data.',
-        attachTo: { element: '.green-btn', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: tour.next },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-
-      tour.addStep({
-        id: 'strategy-dashboard',
-        title: 'Strategy Dashboard',
-        text: 'View dynamic table and strategy recommendations.',
-        attachTo: { element: '#dynamic-table-heading', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: tour.next },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-
-      tour.addStep({
-        id: 'dozen-tracker',
-        title: 'Dozen Tracker',
-        text: 'Track dozen patterns.',
-        attachTo: { element: '#dozen-tracker', on: 'top' },
-        beforeShowPromise: function() { return forceAccordionOpen('#dozen-tracker'); },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: tour.next },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-
-      tour.addStep({
-        id: 'betting-progression',
-        title: 'Betting Progression',
-        text: 'Manage your betting strategy.',
-        attachTo: { element: '.betting-progression', on: 'top' },
-        beforeShowPromise: function() { return forceAccordionOpen('.betting-progression'); },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: tour.next },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-
-      tour.addStep({
-        id: 'color-key',
-        title: 'Color Key',
-        text: 'Customize and understand table colors.',
-        attachTo: { element: '#color-key', on: 'top' },
-        beforeShowPromise: function() { return forceAccordionOpen('#color-key'); },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: tour.next },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-
-      tour.addStep({
-        id: 'spin-logic-reactor',
-        title: 'Spin Logic Reactor 🧠',
-        text: 'Analyze spin outcomes.',
-        attachTo: { element: '#spin-logic-reactor', on: 'top' },
-        beforeShowPromise: function() { return forceAccordionOpen('#spin-logic-reactor'); },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: tour.next },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-
-      tour.addStep({
-        id: 'strongest-numbers',
-        title: 'Strongest Numbers Tables',
-        text: 'View top numbers and their neighbors.',
-        attachTo: { element: '#strongest-numbers-tables', on: 'top' },
-        beforeShowPromise: function() { return forceAccordionOpen('#strongest-numbers-tables'); },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: tour.next },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-
-      tour.addStep({
-        id: 'aggregated-scores',
-        title: 'Aggregated Scores',
-        text: 'See detailed score breakdowns.',
-        attachTo: { element: '#aggregated-scores', on: 'top' },
-        beforeShowPromise: function() { return forceAccordionOpen('#aggregated-scores'); },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: tour.next },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-
-      tour.addStep({
-        id: 'session-management',
-        title: 'Session Management',
-        text: 'Save or load your session.',
-        attachTo: { element: '#session-management', on: 'top' },
-        beforeShowPromise: function() { return forceAccordionOpen('#session-management'); },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Finish', action: tour.complete }
-        ]
-      });
-
-      function startTour() {
+      const content = accordion.querySelector('.gr-box') || accordion.nextElementSibling;
+      if (content && window.getComputedStyle(content).display === 'none') {
+        console.log(`Forcing ${accordionId} open`);
+        content.style.display = 'block';
+        accordion.setAttribute('open', '');
         setTimeout(() => {
-          if (document.querySelector('#header-row')) {
-            tour.start();
-          } else {
-            console.error('Header row not found');
+          if (window.getComputedStyle(content).display === 'none') {
+            console.warn(`Fallback: Forcing visibility for ${accordionId}`);
+            content.style.display = 'block';
           }
+          resolve();
         }, 500);
+      } else {
+        console.log(`${accordionId} already open or no content found`);
+        resolve();
       }
+    });
+  }
+
+  // Part 1–7 (Assumed working)
+  tour.addStep({
+    id: 'part1',
+    title: 'Your Roulette Adventure Begins!',
+    text: 'Hey there!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/H7TLQr1HnY0?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#header-row', on: 'bottom' },
+    buttons: [
+      { text: 'Next', action: logStep('Part 1', 'Part 2') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  tour.addStep({
+    id: 'part2',
+    title: 'Spin the Wheel, Start the Thrill!',
+    text: 'Click numbers!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ja454kZwndo?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '.roulette-table', on: 'right' },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 2', 'Part 3') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  tour.addStep({
+    id: 'part3',
+    title: 'Peek at Your Spin Streak!',
+    text: 'See spins!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/a9brOFMy9sA?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '.last-spins-container', on: 'bottom' },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 3', 'Part 4') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  tour.addStep({
+    id: 'part4',
+    title: 'Master Your Spin Moves!',
+    text: 'Control spins!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/xG8z1S4HJK4?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#undo-spins-btn', on: 'bottom' },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 4', 'Part 5') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  tour.addStep({
+    id: 'part5',
+    title: 'Jot Spins, Count Wins!',
+    text: 'Type spins!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/2-k1EyKUM8U?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#selected-spins', on: 'bottom' },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 5', 'Part 6') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  tour.addStep({
+    id: 'part6',
+    title: 'Analyze and Reset Like a Pro!',
+    text: 'Analyze!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/8plHP2RIR3o?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '.green-btn', on: 'bottom' },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 6', 'Part 7') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  tour.addStep({
+    id: 'part7',
+    title: 'Light Up Your Lucky Spots!',
+    text: 'Dynamic table!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/zT9d06sn07E?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#dynamic-table-heading', on: 'bottom' },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 7', 'Part 8') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Part 8: Bet Smart, Track the Art!
+  tour.addStep({
+    id: 'part8',
+    title: 'Bet Smart, Track the Art!',
+    text: 'Track bets!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '.betting-progression', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('.betting-progression');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 8', 'Part 9') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Part 9: Paint Your Winning Hue!
+  tour.addStep({
+    id: 'part9',
+    title: 'Paint Your Winning Hue!',
+    text: 'Make your table pop!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#color-code-key', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#color-code-key');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 9', 'Part 10') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Part 10: Decode the Color Clue!
+  tour.addStep({
+    id: 'part10',
+    title: 'Decode the Color Clue!',
+    text: 'Confused by colors?<br><iframe width="280" height="158" src="https://www.youtube.com/embed/PGBEoOOh9Gk?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#color-code-key', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#color-code-key');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 10', 'Part 11') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Part 11: Unleash the Spin Secrets!
+  tour.addStep({
+    id: 'part11',
+    title: 'Unleash the Spin Secrets!',
+    text: 'Deep dive!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/MpcuwWnMdrg?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#spin-analysis', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#spin-analysis');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 11', 'Part 12') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Part 12: Save Your Spin Glory!
+  tour.addStep({
+    id: 'part12',
+    title: 'Save Your Spin Glory!',
+    text: 'Save/load here!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pHLEa2I0jjE?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#save-load-session', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#save-load-session');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 12', 'Part 13') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Part 13: Pick Your Strategy Groove!
+  tour.addStep({
+    id: 'part13',
+    title: 'Pick Your Strategy Groove!',
+    text: 'Choose your flow!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iuGEltUVbqc?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#select-category', on: 'left' },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 13', 'Part 14') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Part 14: Boost Wins with Casino Intel!
+  tour.addStep({
+    id: 'part14',
+    title: 'Boost Wins with Casino Intel!',
+    text: 'Add casino stats!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#casino-data-insights', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#casino-data-insights');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Finish', action: () => { console.log('Tour completed'); tour.complete(); } }
+    ]
+  });
+
+  function startTour() {
+    console.log('Tour starting...');
+    setTimeout(() => {
+      if (document.querySelector('#header-row')) {
+        console.log('DOM ready, starting tour');
+        tour.start();
+      } else {
+        console.error('Header row not found, tour aborted');
+      }
+    }, 500);
+  }
 
   document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM Loaded, #header-row exists:", !!document.querySelector("#header-row"));
