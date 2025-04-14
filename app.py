@@ -2811,6 +2811,7 @@ def create_color_code_table():
     return html
     
 # Lines before (context)
+# Lines before (context)
 def update_spin_counter():
     """Return the current number of spins as formatted HTML with inline styling."""
     spin_count = len(state.last_spins)
@@ -2930,7 +2931,7 @@ def show_strategy_recommendations(strategy_name, neighbours_count, strong_number
     # Mock implementation to match the UI output in the screenshot
     return "<p>No spins yet. Default Even Money Bets consider:<br>1. Red<br>2. Black<br>3. Even</p>"
 
-# Placeholder for missing function to fix NameError
+# Placeholder for previously missing function
 def clear_outputs():
     # Mock implementation to reset all outputs to their initial values
     return (
@@ -3031,6 +3032,316 @@ with gr.Blocks() as demo:
     }
     category_choices = ["None"] + sorted(strategy_categories.keys())
 
+    # Define all components used in event handlers at the top to avoid NameError
+    # Row 2 components
+    spins_display = gr.State(value="")
+    spins_textbox = gr.Textbox(
+        label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
+        value="",
+        interactive=True,
+        elem_id="selected-spins"
+    )
+    spin_counter = gr.HTML(
+        label="Total Spins",
+        value='<span style="font-size: 16px;">Total Spins: 0</span>',
+        elem_classes=["spin-counter"]
+    )
+
+    # Row 3 components
+    sides_of_zero_display = gr.HTML(
+        label="Sides of Zero",
+        value=render_sides_of_zero_display(),
+        elem_classes=["sides-of-zero-container"]
+    )
+
+    # Row 4 components
+    last_spin_display = gr.HTML(
+        label="Last Spins",
+        value='<h4>Last Spins</h4><p>No spins yet.</p>',
+        elem_classes=["last-spins-container"]
+    )
+    last_spin_count = gr.Slider(
+        label="Show Last Spins",
+        minimum=1,
+        maximum=36,
+        step=1,
+        value=36,
+        interactive=True,
+        elem_classes="long-slider"
+    )
+
+    # Row 8 components (used in clear_all_button.click)
+    dynamic_table_output = gr.HTML(
+        label="Dynamic Table",
+        value=create_dynamic_table(strategy_name="Best Even Money Bets")
+    )
+    strategy_output = gr.HTML(
+        label="Strategy Recommendations",
+        value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
+    )
+    spins_count_dropdown = gr.Dropdown(
+        label="Past Spins Count",
+        choices=["30", "50", "100", "200", "300", "500"],
+        value="100",
+        interactive=True
+    )
+    even_percent = gr.Dropdown(
+        label="Even %",
+        choices=[f"{i:02d}" for i in range(100)],
+        value="00",
+        interactive=True
+    )
+    odd_percent = gr.Dropdown(
+        label="Odd %",
+        choices=[f"{i:02d}" for i in range(100)],
+        value="00",
+        interactive=True
+    )
+    red_percent = gr.Dropdown(
+        label="Red %",
+        choices=[f"{i:02d}" for i in range(100)],
+        value="00",
+        interactive=True
+    )
+    black_percent = gr.Dropdown(
+        label="Black %",
+        choices=[f"{i:02d}" for i in range(100)],
+        value="00",
+        interactive=True
+    )
+    low_percent = gr.Dropdown(
+        label="Low %",
+        choices=[f"{i:02d}" for i in range(100)],
+        value="00",
+        interactive=True
+    )
+    high_percent = gr.Dropdown(
+        label="High %",
+        choices=[f"{i:02d}" for i in range(100)],
+        value="00",
+        interactive=True
+    )
+    dozen1_percent = gr.Dropdown(
+        label="1st Dozen %",
+        choices=[f"{i:02d}" for i in range(100)],
+        value="00",
+        interactive=True
+    )
+    dozen2_percent = gr.Dropdown(
+        label="2nd Dozen %",
+        choices=[f"{i:02d}" for i in range(100)],
+        value="00",
+        interactive=True
+    )
+    dozen3_percent = gr.Dropdown(
+        label="3rd Dozen %",
+        choices=[f"{i:02d}" for i in range(100)],
+        value="00",
+        interactive=True
+    )
+    col1_percent = gr.Dropdown(
+        label="1st Column %",
+        choices=[f"{i:02d}" for i in range(100)],
+        value="00",
+        interactive=True
+    )
+    col2_percent = gr.Dropdown(
+        label="2nd Column %",
+        choices=[f"{i:02d}" for i in range(100)],
+        value="00",
+        interactive=True
+    )
+    col3_percent = gr.Dropdown(
+        label="3rd Column %",
+        choices=[f"{i:02d}" for i in range(100)],
+        value="00",
+        interactive=True
+    )
+    use_winners_checkbox = gr.Checkbox(
+        label="Highlight Casino Winners",
+        value=False,
+        interactive=True
+    )
+    reset_casino_data_button = gr.Button(
+        "Reset Casino Data",
+        elem_classes=["action-button"]
+    )
+    casino_data_output = gr.HTML(
+        label="Casino Data Insights",
+        value="<p>No casino data entered yet.</p>"
+    )
+    category_dropdown = gr.Dropdown(
+        label="Select Category",
+        choices=category_choices,
+        value="Even Money Strategies",
+        allow_custom_value=False,
+        elem_id="select-category"
+    )
+    strategy_dropdown = gr.Dropdown(
+        label="Select Strategy",
+        choices=strategy_categories["Even Money Strategies"],
+        value="Best Even Money Bets",
+        allow_custom_value=False
+    )
+    reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
+    neighbours_count_slider = gr.Slider(
+        label="Number of Neighbors (Left + Right)",
+        minimum=1,
+        maximum=5,
+        step=1,
+        value=2,
+        interactive=True,
+        visible=False,
+        elem_classes="long-slider"
+    )
+    strong_numbers_count_slider = gr.Slider(
+        label="Strong Numbers to Highlight (Neighbours Strategy)",
+        minimum=1,
+        maximum=18,
+        step=1,
+        value=1,
+        interactive=True,
+        visible=False,
+        elem_classes="long-slider"
+    )
+    reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
+
+    # Row 9 components
+    dozen_tracker_spins_dropdown = gr.Dropdown(
+        label="Number of Spins to Track",
+        choices=["3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
+        value="5",
+        interactive=True
+    )
+    dozen_tracker_consecutive_hits_dropdown = gr.Dropdown(
+        label="Alert on Consecutive Dozen Hits",
+        choices=["3", "4", "5"],
+        value="3",
+        interactive=True
+    )
+    dozen_tracker_alert_checkbox = gr.Checkbox(
+        label="Enable Consecutive Dozen Hits Alert",
+        value=False,
+        interactive=True
+    )
+    dozen_tracker_sequence_length_dropdown = gr.Dropdown(
+        label="Sequence Length to Match (X)",
+        choices=["3", "4", "5"],
+        value="4",
+        interactive=True
+    )
+    dozen_tracker_follow_up_spins_dropdown = gr.Dropdown(
+        label="Follow-Up Spins to Track (Y)",
+        choices=["3", "4", "5", "6", "7", "8", "9", "10"],
+        value="5",
+        interactive=True
+    )
+    dozen_tracker_sequence_alert_checkbox = gr.Checkbox(
+        label="Enable Sequence Matching Alert",
+        value=False,
+        interactive=True
+    )
+    dozen_tracker_output = gr.HTML(
+        label="Dozen Tracker",
+        value="<p>Select the number of spins to track and analyze spins to see the Dozen history.</p>"
+    )
+    dozen_tracker_sequence_output = gr.HTML(
+        label="Sequence Matching Results",
+        value="<p>Enable sequence matching to see results here.</p>"
+    )
+
+    # Row 10 components
+    bankroll_input = gr.Number(label="Bankroll", value=1000)
+    base_unit_input = gr.Number(label="Base Unit", value=10)
+    stop_loss_input = gr.Number(label="Stop Loss", value=-500)
+    stop_win_input = gr.Number(label="Stop Win", value=200)
+    bet_type_dropdown = gr.Dropdown(
+        label="Bet Type",
+        choices=["Even Money", "Dozens", "Columns", "Straight Bets"],
+        value="Even Money"
+    )
+    progression_dropdown = gr.Dropdown(
+        label="Progression",
+        choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss"],
+        value="Martingale"
+    )
+    labouchere_sequence = gr.Textbox(
+        label="Labouchere Sequence (comma-separated)",
+        value="1, 2, 3, 4",
+        visible=False
+    )
+    win_button = gr.Button("Win")
+    lose_button = gr.Button("Lose")
+    reset_progression_button = gr.Button("Reset Progression")
+    bankroll_output = gr.Textbox(label="Current Bankroll", value="1000", interactive=False)
+    current_bet_output = gr.Textbox(label="Current Bet", value="10", interactive=False)
+    next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
+    message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
+    status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
+
+    # Row 11 components
+    top_color_picker = gr.ColorPicker(
+        label="Top Tier Color",
+        value="rgba(255, 255, 0, 0.5)",
+        interactive=True,
+        elem_id="top-color-picker"
+    )
+    middle_color_picker = gr.ColorPicker(
+        label="Middle Tier Color",
+        value="rgba(0, 255, 255, 0.5)",
+        interactive=True
+    )
+    lower_color_picker = gr.ColorPicker(
+        label="Lower Tier Color",
+        value="rgba(0, 255, 0, 0.5)",
+        interactive=True
+    )
+    reset_colors_button = gr.Button("Reset Colors", elem_classes=["action-button"])
+    color_code_output = gr.HTML(label="Color Code Key")
+
+    # Row 12 components
+    spin_analysis_output = gr.Textbox(
+        label="",
+        value="",
+        interactive=False,
+        lines=5
+    )
+
+    # Row 13 components
+    straight_up_html = gr.HTML(label="Strongest Numbers", elem_classes="scrollable-table")
+    top_18_html = gr.HTML(label="Top 18 Strongest Numbers (Sorted Lowest to Highest)", elem_classes="scrollable-table")
+    strongest_numbers_dropdown = gr.Dropdown(
+        label="Select Number of Strongest Numbers",
+        choices=["3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33"],
+        value="3",
+        allow_custom_value=False,
+        interactive=True,
+        elem_id="strongest-numbers-dropdown",
+        visible=False  # Hide the dropdown
+    )
+    strongest_numbers_output = gr.Textbox(
+        label="Strongest Numbers (Sorted Lowest to Highest)",
+        value="",
+        lines=2,
+        visible=False  # Hide the textbox
+    )
+
+    # Row 14 components
+    even_money_output = gr.Textbox(label="Even Money Bets", lines=10, max_lines=50)
+    dozens_output = gr.Textbox(label="Dozens", lines=10, max_lines=50)
+    columns_output = gr.Textbox(label="Columns", lines=10, max_lines=50)
+    streets_output = gr.Textbox(label="Streets", lines=10, max_lines=50)
+    corners_output = gr.Textbox(label="Corners", lines=10, max_lines=50)
+    six_lines_output = gr.Textbox(label="Double Streets", lines=10, max_lines=50)
+    splits_output = gr.Textbox(label="Splits", lines=10, max_lines=50)
+    sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
+
+    # Row 15 components
+    save_button = gr.Button("Save Session", elem_id="save-session-btn")
+    load_input = gr.File(label="Upload Session")
+    save_output = gr.File(label="Download Session")
+
+    # Now define the UI rows
     # Row 1: Header
     with gr.Row(elem_id="header-row"):
         with gr.Column(scale=1):
@@ -3167,196 +3478,52 @@ with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
-            dynamic_table_output = gr.HTML(
-                label="Dynamic Table",
-                value=create_dynamic_table(strategy_name="Best Even Money Bets")
-            )
+            dynamic_table_output
         with gr.Column(scale=1):
             gr.Markdown("### Strategy Recommendations")
-            strategy_output = gr.HTML(
-                label="Strategy Recommendations",
-                value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
-            )
+            strategy_output
             with gr.Accordion("Casino Data Insights", open=False, elem_id="casino-data-insights"):
-                spins_count_dropdown = gr.Dropdown(
-                    label="Past Spins Count",
-                    choices=["30", "50", "100", "200", "300", "500"],
-                    value="100",
-                    interactive=True
-                )
+                spins_count_dropdown
                 with gr.Row():
-                    even_percent = gr.Dropdown(
-                        label="Even %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    odd_percent = gr.Dropdown(
-                        label="Odd %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
+                    even_percent
+                    odd_percent
                 with gr.Row():
-                    red_percent = gr.Dropdown(
-                        label="Red %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    black_percent = gr.Dropdown(
-                        label="Black %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
+                    red_percent
+                    black_percent
                 with gr.Row():
-                    low_percent = gr.Dropdown(
-                        label="Low %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    high_percent = gr.Dropdown(
-                        label="High %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
+                    low_percent
+                    high_percent
                 with gr.Row():
-                    dozen1_percent = gr.Dropdown(
-                        label="1st Dozen %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    dozen2_percent = gr.Dropdown(
-                        label="2nd Dozen %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    dozen3_percent = gr.Dropdown(
-                        label="3rd Dozen %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
+                    dozen1_percent
+                    dozen2_percent
+                    dozen3_percent
                 with gr.Row():
-                    col1_percent = gr.Dropdown(
-                        label="1st Column %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    col2_percent = gr.Dropdown(
-                        label="2nd Column %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    col3_percent = gr.Dropdown(
-                        label="3rd Column %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                use_winners_checkbox = gr.Checkbox(
-                    label="Highlight Casino Winners",
-                    value=False,
-                    interactive=True
-                )
-                reset_casino_data_button = gr.Button(
-                    "Reset Casino Data",
-                    elem_classes=["action-button"]
-                )
-                casino_data_output = gr.HTML(
-                    label="Casino Data Insights",
-                    value="<p>No casino data entered yet.</p>"
-                )
+                    col1_percent
+                    col2_percent
+                    col3_percent
+                use_winners_checkbox
+                reset_casino_data_button
+                casino_data_output
         with gr.Column(scale=1, min_width=200):
-            category_dropdown = gr.Dropdown(
-                label="Select Category",
-                choices=category_choices,
-                value="Even Money Strategies",
-                allow_custom_value=False,
-                elem_id="select-category"
-            )
-            strategy_dropdown = gr.Dropdown(
-                label="Select Strategy",
-                choices=strategy_categories["Even Money Strategies"],
-                value="Best Even Money Bets",
-                allow_custom_value=False
-            )
-            reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
-            neighbours_count_slider = gr.Slider(
-                label="Number of Neighbors (Left + Right)",
-                minimum=1,
-                maximum=5,
-                step=1,
-                value=2,
-                interactive=True,
-                visible=False,
-                elem_classes="long-slider"
-            )
-            strong_numbers_count_slider = gr.Slider(
-                label="Strong Numbers to Highlight (Neighbours Strategy)",
-                minimum=1,
-                maximum=18,
-                step=1,
-                value=1,
-                interactive=True,
-                visible=False,
-                elem_classes="long-slider"
-            )
-            reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
+            category_dropdown
+            strategy_dropdown
+            reset_strategy_button
+            neighbours_count_slider
+            strong_numbers_count_slider
+            reset_scores_checkbox
 
     # Row 9: Dozen Tracker
     with gr.Row():
         with gr.Column(scale=3):
             with gr.Accordion("Dozen Tracker", open=False, elem_id="dozen-tracker"):
-                dozen_tracker_spins_dropdown = gr.Dropdown(
-                    label="Number of Spins to Track",
-                    choices=["3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
-                    value="5",
-                    interactive=True
-                )
-                dozen_tracker_consecutive_hits_dropdown = gr.Dropdown(
-                    label="Alert on Consecutive Dozen Hits",
-                    choices=["3", "4", "5"],
-                    value="3",
-                    interactive=True
-                )
-                dozen_tracker_alert_checkbox = gr.Checkbox(
-                    label="Enable Consecutive Dozen Hits Alert",
-                    value=False,
-                    interactive=True
-                )
-                dozen_tracker_sequence_length_dropdown = gr.Dropdown(
-                    label="Sequence Length to Match (X)",
-                    choices=["3", "4", "5"],
-                    value="4",
-                    interactive=True
-                )
-                dozen_tracker_follow_up_spins_dropdown = gr.Dropdown(
-                    label="Follow-Up Spins to Track (Y)",
-                    choices=["3", "4", "5", "6", "7", "8", "9", "10"],
-                    value="5",
-                    interactive=True
-                )
-                dozen_tracker_sequence_alert_checkbox = gr.Checkbox(
-                    label="Enable Sequence Matching Alert",
-                    value=False,
-                    interactive=True
-                )
-                dozen_tracker_output = gr.HTML(
-                    label="Dozen Tracker",
-                    value="<p>Select the number of spins to track and analyze spins to see the Dozen history.</p>"
-                )
-                dozen_tracker_sequence_output = gr.HTML(
-                    label="Sequence Matching Results",
-                    value="<p>Enable sequence matching to see results here.</p>"
-                )
+                dozen_tracker_spins_dropdown
+                dozen_tracker_consecutive_hits_dropdown
+                dozen_tracker_alert_checkbox
+                dozen_tracker_sequence_length_dropdown
+                dozen_tracker_follow_up_spins_dropdown
+                dozen_tracker_sequence_alert_checkbox
+                dozen_tracker_output
+                dozen_tracker_sequence_output
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
 
@@ -3364,130 +3531,91 @@ with gr.Blocks() as demo:
     with gr.Row():
         with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
             with gr.Row():
-                bankroll_input = gr.Number(label="Bankroll", value=1000)
-                base_unit_input = gr.Number(label="Base Unit", value=10)
-                stop_loss_input = gr.Number(label="Stop Loss", value=-500)
-                stop_win_input = gr.Number(label="Stop Win", value=200)
+                bankroll_input
+                base_unit_input
+                stop_loss_input
+                stop_win_input
             with gr.Row():
-                bet_type_dropdown = gr.Dropdown(
-                    label="Bet Type",
-                    choices=["Even Money", "Dozens", "Columns", "Straight Bets"],
-                    value="Even Money"
-                )
-                progression_dropdown = gr.Dropdown(
-                    label="Progression",
-                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss"],
-                    value="Martingale"
-                )
-                labouchere_sequence = gr.Textbox(
-                    label="Labouchere Sequence (comma-separated)",
-                    value="1, 2, 3, 4",
-                    visible=False
-                )
+                bet_type_dropdown
+                progression_dropdown
+                labouchere_sequence
             with gr.Row():
-                win_button = gr.Button("Win")
-                lose_button = gr.Button("Lose")
-                reset_progression_button = gr.Button("Reset Progression")
+                win_button
+                lose_button
+                reset_progression_button
             with gr.Row():
-                bankroll_output = gr.Textbox(label="Current Bankroll", value="1000", interactive=False)
-                current_bet_output = gr.Textbox(label="Current Bet", value="10", interactive=False)
-                next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
+                bankroll_output
+                current_bet_output
+                next_bet_output
             with gr.Row():
-                message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
-                status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
+                message_output
+                status_output
 
     # Row 11: Color Code Key
     with gr.Accordion("Color Code Key", open=False, elem_id="color-code-key"):
         with gr.Row():
-            top_color_picker = gr.ColorPicker(
-                label="Top Tier Color",
-                value="rgba(255, 255, 0, 0.5)",
-                interactive=True,
-                elem_id="top-color-picker"
-            )
-            middle_color_picker = gr.ColorPicker(
-                label="Middle Tier Color",
-                value="rgba(0, 255, 255, 0.5)",
-                interactive=True
-            )
-            lower_color_picker = gr.ColorPicker(
-                label="Lower Tier Color",
-                value="rgba(0, 255, 0, 0.5)",
-                interactive=True
-            )
-            reset_colors_button = gr.Button("Reset Colors", elem_classes=["action-button"])
-        color_code_output = gr.HTML(label="Color Code Key")
+            top_color_picker
+            middle_color_picker
+            lower_color_picker
+            reset_colors_button
+        color_code_output
 
     # Row 12: Spin Logic Reactor 🧠
     with gr.Accordion("Spin Logic Reactor 🧠", open=False, elem_id="spin-analysis"):
-        spin_analysis_output = gr.Textbox(
-            label="",
-            value="",
-            interactive=False,
-            lines=5
-        )
+        spin_analysis_output
 
     # Row 13: Strongest Numbers Tables
     with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-table"):
         with gr.Row():
             with gr.Column():
-                straight_up_html = gr.HTML(label="Strongest Numbers", elem_classes="scrollable-table")
+                straight_up_html
             with gr.Column():
-                top_18_html = gr.HTML(label="Top 18 Strongest Numbers (Sorted Lowest to Highest)", elem_classes="scrollable-table")
+                top_18_html
         with gr.Row():
-            strongest_numbers_dropdown = gr.Dropdown(
-                label="Select Number of Strongest Numbers",
-                choices=["3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33"],
-                value="3",
-                allow_custom_value=False,
-                interactive=True,
-                elem_id="strongest-numbers-dropdown",
-                visible=False  # Hide the dropdown
-            )
-            strongest_numbers_output = gr.Textbox(
-                label="Strongest Numbers (Sorted Lowest to Highest)",
-                value="",
-                lines=2,
-                visible=False  # Hide the textbox
-            )
+            strongest_numbers_dropdown
+            strongest_numbers_output
 
     # Row 14: Aggregated Scores
     with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
         with gr.Row():
             with gr.Column():
                 with gr.Accordion("Even Money Bets", open=False):
-                    even_money_output = gr.Textbox(label="Even Money Bets", lines=10, max_lines=50)
+                    even_money_output
             with gr.Column():
                 with gr.Accordion("Dozens", open=False):
-                    dozens_output = gr.Textbox(label="Dozens", lines=10, max_lines=50)
+                    dozens_output
         with gr.Row():
             with gr.Column():
                 with gr.Accordion("Columns", open=False):
-                    columns_output = gr.Textbox(label="Columns", lines=10, max_lines=50)
+                    columns_output
             with gr.Column():
                 with gr.Accordion("Streets", open=False):
-                    streets_output = gr.Textbox(label="Streets", lines=10, max_lines=50)
+                    streets_output
         with gr.Row():
             with gr.Column():
                 with gr.Accordion("Corners", open=False):
-                    corners_output = gr.Textbox(label="Corners", lines=10, max_lines=50)
+                    corners_output
             with gr.Column():
                 with gr.Accordion("Double Streets", open=False):
-                    six_lines_output = gr.Textbox(label="Double Streets", lines=10, max_lines=50)
+                    six_lines_output
         with gr.Row():
             with gr.Column():
                 with gr.Accordion("Splits", open=False):
-                    splits_output = gr.Textbox(label="Splits", lines=10, max_lines=50)
+                    splits_output
             with gr.Column():
                 with gr.Accordion("Sides of Zero", open=False):
-                    sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
+                    sides_output
 
     # Row 15: Save/Load Session
     with gr.Accordion("Save/Load Session", open=False, elem_id="save-load-session"):
         with gr.Row():
-            save_button = gr.Button("Save Session", elem_id="save-session-btn")
-            load_input = gr.File(label="Upload Session")
-        save_output = gr.File(label="Download Session")
+            save_button
+            load_input
+        save_output
+
+# Lines after (context)
+    # CSS and Event Handlers
+    # [Your existing event handlers would follow here...]
 
 
     # CSS and Event Handlers
