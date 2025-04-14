@@ -3701,7 +3701,11 @@ with gr.Blocks() as demo:
       .gr-row { margin: 0 !important; padding: 5px 0 !important; }
       .gr-column { margin: 0 !important; padding: 5px !important; }
       .gr-box { border-radius: 5px !important; }
-    
+
+      /* Hide stray labels in the Sides of Zero section */
+      .sides-of-zero-container + label, .last-spins-container + label:not(.long-slider label) {
+          display: none !important;
+      }
       /* Ensure Header Stays at the Top */
       #header-row {
           position: fixed !important;
