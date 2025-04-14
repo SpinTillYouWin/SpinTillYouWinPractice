@@ -324,7 +324,6 @@ colors = {
 }
 
 
-# Lines before (context)
 def format_spins_as_html(spins, num_to_show):
     if not spins:
         return "<h4>Last Spins</h4><p>No spins yet.</p>"
@@ -353,8 +352,6 @@ def format_spins_as_html(spins, num_to_show):
     
     # Wrap the spins in a div with flexbox to enable wrapping, and add a title
     return f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
-
-# Start of the function (Line 1 for context)
 def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
     zero_hits = state.scores[0]
@@ -363,89 +360,21 @@ def render_sides_of_zero_display():
     left_width = (left_hits / max_hits) * 100
     zero_width = (zero_hits / max_hits) * 100
     right_width = (right_hits / max_hits) * 100
-    total_spins = left_hits + zero_hits + right_hits
-    left_percent = (left_hits / total_spins * 100) if total_spins > 0 else 0
-    zero_percent = (zero_hits / total_spins * 100) if total_spins > 0 else 0
-    right_percent = (right_hits / total_spins * 100) if total_spins > 0 else 0
     
-    # Updated section starts here
+    # Return the full HTML structure plus the JavaScript to update it
     return f"""
-    <style>
-        #left-bar:hover, #zero-bar:hover, #right-bar:hover {{
-            filter: brightness(1.2);
-            transform: scale(1.02);
-            transition: filter 0.3s ease, transform 0.3s ease;
-        }}
-        .percent-label {{
-            color: white;
-            font-size: 12px;
-            font-weight: bold;
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            display: none;
-        }}
-        #left-bar, #zero-bar, #right-bar {{
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }}
-        #left-bar[style*="width: 10%"] .percent-label,
-        #left-bar[style*="width: 20%"] .percent-label,
-        #left-bar[style*="width: 30%"] .percent-label,
-        #left-bar[style*="width: 40%"] .percent-label,
-        #left-bar[style*="width: 50%"] .percent-label,
-        #left-bar[style*="width: 60%"] .percent-label,
-        #left-bar[style*="width: 70%"] .percent-label,
-        #left-bar[style*="width: 80%"] .percent-label,
-        #left-bar[style*="width: 90%"] .percent-label,
-        #left-bar[style*="width: 100%"] .percent-label,
-        #zero-bar[style*="width: 10%"] .percent-label,
-        #zero-bar[style*="width: 20%"] .percent-label,
-        #zero-bar[style*="width: 30%"] .percent-label,
-        #zero-bar[style*="width: 40%"] .percent-label,
-        #zero-bar[style*="width: 50%"] .percent-label,
-        #zero-bar[style*="width: 60%"] .percent-label,
-        #zero-bar[style*="width: 70%"] .percent-label,
-        #zero-bar[style*="width: 80%"] .percent-label,
-        #zero-bar[style*="width: 90%"] .percent-label,
-        #zero-bar[style*="width: 100%"] .percent-label,
-        #right-bar[style*="width: 10%"] .percent-label,
-        #right-bar[style*="width: 20%"] .percent-label,
-        #right-bar[style*="width: 30%"] .percent-label,
-        #right-bar[style*="width: 40%"] .percent-label,
-        #right-bar[style*="width: 50%"] .percent-label,
-        #right-bar[style*="width: 60%"] .percent-label,
-        #right-bar[style*="width: 70%"] .percent-label,
-        #right-bar[style*="width: 80%"] .percent-label,
-        #right-bar[style*="width: 90%"] .percent-label,
-        #right-bar[style*="width: 100%"] .percent-label {{
-            display: block;
-        }}
-    </style>
-    <div style="background-color: #f5f5f5; border: 1px solid #d3d3d3; border-radius: 5px; padding: 10px;">
-        <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker</h4>
-        <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="width: 100px;" id="left-label">Left Side ({left_hits})</span>
-                <div style="flex-grow: 1; background: linear-gradient(to right, #3498db, #5dade2); height: 20px; width: {left_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="left-bar">
-                    <span class="percent-label">{left_percent:.1f}%</span>
-                </div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="width: 100px;" id="zero-label">Zero ({zero_hits})</span>
-                <div style="flex-grow: 1; background: linear-gradient(to right, #2ecc71, #27ae60); height: 20px; width: {zero_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="zero-bar">
-                    <span class="percent-label">{zero_percent:.1f}%</span>
-                </div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="width: 100px;" id="right-label">Right Side ({right_hits})</span>
-                <div style="flex-grow: 1; background: linear-gradient(to right, #e74c3c, #c0392b); height: 20px; width: {right_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="right-bar">
-                    <span class="percent-label">{right_percent:.1f}%</span>
-                </div>
-            </div>
+    <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="width: 100px;" id="left-label">Left Side ({left_hits})</span>
+            <div style="flex-grow: 1; background-color: #3498db; height: 20px; width: {left_width}%; transition: width 0.5s ease;" id="left-bar"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="width: 100px;" id="zero-label">Zero ({zero_hits})</span>
+            <div style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: {zero_width}%; transition: width 0.5s ease;" id="zero-bar"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="width: 100px;" id="right-label">Right Side ({right_hits})</span>
+            <div style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: {right_width}%; transition: width 0.5s ease;" id="right-bar"></div>
         </div>
     </div>
     <script>
@@ -464,9 +393,6 @@ def render_sides_of_zero_display():
         updateBar('right-bar', {right_width}, 'right-label', 'Right Side ({right_hits})');
     </script>
     """
-    # Updated section ends here
-
-# Lines after (context)
 def add_spin(number, current_spins, num_to_show):
     print(f"add_spin: number='{number}', current_spins='{current_spins}'")
     spins = current_spins.split(", ") if current_spins else []
@@ -2739,139 +2665,7 @@ def best_columns_even_money_and_top_18():
         recommendations.append(f"{i}. Number {num} (Score: {score})")
 
     return "\n".join(recommendations)
-def dozen_tracker(spins_to_track, consecutive_hits, alert_enabled, sequence_length, follow_up_spins, sequence_alert_enabled):
-    """
-    Analyze the last N spins to track Dozens, consecutive hits, and sequence patterns.
-    
-    Args:
-        spins_to_track (int): Number of spins to analyze.
-        consecutive_hits (int): Number of consecutive hits to trigger an alert.
-        alert_enabled (bool): Whether to enable consecutive hits alert.
-        sequence_length (int): Length of the sequence to match (X).
-        follow_up_spins (int): Number of follow-up spins to track after a sequence match (Y).
-        sequence_alert_enabled (bool): Whether to enable sequence matching alert.
-    
-    Returns:
-        tuple: (gr.State(), HTML for dozen_tracker_output, HTML for dozen_tracker_sequence_output)
-    """
-    # Convert inputs to integers
-    try:
-        spins_to_track = int(spins_to_track)
-        consecutive_hits = int(consecutive_hits)
-        sequence_length = int(sequence_length)
-        follow_up_spins = int(follow_up_spins)
-    except ValueError:
-        return None, "<p>Error: Invalid input values. Please use numbers for spins, consecutive hits, and sequence settings.</p>", "<p>Error: Invalid input values for sequence matching.</p>"
 
-    if spins_to_track <= 0:
-        return None, "<p>Error: Number of spins to track must be greater than 0.</p>", "<p>Error: Invalid number of spins for sequence matching.</p>"
-
-    # Get the last N spins
-    recent_spins = state.last_spins[-spins_to_track:] if len(state.last_spins) >= spins_to_track else state.last_spins
-    if not recent_spins:
-        return None, "<p>No spins recorded yet. Click some numbers on the table or enter spins manually.</p>", "<p>Enable sequence matching to see results here.</p>"
-
-    # Map spins to their Dozens
-    dozen_history = []
-    for spin in recent_spins:
-        spin_value = int(spin)
-        if spin_value == 0:
-            dozen_history.append("0")  # Special case for 0 (not in any Dozen)
-        else:
-            found = False
-            for dozen_name, numbers in DOZENS.items():
-                if spin_value in numbers:
-                    dozen_history.append(dozen_name)
-                    found = True
-                    break
-            if not found:
-                dozen_history.append("0")  # Fallback, should not happen with valid data
-
-    # Generate Dozen Tracker output (visual history)
-    dozen_colors = {
-        "1st Dozen": "#FF6347",  # Tomato Red
-        "2nd Dozen": "#4682B4",  # Steel Blue
-        "3rd Dozen": "#32CD32",  # Lime Green
-        "0": "#808080"           # Gray for 0
-    }
-    html_spins = []
-    for dozen in dozen_history:
-        color = dozen_colors.get(dozen, "#808080")  # Default to gray if not found
-        display_text = dozen.replace(" Dozen", "") if dozen != "0" else "0"
-        html_spins.append(f'<span style="background-color: {color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px; display: inline-block;">{display_text}</span>')
-    
-    dozen_tracker_html = f'<h4 style="margin-bottom: 5px;">Dozen Tracker (Last {len(recent_spins)} Spins)</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
-
-    # Check for consecutive hits if alert is enabled
-    if alert_enabled and consecutive_hits > 0:
-        current_streak = 1
-        current_dozen = None
-        streaks = []
-        for i in range(len(dozen_history)):
-            dozen = dozen_history[i]
-            if dozen == "0":
-                if current_dozen and current_streak >= consecutive_hits:
-                    streaks.append(f"{current_dozen} hit {current_streak} times consecutively at spin {i}.")
-                current_streak = 1
-                current_dozen = None
-                continue
-            if dozen == current_dozen:
-                current_streak += 1
-            else:
-                if current_dozen and current_streak >= consecutive_hits:
-                    streaks.append(f"{current_dozen} hit {current_streak} times consecutively at spin {i}.")
-                current_dozen = dozen
-                current_streak = 1
-        # Check the last streak
-        if current_dozen and current_streak >= consecutive_hits:
-            streaks.append(f"{current_dozen} hit {current_streak} times consecutively at the end.")
-        
-        if streaks:
-            dozen_tracker_html += "<h4>Consecutive Hits Alerts:</h4><ul>" + "".join(f"<li>{streak}</li>" for streak in streaks) + "</ul>"
-
-    # Sequence matching logic
-    sequence_output = "<p>Enable sequence matching to see results here.</p>"
-    if sequence_alert_enabled and sequence_length > 0 and follow_up_spins > 0:
-        if len(dozen_history) < sequence_length:
-            sequence_output = f"<p>Not enough spins to match a sequence of length {sequence_length}. Need at least {sequence_length} spins, but only have {len(dozen_history)}.</p>"
-        else:
-            sequences_found = []
-            for i in range(len(dozen_history) - sequence_length - follow_up_spins + 1):
-                sequence = dozen_history[i:i + sequence_length]
-                # Skip sequences containing 0
-                if "0" in sequence:
-                    continue
-                # Check if the sequence repeats
-                next_sequence = dozen_history[i + sequence_length:i + sequence_length + follow_up_spins]
-                if "0" in next_sequence:
-                    continue
-                # Count occurrences of the sequence in the remaining spins
-                matches = []
-                for j in range(i + sequence_length, len(dozen_history) - sequence_length + 1):
-                    if dozen_history[j:j + sequence_length] == sequence:
-                        follow_up = dozen_history[j + sequence_length:j + sequence_length + follow_up_spins]
-                        if "0" not in follow_up and follow_up:
-                            matches.append((j + sequence_length, follow_up))
-                if matches:
-                    sequence_str = " -> ".join(sequence)
-                    for match_idx, follow_up in matches:
-                        follow_up_str = " -> ".join(follow_up)
-                        sequences_found.append(f"Sequence [{sequence_str}] found at spin {match_idx - sequence_length + 1}, followed by [{follow_up_str}]")
-
-            if sequences_found:
-                sequence_output = "<h4>Sequence Matching Results:</h4><ul>" + "".join(f"<li>{match}</li>" for match in sequences_found) + "</ul>"
-            else:
-                sequence_output = f"<p>No sequences of length {sequence_length} found that repeat within the last {spins_to_track} spins.</p>"
-
-    return None, dozen_tracker_html, sequence_output
-def reset_colors():
-    """
-    Reset the color pickers to their default values.
-    
-    Returns:
-        tuple: Default values for top_color_picker, middle_color_picker, lower_color_picker.
-    """
-    return "rgba(255, 255, 0, 0.5)", "rgba(0, 255, 255, 0.5)", "rgba(0, 255, 0, 0.5)"    
 def create_color_code_table():
     html = '''
     <div style="margin-top: 20px;">
@@ -2942,177 +2736,441 @@ def create_color_code_table():
     '''
     return html
     
-# Lines before (context)
-# Lines before (context)
 def update_spin_counter():
     """Return the current number of spins as formatted HTML with inline styling."""
     spin_count = len(state.last_spins)
     return f'<span style="font-size: 16px;">Total Spins: {spin_count}</span>'
-
-def render_sides_of_zero_display():
-    left_hits = state.side_scores["Left Side of Zero"]
-    zero_hits = state.scores[0]
-    right_hits = state.side_scores["Right Side of Zero"]
-    max_hits = max(left_hits, zero_hits, right_hits, 1)  # Avoid division by zero
-    left_width = (left_hits / max_hits) * 100
-    zero_width = (zero_hits / max_hits) * 100
-    right_width = (right_hits / max_hits) * 100
-    total_spins = left_hits + zero_hits + right_hits
-    left_percent = (left_hits / total_spins * 100) if total_spins > 0 else 0
-    zero_percent = (zero_hits / total_spins * 100) if total_spins > 0 else 0
-    right_percent = (right_hits / total_spins * 100) if total_spins > 0 else 0
     
-    return f"""
-    <style>
-        #left-bar:hover, #zero-bar:hover, #right-bar:hover {{
-            filter: brightness(1.2);
-            transform: scale(1.02);
-            transition: filter 0.3s ease, transform 0.3s ease;
-        }}
-        .percent-label {{
-            color: white;
-            font-size: 12px;
-            font-weight: bold;
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            display: none;
-        }}
-        #left-bar, #zero-bar, #right-bar {{
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }}
-        #left-bar[style*="width: 10%"] .percent-label,
-        #left-bar[style*="width: 20%"] .percent-label,
-        #left-bar[style*="width: 30%"] .percent-label,
-        #left-bar[style*="width: 40%"] .percent-label,
-        #left-bar[style*="width: 50%"] .percent-label,
-        #left-bar[style*="width: 60%"] .percent-label,
-        #left-bar[style*="width: 70%"] .percent-label,
-        #left-bar[style*="width: 80%"] .percent-label,
-        #left-bar[style*="width: 90%"] .percent-label,
-        #left-bar[style*="width: 100%"] .percent-label,
-        #zero-bar[style*="width: 10%"] .percent-label,
-        #zero-bar[style*="width: 20%"] .percent-label,
-        #zero-bar[style*="width: 30%"] .percent-label,
-        #zero-bar[style*="width: 40%"] .percent-label,
-        #zero-bar[style*="width: 50%"] .percent-label,
-        #zero-bar[style*="width: 60%"] .percent-label,
-        #zero-bar[style*="width: 70%"] .percent-label,
-        #zero-bar[style*="width: 80%"] .percent-label,
-        #zero-bar[style*="width: 90%"] .percent-label,
-        #zero-bar[style*="width: 100%"] .percent-label,
-        #right-bar[style*="width: 10%"] .percent-label,
-        #right-bar[style*="width: 20%"] .percent-label,
-        #right-bar[style*="width: 30%"] .percent-label,
-        #right-bar[style*="width: 40%"] .percent-label,
-        #right-bar[style*="width: 50%"] .percent-label,
-        #right-bar[style*="width: 60%"] .percent-label,
-        #right-bar[style*="width: 70%"] .percent-label,
-        #right-bar[style*="width: 80%"] .percent-label,
-        #right-bar[style*="width: 90%"] .percent-label,
-        #right-bar[style*="width: 100%"] .percent-label {{
-            display: block;
-        }}
-    </style>
-    <div style="background-color: #f5f5f5; border: 1px solid #d3d3d3; border-radius: 5px; padding: 10px;">
-        <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker</h4>
-        <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="width: 100px;" id="left-label">Left Side ({left_hits})</span>
-                <div style="flex-grow: 1; background: linear-gradient(to right, #3498db, #5dade2); height: 20px; width: {left_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="left-bar">
-                    <span class="percent-label">{left_percent:.1f}%</span>
-                </div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="width: 100px;" id="zero-label">Zero ({zero_hits})</span>
-                <div style="flex-grow: 1; background: linear-gradient(to right, #2ecc71, #27ae60); height: 20px; width: {zero_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="zero-bar">
-                    <span class="percent-label">{zero_percent:.1f}%</span>
-                </div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="width: 100px;" id="right-label">Right Side ({right_hits})</span>
-                <div style="flex-grow: 1; background: linear-gradient(to right, #e74c3c, #c0392b); height: 20px; width: {right_width}%; transition: width 0.5s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 5px; border: 1px solid #d3d3d3;" id="right-bar">
-                    <span class="percent-label">{right_percent:.1f}%</span>
-                </div>
-            </div>
-        </div>
-    </div>
-    <script>
-        function updateBar(barId, width, labelId, labelText) {{
-            const bar = document.getElementById(barId);
-            const label = document.getElementById(labelId);
-            if (bar && label) {{
-                bar.style.width = width + '%';
-                label.textContent = labelText;
-            }} else {{
-                console.error('Element not found: ' + (bar ? labelId : barId));
-            }}
-        }}
-        updateBar('left-bar', {left_width}, 'left-label', 'Left Side ({left_hits})');
-        updateBar('zero-bar', {zero_width}, 'zero-label', 'Zero ({zero_hits})');
-        updateBar('right-bar', {right_width}, 'right-label', 'Right Side ({right_hits})');
-    </script>
-    """
+def top_numbers_with_neighbours_tiered():
+    recommendations = []
+    straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
+    straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
 
-# Placeholder for previously missing function
-def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count):
-    # Mock implementation to match the UI output in the screenshot
-    return "<p>No spins yet. Default Even Money Bets consider:<br>1. Red<br>2. Black<br>3. Even</p>"
+    if straight_up_df.empty:
+        return "<p>Top Numbers with Neighbours (Tiered): No numbers have hit yet.</p>"
 
-# Placeholder for previously missing function
+    # Start with the HTML table for Strongest Numbers
+    table_html = '<table border="1" style="border-collapse: collapse; text-align: center; font-family: Arial, sans-serif;">'
+    table_html += "<tr><th>Hit</th><th>Left N.</th><th>Right N.</th></tr>"  # Table header
+    for _, row in straight_up_df.iterrows():
+        num = str(row["Number"])
+        left, right = current_neighbors.get(row["Number"], ("", ""))
+        left = str(left) if left is not None else ""
+        right = str(right) if right is not None else ""
+        table_html += f"<tr><td>{num}</td><td>{left}</td><td>{right}</td></tr>"
+    table_html += "</table>"
+
+    # Wrap the table in a div with a heading
+    recommendations.append("<h3>Strongest Numbers:</h3>")
+    recommendations.append(table_html)
+
+    num_to_take = min(8, len(straight_up_df))
+    top_numbers = straight_up_df["Number"].head(num_to_take).tolist()
+
+    all_numbers = set()
+    number_scores = {}
+    for num in top_numbers:
+        neighbors = current_neighbors.get(num, (None, None))
+        left, right = neighbors
+        all_numbers.add(num)
+        number_scores[num] = state.scores[num]
+        if left is not None:
+            all_numbers.add(left)
+        if right is not None:
+            all_numbers.add(right)
+
+    number_groups = []
+    for num in top_numbers:
+        left, right = current_neighbors.get(num, (None, None))
+        group = [num]
+        if left is not None:
+            group.append(left)
+        if right is not None:
+            group.append(right)
+        number_groups.append((state.scores[num], group))
+
+    number_groups.sort(key=lambda x: x[0], reverse=True)
+    ordered_numbers = []
+    for _, group in number_groups:
+        ordered_numbers.extend(group)
+
+    ordered_numbers = ordered_numbers[:24]
+    top_8 = ordered_numbers[:8]
+    next_8 = ordered_numbers[8:16]
+    last_8 = ordered_numbers[16:24]
+
+    recommendations.append("<h3>Top Numbers with Neighbours (Tiered):</h3>")
+    recommendations.append("<p><strong>Top Tier (Yellow):</strong></p>")
+    for i, num in enumerate(top_8, 1):
+        score = number_scores.get(num, "Neighbor")
+        recommendations.append(f"<p>{i}. Number {num} (Score: {score})</p>")
+
+    recommendations.append("<p><strong>Second Tier (Blue):</strong></p>")
+    for i, num in enumerate(next_8, 1):
+        score = number_scores.get(num, "Neighbor")
+        recommendations.append(f"<p>{i}. Number {num} (Score: {score})</p>")
+
+    recommendations.append("<p><strong>Third Tier (Green):</strong></p>")
+    for i, num in enumerate(last_8, 1):
+        score = number_scores.get(num, "Neighbor")
+        recommendations.append(f"<p>{i}. Number {num} (Score: {score})</p>")
+
+    return "\n".join(recommendations)
+
+def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
+    """Recommend numbers and their neighbors based on hit frequency."""
+    recommendations = []
+    
+    # Validate inputs
+    try:
+        neighbours_count = int(neighbours_count)
+        strong_numbers_count = int(strong_numbers_count)
+        if neighbours_count < 0 or strong_numbers_count < 0:
+            raise ValueError("Neighbours count and strong numbers count must be non-negative.")
+        if strong_numbers_count == 0:
+            raise ValueError("Strong numbers count must be at least 1.")
+    except (ValueError, TypeError) as e:
+        return f"Error: Invalid input - {str(e)}. Please use positive integers for neighbours and strong numbers."
+
+    # Check if current_neighbors is valid
+    if not isinstance(current_neighbors, dict):
+        return "Error: Neighbor data is not properly configured. Contact support."
+    for key, value in current_neighbors.items():
+        if not isinstance(key, int) or not isinstance(value, tuple) or len(value) != 2:
+            return "Error: Neighbor data is malformed. Contact support."
+
+    try:
+        print(f"neighbours_of_strong_number: Starting with neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}")
+        sorted_numbers = sorted(state.scores.items(), key=lambda x: (-x[1], x[0]))
+        numbers_hits = [item for item in sorted_numbers if item[1] > 0]
+        
+        if not numbers_hits:
+            recommendations.append("Neighbours of Strong Number: No numbers have hit yet.")
+            return "\n".join(recommendations)
+
+        # Limit strong_numbers_count to available hits
+        strong_numbers_count = min(strong_numbers_count, len(numbers_hits))
+        top_numbers = [item[0] for item in numbers_hits[:strong_numbers_count]]
+        top_scores = {item[0]: item[1] for item in numbers_hits[:strong_numbers_count]}
+        selected_numbers = set(top_numbers)
+        neighbors_set = set()
+
+        # Calculate neighbors for each strong number
+        for strong_number in top_numbers:
+            if strong_number not in current_neighbors:
+                recommendations.append(f"Warning: No neighbor data for number {strong_number}. Skipping its neighbors.")
+                continue
+            current_number = strong_number
+            # Left neighbors
+            for i in range(neighbours_count):
+                left, _ = current_neighbors.get(current_number, (None, None))
+                if left is not None:
+                    neighbors_set.add(left)
+                    current_number = left
+                else:
+                    break
+            # Right neighbors
+            current_number = strong_number
+            for i in range(neighbours_count):
+                _, right = current_neighbors.get(current_number, (None, None))
+                if right is not None:
+                    neighbors_set.add(right)
+                    current_number = right
+                else:
+                    break
+
+        # Remove overlap (strong numbers take precedence)
+        neighbors_set = neighbors_set - selected_numbers
+        print(f"neighbours_of_strong_number: Strong numbers = {sorted(list(selected_numbers))}")
+        print(f"neighbours_of_strong_number: Neighbors = {sorted(list(neighbors_set))}")
+
+        # Format recommendations
+        recommendations.append(f"Top {strong_numbers_count} Strongest Numbers and Their Neighbours:")
+        recommendations.append("\nStrongest Numbers (Yellow):")
+        for i, num in enumerate(sorted(top_numbers), 1):
+            score = top_scores[num]
+            recommendations.append(f"{i}. Number {num} (Score: {score})")
+        
+        if neighbors_set:
+            recommendations.append(f"\nNeighbours ({neighbours_count} Left + {neighbours_count} Right, Cyan):")
+            for i, num in enumerate(sorted(list(neighbors_set)), 1):
+                recommendations.append(f"{i}. Number {num}")
+        else:
+            recommendations.append(f"\nNeighbours ({neighbours_count} Left + {neighbours_count} Right, Cyan): None")
+
+        return "\n".join(recommendations)
+
+    except Exception as e:
+        print(f"neighbours_of_strong_number: Unexpected error: {str(e)}")
+        return f"Error in Neighbours of Strong Number: Unexpected issue - {str(e)}. Please try again or contact support."
+
+def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled, sequence_length, follow_up_spins, sequence_alert_enabled):
+    """Track and display the history of Dozen hits for the last N spins, with optional alerts for consecutive hits and sequence matching."""
+    recommendations = []
+    sequence_recommendations = []
+    
+    # Validate inputs
+    try:
+        num_spins_to_check = int(num_spins_to_check)
+        consecutive_hits_threshold = int(consecutive_hits_threshold)
+        sequence_length = int(sequence_length)
+        follow_up_spins = int(follow_up_spins)
+        if num_spins_to_check < 1:
+            return "Error: Number of spins to check must be at least 1.", "<p>Error: Number of spins to check must be at least 1.</p>", "<p>Error: Number of spins to check must be at least 1.</p>"
+        if consecutive_hits_threshold < 1:
+            return "Error: Consecutive hits threshold must be at least 1.", "<p>Error: Consecutive hits threshold must be at least 1.</p>", "<p>Error: Consecutive hits threshold must be at least 1.</p>"
+        if sequence_length < 1:
+            return "Error: Sequence length must be at least 1.", "<p>Error: Sequence length must be at least 1.</p>", "<p>Error: Sequence length must be at least 1.</p>"
+        if follow_up_spins < 1:
+            return "Error: Follow-up spins must be at least 1.", "<p>Error: Follow-up spins must be at least 1.</p>", "<p>Error: Follow-up spins must be at least 1.</p>"
+    except (ValueError, TypeError):
+        return "Error: Invalid inputs. Please use positive integers.", "<p>Error: Invalid inputs. Please use positive integers.</p>", "<p>Error: Invalid inputs. Please use positive integers.</p>"
+
+    # Add print statement here to debug the number of spins being tracked
+    recent_spins = state.last_spins[-num_spins_to_check:] if len(state.last_spins) >= num_spins_to_check else state.last_spins
+    print(f"dozen_tracker: Tracking {num_spins_to_check} spins, recent_spins length = {len(recent_spins)}")
+    
+    if not recent_spins:
+        return "Dozen Tracker: No spins recorded yet.", "<p>Dozen Tracker: No spins recorded yet.</p>", "<p>Dozen Tracker: No spins recorded yet.</p>"
+    
+    # Get the last N spins
+    recent_spins = state.last_spins[-num_spins_to_check:] if len(state.last_spins) >= num_spins_to_check else state.last_spins
+    if not recent_spins:
+        return "Dozen Tracker: No spins recorded yet.", "<p>Dozen Tracker: No spins recorded yet.</p>", "<p>Dozen Tracker: No spins recorded yet.</p>"
+
+    # Map each spin to its Dozen
+    dozen_pattern = []
+    dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0, "Not in Dozen": 0}
+    for spin in recent_spins:
+        spin_value = int(spin)
+        if spin_value == 0:
+            dozen_pattern.append("Not in Dozen")
+            dozen_counts["Not in Dozen"] += 1
+        else:
+            found = False
+            for name, numbers in DOZENS.items():
+                if spin_value in numbers:
+                    dozen_pattern.append(name)
+                    dozen_counts[name] += 1
+                    found = True
+                    break
+            if not found:
+                dozen_pattern.append("Not in Dozen")
+                dozen_counts["Not in Dozen"] += 1
+
+    # Detect consecutive Dozen hits (only if alert is enabled)
+    current_streak = 1
+    current_dozen = None
+    max_streak = 1
+    max_streak_dozen = None
+    if alert_enabled:
+        for i in range(len(dozen_pattern)):
+            dozen = dozen_pattern[i]
+            if dozen == "Not in Dozen":  # 0 breaks the streak
+                current_streak = 1
+                current_dozen = None
+                continue
+            if current_dozen is None or dozen != current_dozen:
+                current_dozen = dozen
+                current_streak = 1
+            else:
+                current_streak += 1
+                if current_streak >= consecutive_hits_threshold:
+                    gr.Warning(f"Alert: {current_dozen} has hit {current_streak} times consecutively!")
+                if current_streak > max_streak:
+                    max_streak = current_streak
+                    max_streak_dozen = current_dozen
+
+    # Detect sequence matches (only if sequence alert is enabled)
+    sequence_matches = []
+    sequence_follow_ups = []
+    if sequence_alert_enabled and len(dozen_pattern) >= sequence_length:
+        # Collect all sequences of length X
+        sequences = []
+        for i in range(len(dozen_pattern) - sequence_length + 1):
+            seq = tuple(dozen_pattern[i:i + sequence_length])
+            sequences.append((i, seq))
+
+        # Find matching sequences
+        for i in range(len(sequences)):
+            for j in range(i + 1, len(sequences)):
+                if sequences[i][1] == sequences[j][1]:
+                    start_idx = sequences[j][0]
+                    sequence_matches.append((start_idx, sequences[j][1]))
+                    # Get the next Y spins after the first occurrence
+                    first_start_idx = sequences[i][0]
+                    follow_up_start = first_start_idx + sequence_length
+                    follow_up_end = follow_up_start + follow_up_spins
+                    if follow_up_end <= len(dozen_pattern):
+                        follow_up = dozen_pattern[follow_up_start:follow_up_end]
+                        sequence_follow_ups.append((start_idx, sequences[j][1], follow_up))
+
+        # If a match is found, provide betting recommendations
+        if sequence_matches:
+            latest_match = max(sequence_matches, key=lambda x: x[0])  # Latest match by start index
+            latest_start_idx, matched_sequence = latest_match
+            # Find the follow-up spins for the first occurrence of this sequence
+            first_occurrence = min((seq for seq in sequences if seq[1] == matched_sequence), key=lambda x: x[0])[0]
+            follow_up_start = first_occurrence + sequence_length
+            follow_up_end = follow_up_start + follow_up_spins
+            if follow_up_end <= len(dozen_pattern):
+                follow_up = dozen_pattern[follow_up_start:follow_up_end]
+                gr.Warning(f"Alert: Sequence {', '.join(matched_sequence)} has repeated at spins {latest_start_idx + 1} to {latest_start_idx + sequence_length}!")
+                sequence_recommendations.append(f"Alert: Sequence {', '.join(matched_sequence)} has repeated at spins {latest_start_idx + 1} to {latest_start_idx + sequence_length}!")
+                sequence_recommendations.append(f"Previous follow-up spins (next {follow_up_spins}): {', '.join(follow_up)}")
+                sequence_recommendations.append("Betting Recommendations (Bet Against Historical Follow-Ups):")
+                all_dozens = ["1st Dozen", "2nd Dozen", "3rd Dozen"]
+                for idx, dozen in enumerate(follow_up):
+                    if dozen == "Not in Dozen":
+                        sequence_recommendations.append(f"Spin {idx + 1}: 0 (Not in Dozen) - No bet recommendation.")
+                    else:
+                        dozens_to_bet = [d for d in all_dozens if d != dozen]
+                        sequence_recommendations.append(f"Spin {idx + 1}: Bet against {dozen} - Bet on {', '.join(dozens_to_bet)}")
+
+    # Text summary for Dozen Tracker
+    recommendations.append(f"Dozen Tracker (Last {len(recent_spins)} Spins):")
+    recommendations.append("Dozen History: " + ", ".join(dozen_pattern))
+    if alert_enabled and max_streak >= consecutive_hits_threshold:
+        recommendations.append(f"\nAlert: {max_streak_dozen} hit {max_streak} times consecutively!")
+    recommendations.append("\nSummary of Dozen Hits:")
+    for name, count in dozen_counts.items():
+        recommendations.append(f"{name}: {count} hits")
+
+    # HTML representation for Dozen Tracker
+    html_output = f'<h4>Dozen Tracker (Last {len(recent_spins)} Spins):</h4>'
+    html_output += '<div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;">'
+    for dozen in dozen_pattern:
+        color = {
+            "1st Dozen": "#FF6347",  # Tomato red
+            "2nd Dozen": "#4682B4",  # Steel blue
+            "3rd Dozen": "#32CD32",  # Lime green
+            "Not in Dozen": "#808080"  # Gray for 0
+        }.get(dozen, "#808080")
+        html_output += f'<span style="background-color: {color}; color: white; padding: 2px 5px; border-radius: 3px; display: inline-block;">{dozen}</span>'
+    html_output += '</div>'
+    if alert_enabled and max_streak >= consecutive_hits_threshold:
+        html_output += f'<p style="color: red; font-weight: bold;">Alert: {max_streak_dozen} hit {max_streak} times consecutively!</p>'
+    html_output += '<h4>Summary of Dozen Hits:</h4>'
+    html_output += '<ul style="list-style-type: none; padding-left: 0;">'
+    for name, count in dozen_counts.items():
+        html_output += f'<li>{name}: {count} hits</li>'
+    html_output += '</ul>'
+
+    # HTML representation for Sequence Matching
+    sequence_html_output = "<h4>Sequence Matching Results:</h4>"
+    if not sequence_alert_enabled:
+        sequence_html_output += "<p>Sequence matching is disabled. Enable it to see results.</p>"
+    elif len(dozen_pattern) < sequence_length:
+        sequence_html_output += f"<p>Not enough spins to match a sequence of length {sequence_length}.</p>"
+    elif not sequence_matches:
+        sequence_html_output += "<p>No sequence matches found yet.</p>"
+    else:
+        sequence_html_output += "<ul style='list-style-type: none; padding-left: 0;'>"
+        for start_idx, seq in sequence_matches:
+            sequence_html_output += f"<li>Match found at spins {start_idx + 1} to {start_idx + sequence_length}: {', '.join(seq)}</li>"
+        sequence_html_output += "</ul>"
+        if sequence_recommendations:
+            sequence_html_output += "<h4>Latest Match Details:</h4>"
+            sequence_html_output += "<ul style='list-style-type: none; padding-left: 0;'>"
+            for rec in sequence_recommendations:
+                if "Alert:" in rec:
+                    sequence_html_output += f"<li style='color: red; font-weight: bold;'>{rec}</li>"
+                else:
+                    sequence_html_output += f"<li>{rec}</li>"
+            sequence_html_output += "</ul>"
+
+    return "\n".join(recommendations), html_output, sequence_html_output
+
+STRATEGIES = {
+    "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
+    "Cold Bet Strategy": {"function": cold_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
+    "Best Even Money Bets": {"function": best_even_money_bets, "categories": ["even_money"]},
+    "Best Even Money Bets + Top Pick 18 Numbers": {"function": best_even_money_and_top_18, "categories": ["even_money", "numbers"]},
+    "Best Dozens": {"function": best_dozens, "categories": ["dozens"]},
+    "Best Dozens + Top Pick 18 Numbers": {"function": best_dozens_and_top_18, "categories": ["dozens", "numbers"]},
+    "Best Columns": {"function": best_columns, "categories": ["columns"]},
+    "Best Columns + Top Pick 18 Numbers": {"function": best_columns_and_top_18, "categories": ["columns", "numbers"]},
+    "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers": {"function": best_dozens_even_money_and_top_18, "categories": ["dozens", "even_money", "numbers", "trends"]},
+    "Best Columns + Best Even Money Bets + Top Pick 18 Numbers": {"function": best_columns_even_money_and_top_18, "categories": ["columns", "even_money", "numbers", "trends"]},
+    "Fibonacci Strategy": {"function": fibonacci_strategy, "categories": ["dozens", "columns"]},
+    "Best Streets": {"function": best_streets, "categories": ["streets"]},
+    "Best Double Streets": {"function": best_double_streets, "categories": ["six_lines"]},
+    "Best Corners": {"function": best_corners, "categories": ["corners"]},
+    "Best Splits": {"function": best_splits, "categories": ["splits"]},
+    "Best Dozens + Best Streets": {"function": best_dozens_and_streets, "categories": ["dozens", "streets"]},
+    "Best Columns + Best Streets": {"function": best_columns_and_streets, "categories": ["columns", "streets"]},
+    "Non-Overlapping Double Street Strategy": {"function": non_overlapping_double_street_strategy, "categories": ["six_lines"]},
+    "Non-Overlapping Corner Strategy": {"function": non_overlapping_corner_strategy, "categories": ["corners"]},
+    "Romanowksy Missing Dozen": {"function": romanowksy_missing_dozen_strategy, "categories": ["dozens", "numbers"]},
+    "Fibonacci To Fortune": {"function": fibonacci_to_fortune_strategy, "categories": ["even_money", "dozens", "columns", "six_lines"]},
+    "3-8-6 Rising Martingale": {"function": three_eight_six_rising_martingale, "categories": ["streets"]},
+    "1 Dozen +1 Column Strategy": {"function": one_dozen_one_column_strategy, "categories": ["dozens", "columns"]},
+    "Top Pick 18 Numbers without Neighbours": {"function": top_pick_18_numbers_without_neighbours, "categories": ["numbers"]},
+    "Top Numbers with Neighbours (Tiered)": {"function": top_numbers_with_neighbours_tiered, "categories": ["numbers"]},
+    "Neighbours of Strong Number": {"function": neighbours_of_strong_number, "categories": ["neighbours"]}
+}
+
+def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
+    try:
+        print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
+        print(f"show_strategy_recommendations: even_money_scores = {dict(state.even_money_scores)}")
+        print(f"show_strategy_recommendations: any_scores = {any(state.scores.values())}, any_even_money = {any(state.even_money_scores.values())}")
+        print(f"show_strategy_recommendations: strategy_name = {strategy_name}, neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}, args = {args}")
+
+        if strategy_name == "None":
+            return "<p>No strategy selected. Please choose a strategy to see recommendations.</p>"
+        
+        # If no spins yet, provide a default for "Best Even Money Bets"
+        if not any(state.scores.values()) and not any(state.even_money_scores.values()):
+            if strategy_name == "Best Even Money Bets":
+                return "<p>No spins yet. Default Even Money Bets to consider:<br>1. Red<br>2. Black<br>3. Even</p>"
+            return "<p>Please analyze some spins first to generate scores.</p>"
+
+        strategy_info = STRATEGIES[strategy_name]
+        strategy_func = strategy_info["function"]
+
+        if strategy_name == "Neighbours of Strong Number":
+            try:
+                neighbours_count = int(neighbours_count)
+                strong_numbers_count = int(strong_numbers_count)
+                print(f"show_strategy_recommendations: Using neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}")
+            except (ValueError, TypeError) as e:
+                print(f"show_strategy_recommendations: Error converting inputs: {str(e)}, defaulting to 2 and 1.")
+                neighbours_count = 2
+                strong_numbers_count = 1
+            recommendations = strategy_func(neighbours_count, strong_numbers_count)
+        else:
+            recommendations = strategy_func()
+
+        print(f"show_strategy_recommendations: Strategy {strategy_name} output = {recommendations}")
+
+        # If the output is already HTML, return it as is
+        if strategy_name == "Top Numbers with Neighbours (Tiered)":
+            return recommendations
+        # Otherwise, convert plain text to HTML
+        else:
+            lines = recommendations.split("\n")
+            html_lines = [f"<p>{line}</p>" for line in lines if line.strip()]
+            return "".join(html_lines)
+    except Exception as e:
+        print(f"show_strategy_recommendations: Error: {str(e)}")
+        return f"<p>Error generating strategy recommendations: {str(e)}</p>"
+
 def clear_outputs():
-    # Mock implementation to reset all outputs to their initial values
-    return (
-        "",  # spins_display
-        "",  # spins_textbox
-        '<h4>Last Spins</h4><p>No spins yet.</p>',  # last_spin_display
-        '<span style="font-size: 16px;">Total Spins: 0</span>',  # spin_counter
-        render_sides_of_zero_display(),  # sides_of_zero_display
-        create_dynamic_table(strategy_name="Best Even Money Bets"),  # dynamic_table_output
-        "<p>No spins yet. Default Even Money Bets consider:<br>1. Red<br>2. Black<br>3. Even</p>",  # strategy_output
-        "<p>Select the number of spins to track and analyze spins to see the Dozen history.</p>",  # dozen_tracker_output
-        "<p>Enable sequence matching to see results here.</p>",  # dozen_tracker_sequence_output
-        "<p>No casino data entered yet.</p>",  # casino_data_output
-        "00",  # even_percent
-        "00",  # odd_percent
-        "00",  # red_percent
-        "00",  # black_percent
-        "00",  # low_percent
-        "00",  # high_percent
-        "00",  # dozen1_percent
-        "00",  # dozen2_percent
-        "00",  # dozen3_percent
-        "00",  # col1_percent
-        "00",  # col2_percent
-        "00",  # col3_percent
-        1000,  # bankroll_input
-        "1000",  # bankroll_output
-        "10",  # current_bet_output
-        "10",  # next_bet_output
-        "Start with base bet of 10 on Even Money (Martingale)",  # message_output
-        '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>',  # status_output
-        "rgba(255, 255, 0, 0.5)",  # top_color_picker
-        "rgba(0, 255, 255, 0.5)",  # middle_color_picker
-        "rgba(0, 255, 0, 0.5)",  # lower_color_picker
-        "",  # color_code_output (initial value not specified, assuming empty)
-        "",  # spin_analysis_output
-        "",  # straight_up_html
-        "",  # top_18_html
-        "",  # strongest_numbers_output
-        "",  # even_money_output
-        "",  # dozens_output
-        "",  # columns_output
-        "",  # streets_output
-        "",  # corners_output
-        "",  # six_lines_output
-        "",  # splits_output
-        "",  # sides_output
-        None  # save_output
-    )
+    return "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
+
+def toggle_checkboxes(strategy_name):
+    return (gr.update(visible=strategy_name == "Kitchen Martingale"),
+            gr.update(visible=strategy_name == "S.T.Y.W: Victory Vortex"))
+def reset_colors():
+    """Reset color pickers to default values and update the dynamic table."""
+    default_top = "rgba(255, 255, 0, 0.5)"  # Yellow
+    default_middle = "rgba(0, 255, 255, 0.5)"  # Cyan
+    default_lower = "rgba(0, 255, 0, 0.5)"  # Green
+    return default_top, default_middle, default_lower
+def clear_last_spins_display():
+    """Clear the Last Spins HTML display without affecting spins data."""
+    return "<h4>Last Spins</h4><p>Display cleared. Add spins to see them here.</p>", update_spin_counter()
 
 # Build the Gradio interface
 with gr.Blocks() as demo:
@@ -3124,14 +3182,24 @@ with gr.Blocks() as demo:
         interactive=True,
         elem_id="selected-spins"
     )
-    spin_counter = gr.HTML(
-        label="Total Spins",
-        value='<span style="font-size: 16px;">Total Spins: 0</span>',
-        elem_classes=["spin-counter"]
-    )
     sides_of_zero_display = gr.HTML(
         label="Sides of Zero",
-        value=render_sides_of_zero_display(),
+        value="""
+        <div id="sides-of-zero" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 600px; margin: 10px auto; font-family: Arial, sans-serif;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="width: 100px;" id="left-label">Left Side (0)</span>
+                <div style="flex-grow: 1; background-color: #3498db; height: 20px; width: 0%; transition: width 0.5s ease;" id="left-bar"></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="width: 100px;" id="zero-label">Zero (0)</span>
+                <div style="flex-grow: 1; background-color: #2ecc71; height: 20px; width: 0%; transition: width 0.5s ease;" id="zero-bar"></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="width: 100px;" id="right-label">Right Side (0)</span>
+                <div style="flex-grow: 1; background-color: #e74c3c; height: 20px; width: 0%; transition: width 0.5s ease;" id="right-bar"></div>
+            </div>
+        </div>
+        """,
         elem_classes=["sides-of-zero-container"]
     )
     last_spin_display = gr.HTML(
@@ -3148,333 +3216,13 @@ with gr.Blocks() as demo:
         interactive=True,
         elem_classes="long-slider"
     )
-
-    # Define strategy categories and choices
-    strategy_categories = {
-        "Trends": ["Cold Bet Strategy", "Hot Bet Strategy", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"],
-        "Even Money Strategies": ["Best Even Money Bets", "Best Even Money Bets + Top Pick 18 Numbers", "Fibonacci To Fortune"],
-        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Top Pick 18 Numbers", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],
-        "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Streets"],
-        "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
-        "Double Street Strategies": ["Best Double Streets", "Non-Overlapping Double Street Strategy"],
-        "Corner Strategies": ["Best Corners", "Non-Overlapping Corner Strategy"],
-        "Split Strategies": ["Best Splits"],
-        "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"],
-        "Neighbours Strategies": ["Neighbours of Strong Number"]
-    }
-    category_choices = ["None"] + sorted(strategy_categories.keys())
-
-    # Define all components used in event handlers at the top to avoid NameError
-    # Row 2 components
-    spins_display = gr.State(value="")
-    spins_textbox = gr.Textbox(
-        label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
-        value="",
-        interactive=True,
-        elem_id="selected-spins"
-    )
     spin_counter = gr.HTML(
-        label="Total Spins",
         value='<span style="font-size: 16px;">Total Spins: 0</span>',
+        label="Total Spins",
         elem_classes=["spin-counter"]
     )
 
-    # Row 3 components
-    sides_of_zero_display = gr.HTML(
-        label="Sides of Zero",
-        value=render_sides_of_zero_display(),
-        elem_classes=["sides-of-zero-container"]
-    )
-
-    # Row 4 components
-    last_spin_display = gr.HTML(
-        label="Last Spins",
-        value='<h4>Last Spins</h4><p>No spins yet.</p>',
-        elem_classes=["last-spins-container"]
-    )
-    last_spin_count = gr.Slider(
-        label="Show Last Spins",
-        minimum=1,
-        maximum=36,
-        step=1,
-        value=36,
-        interactive=True,
-        elem_classes="long-slider"
-    )
-
-    # Row 8 components (used in clear_all_button.click)
-    dynamic_table_output = gr.HTML(
-        label="Dynamic Table",
-        value=create_dynamic_table(strategy_name="Best Even Money Bets")
-    )
-    strategy_output = gr.HTML(
-        label="Strategy Recommendations",
-        value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
-    )
-    spins_count_dropdown = gr.Dropdown(
-        label="Past Spins Count",
-        choices=["30", "50", "100", "200", "300", "500"],
-        value="100",
-        interactive=True
-    )
-    even_percent = gr.Dropdown(
-        label="Even %",
-        choices=[f"{i:02d}" for i in range(100)],
-        value="00",
-        interactive=True
-    )
-    odd_percent = gr.Dropdown(
-        label="Odd %",
-        choices=[f"{i:02d}" for i in range(100)],
-        value="00",
-        interactive=True
-    )
-    red_percent = gr.Dropdown(
-        label="Red %",
-        choices=[f"{i:02d}" for i in range(100)],
-        value="00",
-        interactive=True
-    )
-    black_percent = gr.Dropdown(
-        label="Black %",
-        choices=[f"{i:02d}" for i in range(100)],
-        value="00",
-        interactive=True
-    )
-    low_percent = gr.Dropdown(
-        label="Low %",
-        choices=[f"{i:02d}" for i in range(100)],
-        value="00",
-        interactive=True
-    )
-    high_percent = gr.Dropdown(
-        label="High %",
-        choices=[f"{i:02d}" for i in range(100)],
-        value="00",
-        interactive=True
-    )
-    dozen1_percent = gr.Dropdown(
-        label="1st Dozen %",
-        choices=[f"{i:02d}" for i in range(100)],
-        value="00",
-        interactive=True
-    )
-    dozen2_percent = gr.Dropdown(
-        label="2nd Dozen %",
-        choices=[f"{i:02d}" for i in range(100)],
-        value="00",
-        interactive=True
-    )
-    dozen3_percent = gr.Dropdown(
-        label="3rd Dozen %",
-        choices=[f"{i:02d}" for i in range(100)],
-        value="00",
-        interactive=True
-    )
-    col1_percent = gr.Dropdown(
-        label="1st Column %",
-        choices=[f"{i:02d}" for i in range(100)],
-        value="00",
-        interactive=True
-    )
-    col2_percent = gr.Dropdown(
-        label="2nd Column %",
-        choices=[f"{i:02d}" for i in range(100)],
-        value="00",
-        interactive=True
-    )
-    col3_percent = gr.Dropdown(
-        label="3rd Column %",
-        choices=[f"{i:02d}" for i in range(100)],
-        value="00",
-        interactive=True
-    )
-    use_winners_checkbox = gr.Checkbox(
-        label="Highlight Casino Winners",
-        value=False,
-        interactive=True
-    )
-    reset_casino_data_button = gr.Button(
-        "Reset Casino Data",
-        elem_classes=["action-button"]
-    )
-    casino_data_output = gr.HTML(
-        label="Casino Data Insights",
-        value="<p>No casino data entered yet.</p>"
-    )
-    category_dropdown = gr.Dropdown(
-        label="Select Category",
-        choices=category_choices,
-        value="Even Money Strategies",
-        allow_custom_value=False,
-        elem_id="select-category"
-    )
-    strategy_dropdown = gr.Dropdown(
-        label="Select Strategy",
-        choices=strategy_categories["Even Money Strategies"],
-        value="Best Even Money Bets",
-        allow_custom_value=False
-    )
-    reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
-    neighbours_count_slider = gr.Slider(
-        label="Number of Neighbors (Left + Right)",
-        minimum=1,
-        maximum=5,
-        step=1,
-        value=2,
-        interactive=True,
-        visible=False,
-        elem_classes="long-slider"
-    )
-    strong_numbers_count_slider = gr.Slider(
-        label="Strong Numbers to Highlight (Neighbours Strategy)",
-        minimum=1,
-        maximum=18,
-        step=1,
-        value=1,
-        interactive=True,
-        visible=False,
-        elem_classes="long-slider"
-    )
-    reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
-
-    # Row 9 components
-    dozen_tracker_spins_dropdown = gr.Dropdown(
-        label="Number of Spins to Track",
-        choices=["3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
-        value="5",
-        interactive=True
-    )
-    dozen_tracker_consecutive_hits_dropdown = gr.Dropdown(
-        label="Alert on Consecutive Dozen Hits",
-        choices=["3", "4", "5"],
-        value="3",
-        interactive=True
-    )
-    dozen_tracker_alert_checkbox = gr.Checkbox(
-        label="Enable Consecutive Dozen Hits Alert",
-        value=False,
-        interactive=True
-    )
-    dozen_tracker_sequence_length_dropdown = gr.Dropdown(
-        label="Sequence Length to Match (X)",
-        choices=["3", "4", "5"],
-        value="4",
-        interactive=True
-    )
-    dozen_tracker_follow_up_spins_dropdown = gr.Dropdown(
-        label="Follow-Up Spins to Track (Y)",
-        choices=["3", "4", "5", "6", "7", "8", "9", "10"],
-        value="5",
-        interactive=True
-    )
-    dozen_tracker_sequence_alert_checkbox = gr.Checkbox(
-        label="Enable Sequence Matching Alert",
-        value=False,
-        interactive=True
-    )
-    dozen_tracker_output = gr.HTML(
-        label="Dozen Tracker",
-        value="<p>Select the number of spins to track and analyze spins to see the Dozen history.</p>"
-    )
-    dozen_tracker_sequence_output = gr.HTML(
-        label="Sequence Matching Results",
-        value="<p>Enable sequence matching to see results here.</p>"
-    )
-
-    # Row 10 components
-    bankroll_input = gr.Number(label="Bankroll", value=1000)
-    base_unit_input = gr.Number(label="Base Unit", value=10)
-    stop_loss_input = gr.Number(label="Stop Loss", value=-500)
-    stop_win_input = gr.Number(label="Stop Win", value=200)
-    bet_type_dropdown = gr.Dropdown(
-        label="Bet Type",
-        choices=["Even Money", "Dozens", "Columns", "Straight Bets"],
-        value="Even Money"
-    )
-    progression_dropdown = gr.Dropdown(
-        label="Progression",
-        choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss"],
-        value="Martingale"
-    )
-    labouchere_sequence = gr.Textbox(
-        label="Labouchere Sequence (comma-separated)",
-        value="1, 2, 3, 4",
-        visible=False
-    )
-    win_button = gr.Button("Win")
-    lose_button = gr.Button("Lose")
-    reset_progression_button = gr.Button("Reset Progression")
-    bankroll_output = gr.Textbox(label="Current Bankroll", value="1000", interactive=False)
-    current_bet_output = gr.Textbox(label="Current Bet", value="10", interactive=False)
-    next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
-    message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
-    status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
-
-    # Row 11 components
-    top_color_picker = gr.ColorPicker(
-        label="Top Tier Color",
-        value="rgba(255, 255, 0, 0.5)",
-        interactive=True,
-        elem_id="top-color-picker"
-    )
-    middle_color_picker = gr.ColorPicker(
-        label="Middle Tier Color",
-        value="rgba(0, 255, 255, 0.5)",
-        interactive=True
-    )
-    lower_color_picker = gr.ColorPicker(
-        label="Lower Tier Color",
-        value="rgba(0, 255, 0, 0.5)",
-        interactive=True
-    )
-    reset_colors_button = gr.Button("Reset Colors", elem_classes=["action-button"])
-    color_code_output = gr.HTML(label="Color Code Key")
-
-    # Row 12 components
-    spin_analysis_output = gr.Textbox(
-        label="",
-        value="",
-        interactive=False,
-        lines=5
-    )
-
-    # Row 13 components
-    straight_up_html = gr.HTML(label="Strongest Numbers", elem_classes="scrollable-table")
-    top_18_html = gr.HTML(label="Top 18 Strongest Numbers (Sorted Lowest to Highest)", elem_classes="scrollable-table")
-    strongest_numbers_dropdown = gr.Dropdown(
-        label="Select Number of Strongest Numbers",
-        choices=["3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33"],
-        value="3",
-        allow_custom_value=False,
-        interactive=True,
-        elem_id="strongest-numbers-dropdown",
-        visible=False  # Hide the dropdown
-    )
-    strongest_numbers_output = gr.Textbox(
-        label="Strongest Numbers (Sorted Lowest to Highest)",
-        value="",
-        lines=2,
-        visible=False  # Hide the textbox
-    )
-
-    # Row 14 components
-    even_money_output = gr.Textbox(label="Even Money Bets", lines=10, max_lines=50)
-    dozens_output = gr.Textbox(label="Dozens", lines=10, max_lines=50)
-    columns_output = gr.Textbox(label="Columns", lines=10, max_lines=50)
-    streets_output = gr.Textbox(label="Streets", lines=10, max_lines=50)
-    corners_output = gr.Textbox(label="Corners", lines=10, max_lines=50)
-    six_lines_output = gr.Textbox(label="Double Streets", lines=10, max_lines=50)
-    splits_output = gr.Textbox(label="Splits", lines=10, max_lines=50)
-    sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
-
-    # Row 15 components
-    save_button = gr.Button("Save Session", elem_id="save-session-btn")
-    load_input = gr.File(label="Upload Session")
-    save_output = gr.File(label="Download Session")
-
-    # Now define the UI rows
-    # Row 1: Header
+    # 1. Row 1: Header
     with gr.Row(elem_id="header-row"):
         with gr.Column(scale=1):
             gr.Markdown(
@@ -3487,25 +3235,11 @@ with gr.Blocks() as demo:
                 '''
             )
 
-    # Row 2: Selected Spins Textbox and Total Spin Counter
-    with gr.Row(elem_id="selected-spins-row"):
-        with gr.Column(scale=4, min_width=600):
-            spins_textbox
-        with gr.Column(scale=1, min_width=200):
-            spin_counter
-
-    # Row 3: Dealer’s Spin Tracker
+    # 1.1 Row: Sides of Zero Bar Display
     with gr.Row():
-        with gr.Accordion("Dealer’s Spin Tracker", open=True, elem_id="sides-of-zero-accordion"):
-            sides_of_zero_display
+        sides_of_zero_display  # Reference the existing state component
 
-    # Row 4: Last Spins Display and Show Last Spins Slider
-    with gr.Row():
-        with gr.Column():
-            last_spin_display
-            last_spin_count
-
-    # Row 5: European Roulette Table
+    # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
         table_layout = [
@@ -3536,7 +3270,13 @@ with gr.Blocks() as demo:
                                 outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
                             )
 
-    # Row 6: Spin Controls
+    # 3. Row 3: Last Spins Display and Show Last Spins Slider
+    with gr.Row():
+        with gr.Column():
+            last_spin_display
+            last_spin_count
+
+    # 4. Row 4: Spin Controls
     with gr.Row():
         with gr.Column(scale=2):
             clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
@@ -3544,8 +3284,30 @@ with gr.Blocks() as demo:
             undo_button = gr.Button("Undo Spins", elem_classes=["action-button"], elem_id="undo-spins-btn")
         with gr.Column(scale=1):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
+    
+    # 5. Row 5: Selected Spins Textbox and Spin Counter
+    with gr.Row(elem_id="selected-spins-row"):
+        with gr.Column(scale=4, min_width=600):
+            spins_textbox
+        with gr.Column(scale=1, min_width=200):
+            spin_counter  # Restore side-by-side layout with styling
 
-    # Row 7: Analyze Spins, Clear Spins, and Clear All Buttons
+    # Define strategy categories and choices
+    strategy_categories = {
+        "Trends": ["Cold Bet Strategy", "Hot Bet Strategy", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"],
+        "Even Money Strategies": ["Best Even Money Bets", "Best Even Money Bets + Top Pick 18 Numbers", "Fibonacci To Fortune"],
+        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Top Pick 18 Numbers", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],
+        "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Streets"],
+        "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
+        "Double Street Strategies": ["Best Double Streets", "Non-Overlapping Double Street Strategy"],
+        "Corner Strategies": ["Best Corners", "Non-Overlapping Corner Strategy"],
+        "Split Strategies": ["Best Splits"],
+        "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"],
+        "Neighbours Strategies": ["Neighbours of Strong Number"]
+    }
+    category_choices = ["None"] + sorted(strategy_categories.keys())
+    
+    # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
         with gr.Column(scale=2):
             analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
@@ -3553,203 +3315,333 @@ with gr.Blocks() as demo:
             clear_spins_button = gr.Button("Clear Spins", elem_classes=["clear-spins-btn", "small-btn"])
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
-            # Attach event handler for Clear All button
-            clear_all_button.click(
-                fn=clear_outputs,
-                inputs=[],
-                outputs=[
-                    spins_display,
-                    spins_textbox,
-                    last_spin_display,
-                    spin_counter,
-                    sides_of_zero_display,
-                    dynamic_table_output,
-                    strategy_output,
-                    dozen_tracker_output,
-                    dozen_tracker_sequence_output,
-                    casino_data_output,
-                    even_percent,
-                    odd_percent,
-                    red_percent,
-                    black_percent,
-                    low_percent,
-                    high_percent,
-                    dozen1_percent,
-                    dozen2_percent,
-                    dozen3_percent,
-                    col1_percent,
-                    col2_percent,
-                    col3_percent,
-                    bankroll_input,
-                    bankroll_output,
-                    current_bet_output,
-                    next_bet_output,
-                    message_output,
-                    status_output,
-                    top_color_picker,
-                    middle_color_picker,
-                    lower_color_picker,
-                    color_code_output,
-                    spin_analysis_output,
-                    straight_up_html,
-                    top_18_html,
-                    strongest_numbers_output,
-                    even_money_output,
-                    dozens_output,
-                    columns_output,
-                    streets_output,
-                    corners_output,
-                    six_lines_output,
-                    splits_output,
-                    sides_output,
-                    save_output
-                ]
-            )
 
-    # Row 8: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
+        # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
-            dynamic_table_output
+            dynamic_table_output = gr.HTML(
+                label="Dynamic Table",
+                value=create_dynamic_table(strategy_name="Best Even Money Bets")
+            )
         with gr.Column(scale=1):
             gr.Markdown("### Strategy Recommendations")
-            strategy_output
+            strategy_output = gr.HTML(
+                label="Strategy Recommendations",
+                value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
+            )
             with gr.Accordion("Casino Data Insights", open=False, elem_id="casino-data-insights"):
-                spins_count_dropdown
+                spins_count_dropdown = gr.Dropdown(
+                    label="Past Spins Count",
+                    choices=["30", "50", "100", "200", "300", "500"],
+                    value="100",
+                    interactive=True
+                )
                 with gr.Row():
-                    even_percent
-                    odd_percent
+                    even_percent = gr.Dropdown(
+                        label="Even %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    odd_percent = gr.Dropdown(
+                        label="Odd %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
                 with gr.Row():
-                    red_percent
-                    black_percent
+                    red_percent = gr.Dropdown(
+                        label="Red %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    black_percent = gr.Dropdown(
+                        label="Black %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
                 with gr.Row():
-                    low_percent
-                    high_percent
+                    low_percent = gr.Dropdown(
+                        label="Low %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    high_percent = gr.Dropdown(
+                        label="High %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
                 with gr.Row():
-                    dozen1_percent
-                    dozen2_percent
-                    dozen3_percent
+                    dozen1_percent = gr.Dropdown(
+                        label="1st Dozen %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    dozen2_percent = gr.Dropdown(
+                        label="2nd Dozen %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    dozen3_percent = gr.Dropdown(
+                        label="3rd Dozen %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
                 with gr.Row():
-                    col1_percent
-                    col2_percent
-                    col3_percent
-                use_winners_checkbox
-                reset_casino_data_button
-                casino_data_output
+                    col1_percent = gr.Dropdown(
+                        label="1st Column %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    col2_percent = gr.Dropdown(
+                        label="2nd Column %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    col3_percent = gr.Dropdown(
+                        label="3rd Column %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                use_winners_checkbox = gr.Checkbox(
+                    label="Highlight Casino Winners",
+                    value=False,
+                    interactive=True
+                )
+                reset_casino_data_button = gr.Button(
+                    "Reset Casino Data",
+                    elem_classes=["action-button"]
+                )
+                casino_data_output = gr.HTML(
+                    label="Casino Data Insights",
+                    value="<p>No casino data entered yet.</p>"
+                )
         with gr.Column(scale=1, min_width=200):
-            category_dropdown
-            strategy_dropdown
-            reset_strategy_button
-            neighbours_count_slider
-            strong_numbers_count_slider
-            reset_scores_checkbox
+            category_dropdown = gr.Dropdown(
+                label="Select Category",
+                choices=category_choices,
+                value="Even Money Strategies",
+                allow_custom_value=False,
+                elem_id="select-category"
+            )
+            strategy_dropdown = gr.Dropdown(
+                label="Select Strategy",
+                choices=strategy_categories["Even Money Strategies"],
+                value="Best Even Money Bets",
+                allow_custom_value=False
+            )
+            reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
+            neighbours_count_slider = gr.Slider(
+                label="Number of Neighbors (Left + Right)",
+                minimum=1,
+                maximum=5,
+                step=1,
+                value=2,
+                interactive=True,
+                visible=False,
+                elem_classes="long-slider"
+            )
+            strong_numbers_count_slider = gr.Slider(
+                label="Strong Numbers to Highlight (Neighbours Strategy)",
+                minimum=1,
+                maximum=18,
+                step=1,
+                value=1,
+                interactive=True,
+                visible=False,
+                elem_classes="long-slider"
+            )
+            reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
 
-    # Row 9: Dozen Tracker
+    # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
         with gr.Column(scale=3):
             with gr.Accordion("Dozen Tracker", open=False, elem_id="dozen-tracker"):
-                dozen_tracker_spins_dropdown
-                dozen_tracker_consecutive_hits_dropdown
-                dozen_tracker_alert_checkbox
-                dozen_tracker_sequence_length_dropdown
-                dozen_tracker_follow_up_spins_dropdown
-                dozen_tracker_sequence_alert_checkbox
-                dozen_tracker_output
-                dozen_tracker_sequence_output
+                dozen_tracker_spins_dropdown = gr.Dropdown(
+                    label="Number of Spins to Track",
+                    choices=["3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
+                    value="5",
+                    interactive=True
+                )
+                dozen_tracker_consecutive_hits_dropdown = gr.Dropdown(
+                    label="Alert on Consecutive Dozen Hits",
+                    choices=["3", "4", "5"],
+                    value="3",
+                    interactive=True
+                )
+                dozen_tracker_alert_checkbox = gr.Checkbox(
+                    label="Enable Consecutive Dozen Hits Alert",
+                    value=False,
+                    interactive=True
+                )
+                dozen_tracker_sequence_length_dropdown = gr.Dropdown(
+                    label="Sequence Length to Match (X)",
+                    choices=["3", "4", "5"],
+                    value="4",
+                    interactive=True
+                )
+                dozen_tracker_follow_up_spins_dropdown = gr.Dropdown(
+                    label="Follow-Up Spins to Track (Y)",
+                    choices=["3", "4", "5", "6", "7", "8", "9", "10"],
+                    value="5",
+                    interactive=True
+                )
+                dozen_tracker_sequence_alert_checkbox = gr.Checkbox(
+                    label="Enable Sequence Matching Alert",
+                    value=False,
+                    interactive=True
+                )
+                dozen_tracker_output = gr.HTML(
+                    label="Dozen Tracker",
+                    value="<p>Select the number of spins to track and analyze spins to see the Dozen history.</p>"
+                )
+                dozen_tracker_sequence_output = gr.HTML(
+                    label="Sequence Matching Results",
+                    value="<p>Enable sequence matching to see results here.</p>"
+                )
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
 
-    # Row 10: Betting Progression Tracker
+    # 8. Row 8: Betting Progression Tracker
     with gr.Row():
         with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
             with gr.Row():
-                bankroll_input
-                base_unit_input
-                stop_loss_input
-                stop_win_input
+                bankroll_input = gr.Number(label="Bankroll", value=1000)
+                base_unit_input = gr.Number(label="Base Unit", value=10)
+                stop_loss_input = gr.Number(label="Stop Loss", value=-500)
+                stop_win_input = gr.Number(label="Stop Win", value=200)
             with gr.Row():
-                bet_type_dropdown
-                progression_dropdown
-                labouchere_sequence
+                bet_type_dropdown = gr.Dropdown(
+                    label="Bet Type",
+                    choices=["Even Money", "Dozens", "Columns", "Straight Bets"],
+                    value="Even Money"
+                )
+                progression_dropdown = gr.Dropdown(
+                    label="Progression",
+                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss"],
+                    value="Martingale"
+                )
+                labouchere_sequence = gr.Textbox(
+                    label="Labouchere Sequence (comma-separated)",
+                    value="1, 2, 3, 4",
+                    visible=False
+                )
             with gr.Row():
-                win_button
-                lose_button
-                reset_progression_button
+                win_button = gr.Button("Win")
+                lose_button = gr.Button("Lose")
+                reset_progression_button = gr.Button("Reset Progression")
             with gr.Row():
-                bankroll_output
-                current_bet_output
-                next_bet_output
+                bankroll_output = gr.Textbox(label="Current Bankroll", value="1000", interactive=False)
+                current_bet_output = gr.Textbox(label="Current Bet", value="10", interactive=False)
+                next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
             with gr.Row():
-                message_output
-                status_output
+                message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
+                status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
 
-    # Row 11: Color Code Key
+    # 9. Row 9: Color Code Key (Collapsible, with Color Pickers Inside)
     with gr.Accordion("Color Code Key", open=False, elem_id="color-code-key"):
         with gr.Row():
-            top_color_picker
-            middle_color_picker
-            lower_color_picker
-            reset_colors_button
-        color_code_output
+            top_color_picker = gr.ColorPicker(
+                label="Top Tier Color",
+                value="rgba(255, 255, 0, 0.5)",
+                interactive=True,
+                elem_id="top-color-picker"
+            )
+            middle_color_picker = gr.ColorPicker(
+                label="Middle Tier Color",
+                value="rgba(0, 255, 255, 0.5)",
+                interactive=True
+            )
+            lower_color_picker = gr.ColorPicker(
+                label="Lower Tier Color",
+                value="rgba(0, 255, 0, 0.5)",
+                interactive=True
+            )
+            reset_colors_button = gr.Button("Reset Colors", elem_classes=["action-button"])
+        color_code_output = gr.HTML(label="Color Code Key")
 
-    # Row 12: Spin Logic Reactor 🧠
+    # 10. Row 10: Analysis Outputs (Collapsible, Renumbered)
     with gr.Accordion("Spin Logic Reactor 🧠", open=False, elem_id="spin-analysis"):
-        spin_analysis_output
+        spin_analysis_output = gr.Textbox(
+            label="",
+            value="",
+            interactive=False,
+            lines=5
+        )
 
-    # Row 13: Strongest Numbers Tables
     with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-table"):
         with gr.Row():
             with gr.Column():
-                straight_up_html
+                straight_up_html = gr.HTML(label="Strongest Numbers", elem_classes="scrollable-table")
             with gr.Column():
-                top_18_html
+                top_18_html = gr.HTML(label="Top 18 Strongest Numbers (Sorted Lowest to Highest)", elem_classes="scrollable-table")
         with gr.Row():
-            strongest_numbers_dropdown
-            strongest_numbers_output
+            strongest_numbers_dropdown = gr.Dropdown(
+                label="Select Number of Strongest Numbers",
+                choices=["3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33"],
+                value="3",
+                allow_custom_value=False,
+                interactive=True,
+                elem_id="strongest-numbers-dropdown",
+                visible=False  # Hide the dropdown
+            )
+            strongest_numbers_output = gr.Textbox(
+                label="Strongest Numbers (Sorted Lowest to Highest)",
+                value="",
+                lines=2,
+                visible=False  # Hide the textbox
+            )
 
-    # Row 14: Aggregated Scores
     with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
         with gr.Row():
             with gr.Column():
                 with gr.Accordion("Even Money Bets", open=False):
-                    even_money_output
+                    even_money_output = gr.Textbox(label="Even Money Bets", lines=10, max_lines=50)
             with gr.Column():
                 with gr.Accordion("Dozens", open=False):
-                    dozens_output
+                    dozens_output = gr.Textbox(label="Dozens", lines=10, max_lines=50)
         with gr.Row():
             with gr.Column():
                 with gr.Accordion("Columns", open=False):
-                    columns_output
+                    columns_output = gr.Textbox(label="Columns", lines=10, max_lines=50)
             with gr.Column():
                 with gr.Accordion("Streets", open=False):
-                    streets_output
+                    streets_output = gr.Textbox(label="Streets", lines=10, max_lines=50)
         with gr.Row():
             with gr.Column():
                 with gr.Accordion("Corners", open=False):
-                    corners_output
+                    corners_output = gr.Textbox(label="Corners", lines=10, max_lines=50)
             with gr.Column():
                 with gr.Accordion("Double Streets", open=False):
-                    six_lines_output
+                    six_lines_output = gr.Textbox(label="Double Streets", lines=10, max_lines=50)
         with gr.Row():
             with gr.Column():
                 with gr.Accordion("Splits", open=False):
-                    splits_output
+                    splits_output = gr.Textbox(label="Splits", lines=10, max_lines=50)
             with gr.Column():
                 with gr.Accordion("Sides of Zero", open=False):
-                    sides_output
+                    sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
-    # Row 15: Save/Load Session
+    # 11. Row 11: Save/Load Session (Collapsible, Renumbered)
     with gr.Accordion("Save/Load Session", open=False, elem_id="save-load-session"):
         with gr.Row():
-            save_button
-            load_input
-        save_output
-
-# Lines after (context)
-    # CSS and Event Handlers
-    # [Your existing event handlers would follow here...]
+            save_button = gr.Button("Save Session", elem_id="save-session-btn")
+            load_input = gr.File(label="Upload Session")
+        save_output = gr.File(label="Download Session")
 
 
+        
     # CSS and Event Handlers
     gr.HTML("""
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css">
@@ -4016,54 +3908,13 @@ with gr.Blocks() as demo:
     )
 
     clear_all_button.click(
-        fn=clear_outputs,
+        fn=clear_all,
         inputs=[],
         outputs=[
-            spins_display,
-            spins_textbox,
-            last_spin_display,
-            spin_counter,
-            sides_of_zero_display,
-            dynamic_table_output,
-            strategy_output,
-            dozen_tracker_output,
-            dozen_tracker_sequence_output,
-            casino_data_output,
-            even_percent,
-            odd_percent,
-            red_percent,
-            black_percent,
-            low_percent,
-            high_percent,
-            dozen1_percent,
-            dozen2_percent,
-            dozen3_percent,
-            col1_percent,
-            col2_percent,
-            col3_percent,
-            bankroll_input,
-            bankroll_output,
-            current_bet_output,
-            next_bet_output,
-            message_output,
-            status_output,
-            top_color_picker,
-            middle_color_picker,
-            lower_color_picker,
-            color_code_output,
-            spin_analysis_output,
-            straight_up_html,
-            top_18_html,
-            strongest_numbers_output,
-            even_money_output,
-            dozens_output,
-            columns_output,
-            streets_output,
-            corners_output,
-            six_lines_output,
-            splits_output,
-            sides_output,
-            save_output
+            spins_display, spins_textbox, spin_analysis_output, last_spin_display,
+            even_money_output, dozens_output, columns_output, streets_output,
+            corners_output, six_lines_output, splits_output, sides_output,
+            straight_up_html, top_18_html, strongest_numbers_output, spin_counter
         ]
     ).then(
         fn=clear_outputs,
