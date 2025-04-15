@@ -3421,6 +3421,7 @@ def reset_colors():
     default_middle = "rgba(0, 255, 255, 0.5)"  # Cyan
     default_lower = "rgba(0, 255, 0, 0.5)"  # Green
     return default_top, default_middle, default_lower
+
 def clear_last_spins_display():
     """Clear the Last Spins HTML display without affecting spins data."""
     return "<h4>Last Spins</h4><p>Display cleared. Add spins to see them here.</p>", update_spin_counter()
@@ -3494,99 +3495,99 @@ with gr.Blocks() as demo:
             </div>
         </div>
         """)
-    with gr.Row():
-        accept_button = gr.Button(
-            "I Accept",
-            elem_id="accept-terms-btn",
-            elem_classes=["action-button"],
-            _js="() => { console.log('Accept button rendered and clickable'); }"
-        )
-        decline_button = gr.Button(
-            "Decline",
-            elem_id="decline-terms-btn",
-            elem_classes=["action-button"],
-            _js="() => { console.log('Decline button rendered and clickable'); }"
-        )
-
-# Main App Content (Visible Only After T&Cs Accepted)
-with gr.Group(elem_id="main-app-content", visible=terms_accepted.value) as main_app_content:
-    # Define state and components used across sections at the top
-    spins_display = gr.State(value="")
-    spins_textbox = gr.Textbox(
-        label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
-        value="",
-        interactive=True,
-        elem_id="selected-spins"
-    )
-    spin_counter = gr.HTML(
-        label="Total Spins",
-        value='<span style="font-size: 16px;">Total Spins: 0</span>',
-        elem_classes=["spin-counter"]
-    )
-    with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
-        sides_of_zero_display = gr.HTML(
-            label="Sides of Zero",
-            value=render_sides_of_zero_display(),
-            elem_classes=["sides-of-zero-container"]
-        )
-    last_spin_display = gr.HTML(
-        label="Last Spins",
-        value='<h4>Last Spins</h4><p>No spins yet.</p>',
-        elem_classes=["last-spins-container"]
-    )
-    last_spin_count = gr.Slider(
-        label="",  # Remove the label to be safe
-        minimum=1,
-        maximum=36,
-        step=1,
-        value=36,
-        interactive=True,
-        elem_classes="long-slider"
-    )
-
-    # 1. Row 1: Header
-    with gr.Row(elem_id="header-row"):
-        with gr.Column(scale=1):
-            gr.Markdown(
-                "# Roulette Spin Analyzer with Strategies (European Table)",
-                elem_classes="header-title"
+        with gr.Row():
+            accept_button = gr.Button(
+                "I Accept",
+                elem_id="accept-terms-btn",
+                elem_classes=["action-button"],
+                _js="() => { console.log('Accept button rendered and clickable'); }"
             )
-            gr.HTML(
-                '''
-                <button id="start-tour-btn" onclick="startTour()" style="padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Take the Tour!</button>
-                '''
+            decline_button = gr.Button(
+                "Decline",
+                elem_id="decline-terms-btn",
+                elem_classes=["action-button"],
+                _js="() => { console.log('Decline button rendered and clickable'); }"
             )
 
-    # 2. Row 2: European Roulette Table
-    with gr.Group():
-        gr.Markdown("### European Roulette Table")
-        table_layout = [
-            ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
-            ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
-            ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
-        ]
-        with gr.Column(elem_classes="roulette-table"):
-            for row in table_layout:
-                with gr.Row(elem_classes="table-row"):
-                    for num in row:
-                        if num == "":
-                            gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
-                        else:
-                            color = colors.get(str(num), "black")
-                            is_selected = int(num) in state.selected_numbers
-                            btn_classes = [f"roulette-button", color]
-                            if is_selected:
-                                btn_classes.append("selected")
-                            btn = gr.Button(
-                                value=num,
-                                min_width=40,
-                                elem_classes=btn_classes
-                            )
-                            btn.click(
-                                fn=add_spin,
-                                inputs=[gr.State(value=num), spins_display, last_spin_count],
-                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
-                            )
+    # Main App Content (Visible Only After T&Cs Accepted)
+    with gr.Group(elem_id="main-app-content", visible=terms_accepted.value) as main_app_content:
+        # Define state and components used across sections at the top
+        spins_display = gr.State(value="")
+        spins_textbox = gr.Textbox(
+            label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
+            value="",
+            interactive=True,
+            elem_id="selected-spins"
+        )
+        spin_counter = gr.HTML(
+            label="Total Spins",
+            value='<span style="font-size: 16px;">Total Spins: 0</span>',
+            elem_classes=["spin-counter"]
+        )
+        with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
+            sides_of_zero_display = gr.HTML(
+                label="Sides of Zero",
+                value=render_sides_of_zero_display(),
+                elem_classes=["sides-of-zero-container"]
+            )
+        last_spin_display = gr.HTML(
+            label="Last Spins",
+            value='<h4>Last Spins</h4><p>No spins yet.</p>',
+            elem_classes=["last-spins-container"]
+        )
+        last_spin_count = gr.Slider(
+            label="",  # Remove the label to be safe
+            minimum=1,
+            maximum=36,
+            step=1,
+            value=36,
+            interactive=True,
+            elem_classes="long-slider"
+        )
+
+        # 1. Row 1: Header
+        with gr.Row(elem_id="header-row"):
+            with gr.Column(scale=1):
+                gr.Markdown(
+                    "# Roulette Spin Analyzer with Strategies (European Table)",
+                    elem_classes="header-title"
+                )
+                gr.HTML(
+                    '''
+                    <button id="start-tour-btn" onclick="startTour()" style="padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Take the Tour!</button>
+                    '''
+                )
+
+        # 2. Row 2: European Roulette Table
+        with gr.Group():
+            gr.Markdown("### European Roulette Table")
+            table_layout = [
+                ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
+                ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
+                ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
+            ]
+            with gr.Column(elem_classes="roulette-table"):
+                for row in table_layout:
+                    with gr.Row(elem_classes="table-row"):
+                        for num in row:
+                            if num == "":
+                                gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
+                            else:
+                                color = colors.get(str(num), "black")
+                                is_selected = int(num) in state.selected_numbers
+                                btn_classes = [f"roulette-button", color]
+                                if is_selected:
+                                    btn_classes.append("selected")
+                                btn = gr.Button(
+                                    value=num,
+                                    min_width=40,
+                                    elem_classes=btn_classes
+                                )
+                                btn.click(
+                                    fn=add_spin,
+                                    inputs=[gr.State(value=num), spins_display, last_spin_count],
+                                    outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
+                                )
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
