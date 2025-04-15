@@ -3514,16 +3514,8 @@ with gr.Blocks() as demo:
 
     # 1. Row 1: Header
     with gr.Row(elem_id="header-row"):
-        with gr.Column(scale=1):
-            gr.Markdown(
-                "# Roulette Spin Analyzer with Strategies (European Table)",
-                elem_classes="header-title"
-            )
-            gr.HTML(
-                '''
-                <button id="start-tour-btn" onclick="startTour()" style="padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Take the Tour!</button>
-                '''
-            )
+    gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>🎰 Roulette Spin Analyzer</h1>")
+    gr.HTML('<button id="start-tour-btn" onclick="startTour()" style="padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Take the Tour!</button>')
 
     # 2. Row 2: European Roulette Table
     with gr.Group():
@@ -4059,8 +4051,8 @@ with gr.Blocks() as demo:
                 """) 
     # CSS and Event Handlers
     gr.HTML("""
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css">
-    <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@11.2.0/dist/css/shepherd.css">
+    <script src="https://cdn.jsdelivr.net/npm/shepherd.js@11.2.0/dist/js/shepherd.min.js"></script>
     <style>
       /* General Layout */
       .gr-row { margin: 0 !important; padding: 5px 0 !important; }
@@ -5159,8 +5151,8 @@ with gr.Blocks() as demo:
 
       });
 
-      function startTour() {
-        console.log('Tour starting...');
+            function startTour() {
+        console.log('Tour starting... (Button clicked)');
         let retries = 0;
         const maxRetries = 10; // Try up to 10 times (5 seconds total)
         const interval = 500; // Check every 500ms
