@@ -2990,7 +2990,7 @@ def create_color_code_table():
 def update_spin_counter():
     """Return the current number of spins as formatted HTML with inline styling."""
     spin_count = len(state.last_spins)
-    return f'<span style="font-size: 16px;">Total Spins: {spin_count}</span>'
+    return f'<span class="spin-counter">Total Spins: {spin_count}</span>'
     
 def top_numbers_with_neighbours_tiered():
     recommendations = []
@@ -3918,30 +3918,33 @@ with gr.Blocks() as demo:
       /* Header Styling */
       .header-title { text-align: center !important; font-size: 2.5em !important; margin-bottom: 5px !important; color: #333 !important; }
     
-      /* Fix Selected Spins Label Cutoff */
-      #selected-spins-row {
-          width: 100% !important;
-          max-width: none !important;
-          overflow: visible !important;
-      }
+      /* Fix Selected Spins Row */
+        #selected-spins-row {
+            display: flex !important;
+            align-items: center !important; /* Vertically center textbox and counter */
+            gap: 10px !important; /* Space between textbox and counter */
+            width: 100% !important;
+            max-width: none !important;
+            overflow: visible !important;
+            flex-wrap: nowrap !important; /* Prevent wrapping to keep inline */
+        }
+        #selected-spins {
+            flex-grow: 1 !important; /* Textbox takes most space */
+            min-width: 0 !important; /* Prevent overflow */
+        }
         #selected-spins label {
             white-space: normal !important;
             width: 100% !important;
             height: auto !important;
             overflow: visible !important;
             display: block !important;
-            background-color: #87CEEB;
-            color: black;
-            padding: 10px 5px !important; /* Increased top/bottom padding */
-            border-radius: 3px;
-            line-height: 1.5em !important; /* Increased for better spacing */
-            font-size: 14px !important; /* Reduced font size */
-            margin-top: 5px !important; /* Added to shift text downward */
+            background-color: #87CEEB !important;
+            color: black !important;
+            padding: 10px 5px !important;
+            border-radius: 3px !important;
+            line-height: 1.5em !important;
+            font-size: 14px !important;
         }
-      #selected-spins {
-          width: 100% !important;
-          min-width: 800px !important;
-      }
     
       /* Roulette Table */
       .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
@@ -3986,25 +3989,23 @@ with gr.Blocks() as demo:
       .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
     
       /* Spin Counter Styling */
-      .spin-counter {
-          font-size: 16px !important;
-          font-weight: bold !important;
-          color: #ffffff !important;
-          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
-          padding: 8px 12px !important;
-          border: 2px solid #3498DB !important; /* Darker blue border */
-          border-radius: 8px !important;
-          margin-top: 0 !important; /* Align with textbox */
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important; /* Slightly stronger shadow */
-          transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
-      }
-      .spin-counter:hover {
-          transform: scale(1.05) !important; /* Slight zoom on hover */
-          box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
-      }
+        .spin-counter {
+            font-size: 14px !important; /* Smaller font size */
+            font-weight: normal !important; /* Less bold to reduce prominence */
+            color: #333333 !important; /* Dark gray for contrast */
+            background: none !important; /* Remove gradient background */
+            padding: 4px 8px !important; /* Minimal padding */
+            border: none !important; /* Remove border */
+            border-radius: 4px !important; /* Subtle rounding */
+            margin: 0 10px !important; /* Small horizontal margin for spacing */
+            display: inline-block !important; /* Inline-block to fit content */
+            line-height: normal !important; /* Normal line height */
+            vertical-align: middle !important; /* Align with textbox */
+        }
+        .spin-counter:hover {
+            background: #f0f0f0 !important; /* Light gray background on hover */
+            cursor: default !important; /* No pointer to indicate non-interactive */
+        }
     
       /* Last Spins Container */
             .last-spins-container {
