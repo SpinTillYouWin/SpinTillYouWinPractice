@@ -3478,7 +3478,11 @@ def clear_last_spins_display():
 
 # Build the Gradio interface
 with gr.Blocks() as demo:
-    # Define state and components used across sections at the top
+    # 1. Row 1: Header (Moved to the top)
+    with gr.Row(elem_id="header-row"):
+        gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>🎰 Roulette Spin Analyzer</h1>")
+
+    # Define state and components used across sections
     spins_display = gr.State(value="")
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
@@ -3511,10 +3515,6 @@ with gr.Blocks() as demo:
         interactive=True,
         elem_classes="long-slider"
     )
-
-    # 1. Row 1: Header
-    with gr.Row(elem_id="header-row"):
-        gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>🎰 Roulette Spin Analyzer</h1>")
 
     # 2. Row 2: European Roulette Table
     with gr.Group():
@@ -4089,18 +4089,21 @@ with gr.Blocks() as demo:
           display: none !important;
       }
       
-      /* Header Styling */
-      #header-row {
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          flex-wrap: wrap !important;
-          background-color: white !important;
-          padding: 10px 0 !important;
-      }
-    
-      .header-title { text-align: center !important; font-size: 2.5em !important; margin-bottom: 5px !important; color: #333 !important; }
-    
+        /* Header Styling */
+        #header-row {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-wrap: wrap !important;
+            background-color: white !important;
+            padding: 10px 0 !important;
+            width: 100% !important; /* Ensure the header spans the full width */
+            margin: 0 auto !important; /* Center the row horizontally */
+            margin-bottom: 20px !important; /* Add spacing below the header */
+        }
+        
+        .header-title { text-align: center !important; font-size: 2.5em !important; margin: 0 !important; color: #333 !important; } 
+        
       /* Fix Selected Spins Label Cutoff */
       #selected-spins-row {
           width: 100% !important;
