@@ -3541,9 +3541,64 @@ with gr.Blocks() as demo:
         "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"],
         "Neighbours Strategies": ["Neighbours of Strong Number"]
     }
-    category_choices = ["None"] + sorted(strategy_categories.keys())
+    category_choices = ["None"] + sorted(strategy_categories.keys())  # Line 4877 (Unchanged)
+
+    # Define video categories matching strategy categories (Line 4878 to 4925 - New)
+    video_categories = {
+        "Trends": [],
+        "Even Money Strategies": [
+            {
+                "title": "S.T.Y.W: Zero Jack 2-2-3 Roulette Strategy",
+                "link": "https://youtu.be/I_F9Wys3Ww0"
+            }
+        ],
+        "Dozen Strategies": [
+            {
+                "title": "S.T.Y.W: Dynamic Play: 1 Dozen with 4 Streets or 2 Double Streets?",
+                "link": "https://youtu.be/8aMHrvuzBGU"
+            },
+            {
+                "title": "S.T.Y.W: Romanowsky Missing Dozen Strategy",
+                "link": "https://youtu.be/YbBtum5WVCk"
+            },
+            {
+                "title": "S.T.Y.W: Victory Vortex (Dozen Domination)",
+                "link": "https://youtu.be/aKGA_csI9lY"
+            }
+        ],
+        "Column Strategies": [
+            {
+                "title": "S.T.Y.W: Zero Jack 2-2-3 Roulette Strategy",
+                "link": "https://youtu.be/I_F9Wys3Ww0"
+            },
+            {
+                "title": "S.T.Y.W: Victory Vortex (Dozen Domination)",
+                "link": "https://youtu.be/aKGA_csI9lY"
+            }
+        ],
+        "Street Strategies": [
+            {
+                "title": "S.T.Y.W: Dynamic Play: 1 Dozen with 4 Streets or 2 Double Streets?",
+                "link": "https://youtu.be/8aMHrvuzBGU"
+            },
+            {
+                "title": "S.T.Y.W: 3-8-6 Rising Martingale",
+                "link": "https://youtu.be/-ZcEUOTHMzA"
+            }
+        ],
+        "Double Street Strategies": [
+            {
+                "title": "S.T.Y.W: Dynamic Play: 1 Dozen with 4 Streets or 2 Double Streets?",
+                "link": "https://youtu.be/8aMHrvuzBGU"
+            }
+        ],
+        "Corner Strategies": [],
+        "Split Strategies": [],
+        "Number Strategies": [],
+        "Neighbours Strategies": []
+    }
     
-    # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
+    # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons  # Line 4926 (Unchanged)
     with gr.Row():
         with gr.Column(scale=2):
             analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
@@ -3874,9 +3929,33 @@ with gr.Blocks() as demo:
         with gr.Row():
             save_button = gr.Button("Save Session", elem_id="save-session-btn")
             load_input = gr.File(label="Upload Session")
-        save_output = gr.File(label="Download Session")
+        save_output = gr.File(label="Download Session")  # Line 4857 (Unchanged)
 
-        # 12. Row 12: Feedback Section
+        # 11. Row 11: Top Strategies with Roulette Spin Analyzer (New Accordion)  # Line 4858 (New)
+        with gr.Row():
+            with gr.Column():
+                with gr.Accordion("Top Strategies with Roulette Spin Analyzer 🎥", open=False, elem_id="top-strategies"):
+                    gr.Markdown("### Explore Strategies Through Videos")
+                    video_category_dropdown = gr.Dropdown(
+                        label="Select Video Category",
+                        choices=sorted(video_categories.keys()),
+                        value="Dozen Strategies",
+                        allow_custom_value=False,
+                        elem_id="video-category-dropdown"
+                    )
+                    video_dropdown = gr.Dropdown(
+                        label="Select Video",
+                        choices=[video["title"] for video in video_categories["Dozen Strategies"]],
+                        value=video_categories["Dozen Strategies"][0]["title"] if video_categories["Dozen Strategies"] else None,
+                        allow_custom_value=False,
+                        elem_id="video-dropdown"
+                    )
+                    video_output = gr.HTML(
+                        label="Video",
+                        value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_categories["Dozen Strategies"][0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if video_categories["Dozen Strategies"] else "<p>Select a category and video to watch.</p>"
+                    )
+
+        # 12. Row 12: Feedback Section  # Line 4882 (Unchanged)
     with gr.Row():
         with gr.Column():
             with gr.Accordion("Feedback & Suggestions 📝", open=False, elem_id="feedback-section"):
@@ -3901,17 +3980,11 @@ with gr.Blocks() as demo:
                 </div>
                 <script>
                     document.getElementById("feedback-form").addEventListener("submit", function(event) {
-                        event.preventDefault(); // Prevent default form submission and redirect
-
-                        // Get form data
+                        event.preventDefault();
                         const form = event.target;
                         const formData = new FormData(form);
                         const messageDiv = document.getElementById("form-message");
-
-                        // Show a loading message
                         messageDiv.innerHTML = '<p style="color: #333;">Submitting your feedback...</p>';
-
-                        // Send form data to Formspree via fetch
                         fetch("https://formspree.io/f/mnnpllqq", {
                             method: "POST",
                             body: formData,
@@ -3921,12 +3994,9 @@ with gr.Blocks() as demo:
                         })
                         .then(response => {
                             if (response.ok) {
-                                // Display success message
                                 messageDiv.innerHTML = '<p style="color: green; font-weight: bold;">Thank you for your feedback!</p>';
-                                // Reset the form
                                 form.reset();
                             } else {
-                                // Display error message
                                 messageDiv.innerHTML = '<p style="color: red;">There was an error submitting your feedback. Please try again later.</p>';
                             }
                         })
@@ -4167,8 +4237,48 @@ with gr.Blocks() as demo:
       /* Shepherd.js Tweaks */
       .shepherd-modal-overlay-container { opacity: 0.5; z-index: 999; } /* Ensure overlay is below fullscreen */
       .shepherd-button { background-color: #007bff; color: white; padding: 5px 10px; border-radius: 3px; }
-      .shepherd-button:hover { background-color: #0056b3; }
-    </style>
+      .shepherd-button:hover { background-color: #0056b3; }  # Line 5164 (Unchanged)
+
+      /* Top Strategies Accordion */  # Line 5165 (New)
+      #top-strategies summary {
+          background-color: #dc3545 !important;
+          color: #fff !important;
+          padding: 10px !important;
+          border-radius: 5px !important;
+      }
+
+      /* Video Section */
+      #top-strategies .gr-box {
+          background-color: #f5c6cb !important;
+          padding: 15px !important;
+          border-radius: 5px !important;
+      }
+      #video-category-dropdown label, #video-dropdown label {
+          background-color: #87CEEB !important;
+          color: black !important;
+          padding: 5px !important;
+          border-radius: 3px !important;
+      }
+      #video-output {
+          margin-top: 15px !important;
+          width: 100% !important;
+          display: flex !important;
+          justify-content: center !important;
+      }
+      #video-output iframe {
+          max-width: 100% !important;
+          border-radius: 5px !important;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+      }
+
+      /* Responsive Design for Video */
+      @media (max-width: 600px) {
+          #video-output iframe {
+              height: 200px !important;
+          }
+      }
+
+    </style>  # Line 5195 (Unchanged)
     """)
     print("CSS Updated")
 
@@ -4680,19 +4790,49 @@ with gr.Blocks() as demo:
         fn=lambda: state.reset_progression(),
         inputs=[],
         outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+    )  # Line 5260 (Unchanged)
+
+    # Video Category and Video Selection Event Handlers  # Line 5261 (New)
+    def update_video_dropdown(category):
+        videos = video_categories.get(category, [])
+        choices = [video["title"] for video in videos]
+        default_value = choices[0] if choices else None
+        return (
+            gr.update(choices=choices, value=default_value),
+            gr.update(value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{videos[0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if videos else "<p>No videos available in this category.</p>")
+        )
+
+    def update_video_display(video_title, category):
+        videos = video_categories.get(category, [])
+        selected_video = next((video for video in videos if video["title"] == video_title), None)
+        if selected_video:
+            video_id = selected_video["link"].split("/")[-1]
+            return f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
+        return "<p>Please select a video to watch.</p>"
+
+    video_category_dropdown.change(
+        fn=update_video_dropdown,
+        inputs=[video_category_dropdown],
+        outputs=[video_dropdown, video_output]
     )
 
-    # Add the Shepherd.js tour script here
+    video_dropdown.change(
+        fn=update_video_display,
+        inputs=[video_dropdown, video_category_dropdown],
+        outputs=[video_output]
+    )
+
+    # Add the Shepherd.js tour script here  # Line 5287 (Unchanged)
     gr.HTML("""
-<script>
-  const tour = new Shepherd.Tour({
-    defaultStepOptions: {
-      cancelIcon: { enabled: true },
-      scrollTo: { behavior: 'smooth', block: 'center' },
-      classes: 'shepherd-theme-arrows',
-    },
-    useModalOverlay: true
-  });
+    <script>
+      const tour = new Shepherd.Tour({
+        defaultStepOptions: {
+          cancelIcon: { enabled: true },
+          scrollTo: { behavior: 'smooth', block: 'center' },
+          classes: 'shepherd-theme-arrows',
+        },
+        useModalOverlay: true
+      });
 
   // Debug function to log step transitions
   function logStep(stepId, nextStepId) {
@@ -4895,50 +5035,68 @@ with gr.Blocks() as demo:
     ]
   });
 
-  // Part 13: Pick Your Strategy Groove!
-  tour.addStep({
-    id: 'part13',
-    title: 'Pick Your Strategy Groove!',
-    text: 'Choose your flow!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iuGEltUVbqc?fs=0" frameborder="0"></iframe>',
-    attachTo: { element: '#select-category', on: 'left' },
-    buttons: [
-      { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 13', 'Part 14') },
-      { text: 'Skip', action: tour.cancel }
-    ]
-  });
+      // Part 13: Pick Your Strategy Groove!
+      tour.addStep({
+          id: 'part13',
+          title: 'Pick Your Strategy Groove!',
+          text: 'Choose your flow!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iuGEltUVbqc?fs=0" frameborder="0"></iframe>',
+          attachTo: { element: '#select-category', on: 'left' },
+          buttons: [
+              { text: 'Back', action: tour.back },
+              { text: 'Next', action: logStep('Part 13', 'Part 14') },
+              { text: 'Skip', action: tour.cancel }
+          ]
+      });  # Line 5361 (Unchanged)
 
-  // Part 14: Boost Wins with Casino Intel!
-  tour.addStep({
-    id: 'part14',
-    title: 'Boost Wins with Casino Intel!',
-    text: 'Add casino stats!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
-    attachTo: { element: '#casino-data-insights', on: 'top' },
-    beforeShowPromise: function() {
-      return forceAccordionOpen('#casino-data-insights');
-    },
-    buttons: [
-      { text: 'Back', action: tour.back },
-      { text: 'Finish', action: () => { console.log('Tour completed'); tour.complete(); } }
-    ]
-  });
+      // Part 14: Watch and Win with Video Strategies!  # Line 5362 (New)
+      tour.addStep({
+          id: 'part14',
+          title: 'Watch and Win with Video Strategies!',
+          text: 'Learn from videos!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/8aMHrvuzBGU?fs=0" frameborder="0"></iframe>',
+          attachTo: { element: '#top-strategies', on: 'top' },
+          beforeShowPromise: function() {
+              return forceAccordionOpen('#top-strategies');
+          },
+          buttons: [
+              { text: 'Back', action: tour.back },
+              { text: 'Next', action: logStep('Part 14', 'Part 15') },
+              { text: 'Skip', action: tour.cancel }
+          ]
+      });
 
-  function startTour() {
-    console.log('Tour starting...');
-    setTimeout(() => {
-      if (document.querySelector('#header-row')) {
-        console.log('DOM ready, starting tour');
-        tour.start();
-      } else {
-        console.error('Header row not found, tour aborted');
+      // Part 15: Boost Wins with Casino Intel! (Renumbered from Part 14)  # Line 5378 (Updated)
+      tour.addStep({
+          id: 'part15',
+          title: 'Boost Wins with Casino Intel!',
+          text: 'Add casino stats!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
+          attachTo: { element: '#casino-data-insights', on: 'top' },
+          beforeShowPromise: function() {
+              return forceAccordionOpen('#casino-data-insights');
+          },
+          buttons: [
+              { text: 'Back', action: tour.back },
+              { text: 'Finish', action: () => { console.log('Tour completed'); tour.complete(); } }
+          ]
+      });
+
+      });  # Line 5392 (Unchanged)
+
+      function startTour() {
+        console.log('Tour starting...');
+        setTimeout(() => {
+          if (document.querySelector('#header-row')) {
+            console.log('DOM ready, starting tour');
+            tour.start();
+          } else {
+            console.error('Header row not found, tour aborted');
+          }
+        }, 500);
       }
-    }, 500);
-  }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    console.log("DOM Loaded, #header-row exists:", !!document.querySelector("#header-row"));
-  });
-</script>
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log("DOM Loaded, #header-row exists:", !!document.querySelector("#header-row"));
+      });
+    </script>
     """)
     
     # Launch the interface
