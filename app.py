@@ -3842,6 +3842,21 @@ with gr.Blocks() as demo:
                     label="Sequence Matching Results",
                     value="<p>Enable sequence matching to see results here.</p>"
                 )
+            # New Even Money Bet Tracker Section
+            with gr.Accordion("Even Money Bet Tracker 🎯", open=False, elem_id="even-money-tracker"):
+                even_money_bets = gr.CheckboxGroup(
+                    label="Select Up to 3 Even Money Bets",
+                    choices=["Even", "Odd", "Red", "Black", "High (19-36)", "Low (1-18)"],
+                    value=[],
+                    interactive=True,
+                    max_choices=3
+                )
+                even_money_hits_output = gr.HTML(
+                    label="Latest Even Money Hits",
+                    value='<p>No hits yet.</p>',
+                    elem_id="even-money-hits"
+                )
+
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
 
@@ -4078,7 +4093,30 @@ with gr.Blocks() as demo:
           padding: 10px !important;
           border-radius: 5px !important;
       }
-      
+        /* Style for Even Money Bet Tracker accordion */
+        #even-money-tracker {
+            background-color: #f5c6cb !important;
+            padding: 10px !important;
+        }
+        #even-money-tracker > div {
+            background-color: #f5c6cb !important;
+        }
+        #even-money-tracker summary {
+            background-color: #dc3545 !important;
+            color: #fff !important;
+            padding: 10px !important;
+            border-radius: 5px !important;
+        }
+        
+        /* Style for Even Money Hits Output */
+        #even-money-hits {
+            background-color: #ffffff !important;
+            border: 1px solid #d3d3d3 !important;
+            padding: 10px !important;
+            border-radius: 5px !important;
+            margin-top: 10px !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+        }      
       /* Hide stray labels in the Sides of Zero section */
       .sides-of-zero-container + label, .last-spins-container + label:not(.long-slider label) {
           display: none !important;
@@ -4331,6 +4369,50 @@ with gr.Blocks() as demo:
         
         return ", ".join(valid_spins), format_spins_as_html(", ".join(valid_spins), last_spin_count.value)
 
+    # Insert the track_even_money_bets function here
+    def track_even_money_bets(spins, selected_bets):
+        if not spins or not selected_bets:
+            return "<p>No hits yet.</p>"
+        
+        # Parse the latest spin
+        spins_list = [int(spin.strip()) for spin in spins.split(",") if spin.strip()]
+        if not spins_list:
+            return "<p>No hits yet.</p>"
+        
+        latest_spin = spins_list[-1]  # Get the most recent spin
+        
+        # Define even money bet conditions
+        is_even = latest_spin % 2 == 0 and latest_spin != 0
+        is_odd = latest_spin % 2 != 0
+        is_red = latest_spin in [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]
+        is_black = latest_spin in [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35]
+        is_high = 19 <= latest_spin <= 36
+        is_low = 1 <= latest_spin <= 18 and latest_spin != 0
+        
+        # Check for hits
+        hits = []
+        for bet in selected_bets:
+            if bet == "Even" and is_even:
+                hits.append(f"Even hit on spin {latest_spin}!")
+            elif bet == "Odd" and is_odd:
+                hits.append(f"Odd hit on spin {latest_spin}!")
+            elif bet == "Red" and is_red:
+                hits.append(f"Red hit on spin {latest_spin}!")
+            elif bet == "Black" and is_black:
+                hits.append(f"Black hit on spin {latest_spin}!")
+            elif bet == "High (19-36)" and is_high:
+                hits.append(f"High hit on spin {latest_spin}!")
+            elif bet == "Low (1-18)" and is_low:
+                hits.append(f"Low hit on spin {latest_spin}!")
+        
+        # Display alerts and update output
+        if hits:
+            for hit in hits:
+                gr.Info(hit)  # Display alert at the top
+            return "<p>" + "<br>".join(hits) + "</p>"
+        else:
+            return "<p>No hits yet.</p>"
+
     spins_textbox.change(
         fn=validate_spins_input,
         inputs=spins_textbox,
@@ -4348,6 +4430,17 @@ with gr.Blocks() as demo:
         fn=update_spin_counter,
         inputs=[],
         outputs=[spin_counter]
+    ).then(
+        fn=track_even_money_bets,
+        inputs=[spins_display, even_money_bets],
+        outputs=[even_money_hits_output]
+    )
+
+    # Add handler for when the user changes their selected bets
+    even_money_bets.change(
+        fn=track_even_money_bets,
+        inputs=[spins_display, even_money_bets],
+        outputs=[even_money_hits_output]
     )
     spins_display.change(
         fn=update_spin_counter,
