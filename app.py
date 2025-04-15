@@ -3515,13 +3515,7 @@ with gr.Blocks() as demo:
     # 1. Row 1: Header
     with gr.Row(elem_id="header-row"):
         gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>🎰 Roulette Spin Analyzer</h1>")
-        with gr.Column(scale=1):
-            gr.HTML('''
-                <button id="start-tour-btn" onclick="startTour()" style="padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Take the Tour!</button>
-                <script>
-                    console.log("Header row rendered:", document.getElementById("header-row"));
-                </script>
-            ''')
+
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -4056,8 +4050,6 @@ with gr.Blocks() as demo:
                 """) 
     # CSS and Event Handlers
     gr.HTML("""
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@11.2.0/dist/css/shepherd.css">
-    <script src="https://cdn.jsdelivr.net/npm/shepherd.js@11.2.0/dist/js/shepherd.min.js"></script>
     <style>
       /* General Layout */
       .gr-row { margin: 0 !important; padding: 5px 0 !important; }
@@ -4097,33 +4089,16 @@ with gr.Blocks() as demo:
           display: none !important;
       }
       
-      /* Ensure Header Stays at the Top */
+      /* Header Styling */
       #header-row {
-          position: fixed !important;
-          top: 0 !important;
-          left: 0 !important;
-          right: 0 !important;
-          z-index: 1000 !important;
-          background-color: white !important;
-          padding: 10px 0 !important;
-          margin: 0 !important;
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
           flex-wrap: wrap !important;
+          background-color: white !important;
+          padding: 10px 0 !important;
       }
     
-      /* Add padding to the body to account for the fixed header */
-      body {
-          padding-top: 120px !important; /* Increased to account for taller header */
-      }
-    
-      /* Ensure content below header is not overlapped */
-      .roulette-table {
-          margin-top: 120px !important; /* Match body padding-top */
-      }
-    
-      /* Header Styling */
       .header-title { text-align: center !important; font-size: 2.5em !important; margin-bottom: 5px !important; color: #333 !important; }
     
       /* Fix Selected Spins Label Cutoff */
@@ -4195,27 +4170,27 @@ with gr.Blocks() as demo:
     
       /* Spin Counter Styling */
       .spin-counter {
-        font-size: 16px !important;
-        font-weight: bold !important;
-        color: #ffffff !important;
-        background: linear-gradient(135deg, #87CEEB, #5DADE2) !important;
-        padding: 8px 12px !important;
-        border: 2px solid #3498DB !important;
-        border-radius: 8px !important;
-        margin-top: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
-        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-    }
-    .spin-counter:hover {
-        transform: scale(1.05) !important;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
-    }
+          font-size: 16px !important;
+          font-weight: bold !important;
+          color: #ffffff !important;
+          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important;
+          padding: 8px 12px !important;
+          border: 2px solid #3498DB !important;
+          border-radius: 8px !important;
+          margin-top: 0 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+          transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+      }
+      .spin-counter:hover {
+          transform: scale(1.05) !important;
+          box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+      }
     
       /* Last Spins Container */
-            .last-spins-container {
+      .last-spins-container {
           background-color: #f5f5f5 !important; /* Light gray background */
           border: 1px solid #d3d3d3 !important; /* Subtle gray border */
           padding: 10px !important;
@@ -4281,12 +4256,7 @@ with gr.Blocks() as demo:
       .betting-progression .gr-button { width: 100px; margin: 5px; }
       .betting-progression .gr-row { display: flex; flex-wrap: wrap; gap: 10px; }
     
-      /* Shepherd.js Tweaks */
-      .shepherd-modal-overlay-container { opacity: 0.5; z-index: 999; } /* Ensure overlay is below fullscreen */
-      .shepherd-button { background-color: #007bff; color: white; padding: 5px 10px; border-radius: 3px; }
-      .shepherd-button:hover { background-color: #0056b3; }  # Line 5164 (Unchanged)
-
-      /* Top Strategies Accordion */  # Line 5165 (New)
+      /* Top Strategies Accordion */
       #top-strategies summary {
           background-color: #dc3545 !important;
           color: #fff !important;
@@ -4329,7 +4299,7 @@ with gr.Blocks() as demo:
     """)
     print("CSS Updated")
 
-    # Lines 4888-4920 (Updated Section with `toggle_labouchere` and Fixed Indentation)
+    # Event Handlers (Remain Unchanged)
     def toggle_labouchere(progression):
         return gr.update(visible=progression == "Labouchere")
 
@@ -4869,320 +4839,5 @@ with gr.Blocks() as demo:
         outputs=[video_output]
     )
 
-    # Add the Shepherd.js tour script here
-    gr.HTML("""
-    <script>
-      const tour = new Shepherd.Tour({
-        defaultStepOptions: {
-          cancelIcon: { enabled: true },
-          scrollTo: { behavior: 'smooth', block: 'center' },
-          classes: 'shepherd-theme-arrows',
-        },
-        useModalOverlay: true
-      });
-
-  // Debug function to log step transitions
-  function logStep(stepId, nextStepId) {
-    return () => {
-      console.log(`Attempting move from ${stepId} to ${nextStepId}`);
-      tour.next();
-    };
-  }
-
-  // Force accordion open with direct DOM manipulation and Promise
-  function forceAccordionOpen(accordionId) {
-    console.log(`Checking accordion: ${accordionId}`);
-    return new Promise(resolve => {
-      const accordion = document.querySelector(accordionId);
-      if (!accordion) {
-        console.error(`Accordion ${accordionId} not found`);
-        resolve();
-        return;
-      }
-      // Gradio accordions are <details> elements; check if the accordion is a <details> tag
-      if (accordion.tagName.toLowerCase() === 'details') {
-        if (!accordion.hasAttribute('open')) {
-          console.log(`Forcing ${accordionId} open`);
-          accordion.setAttribute('open', '');
-          // Wait for the DOM to update
-          setTimeout(() => {
-            const content = accordion.querySelector('div') || accordion.nextElementSibling;
-            if (content && window.getComputedStyle(content).display === 'none') {
-              console.warn(`Fallback: Forcing visibility for ${accordionId}`);
-              content.style.display = 'block';
-            }
-            resolve();
-          }, 500);
-        } else {
-          console.log(`${accordionId} already open`);
-          resolve();
-        }
-      } else {
-        console.log(`${accordionId} is not a <details> element, checking children`);
-        // If the selector matches a container, look for a <details> element inside
-        const detailsElement = accordion.querySelector('details');
-        if (detailsElement && !detailsElement.hasAttribute('open')) {
-          console.log(`Forcing ${accordionId} child <details> open`);
-          detailsElement.setAttribute('open', '');
-          setTimeout(() => {
-            const content = detailsElement.querySelector('div') || detailsElement.nextElementSibling;
-            if (content && window.getComputedStyle(content).display === 'none') {
-              console.warn(`Fallback: Forcing visibility for ${accordionId}`);
-              content.style.display = 'block';
-            }
-            resolve();
-          }, 500);
-        } else {
-          console.log(`${accordionId} has no <details> child or is already open`);
-          resolve();
-        }
-      }
-    });
-  }
-
-  // Part 1: Your Roulette Adventure Begins!
-  tour.addStep({
-    id: 'part1',
-    title: 'Your Roulette Adventure Begins!',
-    text: 'Hey there!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/H7TLQr1HnY0?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
-    attachTo: { element: '#header-row', on: 'bottom' },
-    buttons: [
-      { text: 'Next', action: logStep('Part 1', 'Part 2') },
-      { text: 'Skip', action: tour.cancel }
-    ]
-  });
-
-  // Part 2: Spin the Wheel, Start the Thrill!
-  tour.addStep({
-    id: 'part2',
-    title: 'Spin the Wheel, Start the Thrill!',
-    text: 'Click numbers!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ja454kZwndo?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
-    attachTo: { element: '.roulette-table', on: 'right' },
-    buttons: [
-      { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 2', 'Part 3') },
-      { text: 'Skip', action: tour.cancel }
-    ]
-  });
-
-  // Part 3: Peek at Your Spin Streak!
-  tour.addStep({
-    id: 'part3',
-    title: 'Peek at Your Spin Streak!',
-    text: 'See spins!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/a9brOFMy9sA?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
-    attachTo: { element: '.last-spins-container', on: 'bottom' },
-    buttons: [
-      { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 3', 'Part 4') },
-      { text: 'Skip', action: tour.cancel }
-    ]
-  });
-
-  // Part 4: Master Your Spin Moves!
-  tour.addStep({
-    id: 'part4',
-    title: 'Master Your Spin Moves!',
-    text: 'Control spins!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/xG8z1S4HJK4?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
-    attachTo: { element: '#undo-spins-btn', on: 'bottom' },
-    buttons: [
-      { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 4', 'Part 5') },
-      { text: 'Skip', action: tour.cancel }
-    ]
-  });
-
-  // Part 5: Jot Spins, Count Wins!
-  tour.addStep({
-    id: 'part5',
-    title: 'Jot Spins, Count Wins!',
-    text: 'Type spins!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/2-k1EyKUM8U?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
-    attachTo: { element: '#selected-spins', on: 'bottom' },
-    buttons: [
-      { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 5', 'Part 6') },
-      { text: 'Skip', action: tour.cancel }
-    ]
-  });
-
-  // Part 6: Analyze and Reset Like a Pro!
-  tour.addStep({
-    id: 'part6',
-    title: 'Analyze and Reset Like a Pro!',
-    text: 'Analyze!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/8plHP2RIR3o?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
-    attachTo: { element: '.green-btn', on: 'bottom' },
-    buttons: [
-      { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 6', 'Part 7') },
-      { text: 'Skip', action: tour.cancel }
-    ]
-  });
-
-  // Part 7: Light Up Your Lucky Spots!
-  tour.addStep({
-    id: 'part7',
-    title: 'Light Up Your Lucky Spots!',
-    text: 'Dynamic table!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/zT9d06sn07E?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
-    attachTo: { element: '#dynamic-table-heading', on: 'bottom' },
-    buttons: [
-      { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 7', 'Part 8') },
-      { text: 'Skip', action: tour.cancel }
-    ]
-  });
-
-  // Part 8: Bet Smart, Track the Art!
-  tour.addStep({
-    id: 'part8',
-    title: 'Bet Smart, Track the Art!',
-    text: 'Track bets!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
-    attachTo: { element: '.betting-progression', on: 'top' },
-    beforeShowPromise: function() {
-      return forceAccordionOpen('.betting-progression');
-    },
-    buttons: [
-      { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 8', 'Part 9') },
-      { text: 'Skip', action: tour.cancel }
-    ]
-  });
-
-  // Part 9: Paint Your Winning Hue!
-  tour.addStep({
-    id: 'part9',
-    title: 'Paint Your Winning Hue!',
-    text: 'Make your table pop!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
-    attachTo: { element: '#color-code-key', on: 'top' },
-    beforeShowPromise: function() {
-      return forceAccordionOpen('#color-code-key');
-    },
-    buttons: [
-      { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 9', 'Part 10') },
-      { text: 'Skip', action: tour.cancel }
-    ]
-  });
-
-  // Part 10: Decode the Color Clue!
-  tour.addStep({
-    id: 'part10',
-    title: 'Decode the Color Clue!',
-    text: 'Confused by colors?<br><iframe width="280" height="158" src="https://www.youtube.com/embed/PGBEoOOh9Gk?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
-    attachTo: { element: '#color-code-key', on: 'top' },
-    beforeShowPromise: function() {
-      return forceAccordionOpen('#color-code-key');
-    },
-    buttons: [
-      { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 10', 'Part 11') },
-      { text: 'Skip', action: tour.cancel }
-    ]
-  });
-
-  // Part 11: Unleash the Spin Secrets!
-  tour.addStep({
-    id: 'part11',
-    title: 'Unleash the Spin Secrets!',
-    text: 'Deep dive!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/MpcuwWnMdrg?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
-    attachTo: { element: '#spin-analysis', on: 'top' },
-    beforeShowPromise: function() {
-      return forceAccordionOpen('#spin-analysis');
-    },
-    buttons: [
-      { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 11', 'Part 12') },
-      { text: 'Skip', action: tour.cancel }
-    ]
-  });
-
-  // Part 12: Save Your Spin Glory!
-  tour.addStep({
-    id: 'part12',
-    title: 'Save Your Spin Glory!',
-    text: 'Save/load here!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pHLEa2I0jjE?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
-    attachTo: { element: '#save-load-session', on: 'top' },
-    beforeShowPromise: function() {
-      return forceAccordionOpen('#save-load-session');
-    },
-    buttons: [
-      { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 12', 'Part 13') },
-      { text: 'Skip', action: tour.cancel }
-    ]
-  });
-
-  // Part 13: Pick Your Strategy Groove!
-  tour.addStep({
-    id: 'part13',
-    title: 'Pick Your Strategy Groove!',
-    text: 'Choose your flow!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iuGEltUVbqc?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
-    attachTo: { element: '#select-category', on: 'left' },
-    buttons: [
-      { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 13', 'Part 14') },
-      { text: 'Skip', action: tour.cancel }
-    ]
-  });
-
-  // Part 14: Watch and Win with Video Strategies!
-  tour.addStep({
-    id: 'part14',
-    title: 'Watch and Win with Video Strategies!',
-    text: 'Learn from videos!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/8aMHrvuzBGU?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
-    attachTo: { element: '#top-strategies', on: 'top' },
-    beforeShowPromise: function() {
-      return forceAccordionOpen('#top-strategies');
-    },
-    buttons: [
-      { text: 'Back', action: tour.back },
-      { text: 'Next', action: logStep('Part 14', 'Part 15') },
-      { text: 'Skip', action: tour.cancel }
-    ]
-  });
-
-  // Part 15: Boost Wins with Casino Intel!
-  tour.addStep({
-    id: 'part15',
-    title: 'Boost Wins with Casino Intel!',
-    text: 'Add casino stats!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
-    attachTo: { element: '#casino-data-insights', on: 'top' },
-    beforeShowPromise: function() {
-      return forceAccordionOpen('#casino-data-insights');
-    },
-    buttons: [
-      { text: 'Back', action: tour.back },
-      { text: 'Finish', action: () => { console.log('Tour completed'); tour.complete(); } }
-    ]
-  });
-
-      });
-
-            function startTour() {
-        console.log('Tour starting... (Button clicked)');
-        let retries = 0;
-        const maxRetries = 10; // Try up to 10 times (5 seconds total)
-        const interval = 500; // Check every 500ms
-
-        const tryStartTour = () => {
-          if (document.querySelector('#header-row')) {
-            console.log('DOM ready, starting tour');
-            tour.start();
-          } else if (retries < maxRetries) {
-            retries++;
-            console.log(`Header row not found, retrying (${retries}/${maxRetries})...`);
-            setTimeout(tryStartTour, interval);
-          } else {
-            console.error('Header row not found after maximum retries, tour aborted');
-          }
-        };
-
-        tryStartTour();
-      }
-
-      document.addEventListener("DOMContentLoaded", () => {
-        console.log("DOM Loaded, #header-row exists:", !!document.querySelector("#header-row"));
-      });
-    </script>
-    """)
-    
     # Launch the interface
     demo.launch()
