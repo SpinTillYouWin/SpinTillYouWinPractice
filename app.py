@@ -3875,8 +3875,30 @@ with gr.Blocks() as demo:
             load_input = gr.File(label="Upload Session")
         save_output = gr.File(label="Download Session")
 
-        
-        # CSS and Event Handlers
+    # 12. Row 12: Feedback Section
+    with gr.Row():
+        with gr.Column():
+            with gr.Accordion("Feedback & Suggestions 📝", open=False, elem_id="feedback-section"):
+                gr.HTML("""
+                <div style="background-color: #f5c6cb; border: 2px solid #d3d3d3; border-radius: 5px; padding: 15px;">
+                    <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif; color: #333;">
+                        Share Your Feedback or Submit a Strategy
+                    </h4>
+                    <p style="text-align: center; font-family: Arial, sans-serif; color: #555; margin-bottom: 15px;">
+                        We’d love to hear your suggestions, edits, or strategies for the Roulette Spin Analyzer!
+                    </p>
+                    <form action="https://formspree.io/f/mnnpllqq" method="POST" style="display: flex; flex-direction: column; gap: 10px;">
+                        <input type="text" name="name" placeholder="Your Name (Optional)" style="padding: 8px; border: 1px solid #d3d3d3; border-radius: 5px; font-family: Arial, sans-serif;">
+                        <input type="email" name="_replyto" placeholder="Your Email (Required)" required style="padding: 8px; border: 1px solid #d3d3d3; border-radius: 5px; font-family: Arial, sans-serif;">
+                        <textarea name="feedback" placeholder="Your Feedback or Suggestions" rows="4" style="padding: 8px; border: 1px solid #d3d3d3; border-radius: 5px; font-family: Arial, sans-serif; resize: vertical;"></textarea>
+                        <textarea name="strategy" placeholder="Submit Your Strategy (Optional)" rows="4" style="padding: 8px; border: 1px solid #d3d3d3; border-radius: 5px; font-family: Arial, sans-serif; resize: vertical;"></textarea>
+                        <button type="submit" style="background-color: #dc3545; color: white; padding: 10px; border: none; border-radius: 5px; font-family: Arial, sans-serif; cursor: pointer; transition: background-color 0.3s ease;">
+                            Submit
+                        </button>
+                    </form>
+                </div>
+                """) 
+    # CSS and Event Handlers
     gr.HTML("""
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css">
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
@@ -3886,7 +3908,7 @@ with gr.Blocks() as demo:
       .gr-column { margin: 0 !important; padding: 5px !important; }
       .gr-box { border-radius: 5px !important; }
       
-        /* Style for Dealer’s Spin Tracker accordion */
+      /* Style for Dealer’s Spin Tracker accordion */
       #sides-of-zero-accordion {
           background-color: #f5c6cb !important;
           padding: 10px !important;
@@ -3895,6 +3917,14 @@ with gr.Blocks() as demo:
           background-color: #f5c6cb !important;
       }
       #sides-of-zero-accordion summary {
+          background-color: #dc3545 !important;
+          color: #fff !important;
+          padding: 10px !important;
+          border-radius: 5px !important;
+      }
+      
+      /* Style for Feedback Section accordion */
+      #feedback-section summary {
           background-color: #dc3545 !important;
           color: #fff !important;
           padding: 10px !important;
