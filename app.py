@@ -390,7 +390,6 @@ def render_sides_of_zero_display():
     wheel_numbers = [(num, state.scores.get(num, 0)) for num in wheel_order]
     
         # Generate HTML for the single number list
-        # Generate HTML for the single number list
     def generate_number_list(numbers):
         if not numbers:
             return '<div class="number-list">No numbers</div>'
@@ -3441,7 +3440,7 @@ with gr.Blocks() as demo:
         value='<span style="font-size: 16px;">Total Spins: 0</span>',
         elem_classes=["spin-counter"]
     )
-    with gr.Accordion("Dealer’s Spin Tracker 🕵️", open=False, elem_id="sides-of-zero-accordion"):
+    with gr.Accordion("Dealer’s Spin Tracker (Can You Spot Bias??) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
         sides_of_zero_display = gr.HTML(
             label="Sides of Zero",
             value=render_sides_of_zero_display(),
