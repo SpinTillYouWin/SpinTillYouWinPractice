@@ -4902,30 +4902,52 @@ with gr.Blocks() as demo:
         resolve();
         return;
       }
-      const content = accordion.querySelector('.gr-box') || accordion.nextElementSibling;
-      if (content && window.getComputedStyle(content).display === 'none') {
-        console.log(`Forcing ${accordionId} open`);
-        content.style.display = 'block';
-        accordion.setAttribute('open', '');
-        setTimeout(() => {
-          if (window.getComputedStyle(content).display === 'none') {
-            console.warn(`Fallback: Forcing visibility for ${accordionId}`);
-            content.style.display = 'block';
-          }
+      // Gradio accordions are <details> elements; check if the accordion is a <details> tag
+      if (accordion.tagName.toLowerCase() === 'details') {
+        if (!accordion.hasAttribute('open')) {
+          console.log(`Forcing ${accordionId} open`);
+          accordion.setAttribute('open', '');
+          // Wait for the DOM to update
+          setTimeout(() => {
+            const content = accordion.querySelector('div') || accordion.nextElementSibling;
+            if (content && window.getComputedStyle(content).display === 'none') {
+              console.warn(`Fallback: Forcing visibility for ${accordionId}`);
+              content.style.display = 'block';
+            }
+            resolve();
+          }, 500);
+        } else {
+          console.log(`${accordionId} already open`);
           resolve();
-        }, 500);
+        }
       } else {
-        console.log(`${accordionId} already open or no content found`);
-        resolve();
+        console.log(`${accordionId} is not a <details> element, checking children`);
+        // If the selector matches a container, look for a <details> element inside
+        const detailsElement = accordion.querySelector('details');
+        if (detailsElement && !detailsElement.hasAttribute('open')) {
+          console.log(`Forcing ${accordionId} child <details> open`);
+          detailsElement.setAttribute('open', '');
+          setTimeout(() => {
+            const content = detailsElement.querySelector('div') || detailsElement.nextElementSibling;
+            if (content && window.getComputedStyle(content).display === 'none') {
+              console.warn(`Fallback: Forcing visibility for ${accordionId}`);
+              content.style.display = 'block';
+            }
+            resolve();
+          }, 500);
+        } else {
+          console.log(`${accordionId} has no <details> child or is already open`);
+          resolve();
+        }
       }
     });
   }
 
-  // Part 1–7 (Assumed working)
+  // Part 1: Your Roulette Adventure Begins!
   tour.addStep({
     id: 'part1',
     title: 'Your Roulette Adventure Begins!',
-    text: 'Hey there!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/H7TLQr1HnY0?fs=0" frameborder="0"></iframe>',
+    text: 'Hey there!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/H7TLQr1HnY0?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
     attachTo: { element: '#header-row', on: 'bottom' },
     buttons: [
       { text: 'Next', action: logStep('Part 1', 'Part 2') },
@@ -4933,10 +4955,11 @@ with gr.Blocks() as demo:
     ]
   });
 
+  // Part 2: Spin the Wheel, Start the Thrill!
   tour.addStep({
     id: 'part2',
     title: 'Spin the Wheel, Start the Thrill!',
-    text: 'Click numbers!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ja454kZwndo?fs=0" frameborder="0"></iframe>',
+    text: 'Click numbers!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ja454kZwndo?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
     attachTo: { element: '.roulette-table', on: 'right' },
     buttons: [
       { text: 'Back', action: tour.back },
@@ -4945,10 +4968,11 @@ with gr.Blocks() as demo:
     ]
   });
 
+  // Part 3: Peek at Your Spin Streak!
   tour.addStep({
     id: 'part3',
     title: 'Peek at Your Spin Streak!',
-    text: 'See spins!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/a9brOFMy9sA?fs=0" frameborder="0"></iframe>',
+    text: 'See spins!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/a9brOFMy9sA?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
     attachTo: { element: '.last-spins-container', on: 'bottom' },
     buttons: [
       { text: 'Back', action: tour.back },
@@ -4957,10 +4981,11 @@ with gr.Blocks() as demo:
     ]
   });
 
+  // Part 4: Master Your Spin Moves!
   tour.addStep({
     id: 'part4',
     title: 'Master Your Spin Moves!',
-    text: 'Control spins!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/xG8z1S4HJK4?fs=0" frameborder="0"></iframe>',
+    text: 'Control spins!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/xG8z1S4HJK4?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
     attachTo: { element: '#undo-spins-btn', on: 'bottom' },
     buttons: [
       { text: 'Back', action: tour.back },
@@ -4969,10 +4994,11 @@ with gr.Blocks() as demo:
     ]
   });
 
+  // Part 5: Jot Spins, Count Wins!
   tour.addStep({
     id: 'part5',
     title: 'Jot Spins, Count Wins!',
-    text: 'Type spins!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/2-k1EyKUM8U?fs=0" frameborder="0"></iframe>',
+    text: 'Type spins!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/2-k1EyKUM8U?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
     attachTo: { element: '#selected-spins', on: 'bottom' },
     buttons: [
       { text: 'Back', action: tour.back },
@@ -4981,10 +5007,11 @@ with gr.Blocks() as demo:
     ]
   });
 
+  // Part 6: Analyze and Reset Like a Pro!
   tour.addStep({
     id: 'part6',
     title: 'Analyze and Reset Like a Pro!',
-    text: 'Analyze!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/8plHP2RIR3o?fs=0" frameborder="0"></iframe>',
+    text: 'Analyze!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/8plHP2RIR3o?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
     attachTo: { element: '.green-btn', on: 'bottom' },
     buttons: [
       { text: 'Back', action: tour.back },
@@ -4993,10 +5020,11 @@ with gr.Blocks() as demo:
     ]
   });
 
+  // Part 7: Light Up Your Lucky Spots!
   tour.addStep({
     id: 'part7',
     title: 'Light Up Your Lucky Spots!',
-    text: 'Dynamic table!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/zT9d06sn07E?fs=0" frameborder="0"></iframe>',
+    text: 'Dynamic table!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/zT9d06sn07E?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
     attachTo: { element: '#dynamic-table-heading', on: 'bottom' },
     buttons: [
       { text: 'Back', action: tour.back },
@@ -5009,7 +5037,7 @@ with gr.Blocks() as demo:
   tour.addStep({
     id: 'part8',
     title: 'Bet Smart, Track the Art!',
-    text: 'Track bets!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?fs=0" frameborder="0"></iframe>',
+    text: 'Track bets!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
     attachTo: { element: '.betting-progression', on: 'top' },
     beforeShowPromise: function() {
       return forceAccordionOpen('.betting-progression');
@@ -5025,7 +5053,7 @@ with gr.Blocks() as demo:
   tour.addStep({
     id: 'part9',
     title: 'Paint Your Winning Hue!',
-    text: 'Make your table pop!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8?fs=0" frameborder="0"></iframe>',
+    text: 'Make your table pop!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
     attachTo: { element: '#color-code-key', on: 'top' },
     beforeShowPromise: function() {
       return forceAccordionOpen('#color-code-key');
@@ -5041,7 +5069,7 @@ with gr.Blocks() as demo:
   tour.addStep({
     id: 'part10',
     title: 'Decode the Color Clue!',
-    text: 'Confused by colors?<br><iframe width="280" height="158" src="https://www.youtube.com/embed/PGBEoOOh9Gk?fs=0" frameborder="0"></iframe>',
+    text: 'Confused by colors?<br><iframe width="280" height="158" src="https://www.youtube.com/embed/PGBEoOOh9Gk?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
     attachTo: { element: '#color-code-key', on: 'top' },
     beforeShowPromise: function() {
       return forceAccordionOpen('#color-code-key');
@@ -5057,7 +5085,7 @@ with gr.Blocks() as demo:
   tour.addStep({
     id: 'part11',
     title: 'Unleash the Spin Secrets!',
-    text: 'Deep dive!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/MpcuwWnMdrg?fs=0" frameborder="0"></iframe>',
+    text: 'Deep dive!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/MpcuwWnMdrg?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
     attachTo: { element: '#spin-analysis', on: 'top' },
     beforeShowPromise: function() {
       return forceAccordionOpen('#spin-analysis');
@@ -5073,7 +5101,7 @@ with gr.Blocks() as demo:
   tour.addStep({
     id: 'part12',
     title: 'Save Your Spin Glory!',
-    text: 'Save/load here!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pHLEa2I0jjE?fs=0" frameborder="0"></iframe>',
+    text: 'Save/load here!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pHLEa2I0jjE?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
     attachTo: { element: '#save-load-session', on: 'top' },
     beforeShowPromise: function() {
       return forceAccordionOpen('#save-load-session');
@@ -5085,49 +5113,49 @@ with gr.Blocks() as demo:
     ]
   });
 
-      // Part 13: Pick Your Strategy Groove!
-      tour.addStep({
-          id: 'part13',
-          title: 'Pick Your Strategy Groove!',
-          text: 'Choose your flow!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iuGEltUVbqc?fs=0" frameborder="0"></iframe>',
-          attachTo: { element: '#select-category', on: 'left' },
-          buttons: [
-              { text: 'Back', action: tour.back },
-              { text: 'Next', action: logStep('Part 13', 'Part 14') },
-              { text: 'Skip', action: tour.cancel }
-          ]
-      });
+  // Part 13: Pick Your Strategy Groove!
+  tour.addStep({
+    id: 'part13',
+    title: 'Pick Your Strategy Groove!',
+    text: 'Choose your flow!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iuGEltUVbqc?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
+    attachTo: { element: '#select-category', on: 'left' },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 13', 'Part 14') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
 
-      // Part 14: Watch and Win with Video Strategies!
-      tour.addStep({
-          id: 'part14',
-          title: 'Watch and Win with Video Strategies!',
-          text: 'Learn from videos!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/8aMHrvuzBGU?fs=0" frameborder="0"></iframe>',
-          attachTo: { element: '#top-strategies', on: 'top' },
-          beforeShowPromise: function() {
-              return forceAccordionOpen('#top-strategies');
-          },
-          buttons: [
-              { text: 'Back', action: tour.back },
-              { text: 'Next', action: logStep('Part 14', 'Part 15') },
-              { text: 'Skip', action: tour.cancel }
-          ]
-      });
+  // Part 14: Watch and Win with Video Strategies!
+  tour.addStep({
+    id: 'part14',
+    title: 'Watch and Win with Video Strategies!',
+    text: 'Learn from videos!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/8aMHrvuzBGU?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
+    attachTo: { element: '#top-strategies', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#top-strategies');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 14', 'Part 15') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
 
-      // Part 15: Boost Wins with Casino Intel! (Renumbered from Part 14)
-      tour.addStep({
-          id: 'part15',
-          title: 'Boost Wins with Casino Intel!',
-          text: 'Add casino stats!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
-          attachTo: { element: '#casino-data-insights', on: 'top' },
-          beforeShowPromise: function() {
-              return forceAccordionOpen('#casino-data-insights');
-          },
-          buttons: [
-              { text: 'Back', action: tour.back },
-              { text: 'Finish', action: () => { console.log('Tour completed'); tour.complete(); } }
-          ]
-      });
+  // Part 15: Boost Wins with Casino Intel!
+  tour.addStep({
+    id: 'part15',
+    title: 'Boost Wins with Casino Intel!',
+    text: 'Add casino stats!<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?enablejsapi=1&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
+    attachTo: { element: '#casino-data-insights', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#casino-data-insights');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Finish', action: () => { console.log('Tour completed'); tour.complete(); } }
+    ]
+  });
 
       });
 
