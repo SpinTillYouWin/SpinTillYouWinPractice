@@ -3476,6 +3476,8 @@ def clear_last_spins_display():
     """Clear the Last Spins HTML display without affecting spins data."""
     return "<h4>Last Spins</h4><p>Display cleared. Add spins to see them here.</p>", update_spin_counter()
 
+# ... (previous imports, function definitions, and state setup remain unchanged) ...
+
 # Build the Gradio interface
 with gr.Blocks() as demo:
     # 1. Row 1: Header (Moved to the top)
@@ -3639,7 +3641,7 @@ with gr.Blocks() as demo:
         "Neighbours Strategies": []
     }
     
-    # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons  # Line 4926 (Unchanged)
+    # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
         with gr.Column(scale=2):
             analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
@@ -3648,7 +3650,7 @@ with gr.Blocks() as demo:
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
 
-        # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
+    # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
@@ -4000,7 +4002,7 @@ with gr.Blocks() as demo:
                 with gr.Accordion("Sides of Zero", open=False):
                     sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
-        # 11. Row 11: Save/Load Session (Collapsible, Renumbered)
+    # 11. Row 11: Save/Load Session (Collapsible, Renumbered)
     with gr.Accordion("Save/Load Session", open=False, elem_id="save-load-session"):
         with gr.Row():
             save_button = gr.Button("Save Session", elem_id="save-session-btn")
@@ -4082,8 +4084,9 @@ with gr.Blocks() as demo:
                         });
                     });
                 </script>
-                """) 
-    # CSS and Event Handlers
+                """)
+
+    # CSS and Event Handlers (Moved Inside gr.Blocks())
     gr.HTML("""
     <style>
       /* General Layout */
@@ -4369,198 +4372,139 @@ with gr.Blocks() as demo:
     """)
     print("CSS Updated")
 
-    # Event Handlers (Remain Unchanged)
-    def toggle_labouchere(progression):
-        return gr.update(visible=progression == "Labouchere")
+    # Event Handlers (Moved Inside gr.Blocks())
+    try:
+        spins_textbox.change(
+            fn=validate_spins_input,
+            inputs=spins_textbox,
+            outputs=[spins_display, last_spin_display]
+        ).then(
+            fn=analyze_spins,
+            inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[
+                spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output,
+                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+                dynamic_table_output, strategy_output, sides_of_zero_display
+            ]
+        ).then(
+            fn=update_spin_counter,
+            inputs=[],
+            outputs=[spin_counter]
+        ).then(
+            fn=track_even_money_bets,
+            inputs=[spins_display, even_money_bets],
+            outputs=[even_money_hits_output]
+        )
+    except Exception as e:
+        print(f"Error in spins_textbox.change handler: {str(e)}")
 
-    def validate_spins_input(spins_input):
-        if not spins_input or not spins_input.strip():
-            return None, "<h4>Last Spins</h4><p>No spins yet.</p>"
-        
-        raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
-        errors = []
-        valid_spins = []
-        
-        for spin in raw_spins:
-            try:
-                num = int(spin)
-                if not (0 <= num <= 36):
-                    errors.append(f"'{spin}' is out of range (0-36)")
-                else:
-                    valid_spins.append(spin)
-            except ValueError:
-                errors.append(f"'{spin}' is not a number")
-        
-        if errors:
-            error_msg = "Invalid inputs:\n- " + "\n- ".join(errors)
-            gr.Warning(error_msg)
-            return spins_input, f"<h4>Last Spins</h4><p>{error_msg}</p>"
-        
-        return ", ".join(valid_spins), format_spins_as_html(", ".join(valid_spins), last_spin_count.value)
+    try:
+        even_money_bets.change(
+            fn=track_even_money_bets,
+            inputs=[spins_display, even_money_bets],
+            outputs=[even_money_hits_output]
+        )
+    except Exception as e:
+        print(f"Error in even_money_bets.change handler: {str(e)}")
 
-    # Insert the track_even_money_bets function here
-def track_even_money_bets(spins, selected_bets):
-    if not spins or not selected_bets:
-        return "<p style='color: gray;'>No hits yet.</p>"
-    
-    # Parse the latest spin
-    spins_list = [int(spin.strip()) for spin in spins.split(",") if spin.strip()]
-    if not spins_list:
-        return "<p style='color: gray;'>No hits yet.</p>"
-    
-    latest_spin = spins_list[-1]  # Get the most recent spin
-    
-    # Define even money bet conditions
-    is_even = latest_spin % 2 == 0 and latest_spin != 0
-    is_odd = latest_spin % 2 != 0
-    is_red = latest_spin in [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]
-    is_black = latest_spin in [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35]
-    is_high = 19 <= latest_spin <= 36
-    is_low = 1 <= latest_spin <= 18 and latest_spin != 0
-    
-    # Check if ALL selected bets match the latest spin
-    all_conditions_met = True
-    for bet in selected_bets:
-        if bet == "Even" and not is_even:
-            all_conditions_met = False
-            break
-        elif bet == "Odd" and not is_odd:
-            all_conditions_met = False
-            break
-        elif bet == "Red" and not is_red:
-            all_conditions_met = False
-            break
-        elif bet == "Black" and not is_black:
-            all_conditions_met = False
-            break
-        elif bet == "High (19-36)" and not is_high:
-            all_conditions_met = False
-            break
-        elif bet == "Low (1-18)" and not is_low:
-            all_conditions_met = False
-            break
-    
-    # Generate output and alert based on whether all conditions are met
-    if all_conditions_met:
-        # Create a single message listing all matching conditions
-        message = f"Spin {latest_spin} matches all conditions: {', '.join(selected_bets)}!"
-        gr.Info(message)  # Display a single alert
-        return f"<p style='color: green; font-weight: bold;'>{message}</p>"
-    else:
-        message = f"Spin {latest_spin} does not match all conditions: {', '.join(selected_bets)}."
-        return f"<p style='color: red;'>{message}</p>"
+    try:
+        spins_display.change(
+            fn=update_spin_counter,
+            inputs=[],
+            outputs=[spin_counter]
+        ).then(
+            fn=format_spins_as_html,
+            inputs=[spins_display, last_spin_count],
+            outputs=[last_spin_display]
+        )
+    except Exception as e:
+        print(f"Error in spins_display.change handler: {str(e)}")
 
-# Event Handlers with Error Handling
-try:
-    spins_textbox.change(
-        fn=validate_spins_input,
-        inputs=spins_textbox,
-        outputs=[spins_display, last_spin_display]
-    ).then(
-        fn=analyze_spins,
-        inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
-        outputs=[
-            spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output,
-            sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-            dynamic_table_output, strategy_output, sides_of_zero_display
-        ]
-    ).then(
-        fn=update_spin_counter,
-        inputs=[],
-        outputs=[spin_counter]
-    ).then(
-        fn=track_even_money_bets,
-        inputs=[spins_display, even_money_bets],
-        outputs=[even_money_hits_output]
-    )
-except Exception as e:
-    print(f"Error in spins_textbox.change handler: {str(e)}")
+    try:
+        clear_spins_button.click(
+            fn=clear_spins,
+            inputs=[],
+            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter]
+        )
+    except Exception as e:
+        print(f"Error in clear_spins_button.click handler: {str(e)}")
 
-try:
-    even_money_bets.change(
-        fn=track_even_money_bets,
-        inputs=[spins_display, even_money_bets],
-        outputs=[even_money_hits_output]
-    )
-except Exception as e:
-    print(f"Error in even_money_bets.change handler: {str(e)}")
-    spins_display.change(
-        fn=update_spin_counter,
-        inputs=[],
-        outputs=[spin_counter]
-    ).then(
-        fn=format_spins_as_html,
-        inputs=[spins_display, last_spin_count],
-        outputs=[last_spin_display]
-    )
+    try:
+        clear_all_button.click(
+            fn=clear_all,
+            inputs=[],
+            outputs=[
+                spins_display, spins_textbox, spin_analysis_output, last_spin_display,
+                even_money_output, dozens_output, columns_output, streets_output,
+                corners_output, six_lines_output, splits_output, sides_output,
+                straight_up_html, top_18_html, strongest_numbers_output, spin_counter
+            ]
+        ).then(
+            fn=clear_outputs,
+            inputs=[],
+            outputs=[
+                spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output,
+                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+                dynamic_table_output, strategy_output, color_code_output
+            ]
+        ).then(
+            fn=dozen_tracker,
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        )
+    except Exception as e:
+        print(f"Error in clear_all_button.click handler: {str(e)}")
 
-    clear_spins_button.click(
-        fn=clear_spins,
-        inputs=[],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter]
-    )
+    try:
+        generate_spins_button.click(
+            fn=generate_random_spins,
+            inputs=[gr.State(value="5"), spins_display, last_spin_count],
+            outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, sides_of_zero_display]
+        ).then(
+            fn=format_spins_as_html,
+            inputs=[spins_display, last_spin_count],
+            outputs=[last_spin_display]
+        )
+    except Exception as e:
+        print(f"Error in generate_spins_button.click handler: {str(e)}")
 
-    clear_all_button.click(
-        fn=clear_all,
-        inputs=[],
-        outputs=[
-            spins_display, spins_textbox, spin_analysis_output, last_spin_display,
-            even_money_output, dozens_output, columns_output, streets_output,
-            corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output, spin_counter
-        ]
-    ).then(
-        fn=clear_outputs,
-        inputs=[],
-        outputs=[
-            spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output,
-            sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-            dynamic_table_output, strategy_output, color_code_output
-        ]
-    ).then(
-        fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-    )
-
-    generate_spins_button.click(
-        fn=generate_random_spins,
-        inputs=[gr.State(value="5"), spins_display, last_spin_count],
-        outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, sides_of_zero_display]
-    ).then(
-        fn=format_spins_as_html,
-        inputs=[spins_display, last_spin_count],
-        outputs=[last_spin_display]
-    )
-
-    last_spin_count.change(
-        fn=format_spins_as_html,
-        inputs=[spins_display, last_spin_count],
-        outputs=[last_spin_display]
-    )
+    try:
+        last_spin_count.change(
+            fn=format_spins_as_html,
+            inputs=[spins_display, last_spin_count],
+            outputs=[last_spin_display]
+        )
+    except Exception as e:
+        print(f"Error in last_spin_count.change handler: {str(e)}")
 
     def update_strategy_dropdown(category):
         if category == "None":
             return gr.update(choices=["None"], value="None")
         return gr.update(choices=strategy_categories[category], value=strategy_categories[category][0])
 
-    category_dropdown.change(
-        fn=update_strategy_dropdown,
-        inputs=category_dropdown,
-        outputs=strategy_dropdown
-    )
+    try:
+        category_dropdown.change(
+            fn=update_strategy_dropdown,
+            inputs=category_dropdown,
+            outputs=strategy_dropdown
+        )
+    except Exception as e:
+        print(f"Error in category_dropdown.change handler: {str(e)}")
 
-    reset_strategy_button.click(
-        fn=reset_strategy_dropdowns,
-        inputs=[],
-        outputs=[category_dropdown, strategy_dropdown, strategy_dropdown]
-    ).then(
-        fn=lambda category: gr.update(choices=strategy_categories[category], value=strategy_categories[category][0]),
-        inputs=[category_dropdown],
-        outputs=[strategy_dropdown]
-    )
+    try:
+        reset_strategy_button.click(
+            fn=reset_strategy_dropdowns,
+            inputs=[],
+            outputs=[category_dropdown, strategy_dropdown, strategy_dropdown]
+        ).then(
+            fn=lambda category: gr.update(choices=strategy_categories[category], value=strategy_categories[category][0]),
+            inputs=[category_dropdown],
+            outputs=[strategy_dropdown]
+        )
+    except Exception as e:
+        print(f"Error in reset_strategy_button.click handler: {str(e)}")
 
     def toggle_neighbours_slider(strategy_name):
         is_visible = strategy_name == "Neighbours of Strong Number"
@@ -4569,214 +4513,268 @@ except Exception as e:
             gr.update(visible=is_visible)
         )
 
-    strategy_dropdown.change(
-        fn=toggle_neighbours_slider,
-        inputs=[strategy_dropdown],
-        outputs=[neighbours_count_slider, strong_numbers_count_slider]
-    ).then(
-        fn=show_strategy_recommendations,
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
-        outputs=[strategy_output]
-    ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: (print(f"Updating Dynamic Table with Strategy: {strategy}, Neighbours Count: {neighbours_count}, Strong Numbers Count: {strong_numbers_count}, Dozen Tracker Spins: {dozen_tracker_spins}, Colors: {top_color}, {middle_color}, {lower_color}"), create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color))[-1],
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    )
+    try:
+        strategy_dropdown.change(
+            fn=toggle_neighbours_slider,
+            inputs=[strategy_dropdown],
+            outputs=[neighbours_count_slider, strong_numbers_count_slider]
+        ).then(
+            fn=show_strategy_recommendations,
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[strategy_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: (print(f"Updating Dynamic Table with Strategy: {strategy}, Neighbours Count: {neighbours_count}, Strong Numbers Count: {strong_numbers_count}, Dozen Tracker Spins: {dozen_tracker_spins}, Colors: {top_color}, {middle_color}, {lower_color}"), create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color))[-1],
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in strategy_dropdown.change handler: {str(e)}")
 
-    analyze_button.click(
-        fn=analyze_spins,
-        inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
-        outputs=[
-            spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output,
-            sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-            dynamic_table_output, strategy_output, sides_of_zero_display
-        ]
-    ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    ).then(
-        fn=create_color_code_table,
-        inputs=[],
-        outputs=[color_code_output]
-    ).then(
-        fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-    )
+    try:
+        analyze_button.click(
+            fn=analyze_spins,
+            inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[
+                spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output,
+                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+                dynamic_table_output, strategy_output, sides_of_zero_display
+            ]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        ).then(
+            fn=create_color_code_table,
+            inputs=[],
+            outputs=[color_code_output]
+        ).then(
+            fn=dozen_tracker,
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        )
+    except Exception as e:
+        print(f"Error in analyze_button.click handler: {str(e)}")
 
-    save_button.click(
-        fn=save_session,
-        inputs=[],
-        outputs=[save_output]
-    )
+    try:
+        save_button.click(
+            fn=save_session,
+            inputs=[],
+            outputs=[save_output]
+        )
+    except Exception as e:
+        print(f"Error in save_button.click handler: {str(e)}")
 
-    load_input.change(
-        fn=load_session,
-        inputs=[load_input, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
-        outputs=[
-            spins_display, spins_textbox, spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_output, strategy_output
-        ]
-    ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    ).then(
-        fn=format_spins_as_html,
-        inputs=[spins_display, last_spin_count],
-        outputs=[last_spin_display]
-    ).then(
-        fn=create_color_code_table,
-        inputs=[],
-        outputs=[color_code_output]
-    ).then(
-        fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-    )
+    try:
+        load_input.change(
+            fn=load_session,
+            inputs=[load_input, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[
+                spins_display, spins_textbox, spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output, sides_output,
+                straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_output, strategy_output
+            ]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        ).then(
+            fn=format_spins_as_html,
+            inputs=[spins_display, last_spin_count],
+            outputs=[last_spin_display]
+        ).then(
+            fn=create_color_code_table,
+            inputs=[],
+            outputs=[color_code_output]
+        ).then(
+            fn=dozen_tracker,
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        )
+    except Exception as e:
+        print(f"Error in load_input.change handler: {str(e)}")
 
-    undo_button.click(
-        fn=undo_last_spin,
-        inputs=[spins_display, gr.State(value=1), strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
-        outputs=[
-            spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output,
-            sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-            spins_textbox, spins_display, dynamic_table_output, strategy_output,
-            color_code_output, spin_counter
-        ]
-    ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    ).then(
-        fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-    )
+    try:
+        undo_button.click(
+            fn=undo_last_spin,
+            inputs=[spins_display, gr.State(value=1), strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[
+                spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output,
+                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+                spins_textbox, spins_display, dynamic_table_output, strategy_output,
+                color_code_output, spin_counter
+            ]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        ).then(
+            fn=dozen_tracker,
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        )
+    except Exception as e:
+        print(f"Error in undo_button.click handler: {str(e)}")
 
-    neighbours_count_slider.change(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    ).then(
-        fn=show_strategy_recommendations,
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
-        outputs=[strategy_output]
-    )
+    try:
+        neighbours_count_slider.change(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        ).then(
+            fn=show_strategy_recommendations,
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[strategy_output]
+        )
+    except Exception as e:
+        print(f"Error in neighbours_count_slider.change handler: {str(e)}")
 
-    strong_numbers_count_slider.change(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    ).then(
-        fn=show_strategy_recommendations,
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
-        outputs=[strategy_output]
-    )
+    try:
+        strong_numbers_count_slider.change(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        ).then(
+            fn=show_strategy_recommendations,
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[strategy_output]
+        )
+    except Exception as e:
+        print(f"Error in strong_numbers_count_slider.change handler: {str(e)}")
 
-    reset_colors_button.click(
-        fn=reset_colors,
-        inputs=[],
-        outputs=[top_color_picker, middle_color_picker, lower_color_picker]
-    ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    )
+    try:
+        reset_colors_button.click(
+            fn=reset_colors,
+            inputs=[],
+            outputs=[top_color_picker, middle_color_picker, lower_color_picker]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in reset_colors_button.click handler: {str(e)}")
 
-    clear_last_spins_button.click(
-        fn=clear_last_spins_display,
-        inputs=[],
-        outputs=[last_spin_display, spin_counter]
-    )
+    try:
+        clear_last_spins_button.click(
+            fn=clear_last_spins_display,
+            inputs=[],
+            outputs=[last_spin_display, spin_counter]
+        )
+    except Exception as e:
+        print(f"Error in clear_last_spins_button.click handler: {str(e)}")
 
-    top_color_picker.change(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    )
+    try:
+        top_color_picker.change(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in top_color_picker.change handler: {str(e)}")
 
-    middle_color_picker.change(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    )
+    try:
+        middle_color_picker.change(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in middle_color_picker.change handler: {str(e)}")
 
-    lower_color_picker.change(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    )
+    try:
+        lower_color_picker.change(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in lower_color_picker.change handler: {str(e)}")
 
     # Dozen Tracker Event Handler
-    dozen_tracker_spins_dropdown.change(
-        fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-    ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    )
+    try:
+        dozen_tracker_spins_dropdown.change(
+            fn=dozen_tracker,
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in dozen_tracker_spins_dropdown.change handler: {str(e)}")
 
     # Dozen Tracker Consecutive Hits Event Handler
-    dozen_tracker_consecutive_hits_dropdown.change(
-        fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-    ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    )
+    try:
+        dozen_tracker_consecutive_hits_dropdown.change(
+            fn=dozen_tracker,
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in dozen_tracker_consecutive_hits_dropdown.change handler: {str(e)}")
 
     # Dozen Tracker Alert Checkbox Event Handler
-    dozen_tracker_alert_checkbox.change(
-        fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-    ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    )
+    try:
+        dozen_tracker_alert_checkbox.change(
+            fn=dozen_tracker,
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in dozen_tracker_alert_checkbox.change handler: {str(e)}")
 
     # Dozen Tracker Sequence Length Event Handler
-    dozen_tracker_sequence_length_dropdown.change(
-        fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-    ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    )
+    try:
+        dozen_tracker_sequence_length_dropdown.change(
+            fn=dozen_tracker,
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in dozen_tracker_sequence_length_dropdown.change handler: {str(e)}")
 
     # Dozen Tracker Follow-Up Spins Event Handler
-    dozen_tracker_follow_up_spins_dropdown.change(
-        fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-    ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    )
+    try:
+        dozen_tracker_follow_up_spins_dropdown.change(
+            fn=dozen_tracker,
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in dozen_tracker_follow_up_spins_dropdown.change handler: {str(e)}")
 
     # Dozen Tracker Sequence Alert Checkbox Event Handler
-    dozen_tracker_sequence_alert_checkbox.change(
-        fn=dozen_tracker,
-        inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-        outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-    ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    )
+    try:
+        dozen_tracker_sequence_alert_checkbox.change(
+            fn=dozen_tracker,
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in dozen_tracker_sequence_alert_checkbox.change handler: {str(e)}")
 
     # Casino data event handlers
     inputs_list = [
@@ -4784,96 +4782,155 @@ except Exception as e:
         low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent,
         col1_percent, col2_percent, col3_percent, use_winners_checkbox
     ]
-    spins_count_dropdown.change(
-        fn=update_casino_data,
-        inputs=inputs_list,
-        outputs=[casino_data_output]
-    )
-    even_percent.change(
-        fn=update_casino_data,
-        inputs=inputs_list,
-        outputs=[casino_data_output]
-    )
-    odd_percent.change(
-        fn=update_casino_data,
-        inputs=inputs_list,
-        outputs=[casino_data_output]
-    )
-    red_percent.change(
-        fn=update_casino_data,
-        inputs=inputs_list,
-        outputs=[casino_data_output]
-    )
-    black_percent.change(
-        fn=update_casino_data,
-        inputs=inputs_list,
-        outputs=[casino_data_output]
-    )
-    low_percent.change(
-        fn=update_casino_data,
-        inputs=inputs_list,
-        outputs=[casino_data_output]
-    )
-    high_percent.change(
-        fn=update_casino_data,
-        inputs=inputs_list,
-        outputs=[casino_data_output]
-    )
-    dozen1_percent.change(
-        fn=update_casino_data,
-        inputs=inputs_list,
-        outputs=[casino_data_output]
-    )
-    dozen2_percent.change(
-        fn=update_casino_data,
-        inputs=inputs_list,
-        outputs=[casino_data_output]
-    )
-    dozen3_percent.change(
-        fn=update_casino_data,
-        inputs=inputs_list,
-        outputs=[casino_data_output]
-    )
-    col1_percent.change(
-        fn=update_casino_data,
-        inputs=inputs_list,
-        outputs=[casino_data_output]
-    )
-    col2_percent.change(
-        fn=update_casino_data,
-        inputs=inputs_list,
-        outputs=[casino_data_output]
-    )
-    col3_percent.change(
-        fn=update_casino_data,
-        inputs=inputs_list,
-        outputs=[casino_data_output]
-    )
-    use_winners_checkbox.change(
-        fn=update_casino_data,
-        inputs=inputs_list,
-        outputs=[casino_data_output]
-    ).then(
-        fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    )
-    reset_casino_data_button.click(
-        fn=lambda: (
-            "100", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", False,
-            "<p>Casino data reset to defaults.</p>"
-        ),
-        inputs=[],
-        outputs=[
-            spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
-            low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent,
-            col1_percent, col2_percent, col3_percent, use_winners_checkbox, casino_data_output
-        ]
-    ).then(
-        fn=create_dynamic_table,
-        inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-        outputs=[dynamic_table_output]
-    )
+    try:
+        spins_count_dropdown.change(
+            fn=update_casino_data,
+            inputs=inputs_list,
+            outputs=[casino_data_output]
+        )
+    except Exception as e:
+        print(f"Error in spins_count_dropdown.change handler: {str(e)}")
+
+    try:
+        even_percent.change(
+            fn=update_casino_data,
+            inputs=inputs_list,
+            outputs=[casino_data_output]
+        )
+    except Exception as e:
+        print(f"Error in even_percent.change handler: {str(e)}")
+
+    try:
+        odd_percent.change(
+            fn=update_casino_data,
+            inputs=inputs_list,
+            outputs=[casino_data_output]
+        )
+    except Exception as e:
+        print(f"Error in odd_percent.change handler: {str(e)}")
+
+    try:
+        red_percent.change(
+            fn=update_casino_data,
+            inputs=inputs_list,
+            outputs=[casino_data_output]
+        )
+    except Exception as e:
+        print(f"Error in red_percent.change handler: {str(e)}")
+
+    try:
+        black_percent.change(
+            fn=update_casino_data,
+            inputs=inputs_list,
+            outputs=[casino_data_output]
+        )
+    except Exception as e:
+        print(f"Error in black_percent.change handler: {str(e)}")
+
+    try:
+        low_percent.change(
+            fn=update_casino_data,
+            inputs=inputs_list,
+            outputs=[casino_data_output]
+        )
+    except Exception as e:
+        print(f"Error in low_percent.change handler: {str(e)}")
+
+    try:
+        high_percent.change(
+            fn=update_casino_data,
+            inputs=inputs_list,
+            outputs=[casino_data_output]
+        )
+    except Exception as e:
+        print(f"Error in high_percent.change handler: {str(e)}")
+
+    try:
+        dozen1_percent.change(
+            fn=update_casino_data,
+            inputs=inputs_list,
+            outputs=[casino_data_output]
+        )
+    except Exception as e:
+        print(f"Error in dozen1_percent.change handler: {str(e)}")
+
+    try:
+        dozen2_percent.change(
+            fn=update_casino_data,
+            inputs=inputs_list,
+            outputs=[casino_data_output]
+        )
+    except Exception as e:
+        print(f"Error in dozen2_percent.change handler: {str(e)}")
+
+    try:
+        dozen3_percent.change(
+            fn=update_casino_data,
+            inputs=inputs_list,
+            outputs=[casino_data_output]
+        )
+    except Exception as e:
+        print(f"Error in dozen3_percent.change handler: {str(e)}")
+
+    try:
+        col1_percent.change(
+            fn=update_casino_data,
+            inputs=inputs_list,
+            outputs=[casino_data_output]
+        )
+    except Exception as e:
+        print(f"Error in col1_percent.change handler: {str(e)}")
+
+    try:
+        col2_percent.change(
+            fn=update_casino_data,
+            inputs=inputs_list,
+            outputs=[casino_data_output]
+        )
+    except Exception as e:
+        print(f"Error in col2_percent.change handler: {str(e)}")
+
+    try:
+        col3_percent.change(
+            fn=update_casino_data,
+            inputs=inputs_list,
+            outputs=[casino_data_output]
+        )
+    except Exception as e:
+        print(f"Error in col3_percent.change handler: {str(e)}")
+
+    try:
+        use_winners_checkbox.change(
+            fn=update_casino_data,
+            inputs=inputs_list,
+            outputs=[casino_data_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in use_winners_checkbox.change handler: {str(e)}")
+
+    try:
+        reset_casino_data_button.click(
+            fn=lambda: (
+                "100", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", False,
+                "<p>Casino data reset to defaults.</p>"
+            ),
+            inputs=[],
+            outputs=[
+                spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
+                low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent,
+                col1_percent, col2_percent, col3_percent, use_winners_checkbox, casino_data_output
+            ]
+        ).then(
+            fn=create_dynamic_table,
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in reset_casino_data_button.click handler: {str(e)}")
 
     # Betting progression event handlers
     def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence):
@@ -4893,60 +4950,99 @@ except Exception as e:
         state.reset_progression()
         return state.bankroll, state.current_bet, state.next_bet, state.message, f'<div style="background-color: {state.status_color}; padding: 5px; border-radius: 3px;">{state.status}</div>'
 
-    bankroll_input.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    base_unit_input.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    stop_loss_input.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    stop_win_input.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    bet_type_dropdown.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    progression_dropdown.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    ).then(
-        fn=toggle_labouchere,
-        inputs=[progression_dropdown],
-        outputs=[labouchere_sequence]
-    )
-    labouchere_sequence.change(
-        fn=update_config,
-        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    win_button.click(
-        fn=lambda: state.update_progression(True),
-        inputs=[],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    lose_button.click(
-        fn=lambda: state.update_progression(False),
-        inputs=[],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
-    reset_progression_button.click(
-        fn=lambda: state.reset_progression(),
-        inputs=[],
-        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )
+    try:
+        bankroll_input.change(
+            fn=update_config,
+            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+        )
+    except Exception as e:
+        print(f"Error in bankroll_input.change handler: {str(e)}")
+
+    try:
+        base_unit_input.change(
+            fn=update_config,
+            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+        )
+    except Exception as e:
+        print(f"Error in base_unit_input.change handler: {str(e)}")
+
+    try:
+        stop_loss_input.change(
+            fn=update_config,
+            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+        )
+    except Exception as e:
+        print(f"Error in stop_loss_input.change handler: {str(e)}")
+
+    try:
+        stop_win_input.change(
+            fn=update_config,
+            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+        )
+    except Exception as e:
+        print(f"Error in stop_win_input.change handler: {str(e)}")
+
+    try:
+        bet_type_dropdown.change(
+            fn=update_config,
+            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+        )
+    except Exception as e:
+        print(f"Error in bet_type_dropdown.change handler: {str(e)}")
+
+    try:
+        progression_dropdown.change(
+            fn=update_config,
+            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+        ).then(
+            fn=toggle_labouchere,
+            inputs=[progression_dropdown],
+            outputs=[labouchere_sequence]
+        )
+    except Exception as e:
+        print(f"Error in progression_dropdown.change handler: {str(e)}")
+
+    try:
+        labouchere_sequence.change(
+            fn=update_config,
+            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+        )
+    except Exception as e:
+        print(f"Error in labouchere_sequence.change handler: {str(e)}")
+
+    try:
+        win_button.click(
+            fn=lambda: state.update_progression(True),
+            inputs=[],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+        )
+    except Exception as e:
+        print(f"Error in win_button.click handler: {str(e)}")
+
+    try:
+        lose_button.click(
+            fn=lambda: state.update_progression(False),
+            inputs=[],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+        )
+    except Exception as e:
+        print(f"Error in lose_button.click handler: {str(e)}")
+
+    try:
+        reset_progression_button.click(
+            fn=lambda: state.reset_progression(),
+            inputs=[],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+        )
+    except Exception as e:
+        print(f"Error in reset_progression_button.click handler: {str(e)}")
 
     # Video Category and Video Selection Event Handlers
     def update_video_dropdown(category):
@@ -4966,17 +5062,23 @@ except Exception as e:
             return f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
         return "<p>Please select a video to watch.</p>"
 
-    video_category_dropdown.change(
-        fn=update_video_dropdown,
-        inputs=[video_category_dropdown],
-        outputs=[video_dropdown, video_output]
-    )
+    try:
+        video_category_dropdown.change(
+            fn=update_video_dropdown,
+            inputs=[video_category_dropdown],
+            outputs=[video_dropdown, video_output]
+        )
+    except Exception as e:
+        print(f"Error in video_category_dropdown.change handler: {str(e)}")
 
-    video_dropdown.change(
-        fn=update_video_display,
-        inputs=[video_dropdown, video_category_dropdown],
-        outputs=[video_output]
-    )
+    try:
+        video_dropdown.change(
+            fn=update_video_display,
+            inputs=[video_dropdown, video_category_dropdown],
+            outputs=[video_output]
+        )
+    except Exception as e:
+        print(f"Error in video_dropdown.change handler: {str(e)}")
 
     # Launch the interface
     print("Starting Gradio launch...")
