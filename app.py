@@ -3842,45 +3842,41 @@ with gr.Blocks() as demo:
                     label="Sequence Matching Results",
                     value="<p>Enable sequence matching to see results here.</p>"
                 )
-    # New Even Money Bet Tracker Section
-    with gr.Accordion("Even Money Bet Tracker 🎯", open=False, elem_id="even-money-tracker"):
-        even_money_bets = gr.CheckboxGroup(
-            label="Select Up to 3 Even Money Bets",
-            choices=["Even", "Odd", "Red", "Black", "High (19-36)", "Low (1-18)"],
-            value=[],
-            interactive=True,
-            elem_id="even-money-bets"  # Add an ID to target with JavaScript
-        )
-        even_money_hits_output = gr.HTML(
-            label="Latest Even Money Hits",
-            value='<p>No hits yet.</p>',
-            elem_id="even-money-hits"
-        )
-    # Add JavaScript to limit selections to 3
-    gr.HTML("""
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const checkboxGroup = document.querySelector('#even-money-bets .checkbox-group');
-            if (!checkboxGroup) {
-                console.error('Checkbox group not found');
-                return;
-            }
+            # New Even Money Bet Tracker Section
+            with gr.Accordion("Even Money Bet Tracker 🎯", open=False, elem_id="even-money-tracker"):
+                even_money_bets = gr.CheckboxGroup(
+                    label="Select Up to 3 Even Money Bets",
+                    choices=["Even", "Odd", "Red", "Black", "High (19-36)", "Low (1-18)"],
+                    value=[],
+                    interactive=True,
+                    elem_id="even-money-bets"
+                )
+                even_money_hits_output = gr.HTML(
+                    label="Latest Even Money Hits",
+                    value='<p>No hits yet.</p>',
+                    elem_id="even-money-hits"
+                )
+                gr.HTML("""
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const checkboxes = document.querySelectorAll('#even-money-bets input[type="checkbox"]');
+                        if (checkboxes.length === 0) {
+                            console.error('Checkboxes not found in #even-money-bets');
+                            return;
+                        }
 
-            // Find all input elements within the CheckboxGroup
-            const checkboxes = checkboxGroup.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
-                    if (checkedCount > 3) {
-                        alert('You can select up to 3 even money bets only.');
-                        checkbox.checked = false;  // Uncheck the last selected checkbox
-                    }
-                });
-            });
-        });
-    </script>
-    """)
-
+                        checkboxes.forEach(checkbox => {
+                            checkbox.addEventListener('change', function() {
+                                const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+                                if (checkedCount > 3) {
+                                    alert('You can select up to 3 even money bets only.');
+                                    checkbox.checked = false;
+                                }
+                            });
+                        });
+                    });
+                </script>
+                """)
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
 
