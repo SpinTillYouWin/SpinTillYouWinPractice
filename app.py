@@ -3514,9 +3514,14 @@ with gr.Blocks() as demo:
 
     # 1. Row 1: Header
     with gr.Row(elem_id="header-row"):
-    gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>🎰 Roulette Spin Analyzer</h1>")
-    gr.HTML('<button id="start-tour-btn" onclick="startTour()" style="padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Take the Tour!</button>')
-
+        gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>🎰 Roulette Spin Analyzer</h1>")
+        with gr.Column(scale=1):
+            gr.HTML('''
+                <button id="start-tour-btn" onclick="startTour()" style="padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Take the Tour!</button>
+                <script>
+                    console.log("Header row rendered:", document.getElementById("header-row"));
+                </script>
+            ''')
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
