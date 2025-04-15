@@ -3438,7 +3438,7 @@ with gr.Blocks() as demo:
         value='<span style="font-size: 16px;">Total Spins: 0</span>',
         elem_classes=["spin-counter"]
     )
-    with gr.Accordion("Dealer’s Spin Tracker", open=True, elem_id="sides-of-zero-accordion"):
+    with gr.Accordion("Dealer’s Spin Tracker", open=False, elem_id="sides-of-zero-accordion"):
         sides_of_zero_display = gr.HTML(
             label="Sides of Zero",
             value=render_sides_of_zero_display(),
@@ -3680,7 +3680,7 @@ with gr.Blocks() as demo:
                 minimum=1,
                 maximum=5,
                 step=1,
-                value=2,
+                value=1,
                 interactive=True,
                 visible=False,
                 elem_classes="long-slider"
