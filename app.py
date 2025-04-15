@@ -390,6 +390,7 @@ def render_sides_of_zero_display():
     wheel_numbers = [(num, state.scores.get(num, 0)) for num in wheel_order]
     
         # Generate HTML for the single number list
+        # Generate HTML for the single number list
     def generate_number_list(numbers):
         if not numbers:
             return '<div class="number-list">No numbers</div>'
@@ -570,8 +571,8 @@ def render_sides_of_zero_display():
             }}
         }}
     </style>
-    <div style="background-color: #f5c6cb; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
-        <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker 🕵️</h4>
+    <div style="background-color: #e0e0e0; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
+        <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker 🔍</h4>
         <div class="tracker-container">
             <div class="tracker-column">
                 <div class="circular-progress" id="left-progress">
@@ -3428,38 +3429,38 @@ def clear_last_spins_display():
 # Build the Gradio interface
 with gr.Blocks() as demo:
     # Define state and components used across sections at the top
-    spins_display = gr.State(value="")
-    spins_textbox = gr.Textbox(
-        label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
-        value="",
-        interactive=True,
-        elem_id="selected-spins"
+spins_display = gr.State(value="")
+spins_textbox = gr.Textbox(
+    label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
+    value="",
+    interactive=True,
+    elem_id="selected-spins"
+)
+spin_counter = gr.HTML(
+    label="Total Spins",
+    value='<span style="font-size: 16px;">Total Spins: 0</span>',
+    elem_classes=["spin-counter"]
+)
+with gr.Accordion("Dealer’s Spin Tracker 🕵️", open=False, elem_id="sides-of-zero-accordion"):
+    sides_of_zero_display = gr.HTML(
+        label="Sides of Zero",
+        value=render_sides_of_zero_display(),
+        elem_classes=["sides-of-zero-container"]
     )
-    spin_counter = gr.HTML(
-        label="Total Spins",
-        value='<span style="font-size: 16px;">Total Spins: 0</span>',
-        elem_classes=["spin-counter"]
-    )
-    with gr.Accordion("Dealer’s Spin Tracker", open=False, elem_id="sides-of-zero-accordion"):
-        sides_of_zero_display = gr.HTML(
-            label="Sides of Zero",
-            value=render_sides_of_zero_display(),
-            elem_classes=["sides-of-zero-container"]
-        )
-    last_spin_display = gr.HTML(
-        label="Last Spins",
-        value='<h4>Last Spins</h4><p>No spins yet.</p>',
-        elem_classes=["last-spins-container"]
-    )
-    last_spin_count = gr.Slider(
-        label="",  # Remove the label to be safe
-        minimum=1,
-        maximum=36,
-        step=1,
-        value=36,
-        interactive=True,
-        elem_classes="long-slider"
-    )
+last_spin_display = gr.HTML(
+    label="Last Spins",
+    value='<h4>Last Spins</h4><p>No spins yet.</p>',
+    elem_classes=["last-spins-container"]
+)
+last_spin_count = gr.Slider(
+    label="",  # Remove the label to be safe
+    minimum=1,
+    maximum=36,
+    step=1,
+    value=36,
+    interactive=True,
+    elem_classes="long-slider"
+)
 
     # 1. Row 1: Header
     with gr.Row(elem_id="header-row"):
@@ -3876,7 +3877,7 @@ with gr.Blocks() as demo:
         save_output = gr.File(label="Download Session")
 
         
-    # CSS and Event Handlers
+        # CSS and Event Handlers
     gr.HTML("""
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css">
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
@@ -3885,6 +3886,14 @@ with gr.Blocks() as demo:
       .gr-row { margin: 0 !important; padding: 5px 0 !important; }
       .gr-column { margin: 0 !important; padding: 5px !important; }
       .gr-box { border-radius: 5px !important; }
+      
+      /* Style for Dealer’s Spin Tracker accordion header */
+      #sides-of-zero-accordion summary {
+          background-color: #f5c6cb !important;
+          color: #333 !important;
+          padding: 10px !important;
+          border-radius: 5px !important;
+      }
       
       /* Hide stray labels in the Sides of Zero section */
       .sides-of-zero-container + label, .last-spins-container + label:not(.long-slider label) {
