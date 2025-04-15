@@ -3431,7 +3431,7 @@ with gr.Blocks() as demo:
     terms_accepted = gr.State(value=False)
 
     # T&Cs Modal
-    with gr.Group(elem_id="terms-modal", visible=True) as terms_modal:
+    with gr.Group(elem_id="terms-modal", visible=not terms_accepted.value) as terms_modal:
         gr.HTML("""
         <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;">
             <div style="background-color: #fff; border-radius: 10px; padding: 20px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">
@@ -3492,15 +3492,17 @@ with gr.Blocks() as demo:
                     <p style="text-align: center; font-weight: bold; color: #dc3545;">By clicking "I Accept" below, you confirm that you have read, understood, and agree to be bound by these Terms and Conditions. You also acknowledge that the Roulette Spin Analyzer is an educational tool, not a gambling platform, and you assume all risks associated with its use.</p>
                 </div>
                 <div style="display: flex; justify-content: center; gap: 15px;">
-                    <button id="accept-terms-btn" style="background-color: #dc3545; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-family: Arial, sans-serif;">I Accept</button>
-                    <button id="decline-terms-btn" style="background-color: #6c757d; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-family: Arial, sans-serif;">Decline</button>
+                    <button id="accept-terms-btn" onclick="document.getElementById('accept-terms-hidden').click();" style="background-color: #dc3545; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-family: Arial, sans-serif;">I Accept</button>
+                    <button id="decline-terms-btn" onclick="document.getElementById('decline-terms-hidden').click();" style="background-color: #6c757d; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-family: Arial, sans-serif;">Decline</button>
                 </div>
             </div>
         </div>
         """)
+        accept_button = gr.Button("Accept Terms", elem_id="accept-terms-hidden", visible=False)
+        decline_button = gr.Button("Decline Terms", elem_id="decline-terms-hidden", visible=False)
 
-    # Main App Content (Hidden Until T&Cs Accepted)
-    with gr.Group(elem_id="main-app-content", visible=False) as main_app_content:
+    # Main App Content (Visible Only After T&Cs Accepted)
+    with gr.Group(elem_id="main-app-content", visible=terms_accepted.value) as main_app_content:
         # Define state and components used across sections at the top
         spins_display = gr.State(value="")
         spins_textbox = gr.Textbox(
@@ -3961,7 +3963,7 @@ with gr.Blocks() as demo:
                     <p style="text-align: center; font-family: Arial, sans-serif; color: #555; margin-bottom: 15px;">
                         We’d love to hear your suggestions, edits, or strategies for the Roulette Spin Analyzer!
                     </p>
-                    <form action="https://formspree.io/f/mnnpllqq" method="POST" style="display: flex; flex-direction: column; gap: 10px;">
+                    <form id="feedback-form" action="https://formspree.io/f/mnnpllqq" method="POST" target="_blank" style="display: flex; flex-direction: column; gap: 10px;" onsubmit="console.log('Form submitted to Formspree');">
                         <input type="text" name="name" placeholder="Your Name (Optional)" style="padding: 8px; border: 1px solid #d3d3d3; border-radius: 5px; font-family: Arial, sans-serif;">
                         <input type="email" name="_replyto" placeholder="Your Email (Required)" required style="padding: 8px; border: 1px solid #d3d3d3; border-radius: 5px; font-family: Arial, sans-serif;">
                         <textarea name="feedback" placeholder="Your Feedback or Suggestions" rows="4" style="padding: 8px; border: 1px solid #d3d3d3; border-radius: 5px; font-family: Arial, sans-serif; resize: vertical;"></textarea>
