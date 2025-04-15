@@ -4278,7 +4278,7 @@ with gr.Blocks() as demo:
           }
       }
 
-    </style>  # Line 5195 (Unchanged)
+    </style>
     """)
     print("CSS Updated")
 
