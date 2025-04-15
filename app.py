@@ -389,7 +389,7 @@ def render_sides_of_zero_display():
     # Prepare numbers with hit counts
     wheel_numbers = [(num, state.scores.get(num, 0)) for num in wheel_order]
     
-    # Generate HTML for the single number list
+        # Generate HTML for the single number list
     def generate_number_list(numbers):
         if not numbers:
             return '<div class="number-list">No numbers</div>'
@@ -570,7 +570,7 @@ def render_sides_of_zero_display():
             }}
         }}
     </style>
-    <div style="background-color: #e0e0e0; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
+    <div style="background-color: #d6eaff; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
         <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker</h4>
         <div class="tracker-container">
             <div class="tracker-column">
