@@ -160,11 +160,6 @@ class RouletteState:
         self.status = "Active"
         self.status_color = "white"  # Default color for active status
 
-        # Parking Martingale state variables
-        self.parking_martingale_level = 0  # Tracks the current level of the Martingale progression (0 to 3)
-        self.is_parked = False  # Indicates whether the bet is parked
-        self.waiting_for_trigger = True  # Indicates whether we're waiting for a trigger win to start/resume
-
     def reset(self):
         self.scores = {n: 0 for n in range(37)}
         self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
@@ -189,11 +184,6 @@ class RouletteState:
         self.is_stopped = False
         self.message = f"Progression reset. Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
         self.status = "Active"
-        # Reset Parking Martingale state
-        self.current_level_bet = self.base_unit
-        self.is_parked = False
-        self.waiting_for_trigger = True
-        self.spins_since_trigger = 0
         return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
 
     def update_bankroll(self, won):
@@ -242,79 +232,7 @@ class RouletteState:
                 self.progression_state = min(len(fib) - 1, self.progression_state + 1)
                 self.next_bet = fib[self.progression_state] * self.base_unit
                 self.message = f"Loss! Next Fibonacci bet: {self.next_bet}"
-        elif self.progression == "Triple Martingale":
-            self.current_bet = self.next_bet
-            self.next_bet = self.base_unit if won else self.current_bet * 3
-            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-        elif self.progression == "Parking Martingale":
-            self.current_bet = self.next_bet
-            # Determine the top-tier Even Money bet (yellow tier)
-            if self.bet_type == "Even Money":
-                # Sort even_money_scores to find the top bet (highest score)
-                sorted_even_money = sorted(self.even_money_scores.items(), key=lambda x: x[1], reverse=True)
-                top_even_money_bet = sorted_even_money[0][0] if sorted_even_money else None
-            else:
-                # Fallback or error if bet_type is not Even Money
-                top_even_money_bet = None
-                self.message = "Parking Martingale requires Even Money bet type."
-                return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
-
-            # Determine if the current spin is a win on the top-tier bet
-            is_trigger = False
-            if top_even_money_bet:
-                last_spin = int(self.last_spins[-1]) if self.last_spins else None
-                if last_spin is not None and last_spin in EVEN_MONEY.get(top_even_money_bet, []):
-                    is_trigger = True
-                else:
-                    is_trigger = False
-
-            if self.waiting_for_trigger:
-                if is_trigger:
-                    # Trigger win: Start or resume the Martingale progression
-                    self.waiting_for_trigger = False
-                    self.is_parked = False
-                    self.spins_since_trigger = 0
-                    self.next_bet = self.base_unit if not self.is_parked else self.current_level_bet
-                    self.current_level_bet = self.next_bet
-                    self.message = f"Trigger win on {top_even_money_bet}! Starting progression with bet {self.next_bet}"
-                else:
-                    self.next_bet = 0  # No bet while waiting for a trigger
-                    self.message = f"Waiting for a win on {top_even_money_bet} to start progression."
-            else:
-                # In progression mode: Count spins since the trigger
-                self.spins_since_trigger += 1
-                if is_trigger:
-                    # Win during progression: Reset to base unit
-                    self.next_bet = self.base_unit
-                    self.current_level_bet = self.base_unit
-                    self.waiting_for_trigger = True
-                    self.spins_since_trigger = 0
-                    self.message = f"Win on {top_even_money_bet} after {self.spins_since_trigger} spins! Resetting to base bet: {self.next_bet}. Waiting for next trigger."
-                else:
-                    # Loss: Check if we've exceeded 3 spins since the trigger
-                    if self.spins_since_trigger >= 3:
-                        # Exceeded 3 spins without a win: Park the bet
-                        self.is_parked = True
-                        self.waiting_for_trigger = True
-                        self.spins_since_trigger = 0
-                        self.message = f"No win after 3 spins! Parking bet at {self.current_level_bet}. Waiting for another win on {top_even_money_bet} to resume."
-                    else:
-                        # Continue progression: Double the bet
-                        self.current_level_bet = self.current_level_bet * 2
-                        self.next_bet = self.current_level_bet
-                        self.message = f"Loss after {self.spins_since_trigger} spins! Doubling bet to {self.next_bet}"
-        elif self.progression == "Oscar’s Grind":
-            self.current_bet = self.next_bet
-            profit = self.bankroll - self.initial_bankroll
-            if won and profit > 0:
-                self.next_bet = self.base_unit
-                self.message = f"Win! Profit achieved, reset to {self.next_bet}"
-            elif won:
-                self.next_bet = self.current_bet + self.base_unit
-                self.message = f"Win! Increase to {self.next_bet}"
-            else:
-                self.next_bet = self.current_bet
-                self.message = f"Loss! Keep bet at {self.next_bet}"
+elif self.progression == "Triple Martingale":
         elif self.progression == "Labouchere":
             if self.progression_state is None:
                 self.progression_state = [1, 2, 3, 4]  # Default, updated by UI
@@ -353,72 +271,6 @@ class RouletteState:
             self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
     
         return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
-
-    def simulate_parking_martingale(self, num_spins):
-        """Simulate the Parking Martingale strategy for a given number of spins."""
-        # Ensure the progression is set to Parking Martingale
-        self.progression = "Parking Martingale"
-        self.bet_type = "Even Money"
-        self.reset_progression()
-        
-        # Store initial state for reporting
-        initial_bankroll = self.bankroll
-        simulation_log = []
-        
-        # Determine the initial top-tier Even Money bet
-        sorted_even_money = sorted(self.even_money_scores.items(), key=lambda x: x[1], reverse=True)
-        top_even_money_bet = sorted_even_money[0][0] if sorted_even_money else "Red"  # Fallback to "Red" if no scores yet
-        simulation_log.append(f"Starting Simulation: {num_spins} spins, Betting on Top-Tier Even Money Bet (Initially {top_even_money_bet}), Initial Bankroll: {self.bankroll}")
-        
-        # Generate random spins
-        for i in range(num_spins):
-            # Generate a random spin (0 to 36)
-            spin = str(random.randint(0, 36))
-            self.last_spins.append(spin)  # Add to last_spins for trigger detection
-            
-            # Update scores for this spin to ensure the top-tier bet is current
-            self.update_scores_batch([spin])
-            
-            # Determine the current top-tier Even Money bet
-            sorted_even_money = sorted(self.even_money_scores.items(), key=lambda x: x[1], reverse=True)
-            top_even_money_bet = sorted_even_money[0][0] if sorted_even_money else "Red"  # Fallback to "Red" if no scores
-            
-            # Determine if the spin is a win on the top-tier bet
-            is_top_bet = int(spin) in EVEN_MONEY.get(top_even_money_bet, [])
-            won = is_top_bet  # For Even Money bet on the top-tier bet, a win occurs if the spin matches the bet
-            
-            # Update the progression
-            bankroll_before = self.bankroll
-            current_bet_before = self.current_bet
-            self.update_progression(won)
-            
-            # Log the state after this spin
-            log_entry = (
-                f"Spin {i+1}: Number {spin} ({top_even_money_bet}: {is_top_bet}), "
-                f"Bet: {current_bet_before}, "
-                f"Won: {won}, "
-                f"Bankroll: {bankroll_before} → {self.bankroll}, "
-                f"Spins Since Trigger: {self.spins_since_trigger}, "
-                f"Current Level Bet: {self.current_level_bet}, "
-                f"Parked: {self.is_parked}, "
-                f"Waiting for Trigger: {self.waiting_for_trigger}, "
-                f"Next Bet: {self.next_bet}, "
-                f"Message: {self.message}"
-            )
-            simulation_log.append(log_entry)
-        
-        # Summarize the simulation
-        final_bankroll = self.bankroll
-        profit_loss = final_bankroll - initial_bankroll
-        summary = (
-            f"\nSimulation Complete:\n"
-            f"Final Bankroll: {final_bankroll}\n"
-            f"Profit/Loss: {profit_loss}\n"
-            f"Total Spins: {num_spins}"
-        )
-        simulation_log.append(summary)
-        
-        return "\n".join(simulation_log)
 
 # Create an instance of RouletteState (unchanged)
 state = RouletteState()
@@ -3953,7 +3805,7 @@ with gr.Blocks() as demo:
                 )
                 progression_dropdown = gr.Dropdown(
                     label="Progression",
-                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss", "Parking Martingale"],
+                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss"],
                     value="Martingale"
                 )
                 labouchere_sequence = gr.Textbox(
@@ -3966,17 +3818,12 @@ with gr.Blocks() as demo:
                 lose_button = gr.Button("Lose")
                 reset_progression_button = gr.Button("Reset Progression")
             with gr.Row():
-                simulation_spins_input = gr.Number(label="Number of Spins to Simulate", value=10, minimum=1, step=1)
-                simulate_button = gr.Button("Simulate Parking Martingale")
-            with gr.Row():
                 bankroll_output = gr.Textbox(label="Current Bankroll", value="1000", interactive=False)
                 current_bet_output = gr.Textbox(label="Current Bet", value="10", interactive=False)
                 next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
             with gr.Row():
                 message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
-                status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
-            with gr.Row():
-                simulation_output = gr.Textbox(label="Simulation Results", value="", interactive=False, lines=10)   
+                status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>') 
                 
     # 9. Row 9: Color Code Key (Collapsible, with Color Pickers Inside)
     with gr.Accordion("Color Code Key", open=False, elem_id="color-code-key"):
@@ -4930,13 +4777,6 @@ with gr.Blocks() as demo:
         outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
     )
 
-    # Simulation Event Handler
-    simulate_button.click(
-        fn=lambda num_spins: state.simulate_parking_martingale(int(num_spins)),
-        inputs=[simulation_spins_input],
-        outputs=[simulation_output]
-    )
-
     # Video Category and Video Selection Event Handlers
     def update_video_dropdown(category):
         videos = video_categories.get(category, [])
@@ -5228,14 +5068,24 @@ with gr.Blocks() as demo:
 
       function startTour() {
         console.log('Tour starting...');
-        setTimeout(() => {
+        let retries = 0;
+        const maxRetries = 10; // Try up to 10 times (5 seconds total)
+        const interval = 500; // Check every 500ms
+
+        const tryStartTour = () => {
           if (document.querySelector('#header-row')) {
             console.log('DOM ready, starting tour');
             tour.start();
+          } else if (retries < maxRetries) {
+            retries++;
+            console.log(`Header row not found, retrying (${retries}/${maxRetries})...`);
+            setTimeout(tryStartTour, interval);
           } else {
-            console.error('Header row not found, tour aborted');
+            console.error('Header row not found after maximum retries, tour aborted');
           }
-        }, 500);
+        };
+
+        tryStartTour();
       }
 
       document.addEventListener("DOMContentLoaded", () => {
