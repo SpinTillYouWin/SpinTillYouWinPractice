@@ -160,6 +160,11 @@ class RouletteState:
         self.status = "Active"
         self.status_color = "white"  # Default color for active status
 
+        # Parking Martingale state variables
+        self.parking_martingale_level = 0  # Tracks the current level of the Martingale progression (0 to 3)
+        self.is_parked = False  # Indicates whether the bet is parked
+        self.waiting_for_trigger = True  # Indicates whether we're waiting for a trigger win to start/resume
+
     def reset(self):
         self.scores = {n: 0 for n in range(37)}
         self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
@@ -3820,7 +3825,7 @@ with gr.Blocks() as demo:
                 )
                 progression_dropdown = gr.Dropdown(
                     label="Progression",
-                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss"],
+                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss", "Parking Martingale"],
                     value="Martingale"
                 )
                 labouchere_sequence = gr.Textbox(
@@ -3839,7 +3844,7 @@ with gr.Blocks() as demo:
             with gr.Row():
                 message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
                 status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
-
+    
     # 9. Row 9: Color Code Key (Collapsible, with Color Pickers Inside)
     with gr.Accordion("Color Code Key", open=False, elem_id="color-code-key"):
         with gr.Row():
