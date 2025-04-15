@@ -3429,38 +3429,38 @@ def clear_last_spins_display():
 # Build the Gradio interface
 with gr.Blocks() as demo:
     # Define state and components used across sections at the top
-spins_display = gr.State(value="")
-spins_textbox = gr.Textbox(
-    label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
-    value="",
-    interactive=True,
-    elem_id="selected-spins"
-)
-spin_counter = gr.HTML(
-    label="Total Spins",
-    value='<span style="font-size: 16px;">Total Spins: 0</span>',
-    elem_classes=["spin-counter"]
-)
-with gr.Accordion("Dealer’s Spin Tracker 🕵️", open=False, elem_id="sides-of-zero-accordion"):
-    sides_of_zero_display = gr.HTML(
-        label="Sides of Zero",
-        value=render_sides_of_zero_display(),
-        elem_classes=["sides-of-zero-container"]
+    spins_display = gr.State(value="")
+    spins_textbox = gr.Textbox(
+        label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
+        value="",
+        interactive=True,
+        elem_id="selected-spins"
     )
-last_spin_display = gr.HTML(
-    label="Last Spins",
-    value='<h4>Last Spins</h4><p>No spins yet.</p>',
-    elem_classes=["last-spins-container"]
-)
-last_spin_count = gr.Slider(
-    label="",  # Remove the label to be safe
-    minimum=1,
-    maximum=36,
-    step=1,
-    value=36,
-    interactive=True,
-    elem_classes="long-slider"
-)
+    spin_counter = gr.HTML(
+        label="Total Spins",
+        value='<span style="font-size: 16px;">Total Spins: 0</span>',
+        elem_classes=["spin-counter"]
+    )
+    with gr.Accordion("Dealer’s Spin Tracker 🕵️", open=False, elem_id="sides-of-zero-accordion"):
+        sides_of_zero_display = gr.HTML(
+            label="Sides of Zero",
+            value=render_sides_of_zero_display(),
+            elem_classes=["sides-of-zero-container"]
+        )
+    last_spin_display = gr.HTML(
+        label="Last Spins",
+        value='<h4>Last Spins</h4><p>No spins yet.</p>',
+        elem_classes=["last-spins-container"]
+    )
+    last_spin_count = gr.Slider(
+        label="",  # Remove the label to be safe
+        minimum=1,
+        maximum=36,
+        step=1,
+        value=36,
+        interactive=True,
+        elem_classes="long-slider"
+    )
 
     # 1. Row 1: Header
     with gr.Row(elem_id="header-row"):
