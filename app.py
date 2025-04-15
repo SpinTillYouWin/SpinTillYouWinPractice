@@ -475,10 +475,10 @@ def render_sides_of_zero_display():
             flex-shrink: 0;
         }}
         .number-item.zero-number {{
-            width: 80px;
-            height: 80px;
-            line-height: 80px;
-            font-size: 40px;
+            width: 60px;
+            height: 60px;
+            line-height: 60px;
+            font-size: 30px;
         }}
         .hit-badge {{
             position: absolute;
@@ -495,12 +495,12 @@ def render_sides_of_zero_display():
             z-index: 2;
         }}
         .number-item.zero-number .hit-badge {{
-            top: -8px;
-            right: -8px;
-            width: 24px;
-            height: 24px;
-            line-height: 24px;
-            font-size: 12px;
+            top: -6px;
+            right: -6px;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            font-size: 10px;
         }}
         .tooltip {{
             position: absolute;
