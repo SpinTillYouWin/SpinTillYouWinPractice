@@ -4450,6 +4450,8 @@ def track_even_money_bets(spins, selected_bets):
         message = f"Spin {latest_spin} does not match all conditions: {', '.join(selected_bets)}."
         return f"<p style='color: red;'>{message}</p>"
 
+# Event Handlers with Error Handling
+try:
     spins_textbox.change(
         fn=validate_spins_input,
         inputs=spins_textbox,
@@ -4472,13 +4474,17 @@ def track_even_money_bets(spins, selected_bets):
         inputs=[spins_display, even_money_bets],
         outputs=[even_money_hits_output]
     )
-    
-    # Add handler for when the user changes their selected bets
+except Exception as e:
+    print(f"Error in spins_textbox.change handler: {str(e)}")
+
+try:
     even_money_bets.change(
         fn=track_even_money_bets,
         inputs=[spins_display, even_money_bets],
         outputs=[even_money_hits_output]
     )
+except Exception as e:
+    print(f"Error in even_money_bets.change handler: {str(e)}")
     spins_display.change(
         fn=update_spin_counter,
         inputs=[],
@@ -4973,4 +4979,6 @@ def track_even_money_bets(spins, selected_bets):
     )
 
     # Launch the interface
+    print("Starting Gradio launch...")
     demo.launch()
+    print("Gradio launch completed.")
