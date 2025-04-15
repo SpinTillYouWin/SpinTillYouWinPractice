@@ -3934,7 +3934,7 @@ with gr.Blocks() as demo:
     # 11. Row 11: Top Strategies with Roulette Spin Analyzer (Moved to be Independent)
     with gr.Row():
         with gr.Column():
-            with gr.Accordion("Top Strategies with Roulette Spin Analyzer 🎥", open=True, elem_id="top-strategies"):  # Set open=True for testing visibility
+            with gr.Accordion("Top Strategies with Roulette Spin Analyzer 🎥", open=False, elem_id="top-strategies"):  # Set open=True for testing visibility
                 gr.Markdown("### Explore Strategies Through Videos")
                 video_category_dropdown = gr.Dropdown(
                     label="Select Video Category",
