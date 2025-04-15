@@ -3931,31 +3931,31 @@ with gr.Blocks() as demo:
             load_input = gr.File(label="Upload Session")
         save_output = gr.File(label="Download Session")  # Line 4857 (Unchanged)
 
-        # 11. Row 11: Top Strategies with Roulette Spin Analyzer (New Accordion)  # Line 4858 (New)
-        with gr.Row():
-            with gr.Column():
-                with gr.Accordion("Top Strategies with Roulette Spin Analyzer 🎥", open=False, elem_id="top-strategies"):
-                    gr.Markdown("### Explore Strategies Through Videos")
-                    video_category_dropdown = gr.Dropdown(
-                        label="Select Video Category",
-                        choices=sorted(video_categories.keys()),
-                        value="Dozen Strategies",
-                        allow_custom_value=False,
-                        elem_id="video-category-dropdown"
-                    )
-                    video_dropdown = gr.Dropdown(
-                        label="Select Video",
-                        choices=[video["title"] for video in video_categories["Dozen Strategies"]],
-                        value=video_categories["Dozen Strategies"][0]["title"] if video_categories["Dozen Strategies"] else None,
-                        allow_custom_value=False,
-                        elem_id="video-dropdown"
-                    )
-                    video_output = gr.HTML(
-                        label="Video",
-                        value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_categories["Dozen Strategies"][0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if video_categories["Dozen Strategies"] else "<p>Select a category and video to watch.</p>"
-                    )
+    # 11. Row 11: Top Strategies with Roulette Spin Analyzer (Moved to be Independent)
+    with gr.Row():
+        with gr.Column():
+            with gr.Accordion("Top Strategies with Roulette Spin Analyzer 🎥", open=True, elem_id="top-strategies"):  # Set open=True for testing visibility
+                gr.Markdown("### Explore Strategies Through Videos")
+                video_category_dropdown = gr.Dropdown(
+                    label="Select Video Category",
+                    choices=sorted(video_categories.keys()),
+                    value="Dozen Strategies",
+                    allow_custom_value=False,
+                    elem_id="video-category-dropdown"
+                )
+                video_dropdown = gr.Dropdown(
+                    label="Select Video",
+                    choices=[video["title"] for video in video_categories["Dozen Strategies"]],
+                    value=video_categories["Dozen Strategies"][0]["title"] if video_categories["Dozen Strategies"] else None,
+                    allow_custom_value=False,
+                    elem_id="video-dropdown"
+                )
+                video_output = gr.HTML(
+                    label="Video",
+                    value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_categories["Dozen Strategies"][0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if video_categories["Dozen Strategies"] else "<p>Select a category and video to watch.</p>"
+                )
 
-        # 12. Row 12: Feedback Section  # Line 4882 (Unchanged)
+    # 12. Row 12: Feedback Section
     with gr.Row():
         with gr.Column():
             with gr.Accordion("Feedback & Suggestions 📝", open=False, elem_id="feedback-section"):
