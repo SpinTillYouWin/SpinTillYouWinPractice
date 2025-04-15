@@ -3924,17 +3924,17 @@ with gr.Blocks() as demo:
                 with gr.Accordion("Sides of Zero", open=False):
                     sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
-    # 11. Row 11: Save/Load Session (Collapsible, Renumbered)
+        # 11. Row 11: Save/Load Session (Collapsible, Renumbered)
     with gr.Accordion("Save/Load Session", open=False, elem_id="save-load-session"):
         with gr.Row():
             save_button = gr.Button("Save Session", elem_id="save-session-btn")
             load_input = gr.File(label="Upload Session")
-        save_output = gr.File(label="Download Session")  # Line 4857 (Unchanged)
+        save_output = gr.File(label="Download Session")
 
     # 11. Row 11: Top Strategies with Roulette Spin Analyzer (Moved to be Independent)
     with gr.Row():
         with gr.Column():
-            with gr.Accordion("Top Strategies with Roulette Spin Analyzer 🎥", open=False, elem_id="top-strategies"):  # Set open=True for testing visibility
+            with gr.Accordion("Top Strategies with Roulette Spin Analyzer 🎥", open=False, elem_id="top-strategies"):
                 gr.Markdown("### Explore Strategies Through Videos")
                 video_category_dropdown = gr.Dropdown(
                     label="Select Video Category",
@@ -4790,9 +4790,9 @@ with gr.Blocks() as demo:
         fn=lambda: state.reset_progression(),
         inputs=[],
         outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-    )  # Line 5260 (Unchanged)
+    )
 
-    # Video Category and Video Selection Event Handlers  # Line 5261 (New)
+    # Video Category and Video Selection Event Handlers
     def update_video_dropdown(category):
         videos = video_categories.get(category, [])
         choices = [video["title"] for video in videos]
@@ -4822,7 +4822,7 @@ with gr.Blocks() as demo:
         outputs=[video_output]
     )
 
-    # Add the Shepherd.js tour script here  # Line 5287 (Unchanged)
+    # Add the Shepherd.js tour script here
     gr.HTML("""
     <script>
       const tour = new Shepherd.Tour({
@@ -5046,9 +5046,9 @@ with gr.Blocks() as demo:
               { text: 'Next', action: logStep('Part 13', 'Part 14') },
               { text: 'Skip', action: tour.cancel }
           ]
-      });  # Line 5361 (Unchanged)
+      });
 
-      // Part 14: Watch and Win with Video Strategies!  # Line 5362 (New)
+      // Part 14: Watch and Win with Video Strategies!
       tour.addStep({
           id: 'part14',
           title: 'Watch and Win with Video Strategies!',
@@ -5064,7 +5064,7 @@ with gr.Blocks() as demo:
           ]
       });
 
-      // Part 15: Boost Wins with Casino Intel! (Renumbered from Part 14)  # Line 5378 (Updated)
+      // Part 15: Boost Wins with Casino Intel! (Renumbered from Part 14)
       tour.addStep({
           id: 'part15',
           title: 'Boost Wins with Casino Intel!',
@@ -5079,7 +5079,7 @@ with gr.Blocks() as demo:
           ]
       });
 
-      });  # Line 5392 (Unchanged)
+      });
 
       function startTour() {
         console.log('Tour starting...');
