@@ -676,7 +676,7 @@ def add_spin(number, current_spins, num_to_show):
         print(f"add_spin: Errors encountered - {error_msg}")
         return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
 
-    # Batch update scores
+        # Batch update scores
     action_log = update_scores_batch(valid_spins)
 
     # Update state with new spins
@@ -695,14 +695,15 @@ def add_spin(number, current_spins, num_to_show):
 
     new_spins_str = ", ".join(new_spins)
     if errors:
-        error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
+        success_msg = f"Successfully added spins: {', '.join(valid_spins)}" if valid_spins else "No spins added."
+        error_msg = f"Some inputs failed:\n- " + "\n- ".join(errors) + f"\n{success_msg}"
         gr.Warning(error_msg)
         print(f"add_spin: Errors encountered - {error_msg}")
         return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
-
-    print(f"add_spin: new_spins='{new_spins_str}'")
-    return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter(), render_sides_of_zero_display()
-    
+    else:
+        success_msg = f"Added spins: {', '.join(valid_spins)}" if valid_spins else "No new spins added."
+        print(f"add_spin: new_spins='{new_spins_str}', {success_msg}")
+        return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter(), render_sides_of_zero_display()    
 # Function to clear spins
 def clear_spins():
     state.selected_numbers.clear()
