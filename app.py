@@ -3886,12 +3886,24 @@ with gr.Blocks() as demo:
       .gr-column { margin: 0 !important; padding: 5px !important; }
       .gr-box { border-radius: 5px !important; }
       
-      /* Style for Dealer’s Spin Tracker accordion header */
-      #sides-of-zero-accordion summary {
+        /* Style for Dealer’s Spin Tracker accordion */
+      #sides-of-zero-accordion {
           background-color: #f5c6cb !important;
-          color: #333 !important;
+          padding: 10px !important;
+      }
+      #sides-of-zero-accordion > div {
+          background-color: #f5c6cb !important;
+      }
+      #sides-of-zero-accordion summary {
+          background-color: #dc3545 !important;
+          color: #fff !important;
           padding: 10px !important;
           border-radius: 5px !important;
+      }
+      
+      /* Hide stray labels in the Sides of Zero section */
+      .sides-of-zero-container + label, .last-spins-container + label:not(.long-slider label) {
+          display: none !important;
       }
       
       /* Hide stray labels in the Sides of Zero section */
