@@ -3427,128 +3427,135 @@ def clear_last_spins_display():
 
 # Build the Gradio interface
 with gr.Blocks() as demo:
-    # T&Cs Acceptance State
-    terms_accepted = gr.State(value=False)
+# T&Cs Acceptance State
+terms_accepted = gr.State(value=False)
 
-    # T&Cs Modal
-    with gr.Group(elem_id="terms-modal", visible=not terms_accepted.value) as terms_modal:
-        gr.HTML("""
-        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;">
-            <div style="background-color: #fff; border-radius: 10px; padding: 20px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">
-                <h2 style="text-align: center; color: #dc3545; font-family: Arial, sans-serif;">Terms and Conditions</h2>
-                <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; margin-bottom: 20px;">
-                    <p><strong>Last Updated: April 15, 2025</strong></p>
+# T&Cs Modal
+with gr.Group(elem_id="terms-modal", visible=not terms_accepted.value) as terms_modal:
+    gr.HTML("""
+    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+        <div style="background-color: #fff; border-radius: 10px; padding: 20px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">
+            <h2 style="text-align: center; color: #dc3545; font-family: Arial, sans-serif;">Terms and Conditions</h2>
+            <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; margin-bottom: 20px;">
+                <p><strong>Last Updated: April 15, 2025</strong></p>
 
-                    <h3>1. Acceptance of Terms</h3>
-                    <p>By accessing or using the Roulette Spin Analyzer application ("the App"), you agree to be bound by these Terms and Conditions ("T&Cs"). If you do not agree to these T&Cs, you must not use the App. We reserve the right to update or modify these T&Cs at any time without prior notice. Your continued use of the App after such changes constitutes your acceptance of the updated T&Cs.</p>
+                <h3>1. Acceptance of Terms</h3>
+                <p>By accessing or using the Roulette Spin Analyzer application ("the App"), you agree to be bound by these Terms and Conditions ("T&Cs"). If you do not agree to these T&Cs, you must not use the App. We reserve the right to update or modify these T&Cs at any time without prior notice. Your continued use of the App after such changes constitutes your acceptance of the updated T&Cs.</p>
 
-                    <h3>2. Purpose and Nature of the App</h3>
-                    <p>The Roulette Spin Analyzer is an educational tool designed to analyze historical roulette spin data for informational purposes only. The App provides insights such as "hot" sections, "cold" sections, strong numbers, and other statistical trends based on user-provided spin data. The App does not predict future outcomes, guarantee wins, or provide gambling advice. It is not a gambling platform, and it is not intended to be used for gambling purposes. The App is intended solely for educational and entertainment purposes to help users understand roulette table patterns and trends through data analysis.</p>
+                <h3>2. Purpose and Nature of the App</h3>
+                <p>The Roulette Spin Analyzer is an educational tool designed to analyze historical roulette spin data for informational purposes only. The App provides insights such as "hot" sections, "cold" sections, strong numbers, and other statistical trends based on user-provided spin data. The App does not predict future outcomes, guarantee wins, or provide gambling advice. It is not a gambling platform, and it is not intended to be used for gambling purposes. The App is intended solely for educational and entertainment purposes to help users understand roulette table patterns and trends through data analysis.</p>
 
-                    <h3>3. No Gambling or Prediction Claims</h3>
-                    <p>The Roulette Spin Analyzer does not engage in or facilitate gambling activities. The App does not predict the outcome of future roulette spins and makes no representations or warranties regarding the likelihood of winning or losing in any gambling activity. Roulette is a game of chance, and outcomes are determined by random events beyond the control of the App or its creators. Any use of the App’s insights or data in gambling contexts is at the user’s sole risk and discretion.</p>
+                <h3>3. No Gambling or Prediction Claims</h3>
+                <p>The Roulette Spin Analyzer does not engage in or facilitate gambling activities. The App does not predict the outcome of future roulette spins and makes no representations or warranties regarding the likelihood of winning or losing in any gambling activity, regardless of the user’s location. Roulette is a game of chance, and outcomes are determined by random events beyond the control of the App or its creators. Any use of the App’s insights or data in gambling contexts, in any jurisdiction, is at the user’s sole risk and discretion.</p>
 
-                    <h3>4. Limitation of Liability</h3>
-                    <p>To the fullest extent permitted by law, the creators, developers, and operators of the Roulette Spin Analyzer (collectively, "We," "Us," or "Our") shall not be liable for any direct, indirect, incidental, consequential, or punitive damages arising out of or related to your use of the App. This includes, but is not limited to, any financial losses, emotional distress, or other damages resulting from:</p>
-                    <ul>
-                        <li>Losses incurred in gambling or betting activities, whether or not the App’s data or insights were used.</li>
-                        <li>Misinterpretation of the App’s data, statistics, or recommendations.</li>
-                        <li>Errors, inaccuracies, or omissions in the App’s functionality or data analysis.</li>
-                        <li>Decisions made by users based on the App’s outputs, including but not limited to gambling decisions.</li>
-                    </ul>
-                    <p>You acknowledge and agree that you use the App at your own risk, and We are not responsible for any outcomes resulting from your use of the App.</p>
+                <h3>4. Limitation of Liability</h3>
+                <p>To the fullest extent permitted by applicable law, including the laws of Ontario, Canada, and any other jurisdiction in which the App is accessed, the creators, developers, and operators of the Roulette Spin Analyzer (collectively, "We," "Us," or "Our") shall not be liable for any direct, indirect, incidental, consequential, special, exemplary, or punitive damages arising out of or related to your use of the App, regardless of where you are located. This includes, but is not limited to, any financial losses, emotional distress, or other damages resulting from:</p>
+                <ul>
+                    <li>Losses incurred in gambling or betting activities, whether or not the App’s data or insights were used, in any country or jurisdiction.</li>
+                    <li>Misinterpretation of the App’s data, statistics, or recommendations by users in any location.</li>
+                    <li>Errors, inaccuracies, or omissions in the App’s functionality or data analysis.</li>
+                    <li>Decisions made by users based on the App’s outputs, including but not limited to gambling decisions, regardless of the user’s jurisdiction.</li>
+                </ul>
+                <p>You acknowledge and agree that you use the App at your own risk, and We are not responsible for any outcomes resulting from your use of the App, no matter where you are located or the laws applicable in your jurisdiction.</p>
 
-                    <h3>5. No Warranty</h3>
-                    <p>The App is provided "as is" and "as available" without any warranties of any kind, whether express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement. We do not warrant that the App will be error-free, uninterrupted, or that its analysis will be accurate or reliable. We do not guarantee that the App will meet your expectations or requirements.</p>
+                <h3>5. No Warranty</h3>
+                <p>The App is provided "as is" and "as available" without any warranties of any kind, whether express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement, to the fullest extent permitted by law in any jurisdiction. We do not warrant that the App will be error-free, uninterrupted, or that its analysis will be accurate or reliable. We do not guarantee that the App will meet your expectations or requirements, regardless of your location.</p>
 
-                    <h3>6. User Responsibilities</h3>
-                    <p>You agree to use the App solely for lawful, educational, and entertainment purposes. You are responsible for ensuring that your use of the App complies with all applicable laws and regulations in your jurisdiction, including but not limited to gambling laws. You agree not to use the App for any illegal or unauthorized purpose, including gambling where prohibited by law.</p>
-                    <p>You acknowledge that the App is not a substitute for professional gambling advice, financial advice, or legal advice. If you choose to use the App’s insights in any gambling context, you do so entirely at your own risk, and We are not responsible for any resulting losses or consequences.</p>
+                <h3>6. User Responsibilities</h3>
+                <p>You agree to use the App solely for lawful, educational, and entertainment purposes in accordance with the laws of your jurisdiction. You are responsible for ensuring that your use of the App complies with all applicable local, national, and international laws and regulations, including but not limited to gambling laws in your country or region. You agree not to use the App for any illegal or unauthorized purpose, including gambling where prohibited by law in your jurisdiction.</p>
+                <p>You acknowledge that the App is not a substitute for professional gambling advice, financial advice, or legal advice, and this applies regardless of your location. If you choose to use the App’s insights in any gambling context, you do so entirely at your own risk, and We are not responsible for any resulting losses or consequences, in any country or jurisdiction.</p>
 
-                    <h3>7. Intellectual Property</h3>
-                    <p>All content, design, code, and materials within the App, including but not limited to text, graphics, logos, and software, are the intellectual property of the App’s creators or licensors. You may not reproduce, distribute, modify, or create derivative works of any part of the App without prior written consent from Us.</p>
+                <h3>7. Intellectual Property</h3>
+                <p>All content, design, code, and materials within the App, including but not limited to text, graphics, logos, and software, are the intellectual property of the App’s creators or licensors and are protected under Canadian intellectual property laws and international treaties. You may not reproduce, distribute, modify, or create derivative works of any part of the App without prior written consent from Us, regardless of your location.</p>
 
-                    <h3>8. User-Submitted Content</h3>
-                    <p>The App may allow users to submit feedback, suggestions, or strategies through a feedback form. By submitting content to the App, you grant Us a non-exclusive, royalty-free, worldwide, perpetual license to use, reproduce, modify, and distribute such content for the purpose of improving the App. You represent and warrant that any content you submit does not violate any third-party rights, including intellectual property rights, and is not defamatory, offensive, or illegal.</p>
+                <h3>8. User-Submitted Content</h3>
+                <p>The App may allow users to submit feedback, suggestions, or strategies through a feedback form. By submitting content to the App, you grant Us a non-exclusive, royalty-free, worldwide, perpetual license to use, reproduce, modify, and distribute such content for the purpose of improving the App. You represent and warrant that any content you submit does not violate any third-party rights, including intellectual property rights, and is not defamatory, offensive, or illegal under the laws of Ontario, Canada, or any other applicable jurisdiction. We are not responsible for user-submitted content that violates laws in your jurisdiction.</p>
 
-                    <h3>9. Indemnification</h3>
-                    <p>You agree to indemnify, defend, and hold harmless the creators, developers, and operators of the Roulette Spin Analyzer, as well as their affiliates, officers, directors, employees, and agents, from and against any claims, liabilities, damages, losses, or expenses, including reasonable attorneys’ fees, arising out of or related to your use of the App, violation of these T&Cs, or any actions taken based on the App’s data or insights.</p>
+                <h3>9. Indemnification</h3>
+                <p>You agree to indemnify, defend, and hold harmless the creators, developers, and operators of the Roulette Spin Analyzer, as well as their affiliates, officers, directors, employees, and agents, from and against any claims, liabilities, damages, losses, or expenses, including reasonable legal fees, arising out of or related to your use of the App, violation of these T&Cs, or any actions taken based on the App’s data or insights, regardless of your country of residence or the jurisdiction in which such claims arise. This indemnification obligation applies to claims brought under the laws of any country or region.</p>
 
-                    <h3>10. Governing Law and Dispute Resolution</h3>
-                    <p>These T&Cs shall be governed by and construed in accordance with the laws of the State of California, United States, without regard to its conflict of law principles. Any disputes arising out of or related to these T&Cs or your use of the App shall be resolved through binding arbitration in accordance with the rules of the American Arbitration Association, and such arbitration shall take place in San Francisco, California. You waive any right to participate in a class action lawsuit or class-wide arbitration.</p>
+                <h3>10. Governing Law and Dispute Resolution</h3>
+                <p>These T&Cs shall be governed by and construed in accordance with the laws of the Province of Ontario, Canada, without regard to its conflict of law principles. Any disputes arising out of or related to these T&Cs or your use of the App shall be resolved through binding arbitration in accordance with the rules of the Canadian Arbitration Association, and such arbitration shall take place in Toronto, Ontario, Canada. You waive any right to participate in a class action lawsuit or class-wide arbitration, regardless of your jurisdiction. If arbitration is not enforceable in your jurisdiction, you agree to submit to the exclusive jurisdiction of the courts of Ontario, Canada, for the resolution of any disputes.</p>
 
-                    <h3>11. Termination</h3>
-                    <p>We reserve the right to terminate or suspend your access to the App at any time, with or without notice, for any reason, including if We believe you have violated these T&Cs. Upon termination, your right to use the App will cease immediately.</p>
+                <h3>11. Termination</h3>
+                <p>We reserve the right to terminate or suspend your access to the App at any time, with or without notice, for any reason, including if We believe you have violated these T&Cs, regardless of your location. Upon termination, your right to use the App will cease immediately.</p>
 
-                    <h3>12. Severability</h3>
-                    <p>If any provision of these T&Cs is found to be invalid or unenforceable by a court of competent jurisdiction, that provision shall be enforced to the maximum extent permissible, and the remaining provisions of these T&Cs shall remain in full force and effect.</p>
+                <h3>12. Severability</h3>
+                <p>If any provision of these T&Cs is found to be invalid or unenforceable by a court of competent jurisdiction, that provision shall be enforced to the maximum extent permissible under the laws of Ontario, Canada, or the applicable jurisdiction, and the remaining provisions of these T&Cs shall remain in full force and effect.</p>
 
-                    <h3>13. Entire Agreement</h3>
-                    <p>These T&Cs constitute the entire agreement between you and Us regarding your use of the App and supersede any prior agreements or understandings, whether written or oral.</p>
+                <h3>13. Entire Agreement</h3>
+                <p>These T&Cs constitute the entire agreement between you and Us regarding your use of the App and supersede any prior agreements or understandings, whether written or oral, regardless of your location.</p>
 
-                    <h3>14. Contact Information</h3>
-                    <p>If you have any questions about these Terms and Conditions, please contact us via the feedback form at <a href="https://formspree.io/f/mnnpllqq" target="_blank">https://formspree.io/f/mnnpllqq</a>.</p>
+                <h3>14. Contact Information</h3>
+                <p>If you have any questions about these Terms and Conditions, please contact us via the feedback form at <a href="https://formspree.io/f/mnnpllqq" target="_blank">https://formspree.io/f/mnnpllqq</a>.</p>
 
-                    <p style="text-align: center; font-weight: bold; color: #dc3545;">By clicking "I Accept" below, you confirm that you have read, understood, and agree to be bound by these Terms and Conditions. You also acknowledge that the Roulette Spin Analyzer is an educational tool, not a gambling platform, and you assume all risks associated with its use.</p>
-                </div>
-                <div style="display: flex; justify-content: center; gap: 15px;">
-                    <button id="accept-terms-btn" onclick="document.getElementById('accept-terms-hidden').click();" style="background-color: #dc3545; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-family: Arial, sans-serif;">I Accept</button>
-                    <button id="decline-terms-btn" onclick="document.getElementById('decline-terms-hidden').click();" style="background-color: #6c757d; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-family: Arial, sans-serif;">Decline</button>
-                </div>
+                <p style="text-align: center; font-weight: bold; color: #dc3545;">By clicking "I Accept" below, you confirm that you have read, understood, and agree to be bound by these Terms and Conditions. You also acknowledge that the Roulette Spin Analyzer is an educational tool, not a gambling platform, and you assume all risks associated with its use, regardless of your country of residence or applicable laws.</p>
             </div>
         </div>
-        """)
-        accept_button = gr.Button("Accept Terms", elem_id="accept-terms-hidden", visible=False)
-        decline_button = gr.Button("Decline Terms", elem_id="decline-terms-hidden", visible=False)
-
-    # Main App Content (Visible Only After T&Cs Accepted)
-    with gr.Group(elem_id="main-app-content", visible=terms_accepted.value) as main_app_content:
-        # Define state and components used across sections at the top
-        spins_display = gr.State(value="")
-        spins_textbox = gr.Textbox(
-            label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
-            value="",
-            interactive=True,
-            elem_id="selected-spins"
+    </div>
+    """)
+    with gr.Row():
+        accept_button = gr.Button(
+            "I Accept",
+            elem_id="accept-terms-btn",
+            elem_classes=["action-button"],
+            _js="() => { console.log('Accept button rendered and clickable'); }"
         )
-        spin_counter = gr.HTML(
-            label="Total Spins",
-            value='<span style="font-size: 16px;">Total Spins: 0</span>',
-            elem_classes=["spin-counter"]
-        )
-        with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
-            sides_of_zero_display = gr.HTML(
-                label="Sides of Zero",
-                value=render_sides_of_zero_display(),
-                elem_classes=["sides-of-zero-container"]
-        )
-        last_spin_display = gr.HTML(
-            label="Last Spins",
-            value='<h4>Last Spins</h4><p>No spins yet.</p>',
-            elem_classes=["last-spins-container"]
-        )
-        last_spin_count = gr.Slider(
-            label="",  # Remove the label to be safe
-            minimum=1,
-            maximum=36,
-            step=1,
-            value=36,
-            interactive=True,
-            elem_classes="long-slider"
+        decline_button = gr.Button(
+            "Decline",
+            elem_id="decline-terms-btn",
+            elem_classes=["action-button"],
+            _js="() => { console.log('Decline button rendered and clickable'); }"
         )
 
-        # 1. Row 1: Header
-        with gr.Row(elem_id="header-row"):
-            with gr.Column(scale=1):
-                gr.Markdown(
-                    "# Roulette Spin Analyzer with Strategies (European Table)",
-                    elem_classes="header-title"
-                )
-            gr.HTML(
-                '''
-                <button id="start-tour-btn" onclick="startTour()" style="padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Take the Tour!</button>
-                '''
+# Main App Content (Visible Only After T&Cs Accepted)
+with gr.Group(elem_id="main-app-content", visible=terms_accepted.value) as main_app_content:
+    # Define state and components used across sections at the top
+    spins_display = gr.State(value="")
+    spins_textbox = gr.Textbox(
+        label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
+        value="",
+        interactive=True,
+        elem_id="selected-spins"
+    )
+    spin_counter = gr.HTML(
+        label="Total Spins",
+        value='<span style="font-size: 16px;">Total Spins: 0</span>',
+        elem_classes=["spin-counter"]
+    )
+    with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
+        sides_of_zero_display = gr.HTML(
+            label="Sides of Zero",
+            value=render_sides_of_zero_display(),
+            elem_classes=["sides-of-zero-container"]
+    )
+    last_spin_display = gr.HTML(
+        label="Last Spins",
+        value='<h4>Last Spins</h4><p>No spins yet.</p>',
+        elem_classes=["last-spins-container"]
+    )
+    last_spin_count = gr.Slider(
+        label="",  # Remove the label to be safe
+        minimum=1,
+        maximum=36,
+        step=1,
+        value=36,
+        interactive=True,
+        elem_classes="long-slider"
+    )
+
+    # 1. Row 1: Header
+    with gr.Row(elem_id="header-row"):
+        with gr.Column(scale=1):
+            gr.Markdown(
+                "# Roulette Spin Analyzer with Strategies (European Table)",
+                elem_classes="header-title"
             )
+        gr.HTML(
+            '''
+            <button id="start-tour-btn" onclick="startTour()" style="padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Take the Tour!</button>
+            '''
+        )
 
     # 2. Row 2: European Roulette Table
     with gr.Group():
@@ -4717,6 +4724,24 @@ with gr.Blocks() as demo:
         fn=lambda: state.reset_progression(),
         inputs=[],
         outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+    )
+    # T&Cs Modal Event Handlers
+    def accept_terms():
+        return True, False, True  # terms_accepted, terms_modal visibility, main_app_content visibility
+
+    def decline_terms():
+        return False, True, False  # terms_accepted, terms_modal visibility, main_app_content visibility
+
+    accept_button.click(
+        fn=accept_terms,
+        inputs=[],
+        outputs=[terms_accepted, terms_modal, main_app_content]
+    )
+
+    decline_button.click(
+        fn=decline_terms,
+        inputs=[],
+        outputs=[terms_accepted, terms_modal, main_app_content]
     )
 
     # Add the Shepherd.js tour script here
