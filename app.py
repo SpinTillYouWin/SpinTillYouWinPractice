@@ -4399,48 +4399,56 @@ with gr.Blocks() as demo:
         return ", ".join(valid_spins), format_spins_as_html(", ".join(valid_spins), last_spin_count.value)
 
     # Insert the track_even_money_bets function here
-    def track_even_money_bets(spins, selected_bets):
-        if not spins or not selected_bets:
-            return "<p>No hits yet.</p>"
-        
-        # Parse the latest spin
-        spins_list = [int(spin.strip()) for spin in spins.split(",") if spin.strip()]
-        if not spins_list:
-            return "<p>No hits yet.</p>"
-        
-        latest_spin = spins_list[-1]  # Get the most recent spin
-        
-        # Define even money bet conditions
-        is_even = latest_spin % 2 == 0 and latest_spin != 0
-        is_odd = latest_spin % 2 != 0
-        is_red = latest_spin in [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]
-        is_black = latest_spin in [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35]
-        is_high = 19 <= latest_spin <= 36
-        is_low = 1 <= latest_spin <= 18 and latest_spin != 0
-        
-        # Check for hits
-        hits = []
-        for bet in selected_bets:
-            if bet == "Even" and is_even:
-                hits.append(f"Even hit on spin {latest_spin}!")
-            elif bet == "Odd" and is_odd:
-                hits.append(f"Odd hit on spin {latest_spin}!")
-            elif bet == "Red" and is_red:
-                hits.append(f"Red hit on spin {latest_spin}!")
-            elif bet == "Black" and is_black:
-                hits.append(f"Black hit on spin {latest_spin}!")
-            elif bet == "High (19-36)" and is_high:
-                hits.append(f"High hit on spin {latest_spin}!")
-            elif bet == "Low (1-18)" and is_low:
-                hits.append(f"Low hit on spin {latest_spin}!")
-        
-        # Display alerts and update output
-        if hits:
-            for hit in hits:
-                gr.Info(hit)  # Display alert at the top
-            return "<p>" + "<br>".join(hits) + "</p>"
-        else:
-            return "<p>No hits yet.</p>"
+def track_even_money_bets(spins, selected_bets):
+    if not spins or not selected_bets:
+        return "<p style='color: gray;'>No hits yet.</p>"
+    
+    # Parse the latest spin
+    spins_list = [int(spin.strip()) for spin in spins.split(",") if spin.strip()]
+    if not spins_list:
+        return "<p style='color: gray;'>No hits yet.</p>"
+    
+    latest_spin = spins_list[-1]  # Get the most recent spin
+    
+    # Define even money bet conditions
+    is_even = latest_spin % 2 == 0 and latest_spin != 0
+    is_odd = latest_spin % 2 != 0
+    is_red = latest_spin in [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]
+    is_black = latest_spin in [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35]
+    is_high = 19 <= latest_spin <= 36
+    is_low = 1 <= latest_spin <= 18 and latest_spin != 0
+    
+    # Check if ALL selected bets match the latest spin
+    all_conditions_met = True
+    for bet in selected_bets:
+        if bet == "Even" and not is_even:
+            all_conditions_met = False
+            break
+        elif bet == "Odd" and not is_odd:
+            all_conditions_met = False
+            break
+        elif bet == "Red" and not is_red:
+            all_conditions_met = False
+            break
+        elif bet == "Black" and not is_black:
+            all_conditions_met = False
+            break
+        elif bet == "High (19-36)" and not is_high:
+            all_conditions_met = False
+            break
+        elif bet == "Low (1-18)" and not is_low:
+            all_conditions_met = False
+            break
+    
+    # Generate output and alert based on whether all conditions are met
+    if all_conditions_met:
+        # Create a single message listing all matching conditions
+        message = f"Spin {latest_spin} matches all conditions: {', '.join(selected_bets)}!"
+        gr.Info(message)  # Display a single alert
+        return f"<p style='color: green; font-weight: bold;'>{message}</p>"
+    else:
+        message = f"Spin {latest_spin} does not match all conditions: {', '.join(selected_bets)}."
+        return f"<p style='color: red;'>{message}</p>"
 
     spins_textbox.change(
         fn=validate_spins_input,
@@ -4464,7 +4472,7 @@ with gr.Blocks() as demo:
         inputs=[spins_display, even_money_bets],
         outputs=[even_money_hits_output]
     )
-
+    
     # Add handler for when the user changes their selected bets
     even_money_bets.change(
         fn=track_even_money_bets,
