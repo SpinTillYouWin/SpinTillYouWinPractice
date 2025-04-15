@@ -3986,25 +3986,27 @@ with gr.Blocks() as demo:
       .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
     
       /* Spin Counter Styling */
-      .spin-counter {
-          font-size: 16px !important;
-          font-weight: bold !important;
-          color: #ffffff !important;
-          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
-          padding: 8px 12px !important;
-          border: 2px solid #3498DB !important; /* Darker blue border */
-          border-radius: 8px !important;
-          margin-top: 0 !important; /* Align with textbox */
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important; /* Slightly stronger shadow */
-          transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
-      }
-      .spin-counter:hover {
-          transform: scale(1.05) !important; /* Slight zoom on hover */
-          box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; /* Enhanced shadow on hover */
-      }
+    .spin-counter {
+        font-size: 14px !important; /* Reduced from 16px */
+        font-weight: bold !important;
+        color: #ffffff !important;
+        background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Keep gradient */
+        padding: 6px 10px !important; /* Reduced from 8px 12px */
+        border: 1px solid #3498DB !important; /* Thinner border */
+        border-radius: 6px !important; /* Slightly smaller radius */
+        margin-top: 0 !important; /* Align with textbox */
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.15) !important; /* Lighter shadow */
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        min-width: 120px !important; /* Slightly reduced width */
+        height: 30px !important; /* Fixed height for compactness */
+    }
+    .spin-counter:hover {
+        transform: scale(1.03) !important; /* Reduced scale for subtler effect */
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+    }
     
       /* Last Spins Container */
             .last-spins-container {
