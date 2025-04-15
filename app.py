@@ -3499,14 +3499,12 @@ with gr.Blocks() as demo:
             accept_button = gr.Button(
                 "I Accept",
                 elem_id="accept-terms-btn",
-                elem_classes=["action-button"],
-                _js="() => { console.log('Accept button rendered and clickable'); }"
+                elem_classes=["action-button"]
             )
             decline_button = gr.Button(
                 "Decline",
                 elem_id="decline-terms-btn",
-                elem_classes=["action-button"],
-                _js="() => { console.log('Decline button rendered and clickable'); }"
+                elem_classes=["action-button"]
             )
 
     # Main App Content (Visible Only After T&Cs Accepted)
