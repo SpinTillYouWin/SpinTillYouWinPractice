@@ -7,7 +7,7 @@ from roulette_data import (
     EVEN_MONEY, DOZENS, COLUMNS, STREETS, CORNERS, SIX_LINES, SPLITS,
     NEIGHBORS_EUROPEAN, LEFT_OF_ZERO_EUROPEAN, RIGHT_OF_ZERO_EUROPEAN
 )
-# Practice edit - April 2025
+# Practice edit - April 2026
 def update_scores_batch(spins):
     """Update scores for a batch of spins and return actions for undo."""
     action_log = []
