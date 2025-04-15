@@ -3446,7 +3446,7 @@ with gr.Blocks() as demo:
             label="Sides of Zero",
             value=render_sides_of_zero_display(),
             elem_classes=["sides-of-zero-container"]
-        )
+    )
     last_spin_display = gr.HTML(
         label="Last Spins",
         value='<h4>Last Spins</h4><p>No spins yet.</p>',
