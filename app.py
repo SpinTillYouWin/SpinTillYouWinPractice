@@ -4536,12 +4536,13 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
           }
       }
      /* Spin Counter Accordion Styling */
-      #spin-counter-accordion summary {
-          border: 2px solid #3498DB !important; /* Blue border matching the spin-counter */
+     #spin-counter-accordion summary {
+          border: 2px solid #87CEEB !important; /* Lighter blue border */
           border-radius: 5px !important;
-          padding: 8px !important;
+          padding: 12px !important; /* Increased padding for more space */
           background-color: #f5f5f5 !important; /* Light gray background for the summary */
           color: #333 !important; /* Dark text color for readability */
+          font-size: 14px !important; /* Added font size for readability */
           font-weight: bold !important;
           transition: background-color 0.3s ease !important;
       }
