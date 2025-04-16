@@ -3452,25 +3452,10 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
     for spin in recent_spins:
         spin_value = int(spin)
         spin_categories = []
-        # Explicitly calculate categories
-        if spin_value in [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]:
-            spin_categories.append("Red")
-            category_counts["Red"] += 1
-        if spin_value in [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35]:
-            spin_categories.append("Black")
-            category_counts["Black"] += 1
-        if spin_value % 2 == 0 and spin_value != 0:
-            spin_categories.append("Even")
-            category_counts["Even"] += 1
-        if spin_value % 2 != 0 and spin_value != 0:
-            spin_categories.append("Odd")
-            category_counts["Odd"] += 1
-        if 1 <= spin_value <= 18:
-            spin_categories.append("Low")
-            category_counts["Low"] += 1
-        if 19 <= spin_value <= 36:
-            spin_categories.append("High")
-            category_counts["High"] += 1
+        for name, numbers in EVEN_MONEY.items():
+            if spin_value in numbers:
+                spin_categories.append(name)
+                category_counts[name] += 1
         # Determine if the spin matches the tracked combination
         if combination_mode == "And":
             if all(cat in spin_categories for cat in categories_to_track):
@@ -3526,6 +3511,7 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
         if name in categories_to_track:
             html_output += f'<li>{name}: {count} hits</li>'
     html_output += '</ul>'
+
     return "\n".join(recommendations), html_output
 STRATEGIES = {
     "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
@@ -3635,13 +3621,11 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
         interactive=True,
         elem_id="selected-spins"
     )
-    spin_counter_accordion = gr.Accordion("Total Spins Counter", open=False, elem_id="spin-counter-accordion")
-    with spin_counter_accordion:
-        spin_counter = gr.HTML(
-            label="Total Spins",
-            value='<span style="font-size: 16px;">Total Spins: 0</span>',
-            elem_classes=["spin-counter"]
-        )
+    spin_counter = gr.HTML(
+        label="Total Spins",
+        value='<span style="font-size: 16px;">Total Spins: 0</span>',
+        elem_classes=["spin-counter"]
+    )
     with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
         sides_of_zero_display = gr.HTML(
             label="Sides of Zero",
@@ -3710,12 +3694,12 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
         with gr.Column(scale=1):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
     
-# 5. Row 5: Selected Spins Textbox and Spin Counter
+    # 5. Row 5: Selected Spins Textbox and Spin Counter
     with gr.Row(elem_id="selected-spins-row"):
         with gr.Column(scale=4, min_width=600):
             spins_textbox
         with gr.Column(scale=1, min_width=200):
-            spin_counter_accordion  # Use the accordion-wrapped spin_counter
+            spin_counter  # Restore side-by-side layout with styling
 
     # Define strategy categories and choices
     strategy_categories = {
@@ -3731,8 +3715,8 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
         "Neighbours Strategies": ["Neighbours of Strong Number"]
     }
     category_choices = ["None"] + sorted(strategy_categories.keys())
-    
-    # Line 1: Updated - Adding new videos to video_categories
+
+    # Define video categories matching strategy categories
     video_categories = {
         "Trends": [],
         "Even Money Strategies": [
@@ -3786,8 +3770,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
         "Number Strategies": [],
         "Neighbours Strategies": []
     }
-        
-    # Line 2: Unchanged - Start of Row 6
+    
     # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
         with gr.Column(scale=2):
@@ -3796,7 +3779,8 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             clear_spins_button = gr.Button("Clear Spins", elem_classes=["clear-spins-btn", "small-btn"])
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
-    
+
+    # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
@@ -3944,91 +3928,91 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             )
             reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
 
-    # 7.1. Row 7.1: Tiggers (Dozens/Even Money Bets)
+    # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
         with gr.Column(scale=3):
-            with gr.Accordion("Tiggers (Dozens/Even Money Bets)", open=False, elem_id="tiggers-tracker"):
-                # Nested Accordion: Dozen Tracker
-                with gr.Accordion("Dozen Tracker", open=False, elem_id="dozen-tracker"):
-                    dozen_tracker_spins_dropdown = gr.Dropdown(
-                        label="Number of Spins to Track",
-                        choices=["3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
-                        value="5",
-                        interactive=True
-                    )
-                    dozen_tracker_consecutive_hits_dropdown = gr.Dropdown(
-                        label="Alert on Consecutive Dozen Hits",
-                        choices=["3", "4", "5"],
-                        value="3",
-                        interactive=True
-                    )
-                    dozen_tracker_alert_checkbox = gr.Checkbox(
-                        label="Enable Consecutive Dozen Hits Alert",
-                        value=False,
-                        interactive=True
-                    )
-                    dozen_tracker_sequence_length_dropdown = gr.Dropdown(
-                        label="Sequence Length to Match (X)",
-                        choices=["3", "4", "5"],
-                        value="4",
-                        interactive=True
-                    )
-                    dozen_tracker_follow_up_spins_dropdown = gr.Dropdown(
-                        label="Follow-Up Spins to Track (Y)",
-                        choices=["3", "4", "5", "6", "7", "8", "9", "10"],
-                        value="5",
-                        interactive=True
-                    )
-                    dozen_tracker_sequence_alert_checkbox = gr.Checkbox(
-                        label="Enable Sequence Matching Alert",
-                        value=False,
-                        interactive=True
-                    )
-                    dozen_tracker_output = gr.HTML(
-                        label="Dozen Tracker",
-                        value="<p>Select the number of spins to track and analyze spins to see the Dozen history.</p>"
-                    )
-                    dozen_tracker_sequence_output = gr.HTML(
-                        label="Sequence Matching Results",
-                        value="<p>Enable sequence matching to see results here.</p>"
-                    )
+            with gr.Accordion("Dozen Tracker", open=False, elem_id="dozen-tracker"):
+                dozen_tracker_spins_dropdown = gr.Dropdown(
+                    label="Number of Spins to Track",
+                    choices=["3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
+                    value="5",
+                    interactive=True
+                )
+                dozen_tracker_consecutive_hits_dropdown = gr.Dropdown(
+                    label="Alert on Consecutive Dozen Hits",
+                    choices=["3", "4", "5"],
+                    value="3",
+                    interactive=True
+                )
+                dozen_tracker_alert_checkbox = gr.Checkbox(
+                    label="Enable Consecutive Dozen Hits Alert",
+                    value=False,
+                    interactive=True
+                )
+                dozen_tracker_sequence_length_dropdown = gr.Dropdown(
+                    label="Sequence Length to Match (X)",
+                    choices=["3", "4", "5"],
+                    value="4",
+                    interactive=True
+                )
+                dozen_tracker_follow_up_spins_dropdown = gr.Dropdown(
+                    label="Follow-Up Spins to Track (Y)",
+                    choices=["3", "4", "5", "6", "7", "8", "9", "10"],
+                    value="5",
+                    interactive=True
+                )
+                dozen_tracker_sequence_alert_checkbox = gr.Checkbox(
+                    label="Enable Sequence Matching Alert",
+                    value=False,
+                    interactive=True
+                )
                 
-                # Nested Accordion: Even Money Bet Tracker
-                with gr.Accordion("Even Money Bet Tracker", open=False, elem_id="even-money-tracker"):
-                    even_money_tracker_spins_dropdown = gr.Dropdown(
-                        label="Number of Spins to Track",
-                        choices=["1", "2", "3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
-                        value="5",
-                        interactive=True
-                    )
-                    even_money_tracker_consecutive_hits_dropdown = gr.Dropdown(
-                        label="Alert on Consecutive Even Money Hits",
-                        choices=["1", "2", "3", "4", "5"],
-                        value="3",
-                        interactive=True
-                    )
-                    even_money_tracker_combination_mode_dropdown = gr.Dropdown(
-                        label="Combination Mode",
-                        choices=["And", "Or"],
-                        value="And",
-                        interactive=True
-                    )
-                    with gr.Row():
-                        even_money_tracker_red_checkbox = gr.Checkbox(label="Red", value=False, interactive=True)
-                        even_money_tracker_black_checkbox = gr.Checkbox(label="Black", value=False, interactive=True)
-                        even_money_tracker_even_checkbox = gr.Checkbox(label="Even", value=False, interactive=True)
-                        even_money_tracker_odd_checkbox = gr.Checkbox(label="Odd", value=False, interactive=True)
-                        even_money_tracker_low_checkbox = gr.Checkbox(label="Low", value=False, interactive=True)
-                        even_money_tracker_high_checkbox = gr.Checkbox(label="High", value=False, interactive=True)
-                    even_money_tracker_alert_checkbox = gr.Checkbox(
-                        label="Enable Even Money Hits Alert",
-                        value=False,
-                        interactive=True
-                    )
-                    even_money_tracker_output = gr.HTML(
-                        label="Even Money Tracker",
-                        value="<p>Select categories to track and analyze spins to see even money bet history.</p>"
-                    )
+                # New: Even Money Bet Tracker Controls
+                gr.Markdown("### Even Money Bet Tracker")
+                even_money_tracker_spins_dropdown = gr.Dropdown(
+                    label="Number of Spins to Track",
+                    choices=["3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
+                    value="5",
+                    interactive=True
+                )
+                even_money_tracker_consecutive_hits_dropdown = gr.Dropdown(
+                    label="Alert on Consecutive Even Money Hits",
+                    choices=["3", "4", "5"],
+                    value="3",
+                    interactive=True
+                )
+                even_money_tracker_combination_mode_dropdown = gr.Dropdown(
+                    label="Combination Mode",
+                    choices=["And", "Or"],
+                    value="And",
+                    interactive=True
+                )
+                with gr.Row():
+                    even_money_tracker_red_checkbox = gr.Checkbox(label="Red", value=False, interactive=True)
+                    even_money_tracker_black_checkbox = gr.Checkbox(label="Black", value=False, interactive=True)
+                    even_money_tracker_even_checkbox = gr.Checkbox(label="Even", value=False, interactive=True)
+                    even_money_tracker_odd_checkbox = gr.Checkbox(label="Odd", value=False, interactive=True)
+                    even_money_tracker_low_checkbox = gr.Checkbox(label="Low", value=False, interactive=True)
+                    even_money_tracker_high_checkbox = gr.Checkbox(label="High", value=False, interactive=True)
+                even_money_tracker_alert_checkbox = gr.Checkbox(
+                    label="Enable Even Money Hits Alert",
+                    value=False,
+                    interactive=True
+                )
+                even_money_tracker_output = gr.HTML(
+                    label="Even Money Tracker",
+                    value="<p>Select categories to track and analyze spins to see even money bet history.</p>"
+                )
+                # End New
+                
+                dozen_tracker_output = gr.HTML(
+                    label="Dozen Tracker",
+                    value="<p>Select the number of spins to track and analyze spins to see the Dozen history.</p>"
+                )
+                dozen_tracker_sequence_output = gr.HTML(
+                    label="Sequence Matching Results",
+                    value="<p>Enable sequence matching to see results here.</p>"
+                )
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
 
@@ -4066,8 +4050,8 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
             with gr.Row():
                 message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
-                status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')  
-                         
+                status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>') 
+                
     # 9. Row 9: Color Code Key (Collapsible, with Color Pickers Inside)
     with gr.Accordion("Color Code Key", open=False, elem_id="color-code-key"):
         with gr.Row():
@@ -4130,8 +4114,35 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             with gr.Column():
                 with gr.Accordion("Dozens", open=False):
                     dozens_output = gr.Textbox(label="Dozens", lines=10, max_lines=50)
+        with gr.Row():
+            with gr.Column():
+                with gr.Accordion("Columns", open=False):
+                    columns_output = gr.Textbox(label="Columns", lines=10, max_lines=50)
+            with gr.Column():
+                with gr.Accordion("Streets", open=False):
+                    streets_output = gr.Textbox(label="Streets", lines=10, max_lines=50)
+        with gr.Row():
+            with gr.Column():
+                with gr.Accordion("Corners", open=False):
+                    corners_output = gr.Textbox(label="Corners", lines=10, max_lines=50)
+            with gr.Column():
+                with gr.Accordion("Double Streets", open=False):
+                    six_lines_output = gr.Textbox(label="Double Streets", lines=10, max_lines=50)
+        with gr.Row():
+            with gr.Column():
+                with gr.Accordion("Splits", open=False):
+                    splits_output = gr.Textbox(label="Splits", lines=10, max_lines=50)
+            with gr.Column():
+                with gr.Accordion("Sides of Zero", open=False):
+                    sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
-# Line 1: Updated - Enhance the Top Strategies accordion with improved video UI
+    # 11. Row 11: Save/Load Session (Collapsible, Renumbered)
+    with gr.Accordion("Save/Load Session", open=False, elem_id="save-load-session"):
+        with gr.Row():
+            save_button = gr.Button("Save Session", elem_id="save-session-btn")
+            load_input = gr.File(label="Upload Session")
+        save_output = gr.File(label="Download Session")
+
     # 11. Row 11: Top Strategies with Roulette Spin Analyzer (Moved to be Independent)
     with gr.Row():
         with gr.Column():
@@ -4156,7 +4167,6 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                     value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_categories["Dozen Strategies"][0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if video_categories["Dozen Strategies"] else "<p>Select a category and video to watch.</p>"
                 )
 
-# Line 2: Unchanged - Start of Row 12
     # 12. Row 12: Feedback Section
     with gr.Row():
         with gr.Column():
@@ -4508,25 +4518,6 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
           #video-output iframe {
               height: 200px !important;
           }
-      }
-     /* Spin Counter Accordion Styling */
-     #spin-counter-accordion summary {
-          border: 2px solid #87CEEB !important; /* Lighter blue border */
-          border-radius: 5px !important;
-          padding: 12px !important; /* Increased padding for more space */
-          background-color: #f5f5f5 !important; /* Light gray background for the summary */
-          color: #333 !important; /* Dark text color for readability */
-          font-size: 14px !important; /* Added font size for readability */
-          font-weight: bold !important;
-          transition: background-color 0.3s ease !important;
-      }
-      #spin-counter-accordion summary:hover {
-          background-color: #e0e0e0 !important; /* Slightly darker on hover */
-      }
-      #spin-counter-accordion > div {
-          border: none !important; /* Ensure the inner content has no blue border */
-          background-color: #ffffff !important; /* White background for the expanded content */
-          padding: 10px !important;
       }
     </style>
     """)
@@ -5366,7 +5357,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             gr.update(choices=choices, value=default_value),
             gr.update(value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{videos[0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if videos else "<p>No videos available in this category.</p>")
         )
-    
+
     def update_video_display(video_title, category):
         videos = video_categories.get(category, [])
         selected_video = next((video for video in videos if video["title"] == video_title), None)
@@ -5374,8 +5365,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             video_id = selected_video["link"].split("/")[-1]
             return f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
         return "<p>Please select a video to watch.</p>"
-    
-    # Line 2: Unchanged - Start of video event handlers
+
     try:
         video_category_dropdown.change(
             fn=update_video_dropdown,
@@ -5384,6 +5374,16 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
         )
     except Exception as e:
         print(f"Error in video_category_dropdown.change handler: {str(e)}")
+
+    try:
+        video_dropdown.change(
+            fn=update_video_display,
+            inputs=[video_dropdown, video_category_dropdown],
+            outputs=[video_output]
+        )
+    except Exception as e:
+        print(f"Error in video_dropdown.change handler: {str(e)}")
+
 
 # Launch the interface
 print("Starting Gradio launch...")
