@@ -3608,10 +3608,10 @@ def clear_last_spins_display():
 # ... (previous imports, function definitions, and state setup remain unchanged) ...
 
 # Build the Gradio interface
-with gr.Blocks() as demo:
+with gr.Blocks(title="Roulette Spin Analyzer") as demo:
     # 1. Row 1: Header (Moved to the top)
     with gr.Row(elem_id="header-row"):
-        gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>🎰 Roulette Spin Analyzer</h1>")
+        gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>Roulette Spin Analyzer</h1>")
 
     # Define state and components used across sections
     spins_display = gr.State(value="")
