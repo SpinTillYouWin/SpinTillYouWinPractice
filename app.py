@@ -3635,11 +3635,12 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
         interactive=True,
         elem_id="selected-spins"
     )
-    spin_counter = gr.HTML(
-        label="Total Spins",
-        value='<span style="font-size: 16px;">Total Spins: 0</span>',
-        elem_classes=["spin-counter"]
-    )
+    with gr.Accordion("Total Spins Counter", open=False, elem_id="spin-counter-accordion"):
+        spin_counter = gr.HTML(
+            label="Total Spins",
+            value='<span style="font-size: 16px;">Total Spins: 0</span>',
+            elem_classes=["spin-counter"]
+        )
     with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
         sides_of_zero_display = gr.HTML(
             label="Sides of Zero",
