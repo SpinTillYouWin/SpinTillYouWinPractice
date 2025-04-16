@@ -3265,6 +3265,21 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
             if not found:
                 dozen_pattern.append("Not in Dozen")
                 dozen_counts["Not in Dozen"] += 1
+    # Map the entire spin history to Dozens for sequence matching
+    full_dozen_pattern = []
+    for spin in state.last_spins:
+        spin_value = int(spin)
+        if spin_value == 0:
+            full_dozen_pattern.append("Not in Dozen")
+        else:
+            found = False
+            for name, numbers in DOZENS.items():
+                if spin_value in numbers:
+                    full_dozen_pattern.append(name)
+                    found = True
+                    break
+            if not found:
+                full_dozen_pattern.append("Not in Dozen")
 
     # Detect consecutive Dozen hits (only if alert is enabled)
     current_streak = 1
@@ -3342,7 +3357,7 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
                     else:
                         dozens_to_bet = [d for d in all_dozens if d != dozen]
                         sequence_recommendations.append(f"Spin {idx + 1}: Bet against {dozen} - Bet on {', '.join(dozens_to_bet)}")
-
+                        
     # Text summary for Dozen Tracker
     recommendations.append(f"Dozen Tracker (Last {len(recent_spins)} Spins):")
     recommendations.append("Dozen History: " + ", ".join(dozen_pattern))
