@@ -1513,7 +1513,6 @@ def reset_casino_data():
         "<p>Casino data reset to defaults.</p>"  # casino_data_output
     )
 
-# Line 1: Updated - Fix syntax error in create_dynamic_table
 def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
     print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
     print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
@@ -1535,7 +1534,13 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
     else:
         trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color = apply_strategy_highlights(strategy_name, int(dozen_tracker_spins) if strategy_name == "None" else neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
     
-    # Single return point with correct syntax
+    # If still no highlights and no sorted_sections, provide a default message
+    if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
+        return "<p>No spins yet. Select a strategy to see default highlights.</p>"
+    
+    return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)
+    
+    # If still no highlights and no sorted_sections, provide a default message
     if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
         return "<p>No spins yet. Select a strategy to see default highlights.</p>"
     
@@ -3727,7 +3732,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
     }
     category_choices = ["None"] + sorted(strategy_categories.keys())
     
-    # Line 1: Updated - Add the three new videos to video_categories with converted youtu.be links
+    # Line 1: Updated - Adding new videos to video_categories
     video_categories = {
         "Trends": [],
         "Even Money Strategies": [
@@ -3781,7 +3786,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
         "Number Strategies": [],
         "Neighbours Strategies": []
     }
-    
+        
     # Line 2: Unchanged - Start of Row 6
     # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
@@ -4126,7 +4131,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 with gr.Accordion("Dozens", open=False):
                     dozens_output = gr.Textbox(label="Dozens", lines=10, max_lines=50)
 
-    # Line 1: Updated - Revert Row 11 UI to its original state
+# Line 1: Updated - Enhance the Top Strategies accordion with improved video UI
     # 11. Row 11: Top Strategies with Roulette Spin Analyzer (Moved to be Independent)
     with gr.Row():
         with gr.Column():
@@ -4150,6 +4155,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                     label="Video",
                     value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_categories["Dozen Strategies"][0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if video_categories["Dozen Strategies"] else "<p>Select a category and video to watch.</p>"
                 )
+
 # Line 2: Unchanged - Start of Row 12
     # 12. Row 12: Feedback Section
     with gr.Row():
@@ -4745,7 +4751,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             outputs=[color_code_output]
         ).then(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, kbox],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         )
     except Exception as e:
@@ -5351,7 +5357,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
     except Exception as e:
         print(f"Error in reset_progression_button.click handler: {str(e)}")
 
-    # Line 1: Updated - Revert update_video_dropdown and update_video_display to original state
+    # Video Category and Video Selection Event Handlers
     def update_video_dropdown(category):
         videos = video_categories.get(category, [])
         choices = [video["title"] for video in videos]
