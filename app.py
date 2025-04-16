@@ -4148,19 +4148,18 @@ with gr.Blocks() as demo:
       .table-row { display: flex !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap !important; line-height: 0 !important; }
     
       /* Buttons */
-      .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; width: 100% !important; box-sizing: border-box !important; }
-      button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; padding: 8px 16px !important; transition: transform 0.2s ease, box-shadow 0.2s ease !important; }
+            .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; width: 100% !important; box-sizing: border-box !important; }
+      button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; padding: 8px 16px !important; transition: transform 0.2s ease, box-shadow 0.2s ease !important; width: 140px !important; box-sizing: border-box !important; display: inline-block !important; }
       button.green-btn:hover { background-color: #218838 !important; transform: scale(1.05) !important; box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; }
       button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
       
-      /* Updated: Uniform width for Analyze Spins, Clear Spins, and Clear All buttons */
+      /* Updated: Remove fixed width to match top row buttons */
       button.green-btn {
           background-color: #28a745 !important;
           color: white !important;
           border: 1px solid #000 !important;
           padding: 8px 16px !important;
           transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-          width: 140px !important; /* Fixed width for consistency */
           box-sizing: border-box !important;
           display: inline-block !important;
       }
@@ -4173,13 +4172,20 @@ with gr.Blocks() as demo:
           background-color: #ff4444 !important;
           color: white !important;
           border: 1px solid #000 !important;
-          width: 140px !important; /* Fixed width for consistency */
           box-sizing: border-box !important;
           display: inline-block !important;
       }
       button.clear-spins-btn:hover {
           background-color: #cc0000 !important;
       }
+      /* End Updated */
+      
+      button.generate-spins-btn:hover { background-color: #0056b3 !important; }
+      /* Ensure columns have appropriate spacing */
+      .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
+      
+      /* Compact Components */
+      .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
       /* End Updated */
       
       button.generate-spins-btn:hover { background-color: #0056b3 !important; }
