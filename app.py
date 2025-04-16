@@ -4149,11 +4149,11 @@ with gr.Blocks() as demo:
     
       /* Buttons */
             .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; width: 100% !important; box-sizing: border-box !important; }
-      button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; padding: 8px 16px !important; transition: transform 0.2s ease, box-shadow 0.2s ease !important; width: 140px !important; box-sizing: border-box !important; display: inline-block !important; }
+      button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; padding: 8px 16px !important; transition: transform 0.2s ease, box-shadow 0.2s ease !important; box-sizing: border-box !important; display: inline-block !important; }
       button.green-btn:hover { background-color: #218838 !important; transform: scale(1.05) !important; box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; }
       button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
       
-      /* Updated: Remove fixed width to match top row buttons */
+      /* Updated: Remove display: inline-block to match container width */
       button.green-btn {
           background-color: #28a745 !important;
           color: white !important;
@@ -4161,13 +4161,13 @@ with gr.Blocks() as demo:
           padding: 8px 16px !important;
           transition: transform 0.2s ease, box-shadow 0.2s ease !important;
           box-sizing: border-box !important;
-          display: inline-block !important;
       }
       button.green-btn:hover {
           background-color: #218838 !important;
           transform: scale(1.05) !important;
           box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
       }
+      
       button.clear-spins-btn {
           background-color: #ff4444 !important;
           color: white !important;
@@ -4178,9 +4178,8 @@ with gr.Blocks() as demo:
       button.clear-spins-btn:hover {
           background-color: #cc0000 !important;
       }
-      /* End Updated */
-      
       button.generate-spins-btn:hover { background-color: #0056b3 !important; }
+      
       /* Ensure columns have appropriate spacing */
       .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
       
