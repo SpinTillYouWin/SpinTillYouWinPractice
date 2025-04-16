@@ -4176,15 +4176,22 @@ with gr.Blocks() as demo:
       #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
       /* Updated: Compact dropdown styling for Select Category and Select Strategy */
       #select-category select, #strategy-dropdown select {
-          max-height: 200px !important;
+          max-height: 150px !important;
           overflow-y: auto !important;
+          scrollbar-width: thin !important;
           font-size: 14px;
           padding: 5px;
           background-color: #f9f9f9;
           border: 1px solid #ccc;
           border-radius: 3px;
       }
-      /* End Updated */
+      #select-category select::-webkit-scrollbar, #strategy-dropdown select::-webkit-scrollbar {
+          width: 6px;
+      }
+      #select-category select::-webkit-scrollbar-thumb, #strategy-dropdown select::-webkit-scrollbar-thumb {
+          background-color: #888;
+          border-radius: 3px;
+      }
       
       /* Scrollable Tables */
       .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
