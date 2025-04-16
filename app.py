@@ -5386,9 +5386,11 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
         videos = video_categories.get(category, [])
         choices = [video["title"] for video in videos]
         default_value = choices[0] if choices else None
+        initial_video = videos[0] if videos else None
+        initial_iframe = f'<iframe width="100%" height="500" src="https://www.youtube.com/embed/{initial_video["link"].split("/")[-1] if initial_video else ""}" frameborder="0" allowfullscreen></iframe>' if initial_video else "<p>No videos available in this category.</p>"
         return (
             gr.update(choices=choices, value=default_value),
-            gr.update(value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{videos[0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if videos else "<p>No videos available in this category.</p>")
+            gr.update(value=initial_iframe)
         )
     
     # Line 1: Updated - Refine update_video_display with improved URL parsing and increased height
@@ -5396,12 +5398,9 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
         videos = video_categories.get(category, [])
         selected_video = next((video for video in videos if video["title"] == video_title), None)
         if selected_video:
-            # Improved URL parsing to handle both youtube.com and youtu.be formats
-            link = selected_video["link"]
-            video_id = link.split("v=")[-1] if "v=" in link else link.split("/")[-1]
-            if "&" in video_id:
-                video_id = video_id.split("&")[0]  # Remove any parameters after the ID
-            return f'<iframe width="100%" height="450" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'  # Increased height to 450px
+            # Use the proven split("/")[-1] method from working youtu.be format
+            video_id = selected_video["link"].split("/")[-1]
+            return f'<iframe width="100%" height="500" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
         return "<p>Please select a video to watch.</p>"
     
     # Line 2: Unchanged - Start of video event handlers
