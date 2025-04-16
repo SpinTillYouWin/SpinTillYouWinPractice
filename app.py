@@ -4664,8 +4664,24 @@ with gr.Blocks() as demo:
             outputs=[color_code_output]
         ).then(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, kbox],
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            # New .then clause to call even_money_tracker
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
         )
     except Exception as e:
         print(f"Error in analyze_button.click handler: {str(e)}")
