@@ -4877,6 +4877,7 @@ with gr.Blocks() as demo:
         print(f"Error in dozen_tracker_follow_up_spins_dropdown.change handler: {str(e)}")
 
     # Dozen Tracker Sequence Alert Checkbox Event Handler
+    # Dozen Tracker Sequence Alert Checkbox Event Handler
     try:
         dozen_tracker_sequence_alert_checkbox.change(
             fn=dozen_tracker,
@@ -4887,170 +4888,168 @@ with gr.Blocks() as demo:
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         )
-        # New: Even Money Tracker Event Handlers
-            even_money_tracker_spins_dropdown.change(
-                fn=even_money_tracker,
-                inputs=[
-                    even_money_tracker_spins_dropdown,
-                    even_money_tracker_consecutive_hits_dropdown,
-                    even_money_tracker_alert_checkbox,
-                    even_money_tracker_combination_mode_dropdown,
-                    even_money_tracker_red_checkbox,
-                    even_money_tracker_black_checkbox,
-                    even_money_tracker_even_checkbox,
-                    even_money_tracker_odd_checkbox,
-                    even_money_tracker_low_checkbox,
-                    even_money_tracker_high_checkbox
-                ],
-                outputs=[gr.State(), even_money_tracker_output]
-            )
-            even_money_tracker_consecutive_hits_dropdown.change(
-                fn=even_money_tracker,
-                inputs=[
-                    even_money_tracker_spins_dropdown,
-                    even_money_tracker_consecutive_hits_dropdown,
-                    even_money_tracker_alert_checkbox,
-                    even_money_tracker_combination_mode_dropdown,
-                    even_money_tracker_red_checkbox,
-                    even_money_tracker_black_checkbox,
-                    even_money_tracker_even_checkbox,
-                    even_money_tracker_odd_checkbox,
-                    even_money_tracker_low_checkbox,
-                    even_money_tracker_high_checkbox
-                ],
-                outputs=[gr.State(), even_money_tracker_output]
-            )
-            even_money_tracker_combination_mode_dropdown.change(
-                fn=even_money_tracker,
-                inputs=[
-                    even_money_tracker_spins_dropdown,
-                    even_money_tracker_consecutive_hits_dropdown,
-                    even_money_tracker_alert_checkbox,
-                    even_money_tracker_combination_mode_dropdown,
-                    even_money_tracker_red_checkbox,
-                    even_money_tracker_black_checkbox,
-                    even_money_tracker_even_checkbox,
-                    even_money_tracker_odd_checkbox,
-                    even_money_tracker_low_checkbox,
-                    even_money_tracker_high_checkbox
-                ],
-                outputs=[gr.State(), even_money_tracker_output]
-            )
-            even_money_tracker_red_checkbox.change(
-                fn=even_money_tracker,
-                inputs=[
-                    even_money_tracker_spins_dropdown,
-                    even_money_tracker_consecutive_hits_dropdown,
-                    even_money_tracker_alert_checkbox,
-                    even_money_tracker_combination_mode_dropdown,
-                    even_money_tracker_red_checkbox,
-                    even_money_tracker_black_checkbox,
-                    even_money_tracker_even_checkbox,
-                    even_money_tracker_odd_checkbox,
-                    even_money_tracker_low_checkbox,
-                    even_money_tracker_high_checkbox
-                ],
-                outputs=[gr.State(), even_money_tracker_output]
-            )
-            even_money_tracker_black_checkbox.change(
-                fn=even_money_tracker,
-                inputs=[
-                    even_money_tracker_spins_dropdown,
-                    even_money_tracker_consecutive_hits_dropdown,
-                    even_money_tracker_alert_checkbox,
-                    even_money_tracker_combination_mode_dropdown,
-                    even_money_tracker_red_checkbox,
-                    even_money_tracker_black_checkbox,
-                    even_money_tracker_even_checkbox,
-                    even_money_tracker_odd_checkbox,
-                    even_money_tracker_low_checkbox,
-                    even_money_tracker_high_checkbox
-                ],
-                outputs=[gr.State(), even_money_tracker_output]
-            )
-            even_money_tracker_even_checkbox.change(
-                fn=even_money_tracker,
-                inputs=[
-                    even_money_tracker_spins_dropdown,
-                    even_money_tracker_consecutive_hits_dropdown,
-                    even_money_tracker_alert_checkbox,
-                    even_money_tracker_combination_mode_dropdown,
-                    even_money_tracker_red_checkbox,
-                    even_money_tracker_black_checkbox,
-                    even_money_tracker_even_checkbox,
-                    even_money_tracker_odd_checkbox,
-                    even_money_tracker_low_checkbox,
-                    even_money_tracker_high_checkbox
-                ],
-                outputs=[gr.State(), even_money_tracker_output]
-            )
-            even_money_tracker_odd_checkbox.change(
-                fn=even_money_tracker,
-                inputs=[
-                    even_money_tracker_spins_dropdown,
-                    even_money_tracker_consecutive_hits_dropdown,
-                    even_money_tracker_alert_checkbox,
-                    even_money_tracker_combination_mode_dropdown,
-                    even_money_tracker_red_checkbox,
-                    even_money_tracker_black_checkbox,
-                    even_money_tracker_even_checkbox,
-                    even_money_tracker_odd_checkbox,
-                    even_money_tracker_low_checkbox,
-                    even_money_tracker_high_checkbox
-                ],
-                outputs=[gr.State(), even_money_tracker_output]
-            )
-            even_money_tracker_low_checkbox.change(
-                fn=even_money_tracker,
-                inputs=[
-                    even_money_tracker_spins_dropdown,
-                    even_money_tracker_consecutive_hits_dropdown,
-                    even_money_tracker_alert_checkbox,
-                    even_money_tracker_combination_mode_dropdown,
-                    even_money_tracker_red_checkbox,
-                    even_money_tracker_black_checkbox,
-                    even_money_tracker_even_checkbox,
-                    even_money_tracker_odd_checkbox,
-                    even_money_tracker_low_checkbox,
-                    even_money_tracker_high_checkbox
-                ],
-                outputs=[gr.State(), even_money_tracker_output]
-            )
-            even_money_tracker_high_checkbox.change(
-                fn=even_money_tracker,
-                inputs=[
-                    even_money_tracker_spins_dropdown,
-                    even_money_tracker_consecutive_hits_dropdown,
-                    even_money_tracker_alert_checkbox,
-                    even_money_tracker_combination_mode_dropdown,
-                    even_money_tracker_red_checkbox,
-                    even_money_tracker_black_checkbox,
-                    even_money_tracker_even_checkbox,
-                    even_money_tracker_odd_checkbox,
-                    even_money_tracker_low_checkbox,
-                    even_money_tracker_high_checkbox
-                ],
-                outputs=[gr.State(), even_money_tracker_output]
-            )
-            even_money_tracker_alert_checkbox.change(
-                fn=even_money_tracker,
-                inputs=[
-                    even_money_tracker_spins_dropdown,
-                    even_money_tracker_consecutive_hits_dropdown,
-                    even_money_tracker_alert_checkbox,
-                    even_money_tracker_combination_mode_dropdown,
-                    even_money_tracker_red_checkbox,
-                    even_money_tracker_black_checkbox,
-                    even_money_tracker_even_checkbox,
-                    even_money_tracker_odd_checkbox,
-                    even_money_tracker_low_checkbox,
-                    even_money_tracker_high_checkbox
-                ],
-                outputs=[gr.State(), even_money_tracker_output]
-            )
-            # End New
-    except Exception as e:
-        print(f"Error in dozen_tracker_sequence_alert_checkbox.change handler: {str(e)}")
+
+        # Updated: Fixed indentation for Even Money Tracker Event Handlers
+        even_money_tracker_spins_dropdown.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+        even_money_tracker_consecutive_hits_dropdown.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+        even_money_tracker_combination_mode_dropdown.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+        even_money_tracker_red_checkbox.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+        even_money_tracker_black_checkbox.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+        even_money_tracker_even_checkbox.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+        even_money_tracker_odd_checkbox.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+        even_money_tracker_low_checkbox.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+        even_money_tracker_high_checkbox.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+        even_money_tracker_alert_checkbox.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
 
     # Casino data event handlers
     inputs_list = [
