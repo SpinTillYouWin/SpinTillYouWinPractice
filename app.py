@@ -3942,91 +3942,91 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             )
             reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
 
-    # 7.1. Row 7.1: Dozen Tracker
+    # 7.1. Row 7.1: Tiggers (Dozens/Even Money Bets)
     with gr.Row():
         with gr.Column(scale=3):
-            with gr.Accordion("Dozen Tracker", open=False, elem_id="dozen-tracker"):
-                dozen_tracker_spins_dropdown = gr.Dropdown(
-                    label="Number of Spins to Track",
-                    choices=["3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
-                    value="5",
-                    interactive=True
-                )
-                dozen_tracker_consecutive_hits_dropdown = gr.Dropdown(
-                    label="Alert on Consecutive Dozen Hits",
-                    choices=["3", "4", "5"],
-                    value="3",
-                    interactive=True
-                )
-                dozen_tracker_alert_checkbox = gr.Checkbox(
-                    label="Enable Consecutive Dozen Hits Alert",
-                    value=False,
-                    interactive=True
-                )
-                dozen_tracker_sequence_length_dropdown = gr.Dropdown(
-                    label="Sequence Length to Match (X)",
-                    choices=["3", "4", "5"],
-                    value="4",
-                    interactive=True
-                )
-                dozen_tracker_follow_up_spins_dropdown = gr.Dropdown(
-                    label="Follow-Up Spins to Track (Y)",
-                    choices=["3", "4", "5", "6", "7", "8", "9", "10"],
-                    value="5",
-                    interactive=True
-                )
-                dozen_tracker_sequence_alert_checkbox = gr.Checkbox(
-                    label="Enable Sequence Matching Alert",
-                    value=False,
-                    interactive=True
-                )
+            with gr.Accordion("Tiggers (Dozens/Even Money Bets)", open=False, elem_id="tiggers-tracker"):
+                # Nested Accordion: Dozen Tracker
+                with gr.Accordion("Dozen Tracker", open=False, elem_id="dozen-tracker"):
+                    dozen_tracker_spins_dropdown = gr.Dropdown(
+                        label="Number of Spins to Track",
+                        choices=["3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
+                        value="5",
+                        interactive=True
+                    )
+                    dozen_tracker_consecutive_hits_dropdown = gr.Dropdown(
+                        label="Alert on Consecutive Dozen Hits",
+                        choices=["3", "4", "5"],
+                        value="3",
+                        interactive=True
+                    )
+                    dozen_tracker_alert_checkbox = gr.Checkbox(
+                        label="Enable Consecutive Dozen Hits Alert",
+                        value=False,
+                        interactive=True
+                    )
+                    dozen_tracker_sequence_length_dropdown = gr.Dropdown(
+                        label="Sequence Length to Match (X)",
+                        choices=["3", "4", "5"],
+                        value="4",
+                        interactive=True
+                    )
+                    dozen_tracker_follow_up_spins_dropdown = gr.Dropdown(
+                        label="Follow-Up Spins to Track (Y)",
+                        choices=["3", "4", "5", "6", "7", "8", "9", "10"],
+                        value="5",
+                        interactive=True
+                    )
+                    dozen_tracker_sequence_alert_checkbox = gr.Checkbox(
+                        label="Enable Sequence Matching Alert",
+                        value=False,
+                        interactive=True
+                    )
+                    dozen_tracker_output = gr.HTML(
+                        label="Dozen Tracker",
+                        value="<p>Select the number of spins to track and analyze spins to see the Dozen history.</p>"
+                    )
+                    dozen_tracker_sequence_output = gr.HTML(
+                        label="Sequence Matching Results",
+                        value="<p>Enable sequence matching to see results here.</p>"
+                    )
                 
-                # New: Even Money Bet Tracker Controls
-                gr.Markdown("### Even Money Bet Tracker")
-                even_money_tracker_spins_dropdown = gr.Dropdown(
-                    label="Number of Spins to Track",
-                    choices=["1", "2", "3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
-                    value="5",
-                    interactive=True
-                )
-                even_money_tracker_consecutive_hits_dropdown = gr.Dropdown(
-                    label="Alert on Consecutive Even Money Hits",
-                    choices=["1", "2", "3", "4", "5"],
-                    value="3",
-                    interactive=True
-                )
-                even_money_tracker_combination_mode_dropdown = gr.Dropdown(
-                    label="Combination Mode",
-                    choices=["And", "Or"],
-                    value="And",
-                    interactive=True
-                )
-                with gr.Row():
-                    even_money_tracker_red_checkbox = gr.Checkbox(label="Red", value=False, interactive=True)
-                    even_money_tracker_black_checkbox = gr.Checkbox(label="Black", value=False, interactive=True)
-                    even_money_tracker_even_checkbox = gr.Checkbox(label="Even", value=False, interactive=True)
-                    even_money_tracker_odd_checkbox = gr.Checkbox(label="Odd", value=False, interactive=True)
-                    even_money_tracker_low_checkbox = gr.Checkbox(label="Low", value=False, interactive=True)
-                    even_money_tracker_high_checkbox = gr.Checkbox(label="High", value=False, interactive=True)
-                even_money_tracker_alert_checkbox = gr.Checkbox(
-                    label="Enable Even Money Hits Alert",
-                    value=False,
-                    interactive=True
-                )
-                even_money_tracker_output = gr.HTML(
-                    label="Even Money Tracker",
-                    value="<p>Select categories to track and analyze spins to see even money bet history.</p>"
-                )
-                # End New
-                
-                dozen_tracker_output = gr.HTML(
-                    label="Dozen Tracker",
-                    value="<p>Select the number of spins to track and analyze spins to see the Dozen history.</p>"
-                )
-                dozen_tracker_sequence_output = gr.HTML(
-                    label="Sequence Matching Results",
-                    value="<p>Enable sequence matching to see results here.</p>"
-                )
+                # Nested Accordion: Even Money Bet Tracker
+                with gr.Accordion("Even Money Bet Tracker", open=False, elem_id="even-money-tracker"):
+                    even_money_tracker_spins_dropdown = gr.Dropdown(
+                        label="Number of Spins to Track",
+                        choices=["1", "2", "3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
+                        value="5",
+                        interactive=True
+                    )
+                    even_money_tracker_consecutive_hits_dropdown = gr.Dropdown(
+                        label="Alert on Consecutive Even Money Hits",
+                        choices=["1", "2", "3", "4", "5"],
+                        value="3",
+                        interactive=True
+                    )
+                    even_money_tracker_combination_mode_dropdown = gr.Dropdown(
+                        label="Combination Mode",
+                        choices=["And", "Or"],
+                        value="And",
+                        interactive=True
+                    )
+                    with gr.Row():
+                        even_money_tracker_red_checkbox = gr.Checkbox(label="Red", value=False, interactive=True)
+                        even_money_tracker_black_checkbox = gr.Checkbox(label="Black", value=False, interactive=True)
+                        even_money_tracker_even_checkbox = gr.Checkbox(label="Even", value=False, interactive=True)
+                        even_money_tracker_odd_checkbox = gr.Checkbox(label="Odd", value=False, interactive=True)
+                        even_money_tracker_low_checkbox = gr.Checkbox(label="Low", value=False, interactive=True)
+                        even_money_tracker_high_checkbox = gr.Checkbox(label="High", value=False, interactive=True)
+                    even_money_tracker_alert_checkbox = gr.Checkbox(
+                        label="Enable Even Money Hits Alert",
+                        value=False,
+                        interactive=True
+                    )
+                    even_money_tracker_output = gr.HTML(
+                        label="Even Money Tracker",
+                        value="<p>Select categories to track and analyze spins to see even money bet history.</p>"
+                    )
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
 
@@ -4064,7 +4064,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
             with gr.Row():
                 message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
-                status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>') 
+                status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')  
                          
     # 9. Row 9: Color Code Key (Collapsible, with Color Pickers Inside)
     with gr.Accordion("Color Code Key", open=False, elem_id="color-code-key"):
