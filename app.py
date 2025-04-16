@@ -1513,6 +1513,7 @@ def reset_casino_data():
         "<p>Casino data reset to defaults.</p>"  # casino_data_output
     )
 
+# Line 1: Updated - Fix create_dynamic_table to remove duplicate logic
 def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
     print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
     print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
@@ -1534,17 +1535,11 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
     else:
         trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color = apply_strategy_highlights(strategy_name, int(dozen_tracker_spins) if strategy_name == "None" else neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
     
-    # If still no highlights and no sorted_sections, provide a default message
+    # Single return point to avoid duplicate logic
     if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
         return "<p>No spins yet. Select a strategy to see default highlights.</p>"
     
-    return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)
-    
-    # If still no highlights and no sorted_sections, provide a default message
-    if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
-        return "<p>No spins yet. Select a strategy to see default highlights.</p>"
-    
-    return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)
+    return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)"
 
 # Function to get strongest numbers with neighbors
 def get_strongest_numbers_with_neighbors(num_count):
@@ -4163,18 +4158,23 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                     allow_custom_value=False,
                     elem_id="video-category-dropdown"
                 )
+                # Ensure video_dropdown uses the first valid title from Dozen Strategies
+                dozen_videos = video_categories.get("Dozen Strategies", [])
+                video_choices = [video["title"] for video in dozen_videos]
+                video_default = video_choices[0] if video_choices else None
                 video_dropdown = gr.Dropdown(
                     label="Select Video",
-                    choices=[video["title"] for video in video_categories["Dozen Strategies"]],
-                    value=video_categories["Dozen Strategies"][0]["title"] if video_categories["Dozen Strategies"] else None,
+                    choices=video_choices,
+                    value=video_default,
                     allow_custom_value=False,
+                    interactive=True,  # Ensure interactivity
                     elem_id="video-dropdown"
                 )
                 video_output = gr.HTML(
                     label="Video",
-                    value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_categories["Dozen Strategies"][0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if video_categories["Dozen Strategies"] else "<p>Select a category and video to watch.</p>"
+                    value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{dozen_videos[0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if dozen_videos else "<p>Select a category and video to watch.</p>"
                 )
-                
+
 # Line 2: Unchanged - Start of Row 12
     # 12. Row 12: Feedback Section
     with gr.Row():
@@ -4770,7 +4770,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             outputs=[color_code_output]
         ).then(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, kbox],
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         )
     except Exception as e:
