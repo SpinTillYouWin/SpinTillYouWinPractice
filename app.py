@@ -3602,12 +3602,14 @@ with gr.Blocks() as demo:
             ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
+        roulette_buttons = []  # List to store buttons
         with gr.Column(elem_classes="roulette-table"):
             for row in table_layout:
                 with gr.Row(elem_classes="table-row"):
+                    row_buttons = []
                     for num in row:
                         if num == "":
-                            gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
+                            btn = gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
                         else:
                             color = colors.get(str(num), "black")
                             is_selected = int(num) in state.selected_numbers
@@ -3619,15 +3621,9 @@ with gr.Blocks() as demo:
                                 min_width=40,
                                 elem_classes=btn_classes
                             )
-                            btn.click(
-                                fn=add_spin,
-                                inputs=[gr.State(value=num), spins_display, last_spin_count],
-                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
-                            ).then(
-                                fn=track_even_money_bets,
-                                inputs=[spins_display, even_money_bets],
-                                outputs=[even_money_hits_output]
-                            )
+                        row_buttons.append((num, btn))
+                    roulette_buttons.append(row_buttons)
+                            # Note: We'll set up the click event later in the event handlers section
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
@@ -4166,7 +4162,7 @@ with gr.Blocks() as demo:
                 </script>
                 """)
 
-    # CSS and Event Handlers (Moved Inside gr.Blocks())
+    # Now define the CSS and Event Handlers after all components are created
     gr.HTML("""
     <style>
       /* General Layout */
@@ -4452,7 +4448,7 @@ with gr.Blocks() as demo:
     """)
     print("CSS Updated")
 
-    # Event Handlers (Moved Inside gr.Blocks())
+    # Event Handlers
     try:
         spins_textbox.change(
             fn=validate_spins_input,
@@ -5017,154 +5013,175 @@ with gr.Blocks() as demo:
         print(f"Error in reset_casino_data_button.click handler: {str(e)}")
 
     # Betting progression event handlers
-    def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence):
-        state.bankroll = bankroll
-        state.initial_bankroll = bankroll
-        state.base_unit = base_unit
-        state.stop_loss = stop_loss
-        state.stop_win = stop_win
-        state.bet_type = bet_type
-        state.progression = progression
-        if progression == "Labouchere":
+def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence):
+    state.bankroll = bankroll
+    state.initial_bankroll = bankroll
+    state.base_unit = base_unit
+    state.stop_loss = stop_loss
+    state.stop_win = stop_win
+    state.bet_type = bet_type
+    state.progression = progression
+    if progression == "Labouchere":
+        try:
+            state.progression_state = [int(x.strip()) for x in sequence.split(",")]
+        except ValueError:
+            state.progression_state = [1, 2, 3, 4]  # Default sequence on error
+            return bankroll, base_unit, base_unit, "Invalid sequence, using default [1, 2, 3, 4]", '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>'
+    state.reset_progression()
+    return state.bankroll, state.current_bet, state.next_bet, state.message, f'<div style="background-color: {state.status_color}; padding: 5px; border-radius: 3px;">{state.status}</div>'
+
+try:
+    bankroll_input.change(
+        fn=update_config,
+        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+    )
+except Exception as e:
+    print(f"Error in bankroll_input.change handler: {str(e)}")
+
+try:
+    base_unit_input.change(
+        fn=update_config,
+        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+    )
+except Exception as e:
+    print(f"Error in base_unit_input.change handler: {str(e)}")
+
+try:
+    stop_loss_input.change(
+        fn=update_config,
+        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+    )
+except Exception as e:
+    print(f"Error in stop_loss_input.change handler: {str(e)}")
+
+try:
+    stop_win_input.change(
+        fn=update_config,
+        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+    )
+except Exception as e:
+    print(f"Error in stop_win_input.change handler: {str(e)}")
+
+try:
+    bet_type_dropdown.change(
+        fn=update_config,
+        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+    )
+except Exception as e:
+    print(f"Error in bet_type_dropdown.change handler: {str(e)}")
+
+try:
+    progression_dropdown.change(
+        fn=update_config,
+        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+    ).then(
+        fn=toggle_labouchere,
+        inputs=[progression_dropdown],
+        outputs=[labouchere_sequence]
+    )
+except Exception as e:
+    print(f"Error in progression_dropdown.change handler: {str(e)}")
+
+try:
+    labouchere_sequence.change(
+        fn=update_config,
+        inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+    )
+except Exception as e:
+    print(f"Error in labouchere_sequence.change handler: {str(e)}")
+
+try:
+    win_button.click(
+        fn=lambda: state.update_progression(True),
+        inputs=[],
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+    )
+except Exception as e:
+    print(f"Error in win_button.click handler: {str(e)}")
+
+try:
+    lose_button.click(
+        fn=lambda: state.update_progression(False),
+        inputs=[],
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+    )
+except Exception as e:
+    print(f"Error in lose_button.click handler: {str(e)}")
+
+try:
+    reset_progression_button.click(
+        fn=lambda: state.reset_progression(),
+        inputs=[],
+        outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+    )
+except Exception as e:
+    print(f"Error in reset_progression_button.click handler: {str(e)}")
+
+# Video Category and Video Selection Event Handlers
+def update_video_dropdown(category):
+    videos = video_categories.get(category, [])
+    choices = [video["title"] for video in videos]
+    default_value = choices[0] if choices else None
+    return (
+        gr.update(choices=choices, value=default_value),
+        gr.update(value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{videos[0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if videos else "<p>No videos available in this category.</p>")
+    )
+
+def update_video_display(video_title, category):
+    videos = video_categories.get(category, [])
+    selected_video = next((video for video in videos if video["title"] == video_title), None)
+    if selected_video:
+        video_id = selected_video["link"].split("/")[-1]
+        return f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
+    return "<p>Please select a video to watch.</p>"
+
+try:
+    video_category_dropdown.change(
+        fn=update_video_dropdown,
+        inputs=[video_category_dropdown],
+        outputs=[video_dropdown, video_output]
+    )
+except Exception as e:
+    print(f"Error in video_category_dropdown.change handler: {str(e)}")
+
+try:
+    video_dropdown.change(
+        fn=update_video_display,
+        inputs=[video_dropdown, video_category_dropdown],
+        outputs=[video_output]
+    )
+except Exception as e:
+    print(f"Error in video_dropdown.change handler: {str(e)}")
+    
+# Set up click events for roulette table buttons
+for row in roulette_buttons:
+    for num, btn in row:
+        if num != "":
             try:
-                state.progression_state = [int(x.strip()) for x in sequence.split(",")]
-            except ValueError:
-                state.progression_state = [1, 2, 3, 4]
-                return bankroll, base_unit, base_unit, "Invalid sequence, using default [1, 2, 3, 4]", '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>'
-        state.reset_progression()
-        return state.bankroll, state.current_bet, state.next_bet, state.message, f'<div style="background-color: {state.status_color}; padding: 5px; border-radius: 3px;">{state.status}</div>'
+                btn.click(
+                    fn=add_spin,
+                    inputs=[gr.State(value=num), spins_display, last_spin_count],
+                    outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
+                ).then(
+                    fn=track_even_money_bets,
+                    inputs=[spins_display, even_money_bets],
+                    outputs=[even_money_hits_output]
+                )
+            except Exception as e:
+                print(f"Error in roulette button click handler for number {num}: {str(e)}")
 
-    try:
-        bankroll_input.change(
-            fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-        )
-    except Exception as e:
-        print(f"Error in bankroll_input.change handler: {str(e)}")
-
-    try:
-        base_unit_input.change(
-            fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-        )
-    except Exception as e:
-        print(f"Error in base_unit_input.change handler: {str(e)}")
-
-    try:
-        stop_loss_input.change(
-            fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-        )
-    except Exception as e:
-        print(f"Error in stop_loss_input.change handler: {str(e)}")
-
-    try:
-        stop_win_input.change(
-            fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-        )
-    except Exception as e:
-        print(f"Error in stop_win_input.change handler: {str(e)}")
-
-    try:
-        bet_type_dropdown.change(
-            fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-        )
-    except Exception as e:
-        print(f"Error in bet_type_dropdown.change handler: {str(e)}")
-
-    try:
-        progression_dropdown.change(
-            fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-        ).then(
-            fn=toggle_labouchere,
-            inputs=[progression_dropdown],
-            outputs=[labouchere_sequence]
-        )
-    except Exception as e:
-        print(f"Error in progression_dropdown.change handler: {str(e)}")
-
-    try:
-        labouchere_sequence.change(
-            fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-        )
-    except Exception as e:
-        print(f"Error in labouchere_sequence.change handler: {str(e)}")
-
-    try:
-        win_button.click(
-            fn=lambda: state.update_progression(True),
-            inputs=[],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-        )
-    except Exception as e:
-        print(f"Error in win_button.click handler: {str(e)}")
-
-    try:
-        lose_button.click(
-            fn=lambda: state.update_progression(False),
-            inputs=[],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-        )
-    except Exception as e:
-        print(f"Error in lose_button.click handler: {str(e)}")
-
-    try:
-        reset_progression_button.click(
-            fn=lambda: state.reset_progression(),
-            inputs=[],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-        )
-    except Exception as e:
-        print(f"Error in reset_progression_button.click handler: {str(e)}")
-
-    # Video Category and Video Selection Event Handlers
-    def update_video_dropdown(category):
-        videos = video_categories.get(category, [])
-        choices = [video["title"] for video in videos]
-        default_value = choices[0] if choices else None
-        return (
-            gr.update(choices=choices, value=default_value),
-            gr.update(value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{videos[0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if videos else "<p>No videos available in this category.</p>")
-        )
-
-    def update_video_display(video_title, category):
-        videos = video_categories.get(category, [])
-        selected_video = next((video for video in videos if video["title"] == video_title), None)
-        if selected_video:
-            video_id = selected_video["link"].split("/")[-1]
-            return f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
-        return "<p>Please select a video to watch.</p>"
-
-    try:
-        video_category_dropdown.change(
-            fn=update_video_dropdown,
-            inputs=[video_category_dropdown],
-            outputs=[video_dropdown, video_output]
-        )
-    except Exception as e:
-        print(f"Error in video_category_dropdown.change handler: {str(e)}")
-
-    try:
-        video_dropdown.change(
-            fn=update_video_display,
-            inputs=[video_dropdown, video_category_dropdown],
-            outputs=[video_output]
-        )
-    except Exception as e:
-        print(f"Error in video_dropdown.change handler: {str(e)}")
-
-    # Launch the interface
-    print("Starting Gradio launch...")
-    demo.launch()
-    print("Gradio launch completed.")
+# Launch the interface
+print("Starting Gradio launch...")
+demo.launch()
+print("Gradio launch completed.")
+# Launch the interface
+print("Starting Gradio launch...")
+demo.launch()
+print("Gradio launch completed.")
