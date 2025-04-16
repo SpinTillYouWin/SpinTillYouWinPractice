@@ -4174,6 +4174,17 @@ with gr.Blocks() as demo:
       #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
       #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
       #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
+      /* Updated: Compact dropdown styling for Select Category and Select Strategy */
+      #select-category select, #strategy-dropdown select {
+          max-height: 200px !important;
+          overflow-y: auto !important;
+          font-size: 14px;
+          padding: 5px;
+          background-color: #f9f9f9;
+          border: 1px solid #ccc;
+          border-radius: 3px;
+      }
+      /* End Updated */
       
       /* Scrollable Tables */
       .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
