@@ -3731,8 +3731,8 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
         "Neighbours Strategies": ["Neighbours of Strong Number"]
     }
     category_choices = ["None"] + sorted(strategy_categories.keys())
-
-    # Define video categories matching strategy categories
+    
+    # Line 1: Updated - Adding new videos to video_categories
     video_categories = {
         "Trends": [],
         "Even Money Strategies": [
@@ -3753,6 +3753,10 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             {
                 "title": "S.T.Y.W: Victory Vortex (Dozen Domination)",
                 "link": "https://youtu.be/aKGA_csI9lY"
+            },
+            {
+                "title": "S.T.Y.W: The Overlap Jackpot (4 Streets + 2 Dozens) Strategy",
+                "link": "https://www.youtube.com/watch?v=rTqdMQk4_I4"
             }
         ],
         "Column Strategies": [
@@ -3773,6 +3777,10 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             {
                 "title": "S.T.Y.W: 3-8-6 Rising Martingale",
                 "link": "https://youtu.be/-ZcEUOTHMzA"
+            },
+            {
+                "title": "S.T.Y.W: The Overlap Jackpot (4 Streets + 2 Dozens) Strategy",
+                "link": "https://www.youtube.com/watch?v=rTqdMQk4_I4"
             }
         ],
         "Double Street Strategies": [
@@ -3781,12 +3789,28 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 "link": "https://youtu.be/8aMHrvuzBGU"
             }
         ],
-        "Corner Strategies": [],
+        "Corner Strategies": [
+            {
+                "title": "S.T.Y.W: 4 Corners Strategy (Seq:1,1,2,5,8,17,28,50)",
+                "link": "https://www.youtube.com/watch?v=zw7eUllTDbg"
+            }
+        ],
         "Split Strategies": [],
-        "Number Strategies": [],
-        "Neighbours Strategies": []
+        "Number Strategies": [
+            {
+                "title": "The Pulse Wheel Strategy (6 Numbers +1 Neighbours)",
+                "link": "https://www.youtube.com/watch?v=UBajAwUXWS0"
+            }
+        ],
+        "Neighbours Strategies": [
+            {
+                "title": "The Pulse Wheel Strategy (6 Numbers +1 Neighbours)",
+                "link": "https://www.youtube.com/watch?v=UBajAwUXWS0"
+            }
+        ]
     }
     
+    # Line 2: Unchanged - Start of Row 6
     # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
         with gr.Column(scale=2):
@@ -3795,8 +3819,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             clear_spins_button = gr.Button("Clear Spins", elem_classes=["clear-spins-btn", "small-btn"])
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
-
-    # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
+    
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
@@ -4130,35 +4153,8 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             with gr.Column():
                 with gr.Accordion("Dozens", open=False):
                     dozens_output = gr.Textbox(label="Dozens", lines=10, max_lines=50)
-        with gr.Row():
-            with gr.Column():
-                with gr.Accordion("Columns", open=False):
-                    columns_output = gr.Textbox(label="Columns", lines=10, max_lines=50)
-            with gr.Column():
-                with gr.Accordion("Streets", open=False):
-                    streets_output = gr.Textbox(label="Streets", lines=10, max_lines=50)
-        with gr.Row():
-            with gr.Column():
-                with gr.Accordion("Corners", open=False):
-                    corners_output = gr.Textbox(label="Corners", lines=10, max_lines=50)
-            with gr.Column():
-                with gr.Accordion("Double Streets", open=False):
-                    six_lines_output = gr.Textbox(label="Double Streets", lines=10, max_lines=50)
-        with gr.Row():
-            with gr.Column():
-                with gr.Accordion("Splits", open=False):
-                    splits_output = gr.Textbox(label="Splits", lines=10, max_lines=50)
-            with gr.Column():
-                with gr.Accordion("Sides of Zero", open=False):
-                    sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
-    # 11. Row 11: Save/Load Session (Collapsible, Renumbered)
-    with gr.Accordion("Save/Load Session", open=False, elem_id="save-load-session"):
-        with gr.Row():
-            save_button = gr.Button("Save Session", elem_id="save-session-btn")
-            load_input = gr.File(label="Upload Session")
-        save_output = gr.File(label="Download Session")
-
+# Line 1: Updated - Enhance the Top Strategies accordion with improved video UI
     # 11. Row 11: Top Strategies with Roulette Spin Analyzer (Moved to be Independent)
     with gr.Row():
         with gr.Column():
@@ -4180,9 +4176,11 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 )
                 video_output = gr.HTML(
                     label="Video",
-                    value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_categories["Dozen Strategies"][0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if video_categories["Dozen Strategies"] else "<p>Select a category and video to watch.</p>"
+                    value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_categories["Dozen Strategies"][0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if video_categories["Dozen Strategies"] else "<p>Select a category and video to watch.</p>",
+                    elem_id="video-output"
                 )
 
+# Line 2: Unchanged - Start of Row 12
     # 12. Row 12: Feedback Section
     with gr.Row():
         with gr.Column():
