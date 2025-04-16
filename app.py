@@ -3973,13 +3973,13 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 gr.Markdown("### Even Money Bet Tracker")
                 even_money_tracker_spins_dropdown = gr.Dropdown(
                     label="Number of Spins to Track",
-                    choices=["3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
+                    choices=["1", "2", "3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
                     value="5",
                     interactive=True
                 )
                 even_money_tracker_consecutive_hits_dropdown = gr.Dropdown(
                     label="Alert on Consecutive Even Money Hits",
-                    choices=["3", "4", "5"],
+                    choices=["1", "2", "3", "4", "5"],
                     value="3",
                     interactive=True
                 )
