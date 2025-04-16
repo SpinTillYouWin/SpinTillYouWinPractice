@@ -696,7 +696,7 @@ def render_sides_of_zero_display():
 
 
 def add_spin(number, current_spins, num_to_show):
-    print(f"add_spin: number='{number}', current_spins='{current_spins}'")
+    print(f"add_spin: number='{number}', current_spins='{current_spins}', num_to_show={num_to_show}")
     spins = current_spins.split(", ") if current_spins else []
     if spins == [""]:
         spins = []
@@ -705,6 +705,7 @@ def add_spin(number, current_spins, num_to_show):
     numbers = [n.strip() for n in number.split(",") if n.strip()]
     if not numbers:
         gr.Warning("No valid input provided. Please enter numbers between 0 and 36.")
+        print("add_spin: No valid numbers provided.")
         return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter(), render_sides_of_zero_display()
 
     errors = []
@@ -726,7 +727,7 @@ def add_spin(number, current_spins, num_to_show):
         print(f"add_spin: Errors encountered - {error_msg}")
         return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
 
-        # Batch update scores
+    # Batch update scores
     action_log = update_scores_batch(valid_spins)
 
     # Update state with new spins
@@ -753,7 +754,9 @@ def add_spin(number, current_spins, num_to_show):
     else:
         success_msg = f"Added spins: {', '.join(valid_spins)}" if valid_spins else "No new spins added."
         print(f"add_spin: new_spins='{new_spins_str}', {success_msg}")
-        return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter(), render_sides_of_zero_display()    
+        formatted_spins = format_spins_as_html(new_spins_str, num_to_show)
+        print(f"add_spin: formatted_spins='{formatted_spins}'")
+        return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display()   
         
     # Function to clear spins
 def clear_spins():
@@ -3602,14 +3605,12 @@ with gr.Blocks() as demo:
             ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
-        roulette_buttons = []  # List to store buttons
         with gr.Column(elem_classes="roulette-table"):
             for row in table_layout:
                 with gr.Row(elem_classes="table-row"):
-                    row_buttons = []
                     for num in row:
                         if num == "":
-                            btn = gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
+                            gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
                         else:
                             color = colors.get(str(num), "black")
                             is_selected = int(num) in state.selected_numbers
@@ -3621,8 +3622,16 @@ with gr.Blocks() as demo:
                                 min_width=40,
                                 elem_classes=btn_classes
                             )
-                        row_buttons.append((num, btn))
-                    roulette_buttons.append(row_buttons)
+                            # Attach the click event immediately
+                            btn.click(
+                                fn=lambda n, cs, lsc: (print(f"Button {n} clicked, current_spins='{cs}'"), add_spin(n, cs, lsc))[-1],
+                                inputs=[gr.State(value=num), spins_display, last_spin_count],
+                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
+                            ).then(
+                                fn=track_even_money_bets,
+                                inputs=[spins_display, even_money_bets],
+                                outputs=[even_money_hits_output]
+                            )
                             # Note: We'll set up the click event later in the event handlers section
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
@@ -5160,22 +5169,6 @@ try:
 except Exception as e:
     print(f"Error in video_dropdown.change handler: {str(e)}")
     
-# Set up click events for roulette table buttons
-for row in roulette_buttons:
-    for num, btn in row:
-        if num != "":
-            try:
-                btn.click(
-                    fn=add_spin,
-                    inputs=[gr.State(value=num), spins_display, last_spin_count],
-                    outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
-                ).then(
-                    fn=track_even_money_bets,
-                    inputs=[spins_display, even_money_bets],
-                    outputs=[even_money_hits_output]
-                )
-            except Exception as e:
-                print(f"Error in roulette button click handler for number {num}: {str(e)}")
 
 # Launch the interface
 print("Starting Gradio launch...")
