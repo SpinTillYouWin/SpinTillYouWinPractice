@@ -3635,7 +3635,8 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
         interactive=True,
         elem_id="selected-spins"
     )
-    with gr.Accordion("Total Spins Counter", open=False, elem_id="spin-counter-accordion"):
+    spin_counter_accordion = gr.Accordion("Total Spins Counter", open=False, elem_id="spin-counter-accordion")
+    with spin_counter_accordion:
         spin_counter = gr.HTML(
             label="Total Spins",
             value='<span style="font-size: 16px;">Total Spins: 0</span>',
