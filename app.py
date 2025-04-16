@@ -754,89 +754,90 @@ def add_spin(number, current_spins, num_to_show):
         success_msg = f"Added spins: {', '.join(valid_spins)}" if valid_spins else "No new spins added."
         print(f"add_spin: new_spins='{new_spins_str}', {success_msg}")
         return new_spins_str, new_spins_str, format_spins_as_html(new_spins_str, num_to_show), update_spin_counter(), render_sides_of_zero_display()    
+        
     # Function to clear spins
-    def clear_spins():
-        state.selected_numbers.clear()
-        state.last_spins = []
-        state.spin_history = []  # Clear spin history as well
-        state.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}  # Reset side scores
-        state.scores = {n: 0 for n in range(37)}  # Reset straight-up scores
-        return "", "", "Spins cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", update_spin_counter(), render_sides_of_zero_display()
+def clear_spins():
+    state.selected_numbers.clear()
+    state.last_spins = []
+    state.spin_history = []  # Clear spin history as well
+    state.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}  # Reset side scores
+    state.scores = {n: 0 for n in range(37)}  # Reset straight-up scores
+    return "", "", "Spins cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", update_spin_counter(), render_sides_of_zero_display()
+
+# Function to track even money bets and display alerts
+def track_even_money_bets(spins, selected_bets):
+    """Track even money bets for the latest spin and alert if all conditions are met."""
+    if not spins or not selected_bets:
+        print("track_even_money_bets: No spins or bets selected.")
+        return "<p style='color: gray;'>No hits yet.</p>"
     
-    # Function to track even money bets and display alerts
-    def track_even_money_bets(spins, selected_bets):
-        """Track even money bets for the latest spin and alert if all conditions are met."""
-        if not spins or not selected_bets:
-            print("track_even_money_bets: No spins or bets selected.")
-            return "<p style='color: gray;'>No hits yet.</p>"
-        
-        # Parse the latest spin
-        spins_list = [int(spin.strip()) for spin in spins.split(",") if spin.strip()]
-        if not spins_list:
-            print("track_even_money_bets: No valid spins found.")
-            return "<p style='color: gray;'>No hits yet.</p>"
-        
-        latest_spin = spins_list[-1]  # Get the most recent spin
-        print(f"track_even_money_bets: Latest spin = {latest_spin}")
-        
-        # Define even money bet conditions
-        is_even = latest_spin % 2 == 0 and latest_spin != 0
-        is_odd = latest_spin % 2 != 0
-        is_red = latest_spin in [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]
-        is_black = latest_spin in [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35]
-        is_high = 19 <= latest_spin <= 36
-        is_low = 1 <= latest_spin <= 18 and latest_spin != 0
-        
-        print(f"track_even_money_bets: Conditions - is_even={is_even}, is_odd={is_odd}, is_red={is_red}, is_black={is_black}, is_high={is_high}, is_low={is_low}")
-        
-        # Check if ALL selected bets match the latest spin
-        all_conditions_met = True
-        for bet in selected_bets:
-            if bet == "Even" and not is_even:
-                print(f"track_even_money_bets: Condition failed - {bet} not met (is_even={is_even})")
-                all_conditions_met = False
-                break
-            elif bet == "Odd" and not is_odd:
-                print(f"track_even_money_bets: Condition failed - {bet} not met (is_odd={is_odd})")
-                all_conditions_met = False
-                break
-            elif bet == "Red" and not is_red:
-                print(f"track_even_money_bets: Condition failed - {bet} not met (is_red={is_red})")
-                all_conditions_met = False
-                break
-            elif bet == "Black" and not is_black:
-                print(f"track_even_money_bets: Condition failed - {bet} not met (is_black={is_black})")
-                all_conditions_met = False
-                break
-            elif bet == "High (19-36)" and not is_high:
-                print(f"track_even_money_bets: Condition failed - {bet} not met (is_high={is_high})")
-                all_conditions_met = False
-                break
-            elif bet == "Low (1-18)" and not is_low:
-                print(f"track_even_money_bets: Condition failed - {bet} not met (is_low={is_low})")
-                all_conditions_met = False
-                break
-        
-        print(f"track_even_money_bets: all_conditions_met = {all_conditions_met}")
-        
-        # Generate output with an inline alert and top-of-app alert if conditions are met
-        if all_conditions_met:
-            message = f"Spin {latest_spin} matches all conditions: {', '.join(selected_bets)}!"
-            print(f"track_even_money_bets: Displaying inline and top alert - {message}")
-            # Display alert at the top of the app
-            gr.Warning(message)
-            # Include the alert as a styled HTML div above the result
-            output = f"""
-            <div style='background-color: #007bff; color: white; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-weight: bold;'>
-                Alert: {message}
-            </div>
-            <p style='color: green; font-weight: bold;'>{message}</p>
-            """
-            return output
-        else:
-            message = f"Spin {latest_spin} does not match all conditions: {', '.join(selected_bets)}."
-            print(f"track_even_money_bets: No alert - {message}")
-            return f"<p style='color: red;'>{message}</p>"
+    # Parse the latest spin
+    spins_list = [int(spin.strip()) for spin in spins.split(",") if spin.strip()]
+    if not spins_list:
+        print("track_even_money_bets: No valid spins found.")
+        return "<p style='color: gray;'>No hits yet.</p>"
+    
+    latest_spin = spins_list[-1]  # Get the most recent spin
+    print(f"track_even_money_bets: Latest spin = {latest_spin}")
+    
+    # Define even money bet conditions
+    is_even = latest_spin % 2 == 0 and latest_spin != 0
+    is_odd = latest_spin % 2 != 0
+    is_red = latest_spin in [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]
+    is_black = latest_spin in [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35]
+    is_high = 19 <= latest_spin <= 36
+    is_low = 1 <= latest_spin <= 18 and latest_spin != 0
+    
+    print(f"track_even_money_bets: Conditions - is_even={is_even}, is_odd={is_odd}, is_red={is_red}, is_black={is_black}, is_high={is_high}, is_low={is_low}")
+    
+    # Check if ALL selected bets match the latest spin
+    all_conditions_met = True
+    for bet in selected_bets:
+        if bet == "Even" and not is_even:
+            print(f"track_even_money_bets: Condition failed - {bet} not met (is_even={is_even})")
+            all_conditions_met = False
+            break
+        elif bet == "Odd" and not is_odd:
+            print(f"track_even_money_bets: Condition failed - {bet} not met (is_odd={is_odd})")
+            all_conditions_met = False
+            break
+        elif bet == "Red" and not is_red:
+            print(f"track_even_money_bets: Condition failed - {bet} not met (is_red={is_red})")
+            all_conditions_met = False
+            break
+        elif bet == "Black" and not is_black:
+            print(f"track_even_money_bets: Condition failed - {bet} not met (is_black={is_black})")
+            all_conditions_met = False
+            break
+        elif bet == "High (19-36)" and not is_high:
+            print(f"track_even_money_bets: Condition failed - {bet} not met (is_high={is_high})")
+            all_conditions_met = False
+            break
+        elif bet == "Low (1-18)" and not is_low:
+            print(f"track_even_money_bets: Condition failed - {bet} not met (is_low={is_low})")
+            all_conditions_met = False
+            break
+    
+    print(f"track_even_money_bets: all_conditions_met = {all_conditions_met}")
+    
+    # Generate output with an inline alert and top-of-app alert if conditions are met
+    if all_conditions_met:
+        message = f"Spin {latest_spin} matches all conditions: {', '.join(selected_bets)}!"
+        print(f"track_even_money_bets: Displaying inline and top alert - {message}")
+        # Display alert at the top of the app
+        gr.Warning(message)
+        # Include the alert as a styled HTML div above the result
+        output = f"""
+        <div style='background-color: #007bff; color: white; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-weight: bold;'>
+            Alert: {message}
+        </div>
+        <p style='color: green; font-weight: bold;'>{message}</p>
+        """
+        return output
+    else:
+        message = f"Spin {latest_spin} does not match all conditions: {', '.join(selected_bets)}."
+        print(f"track_even_money_bets: No alert - {message}")
+        return f"<p style='color: red;'>{message}</p>"
 
 # Function to save the session
 def save_session():
@@ -4453,7 +4454,6 @@ with gr.Blocks() as demo:
 
     # Event Handlers (Moved Inside gr.Blocks())
     try:
-        print("Setting up spins_textbox.change handler")
         spins_textbox.change(
             fn=validate_spins_input,
             inputs=spins_textbox,
@@ -4472,7 +4472,7 @@ with gr.Blocks() as demo:
             inputs=[],
             outputs=[spin_counter]
         ).then(
-            fn=lambda spins, bets: (print(f"spins_textbox.change: Triggering track_even_money_bets with spins='{spins}', bets={bets}"), track_even_money_bets(spins, bets))[-1],
+            fn=track_even_money_bets,
             inputs=[spins_display, even_money_bets],
             outputs=[even_money_hits_output]
         )
