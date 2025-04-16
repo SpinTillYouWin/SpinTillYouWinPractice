@@ -4029,7 +4029,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 )
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
-            
+
     # 8. Row 8: Betting Progression Tracker
     with gr.Row():
         with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
@@ -4065,7 +4065,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             with gr.Row():
                 message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
                 status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>') 
-                
+                         
     # 9. Row 9: Color Code Key (Collapsible, with Color Pickers Inside)
     with gr.Accordion("Color Code Key", open=False, elem_id="color-code-key"):
         with gr.Row():
