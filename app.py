@@ -3753,10 +3753,6 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             {
                 "title": "S.T.Y.W: Victory Vortex (Dozen Domination)",
                 "link": "https://youtu.be/aKGA_csI9lY"
-            },
-            {
-                "title": "S.T.Y.W: The Overlap Jackpot (4 Streets + 2 Dozens) Strategy",
-                "link": "https://www.youtube.com/watch?v=rTqdMQk4_I4"
             }
         ],
         "Column Strategies": [
@@ -3777,10 +3773,6 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             {
                 "title": "S.T.Y.W: 3-8-6 Rising Martingale",
                 "link": "https://youtu.be/-ZcEUOTHMzA"
-            },
-            {
-                "title": "S.T.Y.W: The Overlap Jackpot (4 Streets + 2 Dozens) Strategy",
-                "link": "https://www.youtube.com/watch?v=rTqdMQk4_I4"
             }
         ],
         "Double Street Strategies": [
@@ -3789,27 +3781,12 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 "link": "https://youtu.be/8aMHrvuzBGU"
             }
         ],
-        "Corner Strategies": [
-            {
-                "title": "S.T.Y.W: 4 Corners Strategy (Seq:1,1,2,5,8,17,28,50)",
-                "link": "https://www.youtube.com/watch?v=zw7eUllTDbg"
-            }
-        ],
+        "Corner Strategies": [],
         "Split Strategies": [],
-        "Number Strategies": [
-            {
-                "title": "The Pulse Wheel Strategy (6 Numbers +1 Neighbours)",
-                "link": "https://www.youtube.com/watch?v=UBajAwUXWS0"
-            }
-        ],
-        "Neighbours Strategies": [
-            {
-                "title": "The Pulse Wheel Strategy (6 Numbers +1 Neighbours)",
-                "link": "https://www.youtube.com/watch?v=UBajAwUXWS0"
-            }
-        ]
+        "Number Strategies": [],
+        "Neighbours Strategies": []
     }
-    
+        
     # Line 2: Unchanged - Start of Row 6
     # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
@@ -4176,8 +4153,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 )
                 video_output = gr.HTML(
                     label="Video",
-                    value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_categories["Dozen Strategies"][0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if video_categories["Dozen Strategies"] else "<p>Select a category and video to watch.</p>",
-                    elem_id="video-output"
+                    value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_categories["Dozen Strategies"][0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if video_categories["Dozen Strategies"] else "<p>Select a category and video to watch.</p>"
                 )
 
 # Line 2: Unchanged - Start of Row 12
@@ -5386,21 +5362,17 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
         videos = video_categories.get(category, [])
         choices = [video["title"] for video in videos]
         default_value = choices[0] if choices else None
-        initial_video = videos[0] if videos else None
-        initial_iframe = f'<iframe width="100%" height="500" src="https://www.youtube.com/embed/{initial_video["link"].split("/")[-1] if initial_video else ""}" frameborder="0" allowfullscreen></iframe>' if initial_video else "<p>No videos available in this category.</p>"
         return (
             gr.update(choices=choices, value=default_value),
-            gr.update(value=initial_iframe)
+            gr.update(value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{videos[0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if videos else "<p>No videos available in this category.</p>")
         )
     
-    # Line 1: Updated - Refine update_video_display with improved URL parsing and increased height
     def update_video_display(video_title, category):
         videos = video_categories.get(category, [])
         selected_video = next((video for video in videos if video["title"] == video_title), None)
         if selected_video:
-            # Use the proven split("/")[-1] method from working youtu.be format
             video_id = selected_video["link"].split("/")[-1]
-            return f'<iframe width="100%" height="500" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
+            return f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
         return "<p>Please select a video to watch.</p>"
     
     # Line 2: Unchanged - Start of video event handlers
