@@ -3623,7 +3623,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
     )
     spin_counter = gr.HTML(
         label="Total Spins",
-        value='<span style="font-size: 16px;">Total Spins: 0</span>',
+        value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
         elem_classes=["spin-counter"]
     )
     with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
@@ -4432,18 +4432,18 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
     
       /* Spin Counter Styling */
       .spin-counter {
-          font-size: 16px !important;
+          font-size: 14px !important; /* Reduced from 16px */
           font-weight: bold !important;
           color: #ffffff !important;
           background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
-          padding: 8px 12px !important;
+          padding: 4px 8px !important; /* Reduced from 8px 12px */
           border: 2px solid #3498DB !important; /* Darker blue border */
-          border-radius: 8px !important;
+          border-radius: 6px !important; /* Reduced from 8px */
           margin-top: 0 !important; /* Align with textbox */
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important; /* Slightly stronger shadow */
+          box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important; /* Reduced shadow intensity */
           transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
       }
     
