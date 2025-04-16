@@ -767,81 +767,6 @@ def clear_spins():
     state.scores = {n: 0 for n in range(37)}  # Reset straight-up scores
     return "", "", "Spins cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", update_spin_counter(), render_sides_of_zero_display()
 
-# Function to track even money bets and display alerts
-def track_even_money_bets(spins, selected_bets):
-    """Track even money bets for the latest spin and alert if all conditions are met."""
-    if not spins or not selected_bets:
-        print("track_even_money_bets: No spins or bets selected.")
-        return "<p style='color: gray;'>No hits yet.</p>"
-    
-    # Parse the latest spin
-    spins_list = [int(spin.strip()) for spin in spins.split(",") if spin.strip()]
-    if not spins_list:
-        print("track_even_money_bets: No valid spins found.")
-        return "<p style='color: gray;'>No hits yet.</p>"
-    
-    latest_spin = spins_list[-1]  # Get the most recent spin
-    print(f"track_even_money_bets: Latest spin = {latest_spin}")
-    
-    # Define even money bet conditions
-    is_even = latest_spin % 2 == 0 and latest_spin != 0
-    is_odd = latest_spin % 2 != 0
-    is_red = latest_spin in [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]
-    is_black = latest_spin in [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35]
-    is_high = 19 <= latest_spin <= 36
-    is_low = 1 <= latest_spin <= 18 and latest_spin != 0
-    
-    print(f"track_even_money_bets: Conditions - is_even={is_even}, is_odd={is_odd}, is_red={is_red}, is_black={is_black}, is_high={is_high}, is_low={is_low}")
-    
-    # Check if ALL selected bets match the latest spin
-    all_conditions_met = True
-    for bet in selected_bets:
-        if bet == "Even" and not is_even:
-            print(f"track_even_money_bets: Condition failed - {bet} not met (is_even={is_even})")
-            all_conditions_met = False
-            break
-        elif bet == "Odd" and not is_odd:
-            print(f"track_even_money_bets: Condition failed - {bet} not met (is_odd={is_odd})")
-            all_conditions_met = False
-            break
-        elif bet == "Red" and not is_red:
-            print(f"track_even_money_bets: Condition failed - {bet} not met (is_red={is_red})")
-            all_conditions_met = False
-            break
-        elif bet == "Black" and not is_black:
-            print(f"track_even_money_bets: Condition failed - {bet} not met (is_black={is_black})")
-            all_conditions_met = False
-            break
-        elif bet == "High (19-36)" and not is_high:
-            print(f"track_even_money_bets: Condition failed - {bet} not met (is_high={is_high})")
-            all_conditions_met = False
-            break
-        elif bet == "Low (1-18)" and not is_low:
-            print(f"track_even_money_bets: Condition failed - {bet} not met (is_low={is_low})")
-            all_conditions_met = False
-            break
-    
-    print(f"track_even_money_bets: all_conditions_met = {all_conditions_met}")
-    
-    # Generate output with an inline alert and top-of-app alert if conditions are met
-    if all_conditions_met:
-        message = f"Spin {latest_spin} matches all conditions: {', '.join(selected_bets)}!"
-        print(f"track_even_money_bets: Displaying inline and top alert - {message}")
-        # Display alert at the top of the app
-        gr.Warning(message)
-        # Include the alert as a styled HTML div above the result
-        output = f"""
-        <div style='background-color: #007bff; color: white; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-weight: bold;'>
-            Alert: {message}
-        </div>
-        <p style='color: green; font-weight: bold;'>{message}</p>
-        """
-        return output
-    else:
-        message = f"Spin {latest_spin} does not match all conditions: {', '.join(selected_bets)}."
-        print(f"track_even_money_bets: No alert - {message}")
-        return f"<p style='color: red;'>{message}</p>"
-
 # Function to save the session
 def save_session():
     session_data = {
@@ -3622,6 +3547,12 @@ with gr.Blocks() as demo:
                                 min_width=40,
                                 elem_classes=btn_classes
                             )
+                            # Attach the click event directly
+                            btn.click(
+                                fn=add_spin,
+                                inputs=[gr.State(value=num), spins_display, last_spin_count],
+                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
+                            )
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
@@ -3918,41 +3849,6 @@ with gr.Blocks() as demo:
                     label="Sequence Matching Results",
                     value="<p>Enable sequence matching to see results here.</p>"
                 )
-            # New Even Money Bet Tracker Section
-            with gr.Accordion("Even Money Bet Tracker 🎯", open=False, elem_id="even-money-tracker"):
-                even_money_bets = gr.CheckboxGroup(
-                    label="Select Up to 3 Even Money Bets",
-                    choices=["Even", "Odd", "Red", "Black", "High (19-36)", "Low (1-18)"],
-                    value=[],
-                    interactive=True,
-                    elem_id="even-money-bets"
-                )
-                even_money_hits_output = gr.HTML(
-                    label="Latest Even Money Hits",
-                    value='<p>No hits yet.</p>',
-                    elem_id="even-money-hits"
-                )
-                gr.HTML("""
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const checkboxes = document.querySelectorAll('#even-money-bets input[type="checkbox"]');
-                        if (checkboxes.length === 0) {
-                            console.error('Checkboxes not found in #even-money-bets');
-                            return;
-                        }
-
-                        checkboxes.forEach(checkbox => {
-                            checkbox.addEventListener('change', function() {
-                                const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
-                                if (checkedCount > 3) {
-                                    alert('You can select up to 3 even money bets only.');
-                                    checkbox.checked = false;
-                                }
-                            });
-                        });
-                    });
-                </script>
-                """)
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
 
@@ -4159,7 +4055,6 @@ with gr.Blocks() as demo:
                     });
                 </script>
                 """)
-
     # CSS
     gr.HTML("""
     <style>
@@ -4190,39 +4085,7 @@ with gr.Blocks() as demo:
           padding: 10px !important;
           border-radius: 5px !important;
       }
-        /* Style for Even Money Bet Tracker accordion */
-        #even-money-tracker {
-            background-color: #e0f7fa !important; /* Light cyan-blue */
-            padding: 10px !important;
-        }
-        #even-money-tracker > div {
-            background-color: #e0f7fa !important; /* Light cyan-blue */
-        }
-        #even-money-tracker summary {
-            background-color: #dc3545 !important;
-            color: #fff !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-        }
-        
-        /* Style for Even Money Hits Output */
-        #even-money-hits {
-            background-color: #ffffff !important;
-            border: 1px solid #d3d3d3 !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-            margin-top: 10px !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
-        }
-        
-        /* Style for Even Money Bet Tracker CheckboxGroup */
-        #even-money-bets .checkbox-group {
-            border: 1px solid #ccc !important;
-            padding: 5px !important;
-        }
-        #even-money-bets input[type="checkbox"] {
-            margin-right: 5px !important;
-        }      
+      
       /* Hide stray labels in the Sides of Zero section */
       .sides-of-zero-container + label, .last-spins-container + label:not(.long-slider label) {
           display: none !important;
@@ -4345,7 +4208,7 @@ with gr.Blocks() as demo:
           margin-top: 10px !important;
           box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; /* Very light shadow */
       }
-
+    
       .sides-of-zero-container {
           background-color: #ffffff !important;
           border: 1px solid #d3d3d3 !important;
@@ -4410,7 +4273,7 @@ with gr.Blocks() as demo:
           padding: 10px !important;
           border-radius: 5px !important;
       }
-
+    
       /* Video Section */
       #top-strategies .gr-box {
           background-color: #f5c6cb !important;
@@ -4434,7 +4297,7 @@ with gr.Blocks() as demo:
           border-radius: 5px !important;
           box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
       }
-
+    
       /* Responsive Design for Video */
       @media (max-width: 600px) {
           #video-output iframe {
@@ -4464,22 +4327,9 @@ with gr.Blocks() as demo:
             fn=update_spin_counter,
             inputs=[],
             outputs=[spin_counter]
-        ).then(
-            fn=track_even_money_bets,
-            inputs=[spins_display, even_money_bets],
-            outputs=[even_money_hits_output]
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
-
-    try:
-        even_money_bets.change(
-            fn=track_even_money_bets,
-            inputs=[spins_display, even_money_bets],
-            outputs=[even_money_hits_output]
-        )
-    except Exception as e:
-        print(f"Error in even_money_bets.change handler: {str(e)}")
 
     try:
         spins_display.change(
@@ -4613,10 +4463,6 @@ with gr.Blocks() as demo:
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
-        ).then(
-            fn=track_even_money_bets,
-            inputs=[spins_display, even_money_bets],
-            outputs=[even_money_hits_output]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
@@ -5157,42 +5003,6 @@ with gr.Blocks() as demo:
     except Exception as e:
         print(f"Error in video_dropdown.change handler: {str(e)}")
 
-    # Set up click events for roulette table buttons (re-added since we removed the separate loop)
-    # We need to re-create the buttons with click events now that even_money_bets is defined
-    with gr.Group():
-        gr.Markdown("### Re-defining Roulette Table for Event Handlers")
-        table_layout = [
-            ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
-            ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
-            ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
-        ]
-        with gr.Column(elem_classes="roulette-table"):
-            for row in table_layout:
-                with gr.Row(elem_classes="table-row"):
-                    for num in row:
-                        if num == "":
-                            gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
-                        else:
-                            color = colors.get(str(num), "black")
-                            is_selected = int(num) in state.selected_numbers
-                            btn_classes = [f"roulette-button", color]
-                            if is_selected:
-                                btn_classes.append("selected")
-                            btn = gr.Button(
-                                value=num,
-                                min_width=40,
-                                elem_classes=btn_classes
-                            )
-                            # Attach the click event now that even_money_bets is defined
-                            btn.click(
-                                fn=add_spin,
-                                inputs=[gr.State(value=num), spins_display, last_spin_count],
-                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
-                            ).then(
-                                fn=track_even_money_bets,
-                                inputs=[spins_display, even_money_bets],
-                                outputs=[even_money_hits_output]
-                            )
 
 # Launch the interface
 print("Starting Gradio launch...")
