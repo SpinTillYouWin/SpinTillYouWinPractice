@@ -3932,7 +3932,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
     with gr.Row():
         with gr.Column(scale=3):
             with gr.Accordion("Create Dozen/Even Bet Triggers", open=False, elem_id="dozen-tracker"):
-                with gr.Accordion("Dozen Triggers", open=True, elem_id="dozen-triggers"):
+                with gr.Accordion("Dozen Triggers", open=False, elem_id="dozen-triggers"):
                     dozen_tracker_spins_dropdown = gr.Dropdown(
                         label="Number of Spins to Track",
                         choices=["3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
@@ -3975,7 +3975,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                         label="Sequence Matching Results",
                         value="<p>Enable sequence matching to see results here.</p>"
                     )
-                with gr.Accordion("Even Money", open=True, elem_id="even-money-tracker"):
+                with gr.Accordion("Even Money", open=False, elem_id="even-money-tracker"):
                     even_money_tracker_spins_dropdown = gr.Dropdown(
                         label="Number of Spins to Track",
                         choices=["1", "2", "3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
