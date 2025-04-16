@@ -1513,7 +1513,7 @@ def reset_casino_data():
         "<p>Casino data reset to defaults.</p>"  # casino_data_output
     )
 
-# Line 1: Updated - Fix create_dynamic_table to remove duplicate logic
+# Line 1: Updated - Fix syntax error in create_dynamic_table
 def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
     print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
     print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
@@ -1535,11 +1535,11 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
     else:
         trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color = apply_strategy_highlights(strategy_name, int(dozen_tracker_spins) if strategy_name == "None" else neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
     
-    # Single return point to avoid duplicate logic
+    # Single return point with correct syntax
     if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
         return "<p>No spins yet. Select a strategy to see default highlights.</p>"
     
-    return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)"
+    return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)
 
 # Function to get strongest numbers with neighbors
 def get_strongest_numbers_with_neighbors(num_count):
