@@ -3748,10 +3748,6 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             {
                 "title": "S.T.Y.W: Victory Vortex (Dozen Domination)",
                 "link": "https://youtu.be/aKGA_csI9lY"
-            },
-            {
-                "title": "S.T.Y.W: The Overlap Jackpot (4 Streets + 2 Dozens) Strategy",
-                "link": "https://youtu.be/rTqdMQk4_I4"
             }
         ],
         "Column Strategies": [
@@ -3780,25 +3776,10 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 "link": "https://youtu.be/8aMHrvuzBGU"
             }
         ],
-        "Corner Strategies": [
-            {
-                "title": "S.T.Y.W: 4 Corners Strategy (Seq:1,1,2,5,8,17,28,50)",
-                "link": "https://youtu.be/zw7eUllTDbg"
-            }
-        ],
+        "Corner Strategies": [],
         "Split Strategies": [],
-        "Number Strategies": [
-            {
-                "title": "The Pulse Wheel Strategy (6 Numbers +1 Neighbours)",
-                "link": "https://youtu.be/UBajAwUXWS0"
-            }
-        ],
-        "Neighbours Strategies": [
-            {
-                "title": "The Pulse Wheel Strategy (6 Numbers +1 Neighbours)",
-                "link": "https://youtu.be/UBajAwUXWS0"
-            }
-        ]
+        "Number Strategies": [],
+        "Neighbours Strategies": []
     }
     
     # Line 2: Unchanged - Start of Row 6
@@ -4145,7 +4126,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 with gr.Accordion("Dozens", open=False):
                     dozens_output = gr.Textbox(label="Dozens", lines=10, max_lines=50)
 
-# Line 1: Updated - Adjust Row 11 UI to reflect new videos in video_categories
+    # Line 1: Updated - Revert Row 11 UI to its original state
     # 11. Row 11: Top Strategies with Roulette Spin Analyzer (Moved to be Independent)
     with gr.Row():
         with gr.Column():
@@ -4158,23 +4139,17 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                     allow_custom_value=False,
                     elem_id="video-category-dropdown"
                 )
-                # Ensure video_dropdown uses the first valid title from Dozen Strategies
-                dozen_videos = video_categories.get("Dozen Strategies", [])
-                video_choices = [video["title"] for video in dozen_videos]
-                video_default = video_choices[0] if video_choices else None
                 video_dropdown = gr.Dropdown(
                     label="Select Video",
-                    choices=video_choices,
-                    value=video_default,
+                    choices=[video["title"] for video in video_categories["Dozen Strategies"]],
+                    value=video_categories["Dozen Strategies"][0]["title"] if video_categories["Dozen Strategies"] else None,
                     allow_custom_value=False,
-                    interactive=True,  # Ensure interactivity
                     elem_id="video-dropdown"
                 )
                 video_output = gr.HTML(
                     label="Video",
-                    value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{dozen_videos[0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if dozen_videos else "<p>Select a category and video to watch.</p>"
+                    value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_categories["Dozen Strategies"][0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if video_categories["Dozen Strategies"] else "<p>Select a category and video to watch.</p>"
                 )
-
 # Line 2: Unchanged - Start of Row 12
     # 12. Row 12: Feedback Section
     with gr.Row():
@@ -5376,7 +5351,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
     except Exception as e:
         print(f"Error in reset_progression_button.click handler: {str(e)}")
 
-    # Video Category and Video Selection Event Handlers
+    # Line 1: Updated - Revert update_video_dropdown and update_video_display to original state
     def update_video_dropdown(category):
         videos = video_categories.get(category, [])
         choices = [video["title"] for video in videos]
