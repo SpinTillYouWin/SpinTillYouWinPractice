@@ -1,5 +1,3 @@
-# Forced change to ensure Git commit - hehe
-
 import gradio as gr
 import pandas as pd
 import json
@@ -3454,10 +3452,25 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
     for spin in recent_spins:
         spin_value = int(spin)
         spin_categories = []
-        for name, numbers in EVEN_MONEY.items():
-            if spin_value in numbers:
-                spin_categories.append(name)
-                category_counts[name] += 1
+        # Explicitly calculate categories
+        if spin_value in [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]:
+            spin_categories.append("Red")
+            category_counts["Red"] += 1
+        if spin_value in [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35]:
+            spin_categories.append("Black")
+            category_counts["Black"] += 1
+        if spin_value % 2 == 0 and spin_value != 0:
+            spin_categories.append("Even")
+            category_counts["Even"] += 1
+        if spin_value % 2 != 0 and spin_value != 0:
+            spin_categories.append("Odd")
+            category_counts["Odd"] += 1
+        if 1 <= spin_value <= 18:
+            spin_categories.append("Low")
+            category_counts["Low"] += 1
+        if 19 <= spin_value <= 36:
+            spin_categories.append("High")
+            category_counts["High"] += 1
         # Determine if the spin matches the tracked combination
         if combination_mode == "And":
             if all(cat in spin_categories for cat in categories_to_track):
@@ -3513,7 +3526,6 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
         if name in categories_to_track:
             html_output += f'<li>{name}: {count} hits</li>'
     html_output += '</ul>'
-
     return "\n".join(recommendations), html_output
 STRATEGIES = {
     "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
