@@ -159,7 +159,8 @@ class RouletteState:
         self.message = f"Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
         self.status = "Active"
         self.status_color = "white"  # Default color for active status
-
+        self.last_dozen_alert_index = -1  # Track the last spin index where a Dozen alert was triggered
+        
     def reset(self):
         self.scores = {n: 0 for n in range(37)}
         self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
@@ -3270,6 +3271,7 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
     current_dozen = None
     max_streak = 1
     max_streak_dozen = None
+    max_streak_end_index = -1  # Track the end index of the maximum streak
     if alert_enabled:
         for i in range(len(dozen_pattern)):
             dozen = dozen_pattern[i]
@@ -3282,11 +3284,18 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
                 current_streak = 1
             else:
                 current_streak += 1
-                if current_streak >= consecutive_hits_threshold:
-                    gr.Warning(f"Alert: {current_dozen} has hit {current_streak} times consecutively!")
-                if current_streak > max_streak:
-                    max_streak = current_streak
-                    max_streak_dozen = current_dozen
+                # Only consider streaks that end after the last alerted index
+                if current_streak >= consecutive_hits_threshold and i > state.last_dozen_alert_index:
+                    if current_streak > max_streak:
+                        max_streak = current_streak
+                        max_streak_dozen = current_dozen
+                        max_streak_end_index = i
+        # Trigger alert only for the maximum streak that ends after the last alerted index
+        if max_streak_end_index > state.last_dozen_alert_index and max_streak >= consecutive_hits_threshold:
+            gr.Warning(f"Alert: {max_streak_dozen} has hit {max_streak} times consecutively!")
+            state.last_dozen_alert_index = max_streak_end_index  # Update the last alerted index
+        elif max_streak < consecutive_hits_threshold:
+            state.last_dozen_alert_index = -1  # Reset if no streak meets the threshold
 
     # Detect sequence matches (only if sequence alert is enabled)
     sequence_matches = []
