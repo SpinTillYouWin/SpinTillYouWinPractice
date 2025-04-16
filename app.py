@@ -3732,7 +3732,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
     }
     category_choices = ["None"] + sorted(strategy_categories.keys())
     
-    # Line 1: Updated - Adding new videos to video_categories
+    # Line 1: Updated - Add the three new videos to video_categories with converted youtu.be links
     video_categories = {
         "Trends": [],
         "Even Money Strategies": [
@@ -3753,6 +3753,10 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             {
                 "title": "S.T.Y.W: Victory Vortex (Dozen Domination)",
                 "link": "https://youtu.be/aKGA_csI9lY"
+            },
+            {
+                "title": "S.T.Y.W: The Overlap Jackpot (4 Streets + 2 Dozens) Strategy",
+                "link": "https://youtu.be/rTqdMQk4_I4"
             }
         ],
         "Column Strategies": [
@@ -3781,12 +3785,27 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 "link": "https://youtu.be/8aMHrvuzBGU"
             }
         ],
-        "Corner Strategies": [],
+        "Corner Strategies": [
+            {
+                "title": "S.T.Y.W: 4 Corners Strategy (Seq:1,1,2,5,8,17,28,50)",
+                "link": "https://youtu.be/zw7eUllTDbg"
+            }
+        ],
         "Split Strategies": [],
-        "Number Strategies": [],
-        "Neighbours Strategies": []
+        "Number Strategies": [
+            {
+                "title": "The Pulse Wheel Strategy (6 Numbers +1 Neighbours)",
+                "link": "https://youtu.be/UBajAwUXWS0"
+            }
+        ],
+        "Neighbours Strategies": [
+            {
+                "title": "The Pulse Wheel Strategy (6 Numbers +1 Neighbours)",
+                "link": "https://youtu.be/UBajAwUXWS0"
+            }
+        ]
     }
-        
+    
     # Line 2: Unchanged - Start of Row 6
     # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
@@ -4131,7 +4150,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 with gr.Accordion("Dozens", open=False):
                     dozens_output = gr.Textbox(label="Dozens", lines=10, max_lines=50)
 
-# Line 1: Updated - Enhance the Top Strategies accordion with improved video UI
+# Line 1: Updated - Adjust Row 11 UI to reflect new videos in video_categories
     # 11. Row 11: Top Strategies with Roulette Spin Analyzer (Moved to be Independent)
     with gr.Row():
         with gr.Column():
@@ -4155,7 +4174,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                     label="Video",
                     value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_categories["Dozen Strategies"][0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if video_categories["Dozen Strategies"] else "<p>Select a category and video to watch.</p>"
                 )
-
+                
 # Line 2: Unchanged - Start of Row 12
     # 12. Row 12: Feedback Section
     with gr.Row():
