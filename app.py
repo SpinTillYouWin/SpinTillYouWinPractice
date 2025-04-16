@@ -3387,7 +3387,108 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
             sequence_html_output += "</ul>"
 
     return "\n".join(recommendations), html_output, sequence_html_output
+# New: Even Money Bet Tracker Function
+def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled, combination_mode, track_red, track_black, track_even, track_odd, track_low, track_high):
+    """Track even money bets and their combinations for consecutive hits."""
+    # Validate inputs
+    try:
+        spins_to_check = int(spins_to_check)
+        consecutive_hits_threshold = int(consecutive_hits_threshold)
+        if spins_to_check < 1 or consecutive_hits_threshold < 1:
+            return "Error: Inputs must be at least 1.", "<p>Error: Inputs must be at least 1.</p>"
+    except (ValueError, TypeError):
+        return "Error: Invalid inputs. Use positive integers.", "<p>Error: Invalid inputs. Use positive integers.</p>"
 
+    # Get recent spins
+    recent_spins = state.last_spins[-spins_to_check:] if len(state.last_spins) >= spins_to_check else state.last_spins
+    if not recent_spins:
+        return "Even Money Tracker: No spins recorded yet.", "<p>Even Money Tracker: No spins recorded yet.</p>"
+
+    # Determine which categories to track
+    categories_to_track = []
+    if track_red:
+        categories_to_track.append("Red")
+    if track_black:
+        categories_to_track.append("Black")
+    if track_even:
+        categories_to_track.append("Even")
+    if track_odd:
+        categories_to_track.append("Odd")
+    if track_low:
+        categories_to_track.append("Low")
+    if track_high:
+        categories_to_track.append("High")
+
+    if not categories_to_track:
+        return "Even Money Tracker: Select at least one category to track.", "<p>Even Money Tracker: Select at least one category to track.</p>"
+
+    # Map spins to even money categories
+    pattern = []
+    category_counts = {name: 0 for name in EVEN_MONEY.keys()}
+    for spin in recent_spins:
+        spin_value = int(spin)
+        spin_categories = []
+        for name, numbers in EVEN_MONEY.items():
+            if spin_value in numbers:
+                spin_categories.append(name)
+                category_counts[name] += 1
+        # Determine if the spin matches the tracked combination
+        if combination_mode == "And":
+            if all(cat in spin_categories for cat in categories_to_track):
+                pattern.append("Hit")
+            else:
+                pattern.append("Miss")
+        else:  # Or mode
+            if any(cat in spin_categories for cat in categories_to_track):
+                pattern.append("Hit")
+            else:
+                pattern.append("Miss")
+
+    # Track consecutive hits
+    current_streak = 1
+    max_streak = 1
+    max_streak_start = 0
+    for i in range(1, len(pattern)):
+        if pattern[i] == "Hit" and pattern[i-1] == "Hit":
+            current_streak += 1
+            if current_streak > max_streak:
+                max_streak = current_streak
+                max_streak_start = i - current_streak + 1
+        else:
+            current_streak = 1 if pattern[i] == "Hit" else 0
+
+    # Generate text output
+    tracked_str = " and ".join(categories_to_track) if combination_mode == "And" else " or ".join(categories_to_track)
+    recommendations = []
+    recommendations.append(f"Even Money Tracker (Last {len(recent_spins)} Spins):")
+    recommendations.append(f"Tracking: {tracked_str} ({combination_mode})")
+    recommendations.append("History: " + ", ".join(pattern))
+    if alert_enabled and max_streak >= consecutive_hits_threshold:
+        gr.Warning(f"Alert: {tracked_str} hit {max_streak} times consecutively!")
+        recommendations.append(f"\nAlert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!")
+    recommendations.append("\nSummary of Hits:")
+    for name, count in category_counts.items():
+        if name in categories_to_track:
+            recommendations.append(f"{name}: {count} hits")
+
+    # Generate HTML output
+    html_output = f'<h4>Even Money Tracker (Last {len(recent_spins)} Spins):</h4>'
+    html_output += f'<p>Tracking: {tracked_str} ({combination_mode})</p>'
+    html_output += '<div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;">'
+    for status in pattern:
+        color = "#32CD32" if status == "Hit" else "#FF6347"  # Green for Hit, Red for Miss
+        html_output += f'<span style="background-color: {color}; color: white; padding: 2px 5px; border-radius: 3px; display: inline-block;">{status}</span>'
+    html_output += '</div>'
+    if alert_enabled and max_streak >= consecutive_hits_threshold:
+        html_output += f'<p style="color: red; font-weight: bold;">Alert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!</p>'
+    html_output += '<h4>Summary of Hits:</h4>'
+    html_output += '<ul style="list-style-type: none; padding-left: 0;">'
+    for name, count in category_counts.items():
+        if name in categories_to_track:
+            html_output += f'<li>{name}: {count} hits</li>'
+    html_output += '</ul>'
+
+    return "\n".join(recommendations), html_output
 STRATEGIES = {
     "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
     "Cold Bet Strategy": {"function": cold_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
@@ -3841,6 +3942,45 @@ with gr.Blocks() as demo:
                     value=False,
                     interactive=True
                 )
+                
+                # New: Even Money Bet Tracker Controls
+                gr.Markdown("### Even Money Bet Tracker")
+                even_money_tracker_spins_dropdown = gr.Dropdown(
+                    label="Number of Spins to Track",
+                    choices=["3", "4", "5", "6", "10", "15", "20", "25", "30", "40", "50", "75", "100", "150", "200"],
+                    value="5",
+                    interactive=True
+                )
+                even_money_tracker_consecutive_hits_dropdown = gr.Dropdown(
+                    label="Alert on Consecutive Even Money Hits",
+                    choices=["3", "4", "5"],
+                    value="3",
+                    interactive=True
+                )
+                even_money_tracker_combination_mode_dropdown = gr.Dropdown(
+                    label="Combination Mode",
+                    choices=["And", "Or"],
+                    value="And",
+                    interactive=True
+                )
+                with gr.Row():
+                    even_money_tracker_red_checkbox = gr.Checkbox(label="Red", value=False, interactive=True)
+                    even_money_tracker_black_checkbox = gr.Checkbox(label="Black", value=False, interactive=True)
+                    even_money_tracker_even_checkbox = gr.Checkbox(label="Even", value=False, interactive=True)
+                    even_money_tracker_odd_checkbox = gr.Checkbox(label="Odd", value=False, interactive=True)
+                    even_money_tracker_low_checkbox = gr.Checkbox(label="Low", value=False, interactive=True)
+                    even_money_tracker_high_checkbox = gr.Checkbox(label="High", value=False, interactive=True)
+                even_money_tracker_alert_checkbox = gr.Checkbox(
+                    label="Enable Even Money Hits Alert",
+                    value=False,
+                    interactive=True
+                )
+                even_money_tracker_output = gr.HTML(
+                    label="Even Money Tracker",
+                    value="<p>Select categories to track and analyze spins to see even money bet history.</p>"
+                )
+                # End New
+                
                 dozen_tracker_output = gr.HTML(
                     label="Dozen Tracker",
                     value="<p>Select the number of spins to track and analyze spins to see the Dozen history.</p>"
@@ -4425,7 +4565,7 @@ with gr.Blocks() as demo:
             ]
         ).then(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, kbox],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         )
     except Exception as e:
@@ -4524,7 +4664,7 @@ with gr.Blocks() as demo:
             outputs=[color_code_output]
         ).then(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, kbox],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         )
     except Exception as e:
@@ -4562,7 +4702,7 @@ with gr.Blocks() as demo:
             outputs=[color_code_output]
         ).then(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, kbox],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         )
     except Exception as e:
@@ -4585,7 +4725,7 @@ with gr.Blocks() as demo:
             outputs=[dynamic_table_output]
         ).then(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, kbox],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         )
     except Exception as e:
@@ -4670,7 +4810,7 @@ with gr.Blocks() as demo:
     try:
         dozen_tracker_spins_dropdown.change(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, kbox],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -4747,6 +4887,168 @@ with gr.Blocks() as demo:
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         )
+        # New: Even Money Tracker Event Handlers
+            even_money_tracker_spins_dropdown.change(
+                fn=even_money_tracker,
+                inputs=[
+                    even_money_tracker_spins_dropdown,
+                    even_money_tracker_consecutive_hits_dropdown,
+                    even_money_tracker_alert_checkbox,
+                    even_money_tracker_combination_mode_dropdown,
+                    even_money_tracker_red_checkbox,
+                    even_money_tracker_black_checkbox,
+                    even_money_tracker_even_checkbox,
+                    even_money_tracker_odd_checkbox,
+                    even_money_tracker_low_checkbox,
+                    even_money_tracker_high_checkbox
+                ],
+                outputs=[gr.State(), even_money_tracker_output]
+            )
+            even_money_tracker_consecutive_hits_dropdown.change(
+                fn=even_money_tracker,
+                inputs=[
+                    even_money_tracker_spins_dropdown,
+                    even_money_tracker_consecutive_hits_dropdown,
+                    even_money_tracker_alert_checkbox,
+                    even_money_tracker_combination_mode_dropdown,
+                    even_money_tracker_red_checkbox,
+                    even_money_tracker_black_checkbox,
+                    even_money_tracker_even_checkbox,
+                    even_money_tracker_odd_checkbox,
+                    even_money_tracker_low_checkbox,
+                    even_money_tracker_high_checkbox
+                ],
+                outputs=[gr.State(), even_money_tracker_output]
+            )
+            even_money_tracker_combination_mode_dropdown.change(
+                fn=even_money_tracker,
+                inputs=[
+                    even_money_tracker_spins_dropdown,
+                    even_money_tracker_consecutive_hits_dropdown,
+                    even_money_tracker_alert_checkbox,
+                    even_money_tracker_combination_mode_dropdown,
+                    even_money_tracker_red_checkbox,
+                    even_money_tracker_black_checkbox,
+                    even_money_tracker_even_checkbox,
+                    even_money_tracker_odd_checkbox,
+                    even_money_tracker_low_checkbox,
+                    even_money_tracker_high_checkbox
+                ],
+                outputs=[gr.State(), even_money_tracker_output]
+            )
+            even_money_tracker_red_checkbox.change(
+                fn=even_money_tracker,
+                inputs=[
+                    even_money_tracker_spins_dropdown,
+                    even_money_tracker_consecutive_hits_dropdown,
+                    even_money_tracker_alert_checkbox,
+                    even_money_tracker_combination_mode_dropdown,
+                    even_money_tracker_red_checkbox,
+                    even_money_tracker_black_checkbox,
+                    even_money_tracker_even_checkbox,
+                    even_money_tracker_odd_checkbox,
+                    even_money_tracker_low_checkbox,
+                    even_money_tracker_high_checkbox
+                ],
+                outputs=[gr.State(), even_money_tracker_output]
+            )
+            even_money_tracker_black_checkbox.change(
+                fn=even_money_tracker,
+                inputs=[
+                    even_money_tracker_spins_dropdown,
+                    even_money_tracker_consecutive_hits_dropdown,
+                    even_money_tracker_alert_checkbox,
+                    even_money_tracker_combination_mode_dropdown,
+                    even_money_tracker_red_checkbox,
+                    even_money_tracker_black_checkbox,
+                    even_money_tracker_even_checkbox,
+                    even_money_tracker_odd_checkbox,
+                    even_money_tracker_low_checkbox,
+                    even_money_tracker_high_checkbox
+                ],
+                outputs=[gr.State(), even_money_tracker_output]
+            )
+            even_money_tracker_even_checkbox.change(
+                fn=even_money_tracker,
+                inputs=[
+                    even_money_tracker_spins_dropdown,
+                    even_money_tracker_consecutive_hits_dropdown,
+                    even_money_tracker_alert_checkbox,
+                    even_money_tracker_combination_mode_dropdown,
+                    even_money_tracker_red_checkbox,
+                    even_money_tracker_black_checkbox,
+                    even_money_tracker_even_checkbox,
+                    even_money_tracker_odd_checkbox,
+                    even_money_tracker_low_checkbox,
+                    even_money_tracker_high_checkbox
+                ],
+                outputs=[gr.State(), even_money_tracker_output]
+            )
+            even_money_tracker_odd_checkbox.change(
+                fn=even_money_tracker,
+                inputs=[
+                    even_money_tracker_spins_dropdown,
+                    even_money_tracker_consecutive_hits_dropdown,
+                    even_money_tracker_alert_checkbox,
+                    even_money_tracker_combination_mode_dropdown,
+                    even_money_tracker_red_checkbox,
+                    even_money_tracker_black_checkbox,
+                    even_money_tracker_even_checkbox,
+                    even_money_tracker_odd_checkbox,
+                    even_money_tracker_low_checkbox,
+                    even_money_tracker_high_checkbox
+                ],
+                outputs=[gr.State(), even_money_tracker_output]
+            )
+            even_money_tracker_low_checkbox.change(
+                fn=even_money_tracker,
+                inputs=[
+                    even_money_tracker_spins_dropdown,
+                    even_money_tracker_consecutive_hits_dropdown,
+                    even_money_tracker_alert_checkbox,
+                    even_money_tracker_combination_mode_dropdown,
+                    even_money_tracker_red_checkbox,
+                    even_money_tracker_black_checkbox,
+                    even_money_tracker_even_checkbox,
+                    even_money_tracker_odd_checkbox,
+                    even_money_tracker_low_checkbox,
+                    even_money_tracker_high_checkbox
+                ],
+                outputs=[gr.State(), even_money_tracker_output]
+            )
+            even_money_tracker_high_checkbox.change(
+                fn=even_money_tracker,
+                inputs=[
+                    even_money_tracker_spins_dropdown,
+                    even_money_tracker_consecutive_hits_dropdown,
+                    even_money_tracker_alert_checkbox,
+                    even_money_tracker_combination_mode_dropdown,
+                    even_money_tracker_red_checkbox,
+                    even_money_tracker_black_checkbox,
+                    even_money_tracker_even_checkbox,
+                    even_money_tracker_odd_checkbox,
+                    even_money_tracker_low_checkbox,
+                    even_money_tracker_high_checkbox
+                ],
+                outputs=[gr.State(), even_money_tracker_output]
+            )
+            even_money_tracker_alert_checkbox.change(
+                fn=even_money_tracker,
+                inputs=[
+                    even_money_tracker_spins_dropdown,
+                    even_money_tracker_consecutive_hits_dropdown,
+                    even_money_tracker_alert_checkbox,
+                    even_money_tracker_combination_mode_dropdown,
+                    even_money_tracker_red_checkbox,
+                    even_money_tracker_black_checkbox,
+                    even_money_tracker_even_checkbox,
+                    even_money_tracker_odd_checkbox,
+                    even_money_tracker_low_checkbox,
+                    even_money_tracker_high_checkbox
+                ],
+                outputs=[gr.State(), even_money_tracker_output]
+            )
+            # End New
     except Exception as e:
         print(f"Error in dozen_tracker_sequence_alert_checkbox.change handler: {str(e)}")
 
