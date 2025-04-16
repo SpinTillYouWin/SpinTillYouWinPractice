@@ -4448,6 +4448,7 @@ with gr.Blocks() as demo:
 
     # Event Handlers (Moved Inside gr.Blocks())
     try:
+        print("Setting up spins_textbox.change handler")
         spins_textbox.change(
             fn=validate_spins_input,
             inputs=spins_textbox,
@@ -4466,7 +4467,7 @@ with gr.Blocks() as demo:
             inputs=[],
             outputs=[spin_counter]
         ).then(
-            fn=track_even_money_bets,
+            fn=lambda spins, bets: (print(f"spins_textbox.change: Triggering track_even_money_bets with spins='{spins}', bets={bets}"), track_even_money_bets(spins, bets))[-1],
             inputs=[spins_display, even_money_bets],
             outputs=[even_money_hits_output]
         )
