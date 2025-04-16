@@ -3713,8 +3713,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
         with gr.Column(scale=4, min_width=600):
             spins_textbox
         with gr.Column(scale=1, min_width=200):
-            with gr.Accordion("Total Spins Counter", open=False, elem_id="spin-counter-accordion"):
-                spin_counter  # Now inside an accordion
+            spin_counter  # Restore side-by-side layout with styling
 
     # Define strategy categories and choices
     strategy_categories = {
@@ -4534,24 +4533,6 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
               height: 200px !important;
           }
       }
-      /* Spin Counter Accordion Styling */
-        #spin-counter-accordion summary {
-            border: 2px solid #3498DB !important; /* Blue border matching the spin-counter */
-            border-radius: 5px !important;
-            padding: 8px !important;
-            background-color: #f5f5f5 !important; /* Light gray background for the summary */
-            color: #333 !important; /* Dark text color for readability */
-            font-weight: bold !important;
-            transition: background-color 0.3s ease !important;
-        }
-        #spin-counter-accordion summary:hover {
-            background-color: #e0e0e0 !important; /* Slightly darker on hover */
-        }
-        #spin-counter-accordion > div {
-            border: none !important; /* Ensure the inner content has no blue border */
-            background-color: #ffffff !important; /* White background for the expanded content */
-            padding: 10px !important;
-        }
     </style>
     """)
     print("CSS Updated")
