@@ -4805,23 +4805,19 @@ with gr.Blocks() as demo:
         )
     except Exception as e:
         print(f"Error in lower_color_picker.change handler: {str(e)}")
-
-    # Dozen Tracker Event Handler
+        
+# Dozen Tracker Event Handlers
     try:
         dozen_tracker_spins_dropdown.change(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, kbox],
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         )
-    except Exception as e:
-        print(f"Error in dozen_tracker_spins_dropdown.change handler: {str(e)}")
 
-    # Dozen Tracker Consecutive Hits Event Handler
-    try:
         dozen_tracker_consecutive_hits_dropdown.change(
             fn=dozen_tracker,
             inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
@@ -4831,11 +4827,7 @@ with gr.Blocks() as demo:
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         )
-    except Exception as e:
-        print(f"Error in dozen_tracker_consecutive_hits_dropdown.change handler: {str(e)}")
 
-    # Dozen Tracker Alert Checkbox Event Handler
-    try:
         dozen_tracker_alert_checkbox.change(
             fn=dozen_tracker,
             inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
@@ -4845,11 +4837,7 @@ with gr.Blocks() as demo:
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         )
-    except Exception as e:
-        print(f"Error in dozen_tracker_alert_checkbox.change handler: {str(e)}")
 
-    # Dozen Tracker Sequence Length Event Handler
-    try:
         dozen_tracker_sequence_length_dropdown.change(
             fn=dozen_tracker,
             inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
@@ -4859,11 +4847,7 @@ with gr.Blocks() as demo:
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         )
-    except Exception as e:
-        print(f"Error in dozen_tracker_sequence_length_dropdown.change handler: {str(e)}")
 
-    # Dozen Tracker Follow-Up Spins Event Handler
-    try:
         dozen_tracker_follow_up_spins_dropdown.change(
             fn=dozen_tracker,
             inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
@@ -4873,25 +4857,25 @@ with gr.Blocks() as demo:
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         )
-    except Exception as e:
-        print(f"Error in dozen_tracker_follow_up_spins_dropdown.change handler: {str(e)}")
 
-            strong_numbers_count_slider, dozen_tracker_spins, top_color_picker, middle_color_picker, lower_color_picker],
-            outputs=[dynamic_table_output]
-        )
-
-    # Dozen Tracker Sequence Alert Checkbox Event Handler
-    try:
         dozen_tracker_sequence_alert_checkbox.change(
             fn=dozen_tracker,
             inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            inputs=[
+                strategy_dropdown,
+                neighbours_count_slider,
+                strong_numbers_count_slider,
+                dozen_tracker_spins,
+                top_color_picker,
+                middle_color_picker,
+                lower_color_picker
+            ],
             outputs=[dynamic_table_output]
         )
-    except Exception as e:  # Added to close the try block
+    except Exception as e:
         print(f"Error in dozen_tracker_sequence_alert_checkbox.change handler: {str(e)}")
 
     # Even Money Tracker Event Handlers
@@ -5055,6 +5039,7 @@ with gr.Blocks() as demo:
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
+
     # Casino data event handlers
     inputs_list = [
         spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
