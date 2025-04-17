@@ -26,7 +26,6 @@ def update_scores_batch(spins):
             if spin_value in numbers:
                 state.dozen_scores[name] += 1
                 action["increments"].setdefault("dozen_scores", {})[name] = 1
-        print(f"After spin {spin_value}, dozen_scores: {state.dozen_scores}")  # NEW LINE: Debugging print
 
         # Update columns scores
         for name, numbers in COLUMNS.items():
@@ -1162,7 +1161,6 @@ def highlight_other_bets(strategy_name, sorted_sections, top_color, middle_color
             color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
             for num in numbers:
                 number_highlights[str(num)] = color
-
     elif strategy_name == "Non-Overlapping Double Street Strategy":
         non_overlapping_sets = [
             ["1ST D.STREET – 1, 4", "3RD D.STREET – 7, 10", "5TH D.STREET – 13, 16", "7TH D.STREET – 19, 22", "9TH D.STREET – 25, 28"],
@@ -1179,20 +1177,6 @@ def highlight_other_bets(strategy_name, sorted_sections, top_color, middle_color
             color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
             for num in numbers:
                 number_highlights[str(num)] = color
-        # NEW: Highlight the top two dozens
-        sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)  # NEW LINE
-        dozens_hits = [item for item in sorted_dozens if item[1] > 0]  # NEW LINE
-        if dozens_hits:  # NEW LINE
-            # Highlight top dozen with top_color
-            top_dozen_name = dozens_hits[0][0]  # NEW LINE
-            for num in DOZENS[top_dozen_name]:  # NEW LINE
-                number_highlights[str(num)] = top_color  # NEW LINE
-            # Highlight second dozen with middle_color if available
-            if len(dozens_hits) > 1:  # NEW LINE
-                second_dozen_name = dozens_hits[1][0]  # NEW LINE
-                for num in DOZENS[second_dozen_name]:  # NEW LINE
-                    number_highlights[str(num)] = middle_color  # NEW LINE
-                    
     elif strategy_name == "Non-Overlapping Corner Strategy":
         sorted_corners = sorted(state.corner_scores.items(), key=lambda x: x[1], reverse=True)
         selected_corners = []
