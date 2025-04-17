@@ -3476,7 +3476,7 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
             sequence_html_output += "</ul>"
 
     return "\n".join(recommendations), html_output, sequence_html_output
-    
+
 # New: Even Money Bet Tracker Function
 def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled, combination_mode, track_red, track_black, track_even, track_odd, track_low, track_high, identical_traits_enabled, consecutive_identical_count):
     """Track even money bets and their combinations for consecutive hits, with optional tracking of consecutive identical trait combinations."""
@@ -3510,6 +3510,10 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
     if track_high:
         categories_to_track.append("High")
 
+    # If no categories are explicitly selected, track all categories by default
+    if not categories_to_track:
+        categories_to_track = ["Red", "Black", "Even", "Odd", "Low", "High"]
+
     # Map spins to even money categories and track full trait combinations
     pattern = []
     category_counts = {name: 0 for name in EVEN_MONEY.keys()}
@@ -3522,20 +3526,17 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
                 spin_categories.append(name)
                 category_counts[name] += 1
 
-        # Determine if the spin matches the tracked combination for the existing logic
-        if categories_to_track:  # Only compute pattern if categories are selected
-            if combination_mode == "And":
-                if all(cat in spin_categories for cat in categories_to_track):
-                    pattern.append("Hit")
-                else:
-                    pattern.append("Miss")
-            else:  # Or mode
-                if any(cat in spin_categories for cat in categories_to_track):
-                    pattern.append("Hit")
-                else:
-                    pattern.append("Miss")
-        else:
-            pattern.append("N/A")  # Placeholder if no categories are tracked
+        # Determine if the spin matches the tracked combination
+        if combination_mode == "And":
+            if all(cat in spin_categories for cat in categories_to_track):
+                pattern.append("Hit")
+            else:
+                pattern.append("Miss")
+        else:  # Or mode
+            if any(cat in spin_categories for cat in categories_to_track):
+                pattern.append("Hit")
+            else:
+                pattern.append("Miss")
 
         # Build the full trait combination for this spin (Color, Parity, Range)
         color = "Red" if "Red" in spin_categories else ("Black" if "Black" in spin_categories else "None")
@@ -3544,21 +3545,20 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
         trait_combination = f"{color}, {parity}, {range_}"
         trait_combinations.append(trait_combination)
 
-    # Existing logic: Track consecutive hits of the selected combination (only if categories are selected)
+    # Track consecutive hits of the selected combination
     current_streak = 1
     max_streak = 1
     max_streak_start = 0
-    if categories_to_track:
-        for i in range(1, len(pattern)):
-            if pattern[i] == "Hit" and pattern[i-1] == "Hit":
-                current_streak += 1
-                if current_streak > max_streak:
-                    max_streak = current_streak
-                    max_streak_start = i - current_streak + 1
-            else:
-                current_streak = 1 if pattern[i] == "Hit" else 0
+    for i in range(1, len(pattern)):
+        if pattern[i] == "Hit" and pattern[i-1] == "Hit":
+            current_streak += 1
+            if current_streak > max_streak:
+                max_streak = current_streak
+                max_streak_start = i - current_streak + 1
+        else:
+            current_streak = 1 if pattern[i] == "Hit" else 0
 
-    # New logic: Track consecutive identical trait combinations (independent of category selection)
+    # Track consecutive identical trait combinations (independent of category selection)
     identical_recommendations = []
     identical_html_output = ""
     betting_recommendation = None
@@ -3612,8 +3612,30 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
                 top_tier_score = even_money_hits[0][1]
                 identical_recommendations.append(f"Current Top-Tier Even Money Bet (Yellow): {top_tier_bet} (Score: {top_tier_score})")
 
-                # Compare top-tier bet to opposite traits
-                if top_tier_bet in opposite_traits:
+                # Correctly compare top-tier bet to the corresponding opposite trait
+                opposites_map = {
+                    "Red": "Black", "Black": "Red",
+                    "Even": "Odd", "Odd": "Even",
+                    "Low": "High", "High": "Low"
+                }
+                # Determine which trait category the top-tier bet belongs to
+                trait_index = None
+                if top_tier_bet in ["Red", "Black"]:
+                    trait_index = 0  # Color
+                elif top_tier_bet in ["Even", "Odd"]:
+                    trait_index = 1  # Parity
+                elif top_tier_bet in ["Low", "High"]:
+                    trait_index = 2  # Range
+
+                match_found = False
+                if trait_index is not None:
+                    corresponding_opposite = opposite_traits[trait_index]
+                    # Check if the top-tier bet matches its opposite in the correct category
+                    expected_opposite = opposites_map.get(top_tier_bet)
+                    if expected_opposite == corresponding_opposite:
+                        match_found = True
+
+                if match_found:
                     betting_recommendation = f"<span class='betting-recommendation'>Match found! Bet on '{top_tier_bet}' for the next 3 spins.</span>"
                     if alert_enabled:
                         gr.Warning(f"Match found! Bet on '{top_tier_bet}' for the next 3 spins.")
@@ -3635,41 +3657,36 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
             identical_html_output += "</ul>"
             identical_html_output += "</div>"
 
-    # Generate text and HTML for the original even money tracking (only if categories are selected)
+    # Generate text and HTML for the original even money tracking
+    tracked_str = " and ".join(categories_to_track) if combination_mode == "And" else " or ".join(categories_to_track)
     recommendations = []
     html_output = "<div class='even-money-tracker-container'>"
-    if categories_to_track:
-        tracked_str = " and ".join(categories_to_track) if combination_mode == "And" else " or ".join(categories_to_track)
-        recommendations.append(f"Even Money Tracker (Last {len(recent_spins)} Spins):")
-        recommendations.append(f"Tracking: {tracked_str} ({combination_mode})")
-        recommendations.append("History: " + ", ".join([p for p in pattern if p != "N/A"]))
-        if alert_enabled and max_streak >= consecutive_hits_threshold:
-            gr.Warning(f"Alert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!")
-            recommendations.append(f"\nAlert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!")
-        recommendations.append("\nSummary of Hits:")
-        for name, count in category_counts.items():
-            if name in categories_to_track:
-                recommendations.append(f"{name}: {count} hits")
+    recommendations.append(f"Even Money Tracker (Last {len(recent_spins)} Spins):")
+    recommendations.append(f"Tracking: {tracked_str} ({combination_mode})")
+    recommendations.append("History: " + ", ".join(pattern))
+    if alert_enabled and max_streak >= consecutive_hits_threshold:
+        gr.Warning(f"Alert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!")
+        recommendations.append(f"\nAlert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!")
+    recommendations.append("\nSummary of Hits:")
+    for name, count in category_counts.items():
+        if name in categories_to_track:
+            recommendations.append(f"{name}: {count} hits")
 
-        html_output += f'<h4>Even Money Tracker (Last {len(recent_spins)} Spins):</h4>'
-        html_output += f'<p>Tracking: {tracked_str} ({combination_mode})</p>'
-        html_output += '<div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;">'
-        for status in pattern:
-            if status != "N/A":
-                color = "#32CD32" if status == "Hit" else "#FF6347"  # Green for Hit, Red for Miss
-                html_output += f'<span style="background-color: {color}; color: white; padding: 2px 5px; border-radius: 3px; display: inline-block;">{status}</span>'
-        html_output += '</div>'
-        if alert_enabled and max_streak >= consecutive_hits_threshold:
-            html_output += f'<p style="color: red; font-weight: bold;">Alert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!</p>'
-        html_output += '<h4>Summary of Hits:</h4>'
-        html_output += '<ul style="list-style-type: none; padding-left: 0;">'
-        for name, count in category_counts.items():
-            if name in categories_to_track:
-                html_output += f'<li>{name}: {count} hits</li>'
-        html_output += '</ul>'
-    else:
-        recommendations.append("Even Money Tracker: Select at least one category to track for hit tracking.")
-        html_output += "<p>Even Money Tracker: Select at least one category to track for hit tracking.</p>"
+    html_output += f'<h4>Even Money Tracker (Last {len(recent_spins)} Spins):</h4>'
+    html_output += f'<p>Tracking: {tracked_str} ({combination_mode})</p>'
+    html_output += '<div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;">'
+    for status in pattern:
+        color = "#32CD32" if status == "Hit" else "#FF6347"  # Green for Hit, Red for Miss
+        html_output += f'<span style="background-color: {color}; color: white; padding: 2px 5px; border-radius: 3px; display: inline-block;">{status}</span>'
+    html_output += '</div>'
+    if alert_enabled and max_streak >= consecutive_hits_threshold:
+        html_output += f'<p style="color: red; font-weight: bold;">Alert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!</p>'
+    html_output += '<h4>Summary of Hits:</h4>'
+    html_output += '<ul style="list-style-type: none; padding-left: 0;">'
+    for name, count in category_counts.items():
+        if name in categories_to_track:
+            html_output += f'<li>{name}: {count} hits</li>'
+    html_output += '</ul>'
 
     # Append the identical traits tracking output (if enabled)
     if identical_traits_enabled and identical_html_output:
