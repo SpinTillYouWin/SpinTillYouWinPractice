@@ -1201,19 +1201,17 @@ def highlight_other_bets(strategy_name, sorted_sections, top_color, middle_color
             for num in numbers:
                 number_highlights[str(num)] = color
     elif strategy_name == "Best Dozens + Non Overlapped Best Double Street":
-        dozens_hits = [item for item in sorted_sections["dozens"] if item[1] > 0]
-        if len(dozens_hits) >= 2:
-            top_dozen = dozens_hits[0][0]
-            second_dozen = dozens_hits[1][0]
-            for num in DOZENS[top_dozen]:
+        trending_dozen, second_dozen, _ = highlight_dozens(strategy_name, sorted_sections, top_color, middle_color, lower_color)
+        if trending_dozen and second_dozen:
+            for num in DOZENS[trending_dozen]:
                 number_highlights[str(num)] = top_color
             for num in DOZENS[second_dozen]:
                 number_highlights[str(num)] = middle_color
-            top_dozen_numbers = set(DOZENS[top_dozen]).union(DOZENS[second_dozen])
+            top_dozen_numbers = set(DOZENS[trending_dozen]).union(DOZENS[second_dozen])
             non_overlapped_double_street = None
             for name, score in sorted_sections["six_lines"]:
                 double_street_numbers = set(SIX_LINES[name])
-                if not double_street_numbers.issubset(top_dozen_numbers):
+                if double_street_numbers.isdisjoint(top_dozen_numbers):
                     non_overlapped_double_street = name
                     break
             if non_overlapped_double_street:
