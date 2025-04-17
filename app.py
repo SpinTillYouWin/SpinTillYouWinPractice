@@ -3400,7 +3400,29 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
                     else:
                         dozens_to_bet = [d for d in all_dozens if d != dozen]
                         sequence_recommendations.append(f"Spin {idx + 1}: Bet against {dozen} - Bet on {', '.join(dozens_to_bet)}")
-                        
+        else:
+            sequence_html_output = "<h4>Sequence Matching Results:</h4>"
+            if not sequence_alert_enabled:
+                sequence_html_output += "<p>Sequence matching is disabled. Enable it to see results.</p>"
+            elif len(dozen_pattern) < sequence_length:
+                sequence_html_output += f"<p>Not enough spins to match a sequence of length {sequence_length}.</p>"
+            elif not sequence_matches:
+                sequence_html_output += "<p>No sequence matches found yet.</p>"
+            else:
+                sequence_html_output += "<ul style='list-style-type: none; padding-left: 0;'>"
+                for start_idx, seq in sequence_matches:
+                    sequence_html_output += f"<li>Match found at spins {start_idx + 1} to {start_idx + sequence_length}: {', '.join(seq)}</li>"
+                sequence_html_output += "</ul>"
+                if sequence_recommendations:
+                    sequence_html_output += "<h4>Latest Match Details:</h4>"
+                    sequence_html_output += "<ul style='list-style-type: none; padding-left: 0;'>"
+                    for rec in sequence_recommendations:
+                        if "Alert:" in rec:
+                            sequence_html_output += f"<li style='color: red; font-weight: bold;'>{rec}</li>"
+                        else:
+                            sequence_html_output += f"<li>{rec}</li>"
+                    sequence_html_output += "</ul>"
+
     # Text summary for Dozen Tracker
     recommendations.append(f"Dozen Tracker (Last {len(recent_spins)} Spins):")
     recommendations.append("Dozen History: " + ", ".join(dozen_pattern))
@@ -3440,20 +3462,20 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
         sequence_html_output += "<p>No sequence matches found yet.</p>"
     else:
         sequence_html_output += "<ul style='list-style-type: none; padding-left: 0;'>"
-          for start_idx, seq in sequence_matches:
-              sequence_html_output += f"<li>Match found at spins {start_idx + 1} to {start_idx + sequence_length}: {', '.join(seq)}</li>"
-          sequence_html_output += "</ul>"
-          if sequence_recommendations:
-              sequence_html_output += "<h4>Latest Match Details:</h4>"
-              sequence_html_output += "<ul style='list-style-type: none; padding-left: 0;'>"
-              for rec in sequence_recommendations:
-                  if "Alert:" in rec:
-                      sequence_html_output += f"<li style='color: red; font-weight: bold;'>{rec}</li>"
-                  else:
-                      sequence_html_output += f"<li>{rec}</li>"
-              sequence_html_output += "</ul>"
+        for start_idx, seq in sequence_matches:
+            sequence_html_output += f"<li>Match found at spins {start_idx + 1} to {start_idx + sequence_length}: {', '.join(seq)}</li>"
+        sequence_html_output += "</ul>"
+        if sequence_recommendations:
+            sequence_html_output += "<h4>Latest Match Details:</h4>"
+            sequence_html_output += "<ul style='list-style-type: none; padding-left: 0;'>"
+            for rec in sequence_recommendations:
+                if "Alert:" in rec:
+                    sequence_html_output += f"<li style='color: red; font-weight: bold;'>{rec}</li>"
+                else:
+                    sequence_html_output += f"<li>{rec}</li>"
+            sequence_html_output += "</ul>"
 
-      return "\n".join(recommendations), html_output, sequence_html_output
+    return "\n".join(recommendations), html_output, sequence_html_output
 # New: Even Money Bet Tracker Function
 def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled, combination_mode, track_red, track_black, track_even, track_odd, track_low, track_high, identical_traits_enabled, consecutive_identical_count):
     """Track even money bets and their combinations for consecutive hits, with optional tracking of consecutive identical trait combinations."""
