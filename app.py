@@ -3767,8 +3767,18 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
         ],
         "Corner Strategies": [],
         "Split Strategies": [],
-        "Number Strategies": [],
-        "Neighbours Strategies": []
+        "Number Strategies": [
+            {
+                "title": "The Pulse Wheel Strategy (6 Numbers +1 Neighbours)",
+                "link": "https://youtu.be/UBajAwUXWS0"
+            }
+        ],
+        "Neighbours Strategies": [
+            {
+                "title": "The Pulse Wheel Strategy (6 Numbers +1 Neighbours)",
+                "link": "https://youtu.be/UBajAwUXWS0"
+            }
+        ]
     }
     
     # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
