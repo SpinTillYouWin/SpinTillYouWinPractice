@@ -4060,6 +4060,17 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                         value="And",
                         interactive=True
                     )
+                    even_money_tracker_identical_traits_checkbox = gr.Checkbox(
+                        label="Track Consecutive Identical Traits",
+                        value=False,
+                        interactive=True
+                    )
+                    even_money_tracker_consecutive_identical_dropdown = gr.Dropdown(
+                        label="Number of Consecutive Identical Traits",
+                        choices=["1", "2", "3", "4", "5"],
+                        value="2",
+                        interactive=True
+                    )
                     with gr.Row():
                         even_money_tracker_red_checkbox = gr.Checkbox(label="Red", value=False, interactive=True)
                         even_money_tracker_black_checkbox = gr.Checkbox(label="Black", value=False, interactive=True)
