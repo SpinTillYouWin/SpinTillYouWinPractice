@@ -3043,11 +3043,54 @@ def create_color_code_table():
     </div>
     '''
     return html
+
+# Inserted Function
+def validate_spins_input(spins_input):
+    """Validate and process the spins input from the textbox, updating state and UI."""
+    # If input is empty, clear state and return empty values
+    if not spins_input or not spins_input.strip():
+        state.last_spins = []
+        state.selected_numbers.clear()
+        return "", "<h4>Last Spins</h4><p>No spins yet.</p>"
     
-def update_spin_counter():
-    """Return the current number of spins as formatted HTML."""
-    spin_count = len(state.last_spins)
-    return f'<span class="spin-counter">Total Spins: {spin_count}</span>'
+    # Split the input by commas and clean each entry
+    spins = [s.strip() for s in spins_input.split(",") if s.strip()]
+    if not spins:
+        state.last_spins = []
+        state.selected_numbers.clear()
+        return "", "<h4>Last Spins</h4><p>No spins yet.</p>"
+    
+    # Validate each spin
+    valid_spins = []
+    for spin in spins:
+        try:
+            num = int(spin)
+            if 0 <= num <= 36:
+                valid_spins.append(str(num))
+            else:
+                gr.Warning(f"Number {spin} is out of range (0-36). Ignoring.")
+        except ValueError:
+            gr.Warning(f"Invalid input {spin}. Please enter numbers between 0 and 36.")
+    
+    if not valid_spins:
+        state.last_spins = []
+        state.selected_numbers.clear()
+        return "", "<h4>Last Spins</h4><p>Error: No valid spins provided.</p>"
+    
+    # Update state directly, similar to add_spin
+    state.last_spins = valid_spins  # Replace the entire list
+    state.selected_numbers = set(int(s) for s in valid_spins if s.isdigit())
+    
+    # Update scores for the new spins
+    update_scores_batch(valid_spins)
+    
+    # Join valid spins into a string for spins_display
+    spins_display_value = ", ".join(valid_spins)
+    
+    # Format for last_spin_display using the existing format_spins_as_html function
+    last_spin_output = format_spins_as_html(spins_display_value, 36)  # Using max value for display
+    
+    return spins_display_value, last_spin_output
     
 def top_numbers_with_neighbours_tiered():
     recommendations = []
