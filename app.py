@@ -26,6 +26,7 @@ def update_scores_batch(spins):
             if spin_value in numbers:
                 state.dozen_scores[name] += 1
                 action["increments"].setdefault("dozen_scores", {})[name] = 1
+        print(f"After spin {spin_value}, dozen_scores: {state.dozen_scores}")  # NEW LINE: Debugging print
 
         # Update columns scores
         for name, numbers in COLUMNS.items():
