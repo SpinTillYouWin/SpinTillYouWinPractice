@@ -440,7 +440,7 @@ def render_sides_of_zero_display():
     # Prepare numbers with hit counts
     wheel_numbers = [(num, state.scores.get(num, 0)) for num in wheel_order]
     
-        # Generate HTML for the single number list
+    # Generate HTML for the single number list
     def generate_number_list(numbers):
         if not numbers:
             return '<div class="number-list">No numbers</div>'
@@ -694,7 +694,50 @@ def render_sides_of_zero_display():
         }});
     </script>
     """
+    
+def validate_spins_input(spins_input):
+    """Validate manually entered spins and update state."""
+    import gradio as gr
+    print(f"validate_spins_input: spins_input='{spins_input}'")
+    if not spins_input or not spins_input.strip():
+        print("validate_spins_input: No spins input provided.")
+        return "", "<h4>Last Spins</h4><p>No spins entered.</p>"
 
+    raw_spins = [s.strip() for s in spins_input.split(",") if s.strip()]
+    valid_spins = []
+    errors = []
+
+    for spin in raw_spins:
+        try:
+            num = int(spin)
+            if not (0 <= num <= 36):
+                errors.append(f"'{spin}' is out of range (0-36)")
+                continue
+            valid_spins.append(str(num))
+        except ValueError:
+            errors.append(f"'{spin}' is not a valid number")
+            continue
+
+    if not valid_spins:
+        error_msg = "Invalid input:\n- " + "\n- ".join(errors)
+        gr.Warning(error_msg)
+        print(f"validate_spins_input: Errors - {error_msg}")
+        return "", f"<h4>Last Spins</h4><p>{error_msg}</p>"
+
+    # Update state.last_spins and spins_display
+    state.last_spins = valid_spins
+    state.selected_numbers = set(int(s) for s in valid_spins)
+    action_log = update_scores_batch(valid_spins)
+    for i, spin in enumerate(valid_spins):
+        state.spin_history.append(action_log[i])
+        # Limit spin history to 100 spins
+        if len(state.spin_history) > 100:
+            state.spin_history.pop(0)
+
+    spins_display_value = ", ".join(valid_spins)
+    formatted_html = format_spins_as_html(spins_display_value, 36)  # Default to showing all spins
+    print(f"validate_spins_input: Valid spins processed, spins_display_value='{spins_display_value}'")
+    return spins_display_value, formatted_html
 
 def add_spin(number, current_spins, num_to_show):
     print(f"add_spin: number='{number}', current_spins='{current_spins}', num_to_show={num_to_show}")
@@ -4547,7 +4590,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
     try:
         spins_textbox.change(
             fn=validate_spins_input,
-            inputs=spins_textbox,
+            inputs=[spins_textbox],
             outputs=[spins_display, last_spin_display]
         ).then(
             fn=analyze_spins,
@@ -4562,10 +4605,29 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             fn=update_spin_counter,
             inputs=[],
             outputs=[spin_counter]
+        ).then(
+            fn=dozen_tracker,
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
-
+    
     try:
         spins_display.change(
             fn=update_spin_counter,
