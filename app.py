@@ -3775,7 +3775,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
         ],
         "Corner Strategies": [
             {
-                "title": "S.T.Y.W: 4 Corners Strategy (Seq:1,1,2,5,8,17,28,50)",
+                "title": "S.T.Y.W: 4-Corners Strategy (Seq:1,1,2,5,8,17,28,50)",
                 "link": "https://youtu.be/zw7eUllTDbg"
             }
         ],
