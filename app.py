@@ -701,9 +701,11 @@ def add_spin(number, current_spins, num_to_show):
     spins = current_spins.split(", ") if current_spins else []
     if spins == [""]:
         spins = []
+    print(f"add_spin: Initial spins list: {spins}")
 
     # Split input on commas and process each number
     numbers = [n.strip() for n in number.split(",") if n.strip()]
+    print(f"add_spin: Numbers after splitting: {numbers}")
     if not numbers:
         gr.Warning("No valid input provided. Please enter numbers between 0 and 36.")
         print("add_spin: No valid numbers provided.")
@@ -714,6 +716,7 @@ def add_spin(number, current_spins, num_to_show):
     for num_str in numbers:
         try:
             num = int(num_str)
+            print(f"add_spin: Processing number: {num_str}, converted to {num}")
             if not (0 <= num <= 36):
                 errors.append(f"'{num_str}' is out of range (0-36)")
                 continue
@@ -721,6 +724,7 @@ def add_spin(number, current_spins, num_to_show):
         except ValueError:
             errors.append(f"'{num_str}' is not a number")
             continue
+    print(f"add_spin: Valid spins: {valid_spins}, Errors: {errors}")
 
     if not valid_spins:
         error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
@@ -730,10 +734,12 @@ def add_spin(number, current_spins, num_to_show):
 
     # Batch update scores
     action_log = update_scores_batch(valid_spins)
+    print(f"add_spin: Scores updated, action_log length: {len(action_log)}")
 
     # Update state with new spins
     new_spins = spins.copy()
     state.selected_numbers.clear()  # Clear before rebuilding
+    print(f"add_spin: Cleared state.selected_numbers")
     for num_str in valid_spins:
         num = int(num_str)
         new_spins.append(str(num))
@@ -743,9 +749,12 @@ def add_spin(number, current_spins, num_to_show):
         # Limit spin history to 100 spins
         if len(state.spin_history) > 100:
             state.spin_history.pop(0)
+        print(f"add_spin: Added spin {num_str}, state.last_spins: {state.last_spins}")
     state.selected_numbers = set(int(s) for s in state.last_spins if s.isdigit())  # Sync with last_spins
+    print(f"add_spin: Updated state.selected_numbers: {state.selected_numbers}")
 
     new_spins_str = ", ".join(new_spins)
+    print(f"add_spin: new_spins_str: '{new_spins_str}'")
     if errors:
         success_msg = f"Successfully added spins: {', '.join(valid_spins)}" if valid_spins else "No spins added."
         error_msg = f"Some inputs failed:\n- " + "\n- ".join(errors) + f"\n{success_msg}"
