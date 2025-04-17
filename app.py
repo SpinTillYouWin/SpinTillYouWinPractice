@@ -3723,6 +3723,10 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             {
                 "title": "S.T.Y.W: Zero Jack 2-2-3 Roulette Strategy",
                 "link": "https://youtu.be/I_F9Wys3Ww0"
+            },
+            {
+                "title": "S.T.Y.W: Triple Entry Max Climax Strategy",
+                "link": "https://youtu.be/64aq0GEPww0"
             }
         ],
         "Dozen Strategies": [
@@ -3741,6 +3745,10 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             {
                 "title": "S.T.Y.W: The Overlap Jackpot (4 Streets + 2 Dozens) Strategy",
                 "link": "https://youtu.be/rTqdMQk4_I4"
+            },
+            {
+                "title": "S.T.Y.W: Triple Entry Max Climax Strategy",
+                "link": "https://youtu.be/64aq0GEPww0"
             }
         ],
         "Column Strategies": [
@@ -3783,7 +3791,12 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 "link": "https://youtu.be/zw7eUllTDbg"
             }
         ],
-        "Split Strategies": [],
+        "Split Strategies": [
+            {
+                "title": "S.T.Y.W: Triple Entry Max Climax Strategy",
+                "link": "https://youtu.be/64aq0GEPww0"
+            }
+        ],
         "Number Strategies": [
             {
                 "title": "The Pulse Wheel Strategy (6 Numbers +1 Neighbours)",
