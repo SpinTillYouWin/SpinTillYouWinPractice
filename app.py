@@ -3046,7 +3046,7 @@ def create_color_code_table():
 
 # Inserted Function
 def validate_spins_input(spins_input):
-    """Validate and process the spins input from the textbox, updating state and UI."""
+    """Validatee and process the spins input from the textbox, updating state and UI."""
     # If input is empty, clear state and return empty values
     if not spins_input or not spins_input.strip():
         state.last_spins = []
