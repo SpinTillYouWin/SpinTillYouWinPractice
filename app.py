@@ -1193,39 +1193,39 @@ def highlight_other_bets(strategy_name, sorted_sections, top_color, middle_color
             color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
             for num in numbers:
                 number_highlights[str(num)] = color
-        elif strategy_name == "3-8-6 Rising Martingale":
-            top_streets = sorted_sections["streets"][:8]
-            for i, (street_name, _) in enumerate(top_streets):
-                numbers = STREETS[street_name]
-                color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
-                for num in numbers:
-                    number_highlights[str(num)] = color
-        elif strategy_name == "Best Dozens + Non Overlapped Best Double Street":
-            dozens_hits = [item for item in sorted_sections["dozens"] if item[1] > 0]
-            if len(dozens_hits) >= 2:
-                top_dozen = dozens_hits[0][0]
-                second_dozen = dozens_hits[1][0]
-                for num in DOZENS[top_dozen]:
-                    number_highlights[str(num)] = top_color
-                for num in DOZENS[second_dozen]:
-                    number_highlights[str(num)] = middle_color
-                top_dozen_numbers = set(DOZENS[top_dozen]).union(DOZENS[second_dozen])
-                non_overlapped_double_street = None
-                for name, score in sorted_sections["six_lines"]:
-                    double_street_numbers = set(SIX_LINES[name])
-                    if not double_street_numbers.issubset(top_dozen_numbers):
-                        non_overlapped_double_street = name
-                        break
-                if non_overlapped_double_street:
-                    for num in SIX_LINES[non_overlapped_double_street]:
-                        number_highlights[str(num)] = lower_color
-        elif strategy_name == "Fibonacci To Fortune":
-            weakest_dozen = min(state.dozen_scores.items(), key=lambda x: x[1], default=("1st Dozen", 0))[0]
-            double_streets_in_weakest = [(name, state.six_line_scores.get(name, 0)) for name, numbers in SIX_LINES.items() if set(numbers).issubset(DOZENS[weakest_dozen])]
-            if double_streets_in_weakest:
-                top_double_street = max(double_streets_in_weakest, key=lambda x: x[1])[0]
-                for num in SIX_LINES[top_double_street]:
-                    number_highlights[str(num)] = top_color
+    elif strategy_name == "3-8-6 Rising Martingale":
+        top_streets = sorted_sections["streets"][:8]
+        for i, (street_name, _) in enumerate(top_streets):
+            numbers = STREETS[street_name]
+            color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
+            for num in numbers:
+                number_highlights[str(num)] = color
+    elif strategy_name == "Best Dozens + Non Overlapped Best Double Street":
+        dozens_hits = [item for item in sorted_sections["dozens"] if item[1] > 0]
+        if len(dozens_hits) >= 2:
+            top_dozen = dozens_hits[0][0]
+            second_dozen = dozens_hits[1][0]
+            for num in DOZENS[top_dozen]:
+                number_highlights[str(num)] = top_color
+            for num in DOZENS[second_dozen]:
+                number_highlights[str(num)] = middle_color
+            top_dozen_numbers = set(DOZENS[top_dozen]).union(DOZENS[second_dozen])
+            non_overlapped_double_street = None
+            for name, score in sorted_sections["six_lines"]:
+                double_street_numbers = set(SIX_LINES[name])
+                if not double_street_numbers.issubset(top_dozen_numbers):
+                    non_overlapped_double_street = name
+                    break
+            if non_overlapped_double_street:
+                for num in SIX_LINES[non_overlapped_double_street]:
+                    number_highlights[str(num)] = lower_color
+    elif strategy_name == "Fibonacci To Fortune":
+        weakest_dozen = min(state.dozen_scores.items(), key=lambda x: x[1], default=("1st Dozen", 0))[0]
+        double_streets_in_weakest = [(name, state.six_line_scores.get(name, 0)) for name, numbers in SIX_LINES.items() if set(numbers).issubset(DOZENS[weakest_dozen])]
+        if double_streets_in_weakest:
+            top_double_street = max(double_streets_in_weakest, key=lambda x: x[1])[0]
+            for num in SIX_LINES[top_double_street]:
+                number_highlights[str(num)] = top_color
     return number_highlights
 
 def highlight_neighbors(strategy_name, sorted_sections, neighbours_count, strong_numbers_count, top_color, middle_color):
