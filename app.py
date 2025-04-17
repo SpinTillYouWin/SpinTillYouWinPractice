@@ -3282,35 +3282,35 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
             if not found:
                 full_dozen_pattern.append("Not in Dozen")
 
-# Lines 1527–1544 (Updated Section)
+# Lines 1527–1544 (Reverted Section)
     # Detect consecutive Dozen hits (only if alert is enabled)
-    current_streak = 1  # Unchanged
-    current_dozen = None  # Unchanged
-    streak_start = 0  # NEW: Track the start index of the current streak
-    alerted_streaks = []  # Unchanged
-    if alert_enabled:  # Unchanged
-        for i in range(len(dozen_pattern)):  # Unchanged
-            dozen = dozen_pattern[i]  # Unchanged
-            if dozen == "Not in Dozen":  # 0 breaks the streak  # Unchanged
-                current_streak = 1  # Unchanged
-                current_dozen = None  # Unchanged
-                streak_start = i + 1  # NEW: Reset streak start when streak breaks
-                continue  # Unchanged
-            if current_dozen is None or dozen != current_dozen:  # Unchanged
-                current_dozen = dozen  # Unchanged
-                current_streak = 1  # Unchanged
-                streak_start = i + 1  # NEW: Set streak start when a new streak begins
-            else:  # Unchanged
-                current_streak += 1  # Unchanged
-                if current_streak >= consecutive_hits_threshold and i > state.last_dozen_alert_index:  # Unchanged
-                    if i not in alerted_streaks:  # Unchanged
-                        # Use streak_start instead of calculating from current_streak
-                        gr.Warning(f"Alert: {current_dozen} has hit {current_streak} times consecutively (spins {streak_start + 1} to {i + 1})!")  # UPDATED: Use streak_start for correct spin range
-                        alerted_streaks.append(i)  # Unchanged
-    if alerted_streaks:  # Unchanged
-        state.last_dozen_alert_index = max(alerted_streaks)  # Unchanged
-    elif current_streak < consecutive_hits_threshold:  # Unchanged
-        state.last_dozen_alert_index = -1  # Unchanged
+    current_streak = 1
+    current_dozen = None
+    max_streak = 1
+    max_streak_dozen = None
+    max_streak_end_index = -1  # Track the end index of the maximum streak
+    if alert_enabled:
+        for i in range(len(dozen_pattern)):
+            dozen = dozen_pattern[i]
+            if dozen == "Not in Dozen":  # 0 breaks the streak
+                current_streak = 1
+                current_dozen = None
+                continue
+            if current_dozen is None or dozen != current_dozen:
+                current_dozen = dozen
+                current_streak = 1
+            else:
+                current_streak += 1
+                if current_streak >= consecutive_hits_threshold and i > state.last_dozen_alert_index:
+                    if current_streak > max_streak:
+                        max_streak = current_streak
+                        max_streak_dozen = current_dozen
+                        max_streak_end_index = i
+    if max_streak_end_index > state.last_dozen_alert_index and max_streak >= consecutive_hits_threshold:
+        gr.Warning(f"Alert: {max_streak_dozen} has hit {max_streak} times consecutively!")
+        state.last_dozen_alert_index = max_streak_end_index
+    elif max_streak < consecutive_hits_threshold:
+        state.last_dozen_alert_index = -1
 
 # Lines 1545–1554 (After, unchanged)
     # Detect sequence matches (only if sequence alert is enabled)
