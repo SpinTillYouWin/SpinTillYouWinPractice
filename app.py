@@ -1262,9 +1262,29 @@ def highlight_neighbors(strategy_name, sorted_sections, neighbours_count, strong
                 number_highlights[str(num)] = middle_color
     return number_highlights
 # Function to create the dynamic roulette table with highlighted trending sections
-def calculate_trending_sections():
-    """Calculate trending sections based on current scores."""
+
+def calculate_trending_sections(spins=None):
+    """Calculate trending sections based on current scores or provided spins."""
+    if spins is not None:
+        # Temporarily reset scores to calculate based on provided spins
+        temp_state = RouletteState()
+        temp_state.last_spins = spins
+        update_scores_batch(spins)
+        state.scores = temp_state.scores
+        state.even_money_scores = temp_state.even_money_scores
+        state.dozen_scores = temp_state.dozen_scores
+        state.column_scores = temp_state.column_scores
+        state.street_scores = temp_state.street_scores
+        state.corner_scores = temp_state.corner_scores
+        state.six_line_scores = temp_state.six_line_scores
+        state.split_scores = temp_state.split_scores
+        state.side_scores = temp_state.side_scores
+        print(f"calculate_trending_sections: Updated scores with provided spins: {spins}")
+        print(f"calculate_trending_sections: state.scores: {dict(state.scores)}")
+        print(f"calculate_trending_sections: state.dozen_scores: {dict(state.dozen_scores)}")
+
     if not any(state.scores.values()) and not any(state.even_money_scores.values()):
+        print("calculate_trending_sections: No scores available, returning None")
         return None  # Indicates no data to process
 
     return {
@@ -1573,13 +1593,14 @@ def reset_casino_data():
         "<p>Casino data reset to defaults.</p>"  # casino_data_output
     )
 
-def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
-    print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
+
+def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None, spins=None):
+    print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}, spins: {spins}")
     print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
     print(f"create_dynamic_table: state.last_spins: {state.last_spins}")
     print(f"create_dynamic_table: state.scores: {dict(state.scores)}")
     print(f"create_dynamic_table: state.dozen_scores: {dict(state.dozen_scores)}")
-    sorted_sections = calculate_trending_sections()
+    sorted_sections = calculate_trending_sections(spins)
     print(f"create_dynamic_table: sorted_sections: {sorted_sections}")
     
     # If no spins yet, initialize with default even money focus
@@ -4081,7 +4102,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
             dynamic_table_output = gr.HTML(
                 label="Dynamic Table",
-                value=create_dynamic_table(strategy_name="Best Even Money Bets")
+                value=create_dynamic_table(strategy_name="Best Even Money Bets", spins=None)
             )
         with gr.Column(scale=1):
             gr.Markdown("### Strategy Recommendations")
@@ -4985,7 +5006,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[strategy_output]
         ).then(
-            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: (print(f"Updating Dynamic Table with Strategy: {strategy}, Neighbours Count: {neighbours_count}, Strong Numbers Count: {strong_numbers_count}, Dozen Tracker Spins: {dozen_tracker_spins}, Colors: {top_color}, {middle_color}, {lower_color}"), create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color))[-1],
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, spins=None),
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         )
@@ -5003,8 +5024,8 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
-             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, spins: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, spins),
+             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker, spins_display],
              outputs=[dynamic_table_output]
         ).then(
              fn=create_color_code_table,
