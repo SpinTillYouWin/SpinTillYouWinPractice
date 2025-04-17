@@ -1200,23 +1200,6 @@ def highlight_other_bets(strategy_name, sorted_sections, top_color, middle_color
             color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
             for num in numbers:
                 number_highlights[str(num)] = color
-    elif strategy_name == "Best Dozens + Non Overlapped Best Double Street":
-        trending_dozen, second_dozen, _ = highlight_dozens(strategy_name, sorted_sections, top_color, middle_color, lower_color)
-        if trending_dozen and second_dozen:
-            for num in DOZENS[trending_dozen]:
-                number_highlights[str(num)] = top_color
-            for num in DOZENS[second_dozen]:
-                number_highlights[str(num)] = middle_color
-            top_dozen_numbers = set(DOZENS[trending_dozen]).union(DOZENS[second_dozen])
-            non_overlapped_double_street = None
-            for name, score in sorted_sections["six_lines"]:
-                double_street_numbers = set(SIX_LINES[name])
-                if double_street_numbers.isdisjoint(top_dozen_numbers):
-                    non_overlapped_double_street = name
-                    break
-            if non_overlapped_double_street:
-                for num in SIX_LINES[non_overlapped_double_street]:
-                    number_highlights[str(num)] = lower_color
     elif strategy_name == "Fibonacci To Fortune":
         weakest_dozen = min(state.dozen_scores.items(), key=lambda x: x[1], default=("1st Dozen", 0))[0]
         double_streets_in_weakest = [(name, state.six_line_scores.get(name, 0)) for name, numbers in SIX_LINES.items() if set(numbers).issubset(DOZENS[weakest_dozen])]
@@ -1262,29 +1245,9 @@ def highlight_neighbors(strategy_name, sorted_sections, neighbours_count, strong
                 number_highlights[str(num)] = middle_color
     return number_highlights
 # Function to create the dynamic roulette table with highlighted trending sections
-
-def calculate_trending_sections(spins=None):
-    """Calculate trending sections based on current scores or provided spins."""
-    if spins is not None:
-        # Temporarily reset scores to calculate based on provided spins
-        temp_state = RouletteState()
-        temp_state.last_spins = spins
-        update_scores_batch(spins)
-        state.scores = temp_state.scores
-        state.even_money_scores = temp_state.even_money_scores
-        state.dozen_scores = temp_state.dozen_scores
-        state.column_scores = temp_state.column_scores
-        state.street_scores = temp_state.street_scores
-        state.corner_scores = temp_state.corner_scores
-        state.six_line_scores = temp_state.six_line_scores
-        state.split_scores = temp_state.split_scores
-        state.side_scores = temp_state.side_scores
-        print(f"calculate_trending_sections: Updated scores with provided spins: {spins}")
-        print(f"calculate_trending_sections: state.scores: {dict(state.scores)}")
-        print(f"calculate_trending_sections: state.dozen_scores: {dict(state.dozen_scores)}")
-
+def calculate_trending_sections():
+    """Calculate trending sections based on current scores."""
     if not any(state.scores.values()) and not any(state.even_money_scores.values()):
-        print("calculate_trending_sections: No scores available, returning None")
         return None  # Indicates no data to process
 
     return {
@@ -1593,15 +1556,10 @@ def reset_casino_data():
         "<p>Casino data reset to defaults.</p>"  # casino_data_output
     )
 
-
-def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None, spins=None):
-    print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}, spins: {spins}")
+def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
+    print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
     print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
-    print(f"create_dynamic_table: state.last_spins: {state.last_spins}")
-    print(f"create_dynamic_table: state.scores: {dict(state.scores)}")
-    print(f"create_dynamic_table: state.dozen_scores: {dict(state.dozen_scores)}")
-    sorted_sections = calculate_trending_sections(spins)
-    print(f"create_dynamic_table: sorted_sections: {sorted_sections}")
+    sorted_sections = calculate_trending_sections()
     
     # If no spins yet, initialize with default even money focus
     if sorted_sections is None and strategy_name == "Best Even Money Bets":
@@ -1691,21 +1649,12 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
             print("analyze_spins: No valid spins found.")
             return "No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
 
-        # Ensure state.last_spins is updated before resetting
-        state.last_spins = spins
-        print(f"analyze_spins: State.last_spins set to {state.last_spins}")
-
         if reset_scores:
             state.reset()
             print("analyze_spins: Scores reset.")
-            # Rebuild selected_numbers after reset
-            state.selected_numbers = set(int(s) for s in state.last_spins if s.isdigit())
-            print(f"analyze_spins: State.selected_numbers after reset: {state.selected_numbers}")
 
         # Batch update scores
         action_log = update_scores_batch(spins)
-        print(f"analyze_spins: After update_scores_batch, state.scores: {dict(state.scores)}")
-        print(f"analyze_spins: After update_scores_batch, state.dozen_scores: {dict(state.dozen_scores)}")
 
         # Generate spin analysis output
         spin_results = []
@@ -2467,64 +2416,6 @@ def romanowksy_missing_dozen_strategy():
     else:
         if not strong_numbers_in_weakest:
             recommendations.append("No neighbors of strong numbers in the Weakest Dozen.")
-    return "\n".join(recommendations)
-
-def best_dozens_non_overlapped_double_street():
-    recommendations = []
-    sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
-    dozens_hits = [item for item in sorted_dozens if item[1] > 0]
-
-    if not dozens_hits:
-        recommendations.append("Best Dozens + Non Overlapped Best Double Street: No dozens have hit yet.")
-        return "\n".join(recommendations)
-
-    if len(dozens_hits) < 2:
-        recommendations.append("Best Dozens + Non Overlapped Best Double Street: Not enough dozens have hit yet.")
-        recommendations.append(f"Hottest Dozen: {dozens_hits[0][0]} (Score: {dozens_hits[0][1]})")
-        return "\n".join(recommendations)
-
-    top_dozens = []
-    scores_seen = set()
-    for name, score in sorted_dozens:
-        if len(top_dozens) < 2 or score in scores_seen:
-            top_dozens.append((name, score))
-            scores_seen.add(score)
-        else:
-            break
-
-    recommendations.append("Best Dozens (Top 2):")
-    for i, (name, score) in enumerate(top_dozens[:2], 1):
-        recommendations.append(f"{i}. {name}: {score}")
-
-    if len(top_dozens) > 1:
-        first_score = top_dozens[0][1]
-        tied_first = [name for name, score in top_dozens if score == first_score]
-        if len(tied_first) > 1:
-            recommendations.append(f"Note: Tie for 1st place among {', '.join(tied_first)} with score {first_score}")
-        second_score = top_dozens[1][1]
-        tied_second = [name for name, score in top_dozens if score == second_score]
-        if len(tied_second) > 1:
-            recommendations.append(f"Note: Tie for 2nd place among {', '.join(tied_second)} with score {second_score}")
-
-    top_dozen_numbers = set()
-    top_dozen_names = [name for name, _ in top_dozens[:2]]
-    for name in top_dozen_names:
-        top_dozen_numbers.update(DOZENS[name])
-
-    sorted_six_lines = sorted(state.six_line_scores.items(), key=lambda x: x[1], reverse=True)
-    non_overlapped_double_street = None
-    for name, score in sorted_six_lines:
-        double_street_numbers = set(SIX_LINES[name])
-        if not double_street_numbers.issubset(top_dozen_numbers):
-            non_overlapped_double_street = (name, score)
-            break
-
-    if non_overlapped_double_street:
-        name, score = non_overlapped_double_street
-        recommendations.append(f"\nBest Non-Overlapped Double Street (outside {', '.join(top_dozen_names)}):")
-        recommendations.append(f"1. {name}: {score}")
-    else:
-        recommendations.append(f"\nBest Non-Overlapped Double Street: No suitable double street found outside {', '.join(top_dozen_names)}.")
 
     return "\n".join(recommendations)
 
@@ -3826,7 +3717,6 @@ STRATEGIES = {
     "Non-Overlapping Double Street Strategy": {"function": non_overlapping_double_street_strategy, "categories": ["six_lines"]},
     "Non-Overlapping Corner Strategy": {"function": non_overlapping_corner_strategy, "categories": ["corners"]},
     "Romanowksy Missing Dozen": {"function": romanowksy_missing_dozen_strategy, "categories": ["dozens", "numbers"]},
-    "Best Dozens + Non Overlapped Best Double Street": {"function": best_dozens_non_overlapped_double_street, "categories": ["dozens", "six_lines"]},
     "Fibonacci To Fortune": {"function": fibonacci_to_fortune_strategy, "categories": ["even_money", "dozens", "columns", "six_lines"]},
     "3-8-6 Rising Martingale": {"function": three_eight_six_rising_martingale, "categories": ["streets"]},
     "1 Dozen +1 Column Strategy": {"function": one_dozen_one_column_strategy, "categories": ["dozens", "columns"]},
@@ -3998,7 +3888,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
     strategy_categories = {
         "Trends": ["Cold Bet Strategy", "Hot Bet Strategy", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"],
         "Even Money Strategies": ["Best Even Money Bets", "Best Even Money Bets + Top Pick 18 Numbers", "Fibonacci To Fortune"],
-        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Top Pick 18 Numbers", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen", "Best Dozens + Non Overlapped Best Double Street"],
+        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Top Pick 18 Numbers", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],
         "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Streets"],
         "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
         "Double Street Strategies": ["Best Double Streets", "Non-Overlapping Double Street Strategy"],
@@ -4102,7 +3992,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
             dynamic_table_output = gr.HTML(
                 label="Dynamic Table",
-                value=create_dynamic_table(strategy_name="Best Even Money Bets", spins=None)
+                value=create_dynamic_table(strategy_name="Best Even Money Bets")
             )
         with gr.Column(scale=1):
             gr.Markdown("### Strategy Recommendations")
@@ -5006,7 +4896,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[strategy_output]
         ).then(
-            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, spins=None),
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: (print(f"Updating Dynamic Table with Strategy: {strategy}, Neighbours Count: {neighbours_count}, Strong Numbers Count: {strong_numbers_count}, Dozen Tracker Spins: {dozen_tracker_spins}, Colors: {top_color}, {middle_color}, {lower_color}"), create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color))[-1],
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         )
@@ -5024,13 +4914,13 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
-             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, spins: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, spins),
-             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker, spins_display],
-             outputs=[dynamic_table_output]
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
         ).then(
-             fn=create_color_code_table,
-             inputs=[],
-             outputs=[color_code_output]
+            fn=create_color_code_table,
+            inputs=[],
+            outputs=[color_code_output]
         ).then(
             fn=dozen_tracker,
             inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
