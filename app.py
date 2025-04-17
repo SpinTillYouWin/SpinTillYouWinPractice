@@ -1193,20 +1193,39 @@ def highlight_other_bets(strategy_name, sorted_sections, top_color, middle_color
             color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
             for num in numbers:
                 number_highlights[str(num)] = color
-    elif strategy_name == "3-8-6 Rising Martingale":
-        top_streets = sorted_sections["streets"][:8]
-        for i, (street_name, _) in enumerate(top_streets):
-            numbers = STREETS[street_name]
-            color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
-            for num in numbers:
-                number_highlights[str(num)] = color
-    elif strategy_name == "Fibonacci To Fortune":
-        weakest_dozen = min(state.dozen_scores.items(), key=lambda x: x[1], default=("1st Dozen", 0))[0]
-        double_streets_in_weakest = [(name, state.six_line_scores.get(name, 0)) for name, numbers in SIX_LINES.items() if set(numbers).issubset(DOZENS[weakest_dozen])]
-        if double_streets_in_weakest:
-            top_double_street = max(double_streets_in_weakest, key=lambda x: x[1])[0]
-            for num in SIX_LINES[top_double_street]:
-                number_highlights[str(num)] = top_color
+        elif strategy_name == "3-8-6 Rising Martingale":
+            top_streets = sorted_sections["streets"][:8]
+            for i, (street_name, _) in enumerate(top_streets):
+                numbers = STREETS[street_name]
+                color = top_color if i < 3 else (middle_color if 3 <= i < 6 else lower_color)
+                for num in numbers:
+                    number_highlights[str(num)] = color
+        elif strategy_name == "Best Dozens + Non Overlapped Best Double Street":
+            dozens_hits = [item for item in sorted_sections["dozens"] if item[1] > 0]
+            if len(dozens_hits) >= 2:
+                top_dozen = dozens_hits[0][0]
+                second_dozen = dozens_hits[1][0]
+                for num in DOZENS[top_dozen]:
+                    number_highlights[str(num)] = top_color
+                for num in DOZENS[second_dozen]:
+                    number_highlights[str(num)] = middle_color
+                top_dozen_numbers = set(DOZENS[top_dozen]).union(DOZENS[second_dozen])
+                non_overlapped_double_street = None
+                for name, score in sorted_sections["six_lines"]:
+                    double_street_numbers = set(SIX_LINES[name])
+                    if not double_street_numbers.issubset(top_dozen_numbers):
+                        non_overlapped_double_street = name
+                        break
+                if non_overlapped_double_street:
+                    for num in SIX_LINES[non_overlapped_double_street]:
+                        number_highlights[str(num)] = lower_color
+        elif strategy_name == "Fibonacci To Fortune":
+            weakest_dozen = min(state.dozen_scores.items(), key=lambda x: x[1], default=("1st Dozen", 0))[0]
+            double_streets_in_weakest = [(name, state.six_line_scores.get(name, 0)) for name, numbers in SIX_LINES.items() if set(numbers).issubset(DOZENS[weakest_dozen])]
+            if double_streets_in_weakest:
+                top_double_street = max(double_streets_in_weakest, key=lambda x: x[1])[0]
+                for num in SIX_LINES[top_double_street]:
+                    number_highlights[str(num)] = top_color
     return number_highlights
 
 def highlight_neighbors(strategy_name, sorted_sections, neighbours_count, strong_numbers_count, top_color, middle_color):
@@ -2416,6 +2435,64 @@ def romanowksy_missing_dozen_strategy():
     else:
         if not strong_numbers_in_weakest:
             recommendations.append("No neighbors of strong numbers in the Weakest Dozen.")
+    return "\n".join(recommendations)
+
+def best_dozens_non_overlapped_double_street():
+    recommendations = []
+    sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
+    dozens_hits = [item for item in sorted_dozens if item[1] > 0]
+
+    if not dozens_hits:
+        recommendations.append("Best Dozens + Non Overlapped Best Double Street: No dozens have hit yet.")
+        return "\n".join(recommendations)
+
+    if len(dozens_hits) < 2:
+        recommendations.append("Best Dozens + Non Overlapped Best Double Street: Not enough dozens have hit yet.")
+        recommendations.append(f"Hottest Dozen: {dozens_hits[0][0]} (Score: {dozens_hits[0][1]})")
+        return "\n".join(recommendations)
+
+    top_dozens = []
+    scores_seen = set()
+    for name, score in sorted_dozens:
+        if len(top_dozens) < 2 or score in scores_seen:
+            top_dozens.append((name, score))
+            scores_seen.add(score)
+        else:
+            break
+
+    recommendations.append("Best Dozens (Top 2):")
+    for i, (name, score) in enumerate(top_dozens[:2], 1):
+        recommendations.append(f"{i}. {name}: {score}")
+
+    if len(top_dozens) > 1:
+        first_score = top_dozens[0][1]
+        tied_first = [name for name, score in top_dozens if score == first_score]
+        if len(tied_first) > 1:
+            recommendations.append(f"Note: Tie for 1st place among {', '.join(tied_first)} with score {first_score}")
+        second_score = top_dozens[1][1]
+        tied_second = [name for name, score in top_dozens if score == second_score]
+        if len(tied_second) > 1:
+            recommendations.append(f"Note: Tie for 2nd place among {', '.join(tied_second)} with score {second_score}")
+
+    top_dozen_numbers = set()
+    top_dozen_names = [name for name, _ in top_dozens[:2]]
+    for name in top_dozen_names:
+        top_dozen_numbers.update(DOZENS[name])
+
+    sorted_six_lines = sorted(state.six_line_scores.items(), key=lambda x: x[1], reverse=True)
+    non_overlapped_double_street = None
+    for name, score in sorted_six_lines:
+        double_street_numbers = set(SIX_LINES[name])
+        if not double_street_numbers.issubset(top_dozen_numbers):
+            non_overlapped_double_street = (name, score)
+            break
+
+    if non_overlapped_double_street:
+        name, score = non_overlapped_double_street
+        recommendations.append(f"\nBest Non-Overlapped Double Street (outside {', '.join(top_dozen_names)}):")
+        recommendations.append(f"1. {name}: {score}")
+    else:
+        recommendations.append(f"\nBest Non-Overlapped Double Street: No suitable double street found outside {', '.join(top_dozen_names)}.")
 
     return "\n".join(recommendations)
 
@@ -3717,6 +3794,7 @@ STRATEGIES = {
     "Non-Overlapping Double Street Strategy": {"function": non_overlapping_double_street_strategy, "categories": ["six_lines"]},
     "Non-Overlapping Corner Strategy": {"function": non_overlapping_corner_strategy, "categories": ["corners"]},
     "Romanowksy Missing Dozen": {"function": romanowksy_missing_dozen_strategy, "categories": ["dozens", "numbers"]},
+    "Best Dozens + Non Overlapped Best Double Street": {"function": best_dozens_non_overlapped_double_street, "categories": ["dozens", "six_lines"]},
     "Fibonacci To Fortune": {"function": fibonacci_to_fortune_strategy, "categories": ["even_money", "dozens", "columns", "six_lines"]},
     "3-8-6 Rising Martingale": {"function": three_eight_six_rising_martingale, "categories": ["streets"]},
     "1 Dozen +1 Column Strategy": {"function": one_dozen_one_column_strategy, "categories": ["dozens", "columns"]},
@@ -3888,7 +3966,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
     strategy_categories = {
         "Trends": ["Cold Bet Strategy", "Hot Bet Strategy", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"],
         "Even Money Strategies": ["Best Even Money Bets", "Best Even Money Bets + Top Pick 18 Numbers", "Fibonacci To Fortune"],
-        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Top Pick 18 Numbers", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],
+        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Top Pick 18 Numbers", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen", "Best Dozens + Non Overlapped Best Double Street"],
         "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Streets"],
         "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
         "Double Street Strategies": ["Best Double Streets", "Non-Overlapping Double Street Strategy"],
