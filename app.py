@@ -701,11 +701,9 @@ def add_spin(number, current_spins, num_to_show):
     spins = current_spins.split(", ") if current_spins else []
     if spins == [""]:
         spins = []
-    print(f"add_spin: Initial spins list: {spins}")
 
     # Split input on commas and process each number
     numbers = [n.strip() for n in number.split(",") if n.strip()]
-    print(f"add_spin: Numbers after splitting: {numbers}")
     if not numbers:
         gr.Warning("No valid input provided. Please enter numbers between 0 and 36.")
         print("add_spin: No valid numbers provided.")
@@ -716,7 +714,6 @@ def add_spin(number, current_spins, num_to_show):
     for num_str in numbers:
         try:
             num = int(num_str)
-            print(f"add_spin: Processing number: {num_str}, converted to {num}")
             if not (0 <= num <= 36):
                 errors.append(f"'{num_str}' is out of range (0-36)")
                 continue
@@ -724,7 +721,6 @@ def add_spin(number, current_spins, num_to_show):
         except ValueError:
             errors.append(f"'{num_str}' is not a number")
             continue
-    print(f"add_spin: Valid spins: {valid_spins}, Errors: {errors}")
 
     if not valid_spins:
         error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
@@ -734,12 +730,10 @@ def add_spin(number, current_spins, num_to_show):
 
     # Batch update scores
     action_log = update_scores_batch(valid_spins)
-    print(f"add_spin: Scores updated, action_log length: {len(action_log)}")
 
     # Update state with new spins
     new_spins = spins.copy()
     state.selected_numbers.clear()  # Clear before rebuilding
-    print(f"add_spin: Cleared state.selected_numbers")
     for num_str in valid_spins:
         num = int(num_str)
         new_spins.append(str(num))
@@ -749,12 +743,9 @@ def add_spin(number, current_spins, num_to_show):
         # Limit spin history to 100 spins
         if len(state.spin_history) > 100:
             state.spin_history.pop(0)
-        print(f"add_spin: Added spin {num_str}, state.last_spins: {state.last_spins}")
     state.selected_numbers = set(int(s) for s in state.last_spins if s.isdigit())  # Sync with last_spins
-    print(f"add_spin: Updated state.selected_numbers: {state.selected_numbers}")
 
     new_spins_str = ", ".join(new_spins)
-    print(f"add_spin: new_spins_str: '{new_spins_str}'")
     if errors:
         success_msg = f"Successfully added spins: {', '.join(valid_spins)}" if valid_spins else "No spins added."
         error_msg = f"Some inputs failed:\n- " + "\n- ".join(errors) + f"\n{success_msg}"
@@ -3052,54 +3043,11 @@ def create_color_code_table():
     </div>
     '''
     return html
-
-# Inserted Function
-def validate_spins_input(spins_input):
-    """Validatee and process the spins input from the textbox, updating state and UI."""
-    # If input is empty, clear state and return empty values
-    if not spins_input or not spins_input.strip():
-        state.last_spins = []
-        state.selected_numbers.clear()
-        return "", "<h4>Last Spins</h4><p>No spins yet.</p>"
     
-    # Split the input by commas and clean each entry
-    spins = [s.strip() for s in spins_input.split(",") if s.strip()]
-    if not spins:
-        state.last_spins = []
-        state.selected_numbers.clear()
-        return "", "<h4>Last Spins</h4><p>No spins yet.</p>"
-    
-    # Validate each spin
-    valid_spins = []
-    for spin in spins:
-        try:
-            num = int(spin)
-            if 0 <= num <= 36:
-                valid_spins.append(str(num))
-            else:
-                gr.Warning(f"Number {spin} is out of range (0-36). Ignoring.")
-        except ValueError:
-            gr.Warning(f"Invalid input {spin}. Please enter numbers between 0 and 36.")
-    
-    if not valid_spins:
-        state.last_spins = []
-        state.selected_numbers.clear()
-        return "", "<h4>Last Spins</h4><p>Error: No valid spins provided.</p>"
-    
-    # Update state directly, similar to add_spin
-    state.last_spins = valid_spins  # Replace the entire list
-    state.selected_numbers = set(int(s) for s in valid_spins if s.isdigit())
-    
-    # Update scores for the new spins
-    update_scores_batch(valid_spins)
-    
-    # Join valid spins into a string for spins_display
-    spins_display_value = ", ".join(valid_spins)
-    
-    # Format for last_spin_display using the existing format_spins_as_html function
-    last_spin_output = format_spins_as_html(spins_display_value, 36)  # Using max value for display
-    
-    return spins_display_value, last_spin_output
+def update_spin_counter():
+    """Return the current number of spins as formatted HTML."""
+    spin_count = len(state.last_spins)
+    return f'<span class="spin-counter">Total Spins: {spin_count}</span>'
     
 def top_numbers_with_neighbours_tiered():
     recommendations = []
@@ -3317,7 +3265,6 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
             if not found:
                 dozen_pattern.append("Not in Dozen")
                 dozen_counts["Not in Dozen"] += 1
-
     # Map the entire spin history to Dozens for sequence matching
     full_dozen_pattern = []
     for spin in state.last_spins:
@@ -3334,7 +3281,6 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
             if not found:
                 full_dozen_pattern.append("Not in Dozen")
 
-# Lines 1527–1544 (Reverted Section)
     # Detect consecutive Dozen hits (only if alert is enabled)
     current_streak = 1
     current_dozen = None
@@ -3353,18 +3299,19 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
                 current_streak = 1
             else:
                 current_streak += 1
+                # Only consider streaks that end after the last alerted index
                 if current_streak >= consecutive_hits_threshold and i > state.last_dozen_alert_index:
                     if current_streak > max_streak:
                         max_streak = current_streak
                         max_streak_dozen = current_dozen
                         max_streak_end_index = i
-    if max_streak_end_index > state.last_dozen_alert_index and max_streak >= consecutive_hits_threshold:
-        gr.Warning(f"Alert: {max_streak_dozen} has hit {max_streak} times consecutively!")
-        state.last_dozen_alert_index = max_streak_end_index
-    elif max_streak < consecutive_hits_threshold:
-        state.last_dozen_alert_index = -1
+        # Trigger alert only for the maximum streak that ends after the last alerted index
+        if max_streak_end_index > state.last_dozen_alert_index and max_streak >= consecutive_hits_threshold:
+            gr.Warning(f"Alert: {max_streak_dozen} has hit {max_streak} times consecutively!")
+            state.last_dozen_alert_index = max_streak_end_index  # Update the last alerted index
+        elif max_streak < consecutive_hits_threshold:
+            state.last_dozen_alert_index = -1  # Reset if no streak meets the threshold
 
-# Lines 1545–1554 (After, unchanged)
     # Detect sequence matches (only if sequence alert is enabled)
     sequence_matches = []
     sequence_follow_ups = []
@@ -3776,10 +3723,6 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             {
                 "title": "S.T.Y.W: Zero Jack 2-2-3 Roulette Strategy",
                 "link": "https://youtu.be/I_F9Wys3Ww0"
-            },
-            {
-                "title": "S.T.Y.W: Triple Entry Max Climax Strategy",
-                "link": "https://youtu.be/64aq0GEPww0"
             }
         ],
         "Dozen Strategies": [
@@ -3798,10 +3741,6 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             {
                 "title": "S.T.Y.W: The Overlap Jackpot (4 Streets + 2 Dozens) Strategy",
                 "link": "https://youtu.be/rTqdMQk4_I4"
-            },
-            {
-                "title": "S.T.Y.W: Triple Entry Max Climax Strategy",
-                "link": "https://youtu.be/64aq0GEPww0"
             }
         ],
         "Column Strategies": [
@@ -3832,10 +3771,6 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             {
                 "title": "S.T.Y.W: Dynamic Play: 1 Dozen with 4 Streets or 2 Double Streets?",
                 "link": "https://youtu.be/8aMHrvuzBGU"
-            },
-            {
-                "title": "S.T.Y.W: The Classic Five Double Street",
-                "link": "https://youtu.be/XX7lSDElwWI"
             }
         ],
         "Corner Strategies": [
@@ -3844,12 +3779,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 "link": "https://youtu.be/zw7eUllTDbg"
             }
         ],
-        "Split Strategies": [
-            {
-                "title": "S.T.Y.W: Triple Entry Max Climax Strategy",
-                "link": "https://youtu.be/64aq0GEPww0"
-            }
-        ],
+        "Split Strategies": [],
         "Number Strategies": [
             {
                 "title": "The Pulse Wheel Strategy (6 Numbers +1 Neighbours)",
