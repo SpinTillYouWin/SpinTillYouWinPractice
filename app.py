@@ -1576,7 +1576,11 @@ def reset_casino_data():
 def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
     print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
     print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
+    print(f"create_dynamic_table: state.last_spins: {state.last_spins}")
+    print(f"create_dynamic_table: state.scores: {dict(state.scores)}")
+    print(f"create_dynamic_table: state.dozen_scores: {dict(state.dozen_scores)}")
     sorted_sections = calculate_trending_sections()
+    print(f"create_dynamic_table: sorted_sections: {sorted_sections}")
     
     # If no spins yet, initialize with default even money focus
     if sorted_sections is None and strategy_name == "Best Even Money Bets":
@@ -1666,12 +1670,21 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
             print("analyze_spins: No valid spins found.")
             return "No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
 
+        # Ensure state.last_spins is updated before resetting
+        state.last_spins = spins
+        print(f"analyze_spins: State.last_spins set to {state.last_spins}")
+
         if reset_scores:
             state.reset()
             print("analyze_spins: Scores reset.")
+            # Rebuild selected_numbers after reset
+            state.selected_numbers = set(int(s) for s in state.last_spins if s.isdigit())
+            print(f"analyze_spins: State.selected_numbers after reset: {state.selected_numbers}")
 
         # Batch update scores
         action_log = update_scores_batch(spins)
+        print(f"analyze_spins: After update_scores_batch, state.scores: {dict(state.scores)}")
+        print(f"analyze_spins: After update_scores_batch, state.dozen_scores: {dict(state.dozen_scores)}")
 
         # Generate spin analysis output
         spin_results = []
@@ -4990,13 +5003,13 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
-            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-            outputs=[dynamic_table_output]
+             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+             outputs=[dynamic_table_output]
         ).then(
-            fn=create_color_code_table,
-            inputs=[],
-            outputs=[color_code_output]
+             fn=create_color_code_table,
+             inputs=[],
+             outputs=[color_code_output]
         ).then(
             fn=dozen_tracker,
             inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
