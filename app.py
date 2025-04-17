@@ -3771,6 +3771,10 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             {
                 "title": "S.T.Y.W: Dynamic Play: 1 Dozen with 4 Streets or 2 Double Streets?",
                 "link": "https://youtu.be/8aMHrvuzBGU"
+            },
+            {
+                "title": "S.T.Y.W: The Classic Five Double Street",
+                "link": "https://youtu.be/XX7lSDElwWI"
             }
         ],
         "Corner Strategies": [
