@@ -3737,6 +3737,10 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             {
                 "title": "S.T.Y.W: Victory Vortex (Dozen Domination)",
                 "link": "https://youtu.be/aKGA_csI9lY"
+            },
+            {
+                "title": "S.T.Y.W: The Overlap Jackpot (4 Streets + 2 Dozens) Strategy",
+                "link": "https://youtu.be/rTqdMQk4_I4"
             }
         ],
         "Column Strategies": [
@@ -3757,6 +3761,10 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             {
                 "title": "S.T.Y.W: 3-8-6 Rising Martingale",
                 "link": "https://youtu.be/-ZcEUOTHMzA"
+            },
+            {
+                "title": "S.T.Y.W: The Overlap Jackpot (4 Streets + 2 Dozens) Strategy",
+                "link": "https://youtu.be/rTqdMQk4_I4"
             }
         ],
         "Double Street Strategies": [
@@ -3765,7 +3773,12 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 "link": "https://youtu.be/8aMHrvuzBGU"
             }
         ],
-        "Corner Strategies": [],
+        "Corner Strategies": [
+            {
+                "title": "S.T.Y.W: 4 Corners Strategy (Seq:1,1,2,5,8,17,28,50)",
+                "link": "https://youtu.be/zw7eUllTDbg"
+            }
+        ],
         "Split Strategies": [],
         "Number Strategies": [
             {
