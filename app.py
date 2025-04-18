@@ -3952,6 +3952,10 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             {
                 "title": "S.T.Y.W: The Overlap Jackpot (4 Streets + 2 Dozens) Strategy",
                 "link": "https://youtu.be/rTqdMQk4_I4"
+            },
+            {
+                "title": "S.T.Y.W: Double Up: Dozen & Street Strategy",
+                "link": "https://youtu.be/Hod5gxusAVE"
             }
         ],
         "Double Street Strategies": [
@@ -3971,10 +3975,6 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             {
                 "title": "The Pulse Wheel Strategy (6 Numbers +1 Neighbours)",
                 "link": "https://youtu.be/UBajAwUXWS0"
-            },
-            {
-                "title": "S.T.Y.W: Double Up: Dozen & Street Strategy",
-                "link": "https://youtu.be/Hod5gxusAVE"
             }
         ],
         "Neighbours Strategies": [
