@@ -982,92 +982,43 @@ def highlight_even_money(strategy_name, sorted_sections, top_color, middle_color
         trending = sorted_sections["even_money"][0][0] if sorted_sections["even_money"] else None
     return trending, second, third, number_highlights
 
-# Code block with update
 def highlight_dozens(strategy_name, sorted_sections, top_color, middle_color, lower_color):
     """Highlight dozens for relevant strategies."""
-    print(f"highlight_dozens: strategy_name = {strategy_name}, sorted_sections['dozens'] = {sorted_sections['dozens'] if sorted_sections else None}")
     if sorted_sections is None:
-        print("highlight_dozens: sorted_sections is None, returning defaults")
         return None, None, {}
-    trending_dozen, second_dozen = None, None
+    trending, second = None, None
     number_highlights = {}
     if strategy_name in ["Best Dozens", "Best Dozens + Top Pick 18 Numbers", 
                          "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", 
                          "Best Dozens + Best Streets"]:
         dozens_hits = [item for item in sorted_sections["dozens"] if item[1] > 0]
-        print(f"highlight_dozens: dozens_hits = {dozens_hits}")
         if dozens_hits:
-            trending_dozen = dozens_hits[0][0]
-            number_highlights.update({str(num): top_color for num in DOZENS[trending_dozen]})
-            if len(dozens_hits) > 1:
-                second_dozen = dozens_hits[1][0]
-                number_highlights.update({str(num): middle_color for num in DOZENS[second_dozen]})
+            trending = dozens_hits[0][0]
+            second = dozens_hits[1][0] if len(dozens_hits) > 1 else None
     elif strategy_name == "Hot Bet Strategy":
-        dozens_hits = sorted_sections["dozens"]
-        print(f"highlight_dozens: Hot Bet Strategy, dozens_hits = {dozens_hits}")
-        if dozens_hits and dozens_hits[0][1] > 0:
-            trending_dozen = dozens_hits[0][0]
-            number_highlights.update({str(num): top_color for num in DOZENS[trending_dozen]})
-            if len(dozens_hits) > 1 and dozens_hits[1][1] > 0:
-                second_dozen = dozens_hits[1][0]
-                number_highlights.update({str(num): middle_color for num in DOZENS[second_dozen]})
+        trending = sorted_sections["dozens"][0][0] if sorted_sections["dozens"] else None
+        second = sorted_sections["dozens"][1][0] if len(sorted_sections["dozens"]) > 1 else None
     elif strategy_name == "Cold Bet Strategy":
         sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1])
-        print(f"highlight_dozens: Cold Bet Strategy, sorted_dozens = {sorted_dozens}")
-        if sorted_dozens:
-            trending_dozen = sorted_dozens[0][0]
-            number_highlights.update({str(num): top_color for num in DOZENS[trending_dozen]})
-            if len(sorted_dozens) > 1:
-                second_dozen = sorted_dozens[1][0]
-                number_highlights.update({str(num): middle_color for num in DOZENS[second_dozen]})
+        trending = sorted_dozens[0][0] if sorted_dozens else None
+        second = sorted_dozens[1][0] if len(sorted_dozens) > 1 else None
     elif strategy_name in ["Fibonacci Strategy", "Fibonacci To Fortune"]:
         best_dozen_score = sorted_sections["dozens"][0][1] if sorted_sections["dozens"] else 0
         best_column_score = sorted_sections["columns"][0][1] if sorted_sections["columns"] else 0
-        print(f"highlight_dozens: Fibonacci, best_dozen_score = {best_dozen_score}, best_column_score = {best_column_score}")
-        if best_dozen_score >= best_column_score and sorted_sections["dozens"]:
-            trending_dozen = sorted_sections["dozens"][0][0]
-            number_highlights.update({str(num): top_color for num in DOZENS[trending_dozen]})
+        if best_dozen_score >= best_column_score:
+            trending = sorted_sections["dozens"][0][0] if sorted_sections["dozens"] else None
     elif strategy_name == "1 Dozen +1 Column Strategy":
-        dozens_hits = sorted_sections["dozens"]
-        print(f"highlight_dozens: 1 Dozen +1 Column, dozens_hits = {dozens_hits}")
-        if dozens_hits and dozens_hits[0][1] > 0:
-            trending_dozen = dozens_hits[0][0]
-            number_highlights.update({str(num): top_color for num in DOZENS[trending_dozen]})
+        trending = sorted_sections["dozens"][0][0] if sorted_sections["dozens"] and sorted_sections["dozens"][0][1] > 0 else None
     elif strategy_name == "Romanowksy Missing Dozen":
-        dozens_hits = sorted_sections["dozens"]
-        print(f"highlight_dozens: Romanowksy, dozens_hits = {dozens_hits}")
-        if dozens_hits and dozens_hits[0][1] > 0:
-            trending_dozen = dozens_hits[0][0]
-            number_highlights.update({str(num): top_color for num in DOZENS[trending_dozen]})
-            if len(dozens_hits) > 1 and dozens_hits[1][1] > 0:
-                second_dozen = dozens_hits[1][0]
-                number_highlights.update({str(num): middle_color for num in DOZENS[second_dozen]})
+        trending = sorted_sections["dozens"][0][0] if sorted_sections["dozens"] and sorted_sections["dozens"][0][1] > 0 else None
+        second = sorted_sections["dozens"][1][0] if len(sorted_sections["dozens"]) > 1 and sorted_sections["dozens"][1][1] > 0 else None
         weakest_dozen = min(state.dozen_scores.items(), key=lambda x: x[1], default=("1st Dozen", 0))[0]
         straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
         straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
         weak_numbers = [row["Number"] for _, row in straight_up_df.iterrows() if row["Number"] in DOZENS[weakest_dozen]][:8]
         for num in weak_numbers:
             number_highlights[str(num)] = top_color
-    elif strategy_name == "None":
-        recent_spins = state.last_spins[-int(dozen_tracker_spins):] if len(state.last_spins) >= int(dozen_tracker_spins) else state.last_spins
-        dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
-        for spin in recent_spins:
-            spin_value = int(spin)
-            if spin_value != 0:
-                for name, numbers in DOZENS.items():
-                    if spin_value in numbers:
-                        dozen_counts[name] += 1
-                        break
-        sorted_dozens = sorted(dozen_counts.items(), key=lambda x: x[1], reverse=True)
-        print(f"highlight_dozens: Dozen Tracker mode, sorted_dozens = {sorted_dozens}")
-        if sorted_dozens[0][1] > 0:
-            trending_dozen = sorted_dozens[0][0]
-            number_highlights.update({str(num): top_color for num in DOZENS[trending_dozen]})
-        if len(sorted_dozens) > 1 and sorted_dozens[1][1] > 0:
-            second_dozen = sorted_dozens[1][0]
-            number_highlights.update({str(num): middle_color for num in DOZENS[second_dozen]})
-    print(f"highlight_dozens: returning trending_dozen = {trending_dozen}, second_dozen = {second_dozen}, number_highlights = {number_highlights}")
-    return trending_dozen, second_dozen, number_highlights
+    return trending, second, number_highlights
 
 def highlight_columns(strategy_name, sorted_sections, top_color, middle_color, lower_color):
     """Highlight columns for relevant strategies."""
@@ -1609,14 +1560,12 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
     print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
     print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
     sorted_sections = calculate_trending_sections()
-    print(f"create_dynamic_table: sorted_sections = {sorted_sections}")
     
-    # If no spins yet, initialize with default table for all strategies
-    if sorted_sections is None:
-        print("create_dynamic_table: No spins yet, rendering default table")
-        trending_even_money = None
-        second_even_money = None
-        third_even_money = None
+    # If no spins yet, initialize with default even money focus
+    if sorted_sections is None and strategy_name == "Best Even Money Bets":
+        trending_even_money = "Red"  # Default to "Red" as an example
+        second_even_money = "Black"
+        third_even_money = "Even"
         trending_dozen = None
         second_dozen = None
         trending_column = None
@@ -1625,11 +1574,18 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
         top_color = top_color if top_color else "rgba(255, 255, 0, 0.5)"
         middle_color = middle_color if middle_color else "rgba(0, 255, 255, 0.5)"
         lower_color = lower_color if lower_color else "rgba(0, 255, 0, 0.5)"
-        return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)
+    else:
+        trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color = apply_strategy_highlights(strategy_name, int(dozen_tracker_spins) if strategy_name == "None" else neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
     
-    trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color = apply_strategy_highlights(strategy_name, int(dozen_tracker_spins) if strategy_name == "None" else neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
-    print(f"create_dynamic_table: number_highlights = {number_highlights}")
-    print(f"create_dynamic_table: trending_even_money = {trending_even_money}, trending_dozen = {trending_dozen}, trending_column = {trending_column}")
+    # If still no highlights and no sorted_sections, provide a default message
+    if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
+        return "<p>No spins yet. Select a strategy to see default highlights.</p>"
+    
+    return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)
+    
+    # If still no highlights and no sorted_sections, provide a default message
+    if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
+        return "<p>No spins yet. Select a strategy to see default highlights.</p>"
     
     return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)
 
@@ -3619,12 +3575,10 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
                     identical_streak_start = i - consecutive_identical_count + 1
             else:
                 identical_streak = 1
-        print(f"even_money_tracker: identical_matches = {identical_matches}")
 
         if identical_matches:
             # Process the most recent match
             latest_match_start, matched_traits = identical_matches[-1]
-            print(f"even_money_tracker: Processing latest match at start index {latest_match_start}, traits: {matched_traits}")
             if alert_enabled:
                 gr.Warning(f"Alert: Traits '{matched_traits}' appeared {consecutive_identical_count} times consecutively at spins {latest_match_start + 1} to {latest_match_start + consecutive_identical_count}!")
             identical_recommendations.append(f"Alert: Traits '{matched_traits}' appeared {consecutive_identical_count} times consecutively at spins {latest_match_start + 1} to {latest_match_start + consecutive_identical_count}!")
@@ -3649,17 +3603,14 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
                     opposite_traits.append("None")
             opposite_combination = ", ".join(opposite_traits)
             identical_recommendations.append(f"Opposite Traits: {opposite_combination}")
-            print(f"even_money_tracker: opposite_traits = {opposite_traits}")
 
             # Get the top-tier even money bet (highest score in even_money_scores)
             sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
             even_money_hits = [item for item in sorted_even_money if item[1] > 0]
-            print(f"even_money_tracker: even_money_hits = {even_money_hits}")
             if even_money_hits:
                 top_tier_bet = even_money_hits[0][0]  # e.g., "Even"
                 top_tier_score = even_money_hits[0][1]
                 identical_recommendations.append(f"Current Top-Tier Even Money Bet (Yellow): {top_tier_bet} (Score: {top_tier_score})")
-                print(f"even_money_tracker: top_tier_bet = {top_tier_bet}, score = {top_tier_score}")
 
                 # Correctly compare top-tier bet to the corresponding opposite trait
                 opposites_map = {
@@ -3680,8 +3631,8 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
                 if trait_index is not None:
                     corresponding_opposite = opposite_traits[trait_index]
                     # Check if the top-tier bet matches its opposite in the correct category
-                    match_found = top_tier_bet == corresponding_opposite
-                    print(f"even_money_tracker: Checking match: top_tier_bet = {top_tier_bet}, corresponding_opposite = {corresponding_opposite}, match_found = {match_found}")
+                    if top_tier_bet == corresponding_opposite:
+                        match_found = True
 
                 if match_found:
                     betting_recommendation = f"<span class='betting-recommendation'>Match found! Bet on '{top_tier_bet}' for the next 3 spins.</span>"
@@ -3692,7 +3643,6 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
                     identical_recommendations.append("No match with opposite traits. No betting recommendation.")
             else:
                 identical_recommendations.append("No top-tier even money bet available (no hits yet).")
-            print(f"even_money_tracker: identical_recommendations = {identical_recommendations}")
 
             # Build HTML output for identical traits tracking
             identical_html_output = "<div class='identical-traits-section'>"
@@ -4852,7 +4802,6 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
     except Exception as e:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
 
-# Code block with update
     try:
         clear_all_button.click(
             fn=clear_all,
@@ -4861,7 +4810,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 spins_display, spins_textbox, spin_analysis_output, last_spin_display,
                 even_money_output, dozens_output, columns_output, streets_output,
                 corners_output, six_lines_output, splits_output, sides_output,
-                straight_up_html, top_18_html, strongest_numbers_output, spin_counter, sides_of_zero_display
+                straight_up_html, top_18_html, strongest_numbers_output, spin_counter
             ]
         ).then(
             fn=clear_outputs,
@@ -4874,7 +4823,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             ]
         ).then(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, kbox],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         )
     except Exception as e:
@@ -5005,7 +4954,6 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
     except Exception as e:
         print(f"Error in save_button.click handler: {str(e)}")
 
-# Code block with update
     try:
         load_input.change(
             fn=load_session,
@@ -5029,13 +4977,12 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             outputs=[color_code_output]
         ).then(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, kbox],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         )
     except Exception as e:
         print(f"Error in load_input.change handler: {str(e)}")
 
-# Code block with update
     try:
         undo_button.click(
             fn=undo_last_spin,
@@ -5053,7 +5000,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             outputs=[dynamic_table_output]
         ).then(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, kbox],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         )
     except Exception as e:
@@ -5191,8 +5138,16 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         ).then(
-            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins_dropdown, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins_dropdown, top_color, middle_color, lower_color),
-            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[
+                strategy_dropdown,
+                neighbours_count_slider,
+                strong_numbers_count_slider,
+                dozen_tracker_spins,
+                top_color_picker,
+                middle_color_picker,
+                lower_color_picker
+            ],
             outputs=[dynamic_table_output]
         )
     except Exception as e:
@@ -5211,9 +5166,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox,
-            even_money_tracker_identical_traits_checkbox,
-            even_money_tracker_consecutive_identical_dropdown
+            even_money_tracker_high_checkbox
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
@@ -5229,9 +5182,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox,
-            even_money_tracker_identical_traits_checkbox,
-            even_money_tracker_consecutive_identical_dropdown
+            even_money_tracker_high_checkbox
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
@@ -5247,9 +5198,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox,
-            even_money_tracker_identical_traits_checkbox,
-            even_money_tracker_consecutive_identical_dropdown
+            even_money_tracker_high_checkbox
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
@@ -5265,9 +5214,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox,
-            even_money_tracker_identical_traits_checkbox,
-            even_money_tracker_consecutive_identical_dropdown
+            even_money_tracker_high_checkbox
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
@@ -5283,9 +5230,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox,
-            even_money_tracker_identical_traits_checkbox,
-            even_money_tracker_consecutive_identical_dropdown
+            even_money_tracker_high_checkbox
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
@@ -5301,9 +5246,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox,
-            even_money_tracker_identical_traits_checkbox,
-            even_money_tracker_consecutive_identical_dropdown
+            even_money_tracker_high_checkbox
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
@@ -5319,9 +5262,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox,
-            even_money_tracker_identical_traits_checkbox,
-            even_money_tracker_consecutive_identical_dropdown
+            even_money_tracker_high_checkbox
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
@@ -5337,9 +5278,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox,
-            even_money_tracker_identical_traits_checkbox,
-            even_money_tracker_consecutive_identical_dropdown
+            even_money_tracker_high_checkbox
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
@@ -5355,9 +5294,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox,
-            even_money_tracker_identical_traits_checkbox,
-            even_money_tracker_consecutive_identical_dropdown
+            even_money_tracker_high_checkbox
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
@@ -5373,9 +5310,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox,
-            even_money_tracker_identical_traits_checkbox,
-            even_money_tracker_consecutive_identical_dropdown
+            even_money_tracker_high_checkbox
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
@@ -5598,12 +5533,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
         )
     except Exception as e:
         print(f"Error in bet_type_dropdown.change handler: {str(e)}")
-    # New code block (all lines are new)
-    def toggle_labouchere(progression):
-        """Toggle visibility of Labouchere sequence input based on selected progression."""
-        return gr.update(visible=progression == "Labouchere")
-        
-# Code block with update
+
     try:
         progression_dropdown.change(
             fn=update_config,
