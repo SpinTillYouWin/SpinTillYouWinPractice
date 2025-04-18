@@ -9,7 +9,7 @@ from roulette_data import (
 )
 
 def update_scores_batch(spins):
-    """Update scores for a batch of spins and return actions for undo."""
+    """Update scores for a batch of spins and return actions for und o."""
     action_log = []
     # Pre-convert betting category lists to sets for faster lookups
     even_money_sets = {name: set(numbers) for name, numbers in EVEN_MONEY.items()}
