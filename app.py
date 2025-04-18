@@ -3563,66 +3563,67 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
     identical_recommendations = []
     identical_html_output = ""
     betting_recommendation = None
+
     if identical_traits_enabled:
-        # Detect consecutive identical trait combinations
-        identical_streak = 1
-        identical_streak_start = 0
-        identical_matches = []
-        for i in range(1, len(trait_combinations)):
-            if trait_combinations[i] == trait_combinations[i-1] and trait_combinations[i] != "None, None, None":
-                identical_streak += 1
-                if identical_streak == consecutive_identical_count:
-                    identical_matches.append((i - consecutive_identical_count + 1, trait_combinations[i]))
-                    identical_streak_start = i - consecutive_identical_count + 1
+    # Detect consecutive identical trait combinations
+    identical_streak = 1
+    identical_matches = []
+    for i in range(1, len(trait_combinations)):
+        if trait_combinations[i] == trait_combinations[i-1] and trait_combinations[i] != "None, None, None":
+            identical_streak += 1
+            if identical_streak == consecutive_identical_count:
+                identical_matches.append((i - consecutive_identical_count + 1, trait_combinations[i]))
+        else:
+            identical_streak = 1
+
+    if identical_matches:
+        # Process the most recent match
+        latest_match_start, matched_traits = identical_matches[-1]
+        if alert_enabled:
+            gr.Warning(f"Alert: Traits '{matched_traits}' appeared {consecutive_identical_count} times consecutively at spins {latest_match_start + 1} to {latest_match_start + consecutive_identical_count}!")
+        identical_recommendations.append(f"Alert: Traits '{matched_traits}' appeared {consecutive_identical_count} times consecutively at spins {latest_match_start + 1} to {latest_match_start + consecutive_identical_count}!")
+
+        # Calculate opposite traits
+        traits = [t.strip() for t in matched_traits.split(",")]
+        opposite_traits = []
+        for trait in traits:
+            if trait == "Red":
+                opposite_traits.append("Black")
+            elif trait == "Black":
+                opposite_traits.append("Red")
+            elif trait == "Even":
+                opposite_traits.append("Odd")
+            elif trait == "Odd":
+                opposite_traits.append("Even")
+            elif trait == "Low":
+                opposite_traits.append("High")
+            elif trait == "High":
+                opposite_traits.append("Low")
             else:
-                identical_streak = 1
+                opposite_traits.append("None")
+        opposite_combination = ", ".join(opposite_traits)
+        identical_recommendations.append(f"Opposite Traits: {opposite_combination}")
 
-        if identical_matches:
-            # Process the most recent match
-            latest_match_start, matched_traits = identical_matches[-1]
-            if alert_enabled:
-                gr.Warning(f"Alert: Traits '{matched_traits}' appeared {consecutive_identical_count} times consecutively at spins {latest_match_start + 1} to {latest_match_start + consecutive_identical_count}!")
-            identical_recommendations.append(f"Alert: Traits '{matched_traits}' appeared {consecutive_identical_count} times consecutively at spins {latest_match_start + 1} to {latest_match_start + consecutive_identical_count}!")
+        # Get the top-tier even money bet
+        sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
+        even_money_hits = [item for item in sorted_even_money if item[1] > 0]
+        if even_money_hits:
+            top_tier_bet = even_money_hits[0][0]  # e.g., "Black"
+            top_tier_score = even_money_hits[0][1]
+            identical_recommendations.append(f"Current Top-Tier Even Money Bet (Yellow): {top_tier_bet} (Score: {top_tier_score})")
 
-            # Calculate opposite traits
-            traits = [t.strip() for t in matched_traits.split(",")]
-            opposite_traits = []
-            for trait in traits:
-                if trait == "Red":
-                    opposite_traits.append("Black")
-                elif trait == "Black":
-                    opposite_traits.append("Red")
-                elif trait == "Even":
-                    opposite_traits.append("Odd")
-                elif trait == "Odd":
-                    opposite_traits.append("Even")
-                elif trait == "Low":
-                    opposite_traits.append("High")
-                elif trait == "High":
-                    opposite_traits.append("Low")
-                else:
-                    opposite_traits.append("None")
-            opposite_combination = ", ".join(opposite_traits)
-            identical_recommendations.append(f"Opposite Traits: {opposite_combination}")
+            # Check if top_tier_bet directly matches any opposite trait
+            match_found = top_tier_bet in opposite_traits
 
-            # Get the top-tier even money bet (highest score in even_money_scores)
-            sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
-            even_money_hits = [item for item in sorted_even_money if item[1] > 0]
-            if even_money_hits:
-                top_tier_bet = even_money_hits[0][0]  # e.g., "Low"
-                top_tier_score = even_money_hits[0][1]
-                identical_recommendations.append(f"Current Top-Tier Even Money Bet (Yellow): {top_tier_bet} (Score: {top_tier_score})")
-            
-                # Check if the top-tier bet directly matches one of the opposite traits
-                match_found = top_tier_bet in opposite_traits
-            
-                if match_found:
-                    betting_recommendation = f"<span class='betting-recommendation'>Match found! Bet on '{top_tier_bet}' for the next 3 spins.</span>"
-                    if alert_enabled:
-                        gr.Warning(f"Match found! Bet on '{top_tier_bet}' for the next 3 spins.")
-                    identical_recommendations.append(betting_recommendation)
-                else:
-                    identical_recommendations.append("No match with opposite traits. No betting recommendation.")
+            if match_found:
+                betting_recommendation = f"<span class='betting-recommendation'>Match found! Bet on '{top_tier_bet}' for the next 3 spins.</span>"
+                if alert_enabled:
+                    gr.Warning(f"Match found! Bet on '{top_tier_bet}' for the next 3 spins.")
+                identical_recommendations.append(betting_recommendation)
+            else:
+                identical_recommendations.append("No match with opposite traits. No betting recommendation.")
+        else:
+            identical_recommendations.append("No top-tier even money bet available (no hits yet).")
 
                 # Correctly compare top-tier bet to the corresponding opposite trait
                 opposites_map = {
