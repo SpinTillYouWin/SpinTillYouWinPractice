@@ -957,6 +957,7 @@ def create_strongest_numbers_with_neighbours_table():
     table_html += "</table>"
 
     return f"<h3>Strongest Numbers with Neighbours</h3>{table_html}"
+
 def highlight_even_money(strategy_name, sorted_sections, top_color, middle_color, lower_color):
     """Highlight even money bets for relevant strategies."""
     if sorted_sections is None:
