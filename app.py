@@ -3631,7 +3631,8 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
                 if trait_index is not None:
                     corresponding_opposite = opposite_traits[trait_index]
                     # Check if the top-tier bet matches its opposite in the correct category
-                    if top_tier_bet == corresponding_opposite:
+                    expected_opposite = opposites_map.get(top_tier_bet)
+                    if expected_opposite == corresponding_opposite:
                         match_found = True
 
                 if match_found:
