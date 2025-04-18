@@ -4738,7 +4738,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
 
     # Event Handlers (moved to the end)
     try:
-        spins_textbox.change(
+        gr.debounce(0.3)(spins_textbox.change)(
             fn=validate_spins_input,
             inputs=[spins_textbox],
             outputs=[spins_display, last_spin_display]
