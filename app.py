@@ -9,7 +9,7 @@ from roulette_data import (
 )
 
 def update_scores_batch(spins):
-    """Update scores for a batch of spins and return actions for und o."""
+    """Update scores for a batch of spins and return actions for undo."""
     action_log = []
     for spin in spins:
         spin_value = int(spin)
@@ -957,7 +957,6 @@ def create_strongest_numbers_with_neighbours_table():
     table_html += "</table>"
 
     return f"<h3>Strongest Numbers with Neighbours</h3>{table_html}"
-
 def highlight_even_money(strategy_name, sorted_sections, top_color, middle_color, lower_color):
     """Highlight even money bets for relevant strategies."""
     if sorted_sections is None:
@@ -3478,14 +3477,7 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
 
     return "\n".join(recommendations), html_output, sequence_html_output
 
-    # --- Lines Before (from dozen_tracker) ---
-                else:
-                    sequence_html_output += "<p>No sequence matches found yet.</p>"
-
-    return "\n".join(recommendations), html_output, sequence_html_output
-    # --- End Lines Before ---
-
-    # --- Affected Section: even_money_tracker ---
+# New: Even Money Bet Tracker Function
 def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled, combination_mode, track_red, track_black, track_even, track_odd, track_low, track_high, identical_traits_enabled, consecutive_identical_count):
     """Track even money bets and their combinations for consecutive hits, with optional tracking of consecutive identical trait combinations."""
     # Validate inputs
@@ -3566,47 +3558,21 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
         else:
             current_streak = 1 if pattern[i] == "Hit" else 0
 
-    # Initialize recommendations for even money tracking
-    recommendations = []
-    tracked_str = " and ".join(categories_to_track) if combination_mode == "And" else " or ".join(categories_to_track)
-    recommendations.append(f"Even Money Tracker (Last {len(recent_spins)} Spins):")
-    recommendations.append(f"Tracking: {tracked_str} ({combination_mode})")
-    recommendations.append("History: " + ", ".join(pattern))
-    if alert_enabled and max_streak >= consecutive_hits_threshold:
-        recommendations.append(f"\nAlert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!")
-    recommendations.append("\nSummary of Hits:")
-    for name, count in category_counts.items():
-        if name in categories_to_track:
-            recommendations.append(f"{name}: {count} hits")
-
-    # Initialize HTML output for even money tracking
-    html_output = "<div class='even-money-tracker-container'>"
-    html_output += f'<h4>Even Money Tracker (Last {len(recent_spins)} Spins):</h4>'
-    html_output += f'<p>Tracking: {tracked_str} ({combination_mode})</p>'
-    html_output += '<div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;">'
-    for status in pattern:
-        color = "#32CD32" if status == "Hit" else "#FF6347"  # Green for Hit, Red for Miss
-        html_output += f'<span style="background-color: {color}; color: white; padding: 2px 5px; border-radius: 3px; display: inline-block;">{status}</span>'
-    html_output += '</div>'
-    if alert_enabled and max_streak >= consecutive_hits_threshold:
-        html_output += f'<p style="color: red; font-weight: bold;">Alert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!</p>'
-    html_output += '<h4>Summary of Hits:</h4>'
-    html_output += '<ul style="list-style-type: none; padding-left: 0;">'
-    for name, count in category_counts.items():
-        if name in categories_to_track:
-            html_output += f'<li>{name}: {count} hits</li>'
-    html_output += '</ul>'
-
-    # Track consecutive identical trait combinations (if enabled)
+    # Track consecutive identical trait combinations (independent of category selection)
+    identical_recommendations = []
+    identical_html_output = ""
+    betting_recommendation = None
     if identical_traits_enabled:
-        identical_recommendations = []  # Initialized here for robustness
+        # Detect consecutive identical trait combinations
         identical_streak = 1
+        identical_streak_start = 0
         identical_matches = []
         for i in range(1, len(trait_combinations)):
             if trait_combinations[i] == trait_combinations[i-1] and trait_combinations[i] != "None, None, None":
                 identical_streak += 1
-                if identical_streak >= consecutive_identical_count:
+                if identical_streak == consecutive_identical_count:
                     identical_matches.append((i - consecutive_identical_count + 1, trait_combinations[i]))
+                    identical_streak_start = i - consecutive_identical_count + 1
             else:
                 identical_streak = 1
 
@@ -3638,16 +3604,36 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
             opposite_combination = ", ".join(opposite_traits)
             identical_recommendations.append(f"Opposite Traits: {opposite_combination}")
 
-            # Get the top-tier even money bet
+            # Get the top-tier even money bet (highest score in even_money_scores)
             sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
             even_money_hits = [item for item in sorted_even_money if item[1] > 0]
             if even_money_hits:
-                top_tier_bet = even_money_hits[0][0]
+                top_tier_bet = even_money_hits[0][0]  # e.g., "Even"
                 top_tier_score = even_money_hits[0][1]
                 identical_recommendations.append(f"Current Top-Tier Even Money Bet (Yellow): {top_tier_bet} (Score: {top_tier_score})")
 
-                # Check if top_tier_bet matches any opposite trait
-                match_found = top_tier_bet in opposite_traits
+                # Correctly compare top-tier bet to the corresponding opposite trait
+                opposites_map = {
+                    "Red": "Black", "Black": "Red",
+                    "Even": "Odd", "Odd": "Even",
+                    "Low": "High", "High": "Low"
+                }
+                # Determine which trait category the top-tier bet belongs to
+                trait_index = None
+                if top_tier_bet in ["Red", "Black"]:
+                    trait_index = 0  # Color
+                elif top_tier_bet in ["Even", "Odd"]:
+                    trait_index = 1  # Parity
+                elif top_tier_bet in ["Low", "High"]:
+                    trait_index = 2  # Range
+
+                match_found = False
+                if trait_index is not None:
+                    corresponding_opposite = opposite_traits[trait_index]
+                    # Check if the top-tier bet matches its opposite in the correct category
+                    expected_opposite = opposites_map.get(top_tier_bet)
+                    if expected_opposite == corresponding_opposite:
+                        match_found = True
 
                 if match_found:
                     betting_recommendation = f"<span class='betting-recommendation'>Match found! Bet on '{top_tier_bet}' for the next 3 spins.</span>"
@@ -3659,19 +3645,53 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
             else:
                 identical_recommendations.append("No top-tier even money bet available (no hits yet).")
 
-            # Append identical traits tracking to HTML output
-            html_output += "<div class='identical-traits-section'>"
-            html_output += "<h4>Consecutive Identical Traits Tracking:</h4>"
-            html_output += "<ul style='list-style-type: none; padding-left: 0;'>"
+            # Build HTML output for identical traits tracking
+            identical_html_output = "<div class='identical-traits-section'>"
+            identical_html_output += "<h4>Consecutive Identical Traits Tracking:</h4>"
+            identical_html_output += "<ul style='list-style-type: none; padding-left: 0;'>"
             for rec in identical_recommendations:
-                if "Alert:" in rec or "Match found!" in rec:
-                    html_output += f"<li style='color: red; font-weight: bold;'>{rec}</li>"
+                if "Alert:" in rec or "Match found!" in rec and "betting-recommendation" not in rec:
+                    identical_html_output += f"<li style='color: red; font-weight: bold;'>{rec}</li>"
                 else:
-                    html_output += f"<li>{rec}</li>"
-            html_output += "</ul>"
-            html_output += "</div>"
+                    identical_html_output += f"<li>{rec}</li>"
+            identical_html_output += "</ul>"
+            identical_html_output += "</div>"
 
-    # Close HTML output
+    # Generate text and HTML for the original even money tracking
+    tracked_str = " and ".join(categories_to_track) if combination_mode == "And" else " or ".join(categories_to_track)
+    recommendations = []
+    html_output = "<div class='even-money-tracker-container'>"
+    recommendations.append(f"Even Money Tracker (Last {len(recent_spins)} Spins):")
+    recommendations.append(f"Tracking: {tracked_str} ({combination_mode})")
+    recommendations.append("History: " + ", ".join(pattern))
+    if alert_enabled and max_streak >= consecutive_hits_threshold:
+        gr.Warning(f"Alert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!")
+        recommendations.append(f"\nAlert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!")
+    recommendations.append("\nSummary of Hits:")
+    for name, count in category_counts.items():
+        if name in categories_to_track:
+            recommendations.append(f"{name}: {count} hits")
+
+    html_output += f'<h4>Even Money Tracker (Last {len(recent_spins)} Spins):</h4>'
+    html_output += f'<p>Tracking: {tracked_str} ({combination_mode})</p>'
+    html_output += '<div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;">'
+    for status in pattern:
+        color = "#32CD32" if status == "Hit" else "#FF6347"  # Green for Hit, Red for Miss
+        html_output += f'<span style="background-color: {color}; color: white; padding: 2px 5px; border-radius: 3px; display: inline-block;">{status}</span>'
+    html_output += '</div>'
+    if alert_enabled and max_streak >= consecutive_hits_threshold:
+        html_output += f'<p style="color: red; font-weight: bold;">Alert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!</p>'
+    html_output += '<h4>Summary of Hits:</h4>'
+    html_output += '<ul style="list-style-type: none; padding-left: 0;">'
+    for name, count in category_counts.items():
+        if name in categories_to_track:
+            html_output += f'<li>{name}: {count} hits</li>'
+    html_output += '</ul>'
+
+    # Append the identical traits tracking output (if enabled)
+    if identical_traits_enabled and identical_html_output:
+        html_output += identical_html_output
+
     html_output += "</div>"
 
     return "\n".join(recommendations), html_output
@@ -3904,10 +3924,6 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             {
                 "title": "S.T.Y.W: The Overlap Jackpot (4 Streets + 2 Dozens) Strategy",
                 "link": "https://youtu.be/rTqdMQk4_I4"
-            },
-            {
-                "title": "S.T.Y.W: Double Up: Dozen & Street Strategy",
-                "link": "https://youtu.be/Hod5gxusAVE"
             }
         ],
         "Column Strategies": [
@@ -3932,10 +3948,6 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             {
                 "title": "S.T.Y.W: The Overlap Jackpot (4 Streets + 2 Dozens) Strategy",
                 "link": "https://youtu.be/rTqdMQk4_I4"
-            },
-            {
-                "title": "S.T.Y.W: Double Up: Dozen & Street Strategy",
-                "link": "https://youtu.be/Hod5gxusAVE"
             }
         ],
         "Double Street Strategies": [
