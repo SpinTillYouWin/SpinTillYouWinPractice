@@ -4802,15 +4802,16 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
     except Exception as e:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
 
+# Code block with update
     try:
         clear_all_button.click(
             fn=clear_all,
             inputs=[],
             outputs=[
                 spins_display, spins_textbox, spin_analysis_output, last_spin_display,
-                even_money_output, dozens_output, columns_output, streets_output,
+                even_money_output, dozensclusters_output, columns_output, streets_output,
                 corners_output, six_lines_output, splits_output, sides_output,
-                straight_up_html, top_18_html, strongest_numbers_output, spin_counter
+                straight_up_html, top_18_html, strongest_numbers_output, spin_counter, sides_of_zero_display
             ]
         ).then(
             fn=clear_outputs,
@@ -4823,11 +4824,12 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             ]
         ).then(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, kbox],
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         )
     except Exception as e:
         print(f"Error in clear_all_button.click handler: {str(e)}")
+
 
     try:
         generate_spins_button.click(
@@ -4954,6 +4956,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
     except Exception as e:
         print(f"Error in save_button.click handler: {str(e)}")
 
+# Code block with update
     try:
         load_input.change(
             fn=load_session,
@@ -4977,12 +4980,13 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             outputs=[color_code_output]
         ).then(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, kbox],
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         )
     except Exception as e:
         print(f"Error in load_input.change handler: {str(e)}")
 
+# Code block with update
     try:
         undo_button.click(
             fn=undo_last_spin,
@@ -5000,7 +5004,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             outputs=[dynamic_table_output]
         ).then(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, kbox],
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         )
     except Exception as e:
