@@ -4738,10 +4738,10 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
 
     # Event Handlers (moved to the end)
     try:
-        gr.debounce(0.3)(spins_textbox.change)(
-            fn=validate_spins_input,
+        gr.debounce(0.1)(spins_textbox.change)(
+            fn=lambda x: (x, *validate_spins_input(x)),
             inputs=[spins_textbox],
-            outputs=[spins_display, last_spin_display]
+            outputs=[spins_display, spins_display, last_spin_display]
         ).then(
             fn=analyze_spins,
             inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
