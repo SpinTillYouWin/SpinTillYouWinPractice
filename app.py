@@ -4859,7 +4859,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             inputs=[],
             outputs=[
                 spins_display, spins_textbox, spin_analysis_output, last_spin_display,
-                even_money_output, dozensclusters_output, columns_output, streets_output,
+                even_money_output, dozens_output, columns_output, streets_output,
                 corners_output, six_lines_output, splits_output, sides_output,
                 straight_up_html, top_18_html, strongest_numbers_output, spin_counter, sides_of_zero_display
             ]
@@ -4879,7 +4879,6 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
         )
     except Exception as e:
         print(f"Error in clear_all_button.click handler: {str(e)}")
-
 
     try:
         generate_spins_button.click(
