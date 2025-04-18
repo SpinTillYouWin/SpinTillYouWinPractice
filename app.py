@@ -5620,7 +5620,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
         print(f"Error in video_dropdown.change handler: {str(e)}")
 
 
-# Launch the interfac e
+# Launch the interface
 print("Starting Gradio launch...")
 demo.launch()
 print("Gradio launch completed.")
