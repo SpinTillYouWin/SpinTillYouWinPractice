@@ -3608,9 +3608,20 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
             sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
             even_money_hits = [item for item in sorted_even_money if item[1] > 0]
             if even_money_hits:
-                top_tier_bet = even_money_hits[0][0]  # e.g., "Even"
+                top_tier_bet = even_money_hits[0][0]  # e.g., "Low"
                 top_tier_score = even_money_hits[0][1]
                 identical_recommendations.append(f"Current Top-Tier Even Money Bet (Yellow): {top_tier_bet} (Score: {top_tier_score})")
+            
+                # Check if the top-tier bet directly matches one of the opposite traits
+                match_found = top_tier_bet in opposite_traits
+            
+                if match_found:
+                    betting_recommendation = f"<span class='betting-recommendation'>Match found! Bet on '{top_tier_bet}' for the next 3 spins.</span>"
+                    if alert_enabled:
+                        gr.Warning(f"Match found! Bet on '{top_tier_bet}' for the next 3 spins.")
+                    identical_recommendations.append(betting_recommendation)
+                else:
+                    identical_recommendations.append("No match with opposite traits. No betting recommendation.")
 
                 # Correctly compare top-tier bet to the corresponding opposite trait
                 opposites_map = {
